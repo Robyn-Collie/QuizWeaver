@@ -1,8 +1,7 @@
 # System Architecture: Quiz Generation Platform
 
-**Version:** 1.0  
-**Status:** Planning  
-**Architect:** Robyn Collie (Agentic AI Engineer Portfolio)
+**Version:** 1.1
+**Status:** Planning
 
 ---
 
@@ -27,13 +26,13 @@ The system is composed of four primary layers:
 graph TD
     User[Teacher] -->|Uploads Lesson/Retake| Ingestion[Ingestion Silo]
     Ingestion -->|Text/Images| Warehouse[(Data Warehouse)]
-    
+
     subgraph Agentic_Core [Agentic Pipeline]
         Orchestrator[Orchestrator Agent]
         Analyst[Analyst Agent]
         Generator[Generator Agent]
         Critic[Critic Agent]
-        
+
         Orchestrator -->|Trigger| Analyst
         Analyst -->|Style Profile| Warehouse
         Orchestrator -->|Context + Profile| Generator
@@ -41,7 +40,7 @@ graph TD
         Critic -->|Feedback| Generator
         Critic -->|Approval| Warehouse
     end
-    
+
     Warehouse -->|Approved Quiz| Output[Output Silo]
     Output -->|QTI Zip / PDF| User
 ```
@@ -88,8 +87,8 @@ This is the heart of the "Agentic AI" portfolio demonstration.
     *   **Capabilities:** Can request RAG searches if context is missing.
 
 *   **Critic Agent (The Reviewer):**
-    *   **Task:** Validates output against `qa_guidelines.txt`.
-    *   **Behavior:** Acts as a strict gatekeeper. If guidelines are violated (e.g., "Fill-in-the-blank detected"), it rejects the draft and sends it back to the Generator with specific error messages.
+    *   **Task:** Validates output against `qa_guidelines.txt` and the formal `Evaluation_Rubric.md`.
+    *   **Behavior:** Acts as a strict gatekeeper, providing structured feedback for revision.
 
 ### 3.4 Output Silo
 *   **Responsibility:** "Transform and Present".
@@ -110,26 +109,31 @@ This is the heart of the "Agentic AI" portfolio demonstration.
 *   **Document Processing:** PyMuPDF (Fitz), python-docx.
 *   **Output Generation:** ReportLab (PDF), ElementTree (XML).
 
+---
+
 ## 5. LLM Provider Abstraction
 
-To ensure flexibility, cost-effectiveness, and prevent vendor lock-in, the system will use an **LLM Provider Abstraction Layer**. Instead of agents directly calling a specific service (like Google Gemini), they will interact with a generic `LLMProvider` interface.
-
-This design allows the system to be easily configured to use different Large Language Models (e.g., OpenAI's GPT series, Anthropic's Claude) by simply creating a new concrete implementation of the provider interface and changing a configuration setting.
+To ensure flexibility and cost-effectiveness, the system uses an **LLM Provider Abstraction Layer**. Instead of agents directly calling a specific service, they interact with a generic `LLMProvider` interface. This allows for easy configuration to use different models (e.g., Gemini, GPT, Claude).
 
 ```mermaid
 graph TD
     Agent[Agent Logic] -->|Generic Request| LLMProvider(LLMProvider Interface)
     LLMProvider --> Gemini[Gemini Provider]
     LLMProvider --> OpenAI[OpenAI Provider]
-    LLMProvider --> Anthropic[Anthropic Provider]
-    
+
     Gemini -->|API Call| Google_Cloud[Google Gemini API]
     OpenAI -->|API Call| OpenAI_API[OpenAI API]
-    Anthropic -->|API Call| Anthropic_API[Anthropic API]
 ```
 
-This approach is a key feature for demonstrating enterprise-level software design.
+---
 
-## 6. Future Scalability
-*   **API Interface:** The Orchestrator can be wrapped in FastAPI to serve a React frontend.
-*   **Vector Search:** `Lesson_Context` can be embedded into a Vector Store (ChromaDB) to support massive textbooks.
+## 6. Future Extensibility & MCP Integration
+
+The architecture is designed to be extensible. Future enhancements can be added with minimal disruption.
+
+*   **API Interface:** The Orchestrator can be wrapped in a FastAPI interface to be called by a web frontend.
+*   **Vector Search:** For large content sources, context can be moved into a vector database (e.g., ChromaDB) for efficient Retrieval Augmented Generation (RAG).
+*   **MCP (Multi-Capability Provider) Integration:** The system can leverage external tools via MCPs. Potential use cases include:
+    *   **State Curriculum MCP:** Provides a tool to automatically fetch and validate SOL standards from official sources.
+    *   **Advanced Image Analysis MCP:** Wraps a multimodal model to provide rich descriptions of scientific diagrams, enabling more insightful question generation.
+    *   **Plagiarism & Uniqueness MCP:** Provides a tool to search the web to ensure generated questions are novel.

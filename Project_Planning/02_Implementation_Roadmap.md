@@ -1,6 +1,6 @@
 # Implementation Roadmap: Quiz Generation Platform
 
-**Version:** 1.0
+**Version:** 1.2
 **Status:** Planning
 
 ---
@@ -13,56 +13,60 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
 
 ## 2. Development Phases
 
-### Phase 1: Foundational Refactoring & Modularization (Current Phase)
-*   **Goal:** Deconstruct the monolithic `main.py` into a clean, modular architecture and introduce an LLM abstraction layer.
+### Phase 1: Foundational Refactoring & Quality Gates
+*   **Goal:** Deconstruct the monolithic `main.py` into a clean, modular architecture, introduce an LLM abstraction layer, and establish automated quality gates.
 *   **Key Tasks:**
-    1.  **Create Core Library:** Establish a `src` directory.
-    2.  **Isolate Functionality:** Create distinct modules for `ingestion`, `database`, `agents`, and `output`.
-    3.  **Implement LLM Provider Abstraction:**
-        *   Create `src/llm_provider.py` with a base `LLMProvider` class.
-        *   Implement a `GeminiProvider` as the first concrete implementation.
-        *   Refactor the `agents.py` module to use this provider.
-    4.  **Configuration:** Centralize settings into `config.yaml`, including the new `llm.provider` setting.
-    5.  **CLI Interface:** Refactor the entry point to use `argparse` and select the LLM provider from the config.
-*   **Exit Criteria:** The codebase is organized, modular, testable, and capable of supporting different LLMs through a single configuration change.
+    1.  **Modularize Codebase:** Refactor all functionality into the `src` directory with distinct modules.
+    2.  **Implement LLM Abstraction:** Create the `src/llm_provider.py` to make the application LLM-agnostic.
+    3.  **Centralize Configuration:** Use `config.yaml` to manage all settings.
+    4.  **Write Unit Tests:** Create a `tests/` directory and implement a suite of unit tests for the core modules using `pytest`.
+    5.  **Set Up Pre-Commit Hooks:** Configure `pre-commit` to automatically run linters (`ruff`, `flake8`) and `pytest` before each commit, enforcing code quality.
+*   **Exit Criteria:** The codebase is organized, modular, testable, and protected by automated quality checks.
+
+### Phase 1.5: Continuous Integration (CI)
+*   **Goal:** Implement a CI pipeline to automatically validate changes.
+*   **Key Tasks:**
+    1.  **Create GitHub Actions Workflow:** Set up a `.github/workflows/ci.yml` file.
+    2.  **Automate Testing:** Configure the workflow to run the full `pytest` suite on every push and pull request to the `main` branch.
+*   **Exit Criteria:** The project has an automated CI pipeline, demonstrating a core DevOps practice.
 
 ### Phase 2: Data Persistence & Warehousing
-*   **Goal:** Implement the "Data Warehouse" layer to persist state and manage data artifacts effectively. This demonstrates a key Data Engineering competency.
+*   **Goal:** Implement the "Data Warehouse" layer to persist state.
 *   **Key Tasks:**
-    1.  **Schema Implementation:** Use SQLAlchemy to define and create the SQLite database schema (`Lessons`, `Assets`, `Quizzes`, `Questions`, `Feedback_Logs`).
-    2.  **Integrate Ingestion:** Modify the Ingestion Silo to write extracted text and image metadata into the database.
-    3.  **Stateful Processing:** The Orchestrator will now read/write job status to the `Quizzes` table.
-    4.  **Artifact Storage:** Generated questions will be stored in the `Questions` table, associated with a specific quiz run.
-*   **Exit Criteria:** The application is no longer stateless. All inputs, outputs, and intermediate states are tracked in the database, providing an audit trail.
+    1.  **Schema Implementation:** Use SQLAlchemy to define and create the SQLite database.
+    2.  **Integrate Ingestion:** Modify the Ingestion Silo to write data into the database.
+    3.  **Stateful Processing:** The Orchestrator will track job status in the database.
+*   **Exit Criteria:** The application is no longer stateless.
 
 ### Phase 3: Activating the Agentic Workflow
-*   **Goal:** Implement the core multi-agent "critique loop" to showcase autonomous decision-making and quality control.
+*   **Goal:** Implement the core multi-agent "critique loop" based on a formal rubric.
 *   **Key Tasks:**
-    1.  **Implement Analyst Agent:** The Analyst Agent processes the `Retake` PDF and generates a "Style Profile" which is saved to the database.
-    2.  **Implement Generator/Critic Loop:**
-        *   The Generator creates a draft quiz based on the Style Profile and Lesson Context.
-        *   The Critic agent validates the draft against the `qa_guidelines.txt`.
-        *   If the draft is flawed, the Critic returns detailed feedback, and the Generator attempts a revision. This loop continues until the Critic approves.
-    3.  **Orchestration Logic:** Implement the state machine (using LangGraph or a custom loop) that manages the Generator -> Critic -> Generator flow.
-*   **Exit Criteria:** The system can autonomously generate and refine a quiz until it meets a defined quality bar, demonstrating a true agentic system.
+    1.  **Create Evaluation Rubric:** Author `Project_Planning/04_Evaluation_Rubric.md` to define "pedagogical muster."
+    2.  **Refine Critic Agent:** Update the Critic Agent's prompt and logic to strictly enforce the new rubric.
+    3.  **Orchestration Logic:** Implement the state machine (e.g., LangGraph) for the Generator -> Critic feedback loop.
+*   **Exit Criteria:** The system's QA process is no longer implicit but is guided by a documented, educationally-sound standard.
 
 ### Phase 4: Human-in-the-Loop (Teacher Feedback)
-*   **Goal:** Introduce the interactive feedback session for the teacher.
+*   **Goal:** Introduce the interactive feedback session.
 *   **Key Tasks:**
-    1.  **Feedback Interface:** Create a simple terminal-based interface that:
-        *   Presents the approved quiz from Phase 3.
-        *   Allows the teacher to "accept", "reject", or "request changes" on a per-question basis.
-    2.  **Feedback Persistence:** Teacher feedback is logged in the `Feedback_Logs` table.
-    3.  **Re-generation Trigger:** If changes are requested, a new task is sent to the Orchestrator to re-run the Generator agent with the new feedback as additional context.
-*   **Exit Criteria:** The application supports a full, iterative workflow where the teacher's expertise guides the final output.
+    1.  **Feedback Interface:** Create a simple terminal-based interface for teacher input.
+    2.  **Feedback Persistence:** Log teacher feedback to the database.
+    3.  **Re-generation Trigger:** Enable the Orchestrator to re-run generation based on feedback.
+*   **Exit Criteria:** The application supports a full, iterative workflow guided by the end-user.
+
+### Phase 5: Packaging & Distribution
+*   **Goal:** Package the application for easy distribution.
+*   **Key Tasks:**
+    1.  **Create Dockerfile:** Write a `Dockerfile` to containerize the application.
+    2.  **Document Usage:** Add instructions to the `README.md` on how to build and run the application using Docker.
+*   **Exit Criteria:** The application is easily runnable on any system with Docker, making it a feasible "everyday application".
 
 ---
 
 ## 3. Timeline & Milestones
 
-*   **Phase 1:** Estimated 2-3 work sessions.
+*   **Phase 1 & 1.5:** Estimated 3-4 work sessions.
 *   **Phase 2:** Estimated 3-4 work sessions.
 *   **Phase 3:** Estimated 4-5 work sessions.
 *   **Phase 4:** Estimated 2-3 work sessions.
-
-This roadmap provides a structured approach to building a portfolio piece that is not just a demo, but a well-architected example of a modern AI-powered data application.
+*   **Phase 5:** Estimated 1-2 work sessions.
