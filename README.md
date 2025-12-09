@@ -1,8 +1,50 @@
-# Test Retake Feature
+# Quiz Retake Generator: An Agentic AI Pipeline
 
-This feature allows teachers to generate a retake quiz while excluding questions from a previous version of the test.
+This project is a portfolio piece demonstrating the principles of **Agentic AI** and **Enterprise-Grade Data Engineering**. It transforms a simple task—generating a quiz retake—into a robust, multi-agent pipeline that mimics the architecture of a production AI system.
 
-## Setup
+The goal is to provide a tool for teachers that automates the creation of high-quality, curriculum-aligned assessments through an iterative, AI-driven feedback loop.
+
+---
+
+## 1. Project Vision & Architecture
+
+The system is designed as a scalable **Agentic AI Pipeline**, moving beyond a simple script to a structured, modular architecture. This approach is detailed in our planning documents, which showcase professional system design and project management.
+
+*   **[System Architecture](./Project_Planning/01_System_Architecture.md):** Defines the "silo-based" architecture (Ingestion, Warehousing, Agentic Core, Output) that separates concerns and ensures scalability.
+*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
+*   **[Agent Specifications](./Project_Planning/03_Agent_Specifications.md):** Details the prompts, roles, and tools for each AI agent in the system.
+
+### High-Level Flow
+```mermaid
+graph TD
+    User[Teacher] -->|Uploads Lesson/Retake| Ingestion[Ingestion Silo]
+    Ingestion -->|Text/Images| Warehouse[(Data Warehouse)]
+    
+    subgraph Agentic_Core [Agentic Pipeline]
+        Orchestrator[Orchestrator Agent]
+        Analyst[Analyst Agent]
+        Generator[Generator Agent]
+        Critic[Critic Agent]
+        
+        Orchestrator -->|Trigger| Analyst
+        Analyst -->|Style Profile| Warehouse
+        Orchestrator -->|Context + Profile| Generator
+        Generator -->|Draft Quiz| Critic
+        Critic -->|Feedback| Generator
+        Critic -->|Approval| Warehouse
+    end
+    
+    Warehouse -->|Approved Quiz| Output[Output Silo]
+    Output -->|QTI Zip / PDF| User
+```
+
+---
+
+## 2. Current Status (Proof of Concept)
+
+The project currently exists as a functional proof-of-concept in `main.py`. This script demonstrates the core logic of the generation process.
+
+### POC Setup
 
 1.  **Dependencies:** Install the required Python packages:
     ```bash
@@ -13,48 +55,30 @@ This feature allows teachers to generate a retake quiz while excluding questions
     GEMINI_API_KEY=your_api_key_here
     ```
 
-## Usage
+### POC Usage
 
 1.  **Input Content:**
     *   Place your content summary documents in the `Content_Summary` directory. Supported formats: `.pdf`, `.docx`, `.txt`.
     *   Images from these documents will be automatically extracted and used as context.
-
 2.  **Retake Test Source:**
-    *   Place the original test (as a PDF) in the `Retake` directory. The script reads this to:
-        *   Exclude specific questions from the new quiz.
-        *   Determine the default number of questions.
-        *   Calculate the target percentage of questions that should include images.
-
+    *   Place the original test (as a PDF) in the `Retake` directory. The script reads this to exclude questions and match the original test's style.
 3.  **Run the Script:**
-    *   Default (uses counts from retake PDF):
-        ```bash
-        python main.py
-        ```
-    *   Specify question count manually:
-        ```bash
-        python main.py --count 20
-        ```
+    ```bash
+    # Generate a quiz with the same number of questions as the retake PDF
+    python main.py
 
+    # Specify question count manually
+    python main.py --count 20
+    ```
 4.  **Output:**
     *   The generated files are saved in the `Quiz_Output` directory.
-    *   **QTI Zip:** `ChangeOverTime_Retake_YYYYMMDDHHMMSS.zip` (Import this into Canvas).
-    *   **PDF Preview:** `ChangeOverTime_Retake_YYYYMMDDHHMMSS.pdf` (Review questions and answers).
+    *   **QTI Zip:** For direct import into Canvas LMS.
+    *   **PDF Preview:** A human-readable version to review questions and answers.
 
-## Features
+---
 
-*   **Intelligent Exclusion:** Scans the original test to prevent duplicate questions.
-*   **Content-Based Generation:** Generates questions strictly based on the provided content summaries.
-*   **Image Handling:**
-    *   **Extraction:** Extracts images from source PDFs to use as context.
-    *   **Generation:** If not enough extracted images are available to meet the target ratio, the script attempts to generate relevant images (or falls back to clear placeholders if the API is unavailable).
-*   **Quality Assurance:** Adheres to `qa_guidelines.txt` for grade-appropriate rigor, question types (no fill-in-the-blank), and structure.
-*   **Multi-Format Support:** Reads PDF, DOCX, and TXT files.
+## 3. Project Roadmap
 
-## Files
+The project is evolving according to the [Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md). The next phase is **Phase 1: Foundational Refactoring & Modularization**, where the POC script will be deconstructed into a professional, testable codebase.
 
-*   `main.py`: The core script for generating the quiz.
-*   `qa_guidelines.txt`: Rules for the AI model regarding question quality and format.
-*   `requirements.txt`: List of Python dependencies.
-*   `Content_Summary/`: Directory for study guides/content summaries.
-*   `Retake/`: Directory for the previous test PDF.
-*   `Quiz_Output/`: Directory where the final QTI zip and PDF preview are saved.
+This project is actively under development. Follow the commit history to see the progression from a simple script to a full-fledged agentic application.

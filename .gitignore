@@ -6,3 +6,5 @@ __pycache__/
 extracted_images/
 generated_images/
 Quiz_Output/
+.clinerules
+.bin/
