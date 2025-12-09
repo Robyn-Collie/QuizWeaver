@@ -1,0 +1,8 @@
+.env
+.venv/
+__pycache__/
+*.zip
+*.pdf
+extracted_images/
+generated_images/
+Quiz_Output/

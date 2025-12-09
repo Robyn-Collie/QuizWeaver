@@ -1,0 +1,27 @@
+# Quality Assurance Guidelines for Quiz Generation
+
+1.  **Question Types:**
+    *   **NO Fill-in-the-Blank questions.** All questions must have answer choices (Multiple Choice or Multiple Answer).
+    *   **True/False Limitation:** Limit the number of True/False questions. Only include them if necessary, and do not exceed the proportion found in a typical test (e.g., max 2-3).
+    *   **Preferred Type:** Multiple Choice is the preferred question format.
+
+2.  **Uniqueness:**
+    *   **No Duplicates:** Ensure NO questions are identical to the questions provided in the "Retake Questions" list.
+    *   **Variation:** Questions can cover the same topics as the original test but must be phrased differently or test a different aspect of the concept.
+
+3.  **Target Audience:**
+    *   **Grade Level:** 7th Grade Science.
+    *   **Language:** Use age-appropriate language and concepts.
+
+4.  **Content Validity:**
+    *   **Source Material:** All questions and answers MUST be derived strictly from the provided "Content Summary". Do not introduce outside information.
+    *   **Context:** If images are provided, use them as context for relevant questions.
+
+5.  **Distractors:**
+    *   **Plausibility:** Incorrect answer choices (distractors) should be plausible to a student who hasn't fully mastered the material, but clearly incorrect based on the content summary.
+
+6.  **Rigor:**
+    *   **Difficulty:** The level of difficulty and cognitive demand must match the original test. Do not make the retake easier or harder.
+
+7.  **Image Usage:**
+    *   **Frequency:** Include images in questions at the same rate as the original test. If the original test had images for 20% of the questions, the retake should also have images for roughly 20% of the questions.
