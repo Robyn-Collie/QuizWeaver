@@ -1,0 +1,46 @@
+# Configuration for the Quiz Retake Generator
+
+# --- File Paths ---
+# Directories for input and output files.
+# These paths are relative to the project root.
+paths:
+  content_summary_dir: "Content_Summary"
+  retake_dir: "Retake"
+  quiz_output_dir: "Quiz_Output"
+  extracted_images_dir: "extracted_images"
+  generated_images_dir: "generated_images"
+  database_file: "quiz_warehouse.db"
+
+# --- Quiz Generation Parameters ---
+# Default settings for the quiz generation process.
+generation:
+  quiz_title: "Change Over Time Test (Retake)"
+  default_question_points: 5
+  # The target ratio of questions that should include an image, expressed as a decimal (e.g., 0.25 = 25%).
+  # This is determined by the Analyst agent based on the original retake document.
+  target_image_ratio: 0.25
+  # Default grade level for question generation. Can be overridden by CLI argument.
+  default_grade_level: "7th Grade Science"
+  # SOL standards to be covered. Can be a list of strings.
+  sol_standards: [] # Example: ["SOL 6.1", "SOL 6.2a"]
+
+# --- QTI Export Settings ---
+# Templates and identifiers for creating Canvas-compatible QTI zip files.
+qti:
+  zip_filename_template: "ChangeOverTime_Retake_{timestamp}.zip"
+  pdf_filename_template: "ChangeOverTime_Retake_{timestamp}.pdf"
+  manifest_name: "imsmanifest.xml"
+  assessment_filename: "quiz_content.xml"
+
+# --- Agent Prompts ---
+# File paths to the system prompts for each agent.
+# This allows for easy modification of agent behavior without changing the code.
+prompts:
+  analyst_prompt_file: "prompts/analyst_prompt.txt"
+  generator_prompt_file: "prompts/generator_prompt.txt"
+  critic_prompt_file: "prompts/critic_prompt.txt"
+
+# --- Logging ---
+logging:
+  level: "INFO" # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  file: "app.log"

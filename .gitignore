@@ -1,10 +1,22 @@
+# --- Local Environment ---
 .env
 .venv/
+
+# --- Python Cache ---
 __pycache__/
-*.zip
-*.pdf
+*.pyc
+
+# --- Generated Files & Logs ---
+*.log
+# Keep generated images and outputs out of git for now
 extracted_images/
 generated_images/
 Quiz_Output/
+
+# --- Database ---
+# Exclude the local SQLite database file
+quiz_warehouse.db
+
+# --- IDE & System Files ---
 .clinerules
 .bin/
