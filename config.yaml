@@ -40,6 +40,10 @@ prompts:
   generator_prompt_file: "prompts/generator_prompt.txt"
   critic_prompt_file: "prompts/critic_prompt.txt"
 
+# --- LLM Provider ---
+llm:
+  provider: "gemini" # Options: "gemini", "openai" (when implemented)
+
 # --- Logging ---
 logging:
   level: "INFO" # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL

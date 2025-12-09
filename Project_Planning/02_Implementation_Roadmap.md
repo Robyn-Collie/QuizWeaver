@@ -14,17 +14,17 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
 ## 2. Development Phases
 
 ### Phase 1: Foundational Refactoring & Modularization (Current Phase)
-*   **Goal:** Deconstruct the monolithic `main.py` into a clean, modular architecture. This mirrors the process of managing technical debt and preparing a prototype for production.
+*   **Goal:** Deconstruct the monolithic `main.py` into a clean, modular architecture and introduce an LLM abstraction layer.
 *   **Key Tasks:**
     1.  **Create Core Library:** Establish a `src` directory.
-    2.  **Isolate Functionality:** Create distinct modules for:
-        *   `ingestion.py`: Handles all file parsing (PDF, DOCX).
-        *   `database.py`: Manages schema and connection to the local "warehouse".
-        *   `agents.py`: Defines the core logic for each agent (Analyst, Generator, Critic).
-        *   `output.py`: Handles QTI/PDF generation.
-    3.  **Configuration:** Centralize all settings (file paths, prompts, API keys) into a `config.yaml`.
-    4.  **CLI Interface:** Refactor the entry point to use a clean CLI library like `argparse` or `click`.
-*   **Exit Criteria:** The application's functionality remains the same, but the codebase is organized, modular, and testable.
+    2.  **Isolate Functionality:** Create distinct modules for `ingestion`, `database`, `agents`, and `output`.
+    3.  **Implement LLM Provider Abstraction:**
+        *   Create `src/llm_provider.py` with a base `LLMProvider` class.
+        *   Implement a `GeminiProvider` as the first concrete implementation.
+        *   Refactor the `agents.py` module to use this provider.
+    4.  **Configuration:** Centralize settings into `config.yaml`, including the new `llm.provider` setting.
+    5.  **CLI Interface:** Refactor the entry point to use `argparse` and select the LLM provider from the config.
+*   **Exit Criteria:** The codebase is organized, modular, testable, and capable of supporting different LLMs through a single configuration change.
 
 ### Phase 2: Data Persistence & Warehousing
 *   **Goal:** Implement the "Data Warehouse" layer to persist state and manage data artifacts effectively. This demonstrates a key Data Engineering competency.

@@ -1,5 +1,6 @@
-import google.generativeai as genai
 import os
+from src.llm_provider import get_provider
+import google.generativeai as genai # Still needed for image upload
 
 def get_qa_guidelines():
     """Reads the QA guidelines from the specified file."""
@@ -10,17 +11,14 @@ def get_qa_guidelines():
         print("Warning: qa_guidelines.txt not found.")
         return ""
 
-def generate_questions(api_key, content_summary, retake_text, num_questions, images, image_ratio, grade_level, sol_standards):
+def generate_questions(config, content_summary, retake_text, num_questions, images, image_ratio, grade_level, sol_standards):
     """
-    Calls the Gemini API to generate quiz questions based on the provided context.
-    This function represents the core of the 'Generator Agent'.
+    Calls the configured LLM provider to generate quiz questions.
     """
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-
+    llm_provider = get_provider(config)
+    
     qa_guidelines = get_qa_guidelines()
     
-    # Dynamically build the SOL standards section
     sol_section = ""
     if sol_standards:
         sol_list = "\n".join([f"- {s}" for s in sol_standards])
@@ -82,18 +80,16 @@ You must generate questions that specifically target the following SOL standards
     
     prompt_parts = [prompt]
     
-    # Add images to the prompt, if any are available
+    # Image handling might need to be provider-specific in the future.
+    # For now, we assume a Gemini-like upload mechanism.
     for img_path in images:
         try:
+            # This part is still specific to Gemini's uploader.
+            # A more advanced abstraction would wrap this too.
             img = genai.upload_file(img_path)
             prompt_parts.append(img)
             prompt_parts.append(f"Context for image: {os.path.basename(img_path)}")
         except Exception as e:
             print(f"Could not upload image {img_path}: {e}")
 
-    try:
-        response = model.generate_content(prompt_parts)
-        return response.text
-    except Exception as e:
-        print(f"An error occurred during question generation: {e}")
-        return "[]"
+    return llm_provider.generate(prompt_parts)

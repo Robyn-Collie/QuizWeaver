@@ -26,11 +26,6 @@ def main():
     parser.add_argument("--sol", nargs='+', help="A list of SOL standards to focus on (e.g., --sol '6.1' '6.2a').")
     args = parser.parse_args()
 
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        print("Error: GEMINI_API_KEY not found in .env file.")
-        return
-
     output_dir = config['paths']['quiz_output_dir']
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -52,7 +47,7 @@ def main():
 
     print("\nStep 2: Generating questions with the AI Agent...")
     generated_questions_str = generate_questions(
-        api_key=api_key,
+        config=config,
         content_summary=content_summary,
         retake_text=retake_text,
         num_questions=num_questions,
@@ -87,6 +82,7 @@ def main():
                 q["image_ref"] = image_filename
                 used_images.append((image_path, image_filename))
             else:
+                api_key = os.getenv("GEMINI_API_KEY") # Still needed for image gen for now
                 prompt = q.get("text", "A relevant science diagram.")
                 gen_path = generate_image(api_key, prompt)
                 gen_filename = os.path.basename(gen_path)

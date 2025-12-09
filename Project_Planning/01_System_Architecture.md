@@ -105,11 +105,31 @@ This is the heart of the "Agentic AI" portfolio demonstration.
 
 *   **Language:** Python 3.10+
 *   **Orchestration:** LangGraph (preferred for cyclic agent flows) or LangChain.
-*   **LLM Provider:** Google Gemini (Current) / OpenAI (Alternative).
+*   **LLM Provider:** Pluggable via Abstraction Layer (see below).
 *   **Database:** SQLite / SQLAlchemy.
 *   **Document Processing:** PyMuPDF (Fitz), python-docx.
 *   **Output Generation:** ReportLab (PDF), ElementTree (XML).
 
-## 5. Future Scalability
+## 5. LLM Provider Abstraction
+
+To ensure flexibility, cost-effectiveness, and prevent vendor lock-in, the system will use an **LLM Provider Abstraction Layer**. Instead of agents directly calling a specific service (like Google Gemini), they will interact with a generic `LLMProvider` interface.
+
+This design allows the system to be easily configured to use different Large Language Models (e.g., OpenAI's GPT series, Anthropic's Claude) by simply creating a new concrete implementation of the provider interface and changing a configuration setting.
+
+```mermaid
+graph TD
+    Agent[Agent Logic] -->|Generic Request| LLMProvider(LLMProvider Interface)
+    LLMProvider --> Gemini[Gemini Provider]
+    LLMProvider --> OpenAI[OpenAI Provider]
+    LLMProvider --> Anthropic[Anthropic Provider]
+    
+    Gemini -->|API Call| Google_Cloud[Google Gemini API]
+    OpenAI -->|API Call| OpenAI_API[OpenAI API]
+    Anthropic -->|API Call| Anthropic_API[Anthropic API]
+```
+
+This approach is a key feature for demonstrating enterprise-level software design.
+
+## 6. Future Scalability
 *   **API Interface:** The Orchestrator can be wrapped in FastAPI to serve a React frontend.
 *   **Vector Search:** `Lesson_Context` can be embedded into a Vector Store (ChromaDB) to support massive textbooks.
