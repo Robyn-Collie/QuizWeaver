@@ -1,6 +1,6 @@
 # Implementation Roadmap: Quiz Generation Platform
 
-**Version:** 1.2
+**Version:** 1.3
 **Status:** Planning
 
 ---
@@ -19,16 +19,16 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
     1.  **Modularize Codebase:** Refactor all functionality into the `src` directory with distinct modules.
     2.  **Implement LLM Abstraction:** Create the `src/llm_provider.py` to make the application LLM-agnostic.
     3.  **Centralize Configuration:** Use `config.yaml` to manage all settings.
-    4.  **Write Unit Tests:** Create a `tests/` directory and implement a suite of unit tests for the core modules using `pytest`.
-    5.  **Set Up Pre-Commit Hooks:** Configure `pre-commit` to automatically run linters (`ruff`, `flake8`) and `pytest` before each commit, enforcing code quality.
+    4.  **Write Unit Tests:** Create a `tests/` directory and implement initial unit tests for the refactored modules using `pytest`.
+    5.  **Set Up Pre-Commit Hooks:** Configure `pre-commit` to automatically run linters (`ruff`) and `pytest` before each commit.
 *   **Exit Criteria:** The codebase is organized, modular, testable, and protected by automated quality checks.
 
 ### Phase 1.5: Continuous Integration (CI)
 *   **Goal:** Implement a CI pipeline to automatically validate changes.
 *   **Key Tasks:**
     1.  **Create GitHub Actions Workflow:** Set up a `.github/workflows/ci.yml` file.
-    2.  **Automate Testing:** Configure the workflow to run the full `pytest` suite on every push and pull request to the `main` branch.
-*   **Exit Criteria:** The project has an automated CI pipeline, demonstrating a core DevOps practice.
+    2.  **Automate Testing:** Configure the workflow to run the full `pytest` suite on every push and pull request.
+*   **Exit Criteria:** The project has an automated CI pipeline.
 
 ### Phase 2: Data Persistence & Warehousing
 *   **Goal:** Implement the "Data Warehouse" layer to persist state.
@@ -38,13 +38,21 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
     3.  **Stateful Processing:** The Orchestrator will track job status in the database.
 *   **Exit Criteria:** The application is no longer stateless.
 
+### Phase 2.5: Multimodal Ingestion Upgrade
+*   **Goal:** Leverage a powerful multimodal model (e.g., Gemini 3 Pro) to perform intelligent document layout analysis.
+*   **Key Tasks:**
+    1.  **Implement `Gemini3ProProvider`:** Create a new provider in `src/llm_provider.py` for the new model.
+    2.  **Develop "Intelligent Ingestion" Workflow:** Create a new function in `src/ingestion.py` that sends PDF pages as images to the provider to get a structured analysis of the layout, including diagram descriptions.
+    3.  **Update Database:** Enhance the database schema to store this new, rich, structured content.
+*   **Exit Criteria:** The application can understand the relationship between text and images in source documents, enabling much higher-quality question generation.
+
 ### Phase 3: Activating the Agentic Workflow
 *   **Goal:** Implement the core multi-agent "critique loop" based on a formal rubric.
 *   **Key Tasks:**
-    1.  **Create Evaluation Rubric:** Author `Project_Planning/04_Evaluation_Rubric.md` to define "pedagogical muster."
+    1.  **Create Evaluation Rubric:** Author `Project_Planning/04_Evaluation_Rubric.md`.
     2.  **Refine Critic Agent:** Update the Critic Agent's prompt and logic to strictly enforce the new rubric.
     3.  **Orchestration Logic:** Implement the state machine (e.g., LangGraph) for the Generator -> Critic feedback loop.
-*   **Exit Criteria:** The system's QA process is no longer implicit but is guided by a documented, educationally-sound standard.
+*   **Exit Criteria:** The system's QA process is guided by a documented, educationally-sound standard.
 
 ### Phase 4: Human-in-the-Loop (Teacher Feedback)
 *   **Goal:** Introduce the interactive feedback session.
@@ -59,14 +67,14 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
 *   **Key Tasks:**
     1.  **Create Dockerfile:** Write a `Dockerfile` to containerize the application.
     2.  **Document Usage:** Add instructions to the `README.md` on how to build and run the application using Docker.
-*   **Exit Criteria:** The application is easily runnable on any system with Docker, making it a feasible "everyday application".
+*   **Exit Criteria:** The application is easily runnable on any system with Docker.
 
 ---
 
 ## 3. Timeline & Milestones
 
 *   **Phase 1 & 1.5:** Estimated 3-4 work sessions.
-*   **Phase 2:** Estimated 3-4 work sessions.
+*   **Phase 2 & 2.5:** Estimated 4-5 work sessions.
 *   **Phase 3:** Estimated 4-5 work sessions.
 *   **Phase 4:** Estimated 2-3 work sessions.
 *   **Phase 5:** Estimated 1-2 work sessions.

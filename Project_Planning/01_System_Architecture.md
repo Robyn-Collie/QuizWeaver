@@ -1,6 +1,6 @@
 # System Architecture: Quiz Generation Platform
 
-**Version:** 1.1
+**Version:** 1.2
 **Status:** Planning
 
 ---
@@ -55,85 +55,69 @@ To ensure modularity and testability (mirroring the PIQ System), functionality i
 *   **Responsibility:** "Extract and Load".
 *   **Inputs:** PDF, DOCX, Images.
 *   **Process:**
-    *   **Text Extraction:** OCR (if needed) or text parsing from documents.
-    *   **Image Extraction:** Extracting embedded images and saving to the `extracted_images` store.
-    *   **Chunking:** Splitting long texts into semantic chunks for better RAG retrieval.
+    *   **Standard Ingestion:** Simple text and image extraction from DOCX, TXT, and basic PDFs.
+    *   **Advanced Multimodal Ingestion:** For complex PDFs, leverages a powerful multimodal model (e.g., Gemini 3 Pro) to perform layout analysis (see section 6).
 *   **Output:** Structured records in the `Lesson_Context` and `Retake_Examples` tables.
 
 ### 3.2 Data Warehouse (State Management)
 *   **Technology:** SQLite (Local Development) -> Snowflake/Postgres (Production Path).
-*   **Schema:**
-    *   `Lessons`: Metadata about the taught material.
-    *   `Assets`: Paths to extracted images/diagrams.
-    *   `Quizzes`: Generated quiz metadata (versioning, status).
-    *   `Questions`: Individual question items (allows mix-and-match).
-    *   `Feedback_Logs`: Audit trail of teacher/critic feedback.
+*   **Schema:** `Lessons`, `Assets`, `Quizzes`, `Questions`, `Feedback_Logs`.
 
 ### 3.3 Agentic Core (The Logic)
-This is the heart of the "Agentic AI" portfolio demonstration.
-
-*   **Orchestrator (The Manager):**
-    *   Manages the state of the job.
-    *   Routes tasks between agents.
-    *   Handles the "Human-in-the-loop" pause for teacher feedback.
-
-*   **Analyst Agent (The Profiler):**
-    *   **Task:** Reads the `Retake` PDF.
-    *   **Output:** A "Style Profile" (e.g., "70% MC, 20% TF, 10% Images, rigorous 7th-grade vocabulary").
-    *   **Goal:** Ensures the new quiz feels like the old one.
-
-*   **Generator Agent (The Writer):**
-    *   **Task:** Synthesizes questions based on `Lesson_Context` and `Style Profile`.
-    *   **Capabilities:** Can request RAG searches if context is missing.
-
-*   **Critic Agent (The Reviewer):**
-    *   **Task:** Validates output against `qa_guidelines.txt` and the formal `Evaluation_Rubric.md`.
-    *   **Behavior:** Acts as a strict gatekeeper, providing structured feedback for revision.
+*   **Orchestrator (The Manager):** Manages the state of the job and delegates tasks.
+*   **Analyst Agent (The Profiler):** Analyzes the `Retake` PDF to create a "Style Profile".
+*   **Generator Agent (The Writer):** Synthesizes questions based on lesson content and the style profile.
+*   **Critic Agent (The Reviewer):** Validates output against the formal `Evaluation_Rubric.md`.
 
 ### 3.4 Output Silo
 *   **Responsibility:** "Transform and Present".
-*   **Inputs:** Approved JSON structure from the Warehouse.
-*   **Process:**
-    *   **PDF Generation:** Uses ReportLab to create human-readable previews.
-    *   **QTI Packaging:** XML serialization for Canvas LMS compatibility.
-    *   **Zip Bundling:** Packaging manifests and assets.
+*   **Process:** Generates PDF previews and Canvas-compatible QTI packages.
 
 ---
 
 ## 4. Technology Stack
 
 *   **Language:** Python 3.10+
-*   **Orchestration:** LangGraph (preferred for cyclic agent flows) or LangChain.
+*   **Orchestration:** LangGraph (preferred) or LangChain.
 *   **LLM Provider:** Pluggable via Abstraction Layer (see below).
 *   **Database:** SQLite / SQLAlchemy.
 *   **Document Processing:** PyMuPDF (Fitz), python-docx.
-*   **Output Generation:** ReportLab (PDF), ElementTree (XML).
 
 ---
 
 ## 5. LLM Provider Abstraction
 
-To ensure flexibility and cost-effectiveness, the system uses an **LLM Provider Abstraction Layer**. Instead of agents directly calling a specific service, they interact with a generic `LLMProvider` interface. This allows for easy configuration to use different models (e.g., Gemini, GPT, Claude).
+The system uses an **LLM Provider Abstraction Layer** to remain model-agnostic. This allows for easy configuration to use different models (e.g., Gemini, GPT, Claude) by implementing a common interface.
 
 ```mermaid
 graph TD
     Agent[Agent Logic] -->|Generic Request| LLMProvider(LLMProvider Interface)
     LLMProvider --> Gemini[Gemini Provider]
     LLMProvider --> OpenAI[OpenAI Provider]
-
-    Gemini -->|API Call| Google_Cloud[Google Gemini API]
-    OpenAI -->|API Call| OpenAI_API[OpenAI API]
 ```
 
 ---
 
-## 6. Future Extensibility & MCP Integration
+## 6. Advanced Multimodal Ingestion
+
+To achieve a deeper understanding of the source material, the ingestion silo will leverage a powerful multimodal model (like Gemini 3 Pro). Instead of performing a simple text extraction, this process will treat each document page as an image, allowing the model to analyze the layout and semantic content.
+
+**Workflow:**
+1.  Each PDF page is rendered as a high-resolution image.
+2.  The image is sent to a multimodal LLM provider.
+3.  The provider is prompted to return a structured JSON object representing the page's content, including headings, paragraphs, and descriptions of diagrams and their captions.
+4.  This structured data is stored in the database, preserving the rich context of the original document.
+
+This approach is a key differentiator, enabling the agentic system to reason about the relationship between text and visuals in the source material.
+
+---
+
+## 7. Future Extensibility & MCP Integration
 
 The architecture is designed to be extensible. Future enhancements can be added with minimal disruption.
 
-*   **API Interface:** The Orchestrator can be wrapped in a FastAPI interface to be called by a web frontend.
-*   **Vector Search:** For large content sources, context can be moved into a vector database (e.g., ChromaDB) for efficient Retrieval Augmented Generation (RAG).
+*   **API Interface:** The Orchestrator can be wrapped in a FastAPI interface.
+*   **Vector Search:** For large content sources, context can be moved into a vector database.
 *   **MCP (Multi-Capability Provider) Integration:** The system can leverage external tools via MCPs. Potential use cases include:
-    *   **State Curriculum MCP:** Provides a tool to automatically fetch and validate SOL standards from official sources.
-    *   **Advanced Image Analysis MCP:** Wraps a multimodal model to provide rich descriptions of scientific diagrams, enabling more insightful question generation.
-    *   **Plagiarism & Uniqueness MCP:** Provides a tool to search the web to ensure generated questions are novel.
+    *   **State Curriculum MCP:** To automatically fetch and validate SOL standards.
+    *   **Plagiarism & Uniqueness MCP:** To ensure generated questions are novel.
