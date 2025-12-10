@@ -18,7 +18,7 @@ Base = declarative_base()
 class Lesson(Base):
     __tablename__ = "lessons"
     id = Column(Integer, primary_key=True)
-    source_file = Column(String)
+    source_file = Column(String, unique=True)
     content = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     assets = relationship("Asset", back_populates="lesson")
@@ -38,7 +38,9 @@ class Quiz(Base):
     __tablename__ = "quizzes"
     id = Column(Integer, primary_key=True)
     title = Column(String)
-    status = Column(String, default="pending")  # pending, generated, feedback, complete
+    status = Column(
+        String, default="pending"
+    )  # pending, generating, generated, failed, complete
     style_profile = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     questions = relationship("Question", back_populates="quiz")
@@ -53,7 +55,7 @@ class Question(Base):
     title = Column(String)
     text = Column(Text)
     points = Column(Float)
-    data = Column(JSON)  # For options, correct_index, is_true, etc.
+    data = Column(JSON)  # For options, correct_index, is_true, image_ref, etc.
     quiz = relationship("Quiz", back_populates="questions")
 
 
