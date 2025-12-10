@@ -10,7 +10,7 @@ from src.ingestion import ingest_content, get_retake_analysis
 from src.agents import generate_questions
 from src.output import generate_pdf_preview, create_qti_package
 from src.image_gen import generate_image
-from src.database import get_engine, init_db, get_session, Lesson, Asset
+from src.database import get_engine, init_db, get_session, Lesson, Asset, Quiz, Question
 
 
 def main():
@@ -69,20 +69,36 @@ def main():
         config
     )
 
-    session.close()
-
     num_questions = args.count if args.count else est_question_count
     grade_level = (
         args.grade if args.grade else config["generation"]["default_grade_level"]
     )
     sol_standards = args.sol if args.sol else config["generation"]["sol_standards"]
 
+    # --- 2. Create Quiz Record ---
+    print("\nStep 2: Creating new quiz record...")
+    style_profile = {
+        "estimated_question_count": est_question_count,
+        "image_ratio": image_ratio,
+        "grade_level": grade_level,
+        "sol_standards": sol_standards,
+    }
+
+    new_quiz = Quiz(
+        title=config["generation"]["quiz_title"],
+        status="generating",
+        style_profile=style_profile,
+    )
+    session.add(new_quiz)
+    session.commit()
+    print(f"   - Created Quiz ID: {new_quiz.id}")
+
     print(f"   - Grade Level: {grade_level}")
     if sol_standards:
         print(f"   - SOL Standards: {', '.join(sol_standards)}")
     print(f"   - Targeting {num_questions} questions.")
 
-    print("\nStep 2: Generating questions with the AI Agent...")
+    print("\nStep 3: Generating questions with the AI Agent...")
     generated_questions_str = generate_questions(
         config=config,
         content_summary=content_summary,
@@ -112,39 +128,80 @@ def main():
             + generated_questions_str
             + "\n---------------------"
         )
+        session.close()
         return
 
+    # --- 4. Store Questions and Handle Images ---
+    print("\nStep 4: Storing generated questions...")
     used_images = []
     target_image_count = int(len(questions) * image_ratio)
 
-    for q in questions:
+    for q_data in questions:
+        # Handle image association first
+        image_ref = None
         if len(used_images) < target_image_count:
             if extracted_images:
                 image_path = extracted_images.pop(0)
-                image_filename = os.path.basename(image_path)
-                q["image_ref"] = image_filename
-                used_images.append((image_path, image_filename))
+                image_ref = os.path.basename(image_path)
+                used_images.append((image_path, image_ref))
             else:
-                api_key = os.getenv(
-                    "GEMINI_API_KEY"
-                )  # Still needed for image gen for now
-                prompt = q.get("text", "A relevant science diagram.")
+                api_key = os.getenv("GEMINI_API_KEY")  # Still needed for image gen
+                prompt = q_data.get("text", "A relevant science diagram.")
                 gen_path = generate_image(api_key, prompt)
-                gen_filename = os.path.basename(gen_path)
-                q["image_ref"] = gen_filename
-                used_images.append((gen_path, gen_filename))
+                image_ref = os.path.basename(gen_path)
+                used_images.append((gen_path, image_ref))
 
-    print("\nStep 3: Generating output files...")
+        # Create the Question database object
+        question_record = Question(
+            quiz_id=new_quiz.id,
+            question_type=q_data.get("type"),
+            title=q_data.get("title"),
+            text=q_data.get("text"),
+            points=q_data.get("points"),
+            data={
+                "options": q_data.get("options"),
+                "correct_index": q_data.get("correct_index"),
+                "is_true": q_data.get("is_true"),
+                "image_ref": image_ref,
+            },
+        )
+        session.add(question_record)
+
+    new_quiz.status = "generated"
+    session.commit()
+    print(f"   - Stored {len(questions)} questions for Quiz ID: {new_quiz.id}")
+
+    # --- 5. Generating output files ---
+    print("\nStep 5: Generating output files...")
+
+    # Reload the questions from the DB to ensure we have the latest data
+    db_questions = session.query(Question).filter_by(quiz_id=new_quiz.id).all()
+
+    # Re-format for the output functions
+    output_questions = []
+    for q in db_questions:
+        q_dict = {
+            "type": q.question_type,
+            "title": q.title,
+            "text": q.text,
+            "points": q.points,
+            **q.data,
+        }
+        output_questions.append(q_dict)
 
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     pdf_filename = os.path.join(
         output_dir, config["qti"]["pdf_filename_template"].format(timestamp=timestamp)
     )
-    generate_pdf_preview(questions, pdf_filename, config["generation"]["quiz_title"])
+    generate_pdf_preview(
+        output_questions, pdf_filename, config["generation"]["quiz_title"]
+    )
     print(f"   - PDF preview saved to: {pdf_filename}")
 
-    qti_filename = create_qti_package(questions, used_images, config)
+    qti_filename = create_qti_package(output_questions, used_images, config)
     print(f"   - QTI package for Canvas saved to: {qti_filename}")
+
+    session.close()
 
     print("\n✅ Process complete!")
 
