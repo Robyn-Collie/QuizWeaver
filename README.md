@@ -1,4 +1,4 @@
-# Quiz Retake Generator: An Agentic AI Pipeline
+# Quiz Generator: An Agentic AI Pipeline
 
 This project is a portfolio piece demonstrating the principles of **Agentic AI** and **Enterprise-Grade Data Engineering**. It transforms a simple task—generating a quiz retake—into a robust, multi-agent pipeline that mimics the architecture of a production AI system.
 
