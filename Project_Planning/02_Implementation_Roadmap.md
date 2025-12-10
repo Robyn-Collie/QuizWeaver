@@ -1,6 +1,6 @@
 # Implementation Roadmap: Quiz Generation Platform
 
-**Version:** 1.3
+**Version:** 1.4
 **Status:** Planning
 
 ---
@@ -30,21 +30,22 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
     2.  **Automate Testing:** Configure the workflow to run the full `pytest` suite on every push and pull request.
 *   **Exit Criteria:** The project has an automated CI pipeline.
 
-### Phase 2: Data Persistence & Warehousing
-*   **Goal:** Implement the "Data Warehouse" layer to persist state.
+### Phase 2: Data Persistence & Workflow Refinement
+*   **Goal:** Implement the "Data Warehouse" layer and refine the user workflow.
 *   **Key Tasks:**
     1.  **Schema Implementation:** Use SQLAlchemy to define and create the SQLite database.
-    2.  **Integrate Ingestion:** Modify the Ingestion Silo to write data into the database.
-    3.  **Stateful Processing:** The Orchestrator will track job status in the database.
-*   **Exit Criteria:** The application is no longer stateless.
+    2.  **Refactor CLI for Workflow:** Update `main.py` to use `argparse` sub-commands (`ingest`, `generate`) to separate the ingestion and generation workflows.
+    3.  **Integrate Ingestion:** Modify the Ingestion Silo to write data to the database, triggered by the `ingest` command.
+    4.  **Stateful Generation:** The `generate` command will create a new `Quiz` record and associate `Question` records with it.
+*   **Exit Criteria:** The application is no longer stateless and provides a clear, efficient CLI workflow for the user.
 
 ### Phase 2.5: Multimodal Ingestion Upgrade
 *   **Goal:** Leverage a powerful multimodal model (e.g., Gemini 3 Pro) to perform intelligent document layout analysis.
 *   **Key Tasks:**
     1.  **Implement `Gemini3ProProvider`:** Create a new provider in `src/llm_provider.py` for the new model.
-    2.  **Develop "Intelligent Ingestion" Workflow:** Create a new function in `src/ingestion.py` that sends PDF pages as images to the provider to get a structured analysis of the layout, including diagram descriptions.
+    2.  **Develop "Intelligent Ingestion" Workflow:** Create a new function in `src/ingestion.py` that sends PDF pages as images to the provider to get a structured analysis of the layout.
     3.  **Update Database:** Enhance the database schema to store this new, rich, structured content.
-*   **Exit Criteria:** The application can understand the relationship between text and images in source documents, enabling much higher-quality question generation.
+*   **Exit Criteria:** The application can understand the relationship between text and images in source documents.
 
 ### Phase 3: Activating the Agentic Workflow
 *   **Goal:** Implement the core multi-agent "critique loop" based on a formal rubric.
