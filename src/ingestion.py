@@ -1,89 +1,97 @@
 import os
 import fitz  # PyMuPDF
 from docx import Document
+from .database import Lesson, Asset
 
-# These will be loaded from config
-CONTENT_SUMMARY_DIR = "Content_Summary"
-RETAKE_DIR = "Retake"
-EXTRACTED_IMAGES_DIR = "extracted_images"
 
-def get_content_summary():
+def ingest_content(session, config):
     """
-    Reads all documents from the content summary directory and combines them into a single string.
-    Supports .pdf, .docx, and .txt files.
+    Reads all documents from the content summary directory, processes them,
+    and stores them in the database.
     """
-    content_summary = []
-    for filename in os.listdir(CONTENT_SUMMARY_DIR):
-        filepath = os.path.join(CONTENT_SUMMARY_DIR, filename)
+    content_dir = config["paths"]["content_summary_dir"]
+
+    for filename in os.listdir(content_dir):
+        filepath = os.path.join(content_dir, filename)
+
+        # Check if this file has already been ingested
+        existing_lesson = session.query(Lesson).filter_by(source_file=filename).first()
+        if existing_lesson:
+            print(f"Skipping already ingested file: {filename}")
+            continue
+
+        print(f"Ingesting new file: {filename}")
+
+        content_parts = []
+
         if filename.endswith(".pdf"):
             doc = fitz.open(filepath)
             for page in doc:
-                content_summary.append(page.get_text())
+                content_parts.append(page.get_text())
             doc.close()
         elif filename.endswith(".txt"):
             with open(filepath, "r", encoding="utf-8") as f:
-                content_summary.append(f.read())
+                content_parts.append(f.read())
         elif filename.endswith(".docx"):
             doc = Document(filepath)
             for para in doc.paragraphs:
-                content_summary.append(para.text)
+                content_parts.append(para.text)
 
-    return " ".join(content_summary)
+        full_content = "\n".join(content_parts)
 
-def extract_images_from_pdfs():
-    """
-    Extracts images from all PDFs in the content summary directory.
-    
-    Returns:
-        list: A list of file paths to the extracted images.
-    """
-    if not os.path.exists(EXTRACTED_IMAGES_DIR):
-        os.makedirs(EXTRACTED_IMAGES_DIR)
-        
-    extracted_images = []
-    
-    for filename in os.listdir(CONTENT_SUMMARY_DIR):
+        # Create a new Lesson record
+        lesson = Lesson(source_file=filename, content=full_content)
+        session.add(lesson)
+        session.commit()  # Commit to get the lesson ID
+
+        # Now, extract images and associate them with this lesson
         if filename.endswith(".pdf"):
-            pdf_path = os.path.join(CONTENT_SUMMARY_DIR, filename)
-            doc = fitz.open(pdf_path)
-            for page_index in range(len(doc)):
-                page = doc[page_index]
-                image_list = page.get_images(full=True)
-                
-                for image_index, img in enumerate(image_list, start=1):
-                    xref = img[0]
-                    base_image = doc.extract_image(xref)
-                    image_bytes = base_image["image"]
-                    
-                    image_filename = f"image_{filename}_{page_index+1}_{image_index}.png"
-                    image_path = os.path.join(EXTRACTED_IMAGES_DIR, image_filename)
-                    
-                    with open(image_path, "wb") as f:
-                        f.write(image_bytes)
-                        
-                    extracted_images.append(image_path)
-            doc.close()
-            
-    return extracted_images
+            extract_and_save_images(session, config, lesson, filepath)
 
-def get_retake_analysis():
+    session.commit()
+    print("Content ingestion complete.")
+
+
+def extract_and_save_images(session, config, lesson, pdf_path):
+    """
+    Extracts images from a single PDF and saves them as Asset records.
+    """
+    images_dir = config["paths"]["extracted_images_dir"]
+    if not os.path.exists(images_dir):
+        os.makedirs(images_dir)
+
+    doc = fitz.open(pdf_path)
+    for page_index in range(len(doc)):
+        image_list = doc.get_page_images(page_index, full=True)
+
+        for image_index, img in enumerate(image_list, start=1):
+            xref = img[0]
+            base_image = doc.extract_image(xref)
+            image_bytes = base_image["image"]
+
+            image_filename = f"image_{lesson.id}_{page_index+1}_{image_index}.png"
+            image_path = os.path.join(images_dir, image_filename)
+
+            with open(image_path, "wb") as f:
+                f.write(image_bytes)
+
+            # Create a new Asset record
+            asset = Asset(lesson_id=lesson.id, asset_type="image", path=image_path)
+            session.add(asset)
+    doc.close()
+
+
+def get_retake_analysis(config):
     """
     Analyzes the PDF in the 'Retake' directory to extract its text content and image statistics.
-    This function serves as the basis for the Analyst Agent's capabilities.
-    
-    Returns:
-        tuple: A tuple containing:
-            - str: The combined text of the retake documents.
-            - int: The estimated number of questions.
-            - int: The total number of images found.
-            - float: The percentage of questions that have images.
     """
+    retake_dir = config["paths"]["retake_dir"]
     retake_texts = []
     total_images_in_retake = 0
-    
-    for filename in os.listdir(RETAKE_DIR):
+
+    for filename in os.listdir(retake_dir):
         if filename.endswith(".pdf"):
-            filepath = os.path.join(RETAKE_DIR, filename)
+            filepath = os.path.join(retake_dir, filename)
             doc = fitz.open(filepath)
             text = ""
             for page in doc:
@@ -91,24 +99,31 @@ def get_retake_analysis():
                 image_list = page.get_images(full=True)
                 if image_list:
                     total_images_in_retake += len(image_list)
-                    
+
             doc.close()
             retake_texts.append(text)
 
     combined_text = " ".join(retake_texts)
-    
-    # A simple heuristic to estimate question count for style analysis.
-    # In a real scenario, a more robust NLP model would be used here.
-    q_types = ["Multiple Choice", "True or False", "Fill in the Blank", "Essay", "Multiple Answer"]
+
+    q_types = [
+        "Multiple Choice",
+        "True or False",
+        "Fill in the Blank",
+        "Essay",
+        "Multiple Answer",
+    ]
     estimated_count = sum(combined_text.count(qt) for qt in q_types)
-        
+
     if estimated_count == 0:
-        # Fallback if no question types are explicitly mentioned.
-        # This could be improved with better heuristics (e.g., counting numbered lists).
-        estimated_count = 15 
-    
+        estimated_count = 15
+
     percentage_with_images = 0.0
     if estimated_count > 0:
-        percentage_with_images = (total_images_in_retake / estimated_count)
-        
-    return combined_text, estimated_count, total_images_in_retake, percentage_with_images
+        percentage_with_images = total_images_in_retake / estimated_count
+
+    return (
+        combined_text,
+        estimated_count,
+        total_images_in_retake,
+        percentage_with_images,
+    )
