@@ -1,13 +1,14 @@
-# System Architecture: Quiz Generation Platform
+# System Architecture: QuizWeaver
 
 **Version:** 1.2
 **Status:** Planning
+**Architect:** Robyn Collie (Agentic AI Engineer Portfolio)
 
 ---
 
 ## 1. Executive Summary
 
-This document outlines the architecture for the "Quiz Retake Generator," transforming it from a monolithic script into a scalable, **Agentic AI Pipeline**. The architecture is designed to demonstrate enterprise-grade data engineering patterns ("Silos", "Pipelines", "Warehousing") integrated with state-of-the-art Agentic workflows (Orchestration, Reflection, Critique).
+This document outlines the architecture for **QuizWeaver**, transforming it from a monolithic script into a scalable, **Agentic AI Pipeline**. The architecture is designed to demonstrate enterprise-grade data engineering patterns ("Silos", "Pipelines", "Warehousing") integrated with state-of-the-art Agentic workflows (Orchestration, Reflection, Critique).
 
 The system follows a **Lesson-to-Assessment** data flow, where unstructured teacher content is ingested, structured, analyzed, and synthesized into professional-standard assessments through a rigorous, multi-agent feedback loop.
 
@@ -105,7 +106,7 @@ To achieve a deeper understanding of the source material, the ingestion silo wil
 **Workflow:**
 1.  Each PDF page is rendered as a high-resolution image.
 2.  The image is sent to a multimodal LLM provider.
-3.  The provider is prompted to return a structured JSON object representing the page's content, including headings, paragraphs, and descriptions of diagrams and their captions.
+3.  The provider is prompted to return a structured JSON object representing the pageï¿½s content, including headings, paragraphs, and descriptions of diagrams and their captions.
 4.  This structured data is stored in the database, preserving the rich context of the original document.
 
 This approach is a key differentiator, enabling the agentic system to reason about the relationship between text and visuals in the source material.

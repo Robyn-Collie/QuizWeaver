@@ -1,4 +1,4 @@
-# Implementation Roadmap: Quiz Generation Platform
+# Implementation Roadmap: QuizWeaver
 
 **Version:** 1.4
 **Status:** Planning
@@ -7,7 +7,7 @@
 
 ## 1. Objective
 
-This roadmap outlines the phased development plan to transition the Quiz Retake Generator from a single script proof-of-concept into a robust, agentic pipeline. Each phase is designed to deliver a discrete set of functionalities, culminating in a production-ready system that showcases advanced data engineering and Agentic AI principles.
+This roadmap outlines the phased development plan to transition **QuizWeaver** from a single script proof-of-concept into a robust, agentic pipeline. Each phase is designed to deliver a discrete set of functionalities, culminating in a production-ready system that showcases advanced data engineering and Agentic AI principles.
 
 ---
 
@@ -51,9 +51,9 @@ This roadmap outlines the phased development plan to transition the Quiz Retake 
 *   **Goal:** Implement the core multi-agent "critique loop" based on a formal rubric.
 *   **Key Tasks:**
     1.  **Create Evaluation Rubric:** Author `Project_Planning/04_Evaluation_Rubric.md`.
-    2.  **Refine Critic Agent:** Update the Critic Agent's prompt and logic to strictly enforce the new rubric.
+    2.  **Refine Critic Agent:** Update the Critic Agentï¿½s prompt and logic to strictly enforce the new rubric.
     3.  **Orchestration Logic:** Implement the state machine (e.g., LangGraph) for the Generator -> Critic feedback loop.
-*   **Exit Criteria:** The system's QA process is guided by a documented, educationally-sound standard.
+*   **Exit Criteria:** The systemï¿½s QA process is guided by a documented, educationally-sound standard.
 
 ### Phase 4: Human-in-the-Loop (Teacher Feedback)
 *   **Goal:** Introduce the interactive feedback session.

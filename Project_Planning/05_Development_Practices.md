@@ -7,7 +7,7 @@
 
 ## 1. Purpose
 
-This document codifies the development practices and quality standards for the Quiz Retake Generator project. It serves as a central reference for ensuring that the project is not only functional but also well-engineered, maintainable, and secure. Adherence to these practices is a core component of the "Staff Engineer" level of quality this project aims to exhibit.
+This document codifies the development practices and quality standards for the **QuizWeaver** project. It serves as a central reference for ensuring that the project is not only functional but also well-engineered, maintainable, and secure. Adherence to these practices is a core component of the "Staff Engineer" level of quality this project aims to exhibit.
 
 ---
 
@@ -70,3 +70,10 @@ This document codifies the development practices and quality standards for the Q
 
 *   **Commit Messages:** All commit messages MUST follow the [Conventional Commits](https://www.conventionalcommits.org/) specification (e.g., `feat:`, `fix:`, `docs:`, `chore:`). This is enforced by `.clinerules`.
 *   **Branching Strategy:** We follow a `main`-branch workflow. New features or fixes should be developed on separate branches (`feature/name`, `fix/issue`) and merged into `main` via pull requests (when collaborating).
+
+---
+
+## 6. Licensing
+
+*   **License:** This project is licensed under the **MIT License**.
+*   **Philosophy:** We have chosen a permissive, business-friendly license that is the standard for open-source portfolio projects. It allows for maximum visibility and reusability while protecting the contributor from liability.

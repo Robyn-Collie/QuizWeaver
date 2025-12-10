@@ -11,7 +11,7 @@ The goal is to provide a tool for teachers that automates the creation of high-q
 The system is designed as a scalable **Agentic AI Pipeline**, moving beyond a simple script to a structured, modular architecture. This approach is detailed in our planning documents, which showcase professional system design and project management.
 
 *   **[System Architecture](./Project_Planning/01_System_Architecture.md):** Defines the "silo-based" architecture (Ingestion, Warehousing, Agentic Core, Output) that separates concerns and ensures scalability.
-*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
+*   **[Implementation Roadmap](./Project_planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
 *   **[Agent Specifications](./Project_Planning/03_Agent_Specifications.md):** Details the prompts, roles, and tools for each AI agent in the system.
 
 ### High-Level Flow
@@ -19,13 +19,13 @@ The system is designed as a scalable **Agentic AI Pipeline**, moving beyond a si
 graph TD
     User[Teacher] -->|Uploads Lesson/Retake| Ingestion[Ingestion Silo]
     Ingestion -->|Text/Images| Warehouse[(Data Warehouse)]
-    
+
     subgraph Agentic_Core [Agentic Pipeline]
         Orchestrator[Orchestrator Agent]
         Analyst[Analyst Agent]
         Generator[Generator Agent]
         Critic[Critic Agent]
-        
+
         Orchestrator -->|Trigger| Analyst
         Analyst -->|Style Profile| Warehouse
         Orchestrator -->|Context + Profile| Generator
@@ -33,52 +33,50 @@ graph TD
         Critic -->|Feedback| Generator
         Critic -->|Approval| Warehouse
     end
-    
+
     Warehouse -->|Approved Quiz| Output[Output Silo]
     Output -->|QTI Zip / PDF| User
 ```
 
 ---
 
-## 2. Current Status (Proof of Concept)
+## 2. Current Status & Usage
 
-The project currently exists as a functional proof-of-concept in `main.py`. This script demonstrates the core logic of the generation process.
+The project is currently in **Phase 2** of its development. The core architecture is in place, and the application now supports a stateful, database-driven workflow.
 
-### POC Setup
+### CLI Workflow
 
-1.  **Dependencies:** Install the required Python packages:
+1.  **Ingest Content:**
     ```bash
-    pip install -r requirements.txt
+    python main.py ingest
     ```
-2.  **API Key:** Ensure you have a Google Gemini API key. Create a `.env` file in the root directory and add:
-    ```
-    GEMINI_API_KEY=your_api_key_here
-    ```
+    This command reads all documents from the `Content_Summary` directory, processes them, and saves their content to the local `quiz_warehouse.db` database. It intelligently skips any files that have already been ingested.
 
-### POC Usage
-
-1.  **Input Content:**
-    *   Place your content summary documents in the `Content_Summary` directory. Supported formats: `.pdf`, `.docx`, `.txt`.
-    *   Images from these documents will be automatically extracted and used as context.
-2.  **Retake Test Source:**
-    *   Place the original test (as a PDF) in the `Retake` directory. The script reads this to exclude questions and match the original test's style.
-3.  **Run the Script:**
+2.  **Generate a Quiz:**
     ```bash
-    # Generate a quiz with the same number of questions as the retake PDF
-    python main.py
-
-    # Specify question count manually
-    python main.py --count 20
+    python main.py generate
     ```
-4.  **Output:**
-    *   The generated files are saved in the `Quiz_Output` directory.
-    *   **QTI Zip:** For direct import into Canvas LMS.
-    *   **PDF Preview:** A human-readable version to review questions and answers.
+    This command creates a new quiz run in the database, uses the ingested content to generate questions via the configured AI model, and saves the results. It produces a PDF preview and a Canvas-compatible QTI zip file in the `Quiz_Output` directory.
+
+### CLI Options for `generate`
+*   `--count <number>`: Specify the number of questions to generate.
+*   `--grade "<grade>"`: Set the target grade level (e.g., `"8th Grade History"`).
+*   `--sol <id1> <id2>`: List the specific SOL standards to cover.
 
 ---
 
-## 3. Project Roadmap
+## 3. Project Roadmap & Best Practices
 
-The project is evolving according to the [Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md). The next phase is **Phase 1: Foundational Refactoring & Modularization**, where the POC script will be deconstructed into a professional, testable codebase.
+This project is being developed following a professional, phased roadmap. We have also codified our engineering standards, including our use of pre-commit hooks, automated testing, and future extensibility patterns.
+
+*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md)**
+*   **[Development Practices](./Project_Planning/05_Development_Practices.md)**
+*   **[Pedagogical Evaluation Rubric](./Project_Planning/04_Evaluation_Rubric.md)**
 
 This project is actively under development. Follow the commit history to see the progression from a simple script to a full-fledged agentic application.
+
+---
+
+## 4. License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

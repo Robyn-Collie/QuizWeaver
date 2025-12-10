@@ -9,23 +9,24 @@ from datetime import datetime
 from src.ingestion import ingest_content, get_retake_analysis
 from src.agents import generate_questions
 from src.output import generate_pdf_preview, create_qti_package
+from src.image_gen import generate_image
 from src.database import get_engine, init_db, get_session, Lesson, Asset, Quiz, Question
 
 
 def handle_ingest(config):
-    """Handles the 'ingest' command."""
-    print("--- Starting Content Ingestion ---")
+    """Handles the \'ingest\' command."""
+    print("--- Starting Content Ingestion for QuizWeaver ---")
     engine = get_engine(config["paths"]["database_file"])
     init_db(engine)
     session = get_session(engine)
     ingest_content(session, config)
     session.close()
-    print("✅ Ingestion complete.")
+    print("✅ Ingestion complete for QuizWeaver.")
 
 
 def handle_generate(config, args):
-    """Handles the 'generate' command."""
-    print("--- Starting Quiz Generation ---")
+    """Handles the \'generate\' command."""
+    print("--- Starting Quiz Generation with QuizWeaver ---")
     engine = get_engine(config["paths"]["database_file"])
     session = get_session(engine)
 
@@ -62,9 +63,13 @@ def handle_generate(config, args):
     session.commit()
     print(f"   - Created Quiz ID: {new_quiz.id}")
 
-    # --- 3. Generate Questions ---
-    print("\nStep 3: Generating questions with AI Agent...")
-    questions_str = generate_questions(
+    print(f"   - Grade Level: {grade_level}")
+    if sol_standards:
+        print(f"   - SOL Standards: {", ".join(sol_standards)}")
+    print(f"   - Targeting {num_questions} questions.")
+
+    print("\nStep 3: Generating questions with the AI Agent...")
+    generated_questions_str = generate_questions(
         config=config,
         content_summary=content_summary,
         retake_text=retake_text,
@@ -76,9 +81,8 @@ def handle_generate(config, args):
     )
 
     try:
-        questions = json.loads(
-            questions_str[questions_str.find("[") : questions_str.rfind("]") + 1]
-        )
+        # Ensure the entire string is passed to json.loads for robust parsing
+        questions = json.loads(generated_questions_str)
         print(f"   - Successfully generated {len(questions)} questions.")
     except json.JSONDecodeError:
         print("Error: Could not parse JSON from the AI model.")
@@ -99,7 +103,12 @@ def handle_generate(config, args):
                 image_path = extracted_images.pop(0)
                 image_ref = os.path.basename(image_path)
                 used_images.append((image_path, image_ref))
-            # Image generation logic can be added here if needed
+            else:
+                api_key = os.getenv("GEMINI_API_KEY")  # Still needed for image gen
+                prompt = q_data.get("text", "A relevant science diagram.")
+                gen_path = generate_image(api_key, prompt)
+                image_ref = os.path.basename(gen_path)
+                used_images.append((gen_path, image_ref))
 
         q_data["image_ref"] = image_ref  # Add to the data dict
 
@@ -146,7 +155,7 @@ def main():
         print("Error: config.yaml not found.")
         return
 
-    parser = argparse.ArgumentParser(description="Quiz Retake Generator CLI.")
+    parser = argparse.ArgumentParser(description="QuizWeaver CLI.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # --- Ingest Command ---
