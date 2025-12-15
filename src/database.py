@@ -20,6 +20,8 @@ class Lesson(Base):
     id = Column(Integer, primary_key=True)
     source_file = Column(String, unique=True)
     content = Column(Text)
+    page_data = Column(JSON)
+    ingestion_method = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
     assets = relationship("Asset", back_populates="lesson")
 

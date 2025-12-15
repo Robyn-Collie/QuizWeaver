@@ -3,6 +3,9 @@
 # --- File Paths ---
 # Directories for input and output files.
 # These paths are relative to the project root.
+ingestion:
+  mode: "multimodal"
+
 paths:
   content_summary_dir: "Content_Summary"
   retake_dir: "Retake"

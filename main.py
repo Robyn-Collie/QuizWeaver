@@ -14,7 +14,7 @@ from src.database import get_engine, init_db, get_session, Lesson, Asset, Quiz, 
 
 
 def handle_ingest(config):
-    """Handles the \"ingest\" command."""
+    """Handles the "ingest" command."""
     print("--- Starting Content Ingestion ---")
     engine = get_engine(config["paths"]["database_file"])
     init_db(engine)
@@ -25,7 +25,7 @@ def handle_ingest(config):
 
 
 def handle_generate(config, args):
-    """Handles the \"generate\" command."""
+    """Handles the "generate" command."""
     print("--- Starting Quiz Generation ---")
     engine = get_engine(config["paths"]["database_file"])
     session = get_session(engine)
@@ -34,6 +34,15 @@ def handle_generate(config, args):
     print("Step 1: Loading content and analyzing retake...")
     all_lessons = session.query(Lesson).all()
     content_summary = "\n".join([lesson.content for lesson in all_lessons])
+
+    # Aggregate structured page data if available
+    structured_data = []
+    for lesson in all_lessons:
+        if lesson.page_data:
+            if isinstance(lesson.page_data, list):
+                structured_data.extend(lesson.page_data)
+            else:
+                structured_data.append(lesson.page_data)
 
     all_assets = session.query(Asset).filter_by(asset_type="image").all()
     extracted_images = [asset.path for asset in all_assets]
@@ -72,6 +81,7 @@ def handle_generate(config, args):
     generated_questions_raw = generate_questions(
         config=config,
         content_summary=content_summary,
+        structured_data=structured_data,
         retake_text=retake_text,
         num_questions=num_questions,
         images=extracted_images,

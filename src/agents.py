@@ -1,6 +1,8 @@
 import os
 from src.llm_provider import get_provider
-import google.generativeai as genai # Still needed for image upload
+import google.generativeai as genai  # Still needed for image upload
+import json
+
 
 def get_qa_guidelines():
     """Reads the QA guidelines from the specified file."""
@@ -11,14 +13,25 @@ def get_qa_guidelines():
         print("Warning: qa_guidelines.txt not found.")
         return ""
 
-def generate_questions(config, content_summary, retake_text, num_questions, images, image_ratio, grade_level, sol_standards):
+
+def generate_questions(
+    config,
+    content_summary,
+    structured_data,
+    retake_text,
+    num_questions,
+    images,
+    image_ratio,
+    grade_level,
+    sol_standards,
+):
     """
     Calls the configured LLM provider to generate quiz questions.
     """
     llm_provider = get_provider(config)
-    
+
     qa_guidelines = get_qa_guidelines()
-    
+
     sol_section = ""
     if sol_standards:
         sol_list = "\n".join([f"- {s}" for s in sol_standards])
@@ -26,6 +39,14 @@ def generate_questions(config, content_summary, retake_text, num_questions, imag
 You must generate questions that specifically target the following SOL standards:
 {sol_list}
 """
+
+    structured_content_text = ""
+    if structured_data:
+        structured_content_text = (
+            "**Structured Content Analysis (Headings, Diagrams, Layout):**\n"
+        )
+        structured_content_text += json.dumps(structured_data, indent=2)
+        structured_content_text += "\n---\n"
 
     prompt = f"""
     You are a {grade_level} teacher creating a retake quiz.
@@ -37,11 +58,12 @@ You must generate questions that specifically target the following SOL standards
 
     **Rigor & Structure:**
     - The quiz must be at a {grade_level} level.
-    - **Image Requirement:** The original test had images in approximately {int(image_ratio * 100)}% of questions. 
+    - **Image Requirement:** The original test had images in approximately {int(image_ratio * 100)}% of questions.
       You MUST use the provided images as context for a similar percentage of your generated questions.
 
     **Task:**
-    Based on the **Content Summary**, generate exactly {num_questions} unique quiz questions.
+    Based on the **Content Summary** and **Structured Analysis** (if provided), generate exactly {num_questions} unique quiz questions.
+    Use the structured data to identify diagrams or specific sections that are key to the lesson.
 
     **Exclusions:**
     Do NOT repeat or closely rephrase any questions from the **Previous Test Questions** provided below.
@@ -50,6 +72,7 @@ You must generate questions that specifically target the following SOL standards
     **Content Summary:**
     {content_summary}
     ---
+    {structured_content_text}
     **Previous Test Questions:**
     {retake_text}
     ---
@@ -77,9 +100,9 @@ You must generate questions that specifically target the following SOL standards
         }}
     ]
     """
-    
+
     prompt_parts = [prompt]
-    
+
     # Image handling might need to be provider-specific in the future.
     # For now, we assume a Gemini-like upload mechanism.
     for img_path in images:
