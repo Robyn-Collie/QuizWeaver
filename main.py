@@ -65,7 +65,7 @@ def handle_generate(config, args):
 
     print(f"   - Grade Level: {grade_level}")
     if sol_standards:
-        print(f"   - SOL Standards: {", ".join(sol_standards)}")
+        print(f"   - SOL Standards: {', '.join(sol_standards)}")
     print(f"   - Targeting {num_questions} questions.")
 
     print("\nStep 3: Generating questions with AI Agent...")

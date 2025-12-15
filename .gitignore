@@ -20,7 +20,3 @@ quiz_warehouse.db
 # --- IDE & System Files ---
 .clinerules
 .bin/
-
-# Ignore content folders
-Content_Summary/
-Retake/

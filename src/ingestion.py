@@ -7,16 +7,6 @@ import json
 from PIL import Image
 import io
 
-# Optional: Try importing pdf2image for high-quality rendering
-try:
-    # from pdf2image import convert_from_path # Removed unused import
-    HAS_PDF2IMAGE = True
-except ImportError:
-    HAS_PDF2IMAGE = False
-    print(
-        "Warning: pdf2image not installed. Falling back to PyMuPDF for image extraction."
-    )
-
 
 def ingest_content(session, config):
     """
