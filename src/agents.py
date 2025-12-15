@@ -1,6 +1,5 @@
 import os
 from src.llm_provider import get_provider
-import google.generativeai as genai  # Still needed for image upload
 import json
 
 
@@ -103,16 +102,12 @@ You must generate questions that specifically target the following SOL standards
 
     prompt_parts = [prompt]
 
-    # Image handling might need to be provider-specific in the future.
-    # For now, we assume a Gemini-like upload mechanism.
     for img_path in images:
         try:
-            # This part is still specific to Gemini's uploader.
-            # A more advanced abstraction would wrap this too.
-            img = genai.upload_file(img_path)
-            prompt_parts.append(img)
+            img_context = llm_provider.prepare_image_context(img_path)
+            prompt_parts.append(img_context)
             prompt_parts.append(f"Context for image: {os.path.basename(img_path)}")
         except Exception as e:
-            print(f"Could not upload image {img_path}: {e}")
+            print(f"Could not prepare image context for {img_path}: {e}")
 
     return llm_provider.generate(prompt_parts)

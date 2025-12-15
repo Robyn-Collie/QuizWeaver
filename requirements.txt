@@ -5,3 +5,4 @@ reportlab
 python-docx
 sqlalchemy
 pillow
+google-cloud-aiplatform

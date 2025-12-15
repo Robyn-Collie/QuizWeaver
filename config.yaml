@@ -45,7 +45,9 @@ prompts:
 
 # --- LLM Provider ---
 llm:
-  provider: "gemini" # Options: "gemini", "openai" (when implemented)
+  provider: "gemini" # Options: "gemini", "vertex"
+  vertex_project_id: "" # Your Google Cloud Project ID
+  vertex_location: "" # e.g., "us-central1"
 
 # --- Logging ---
 logging:

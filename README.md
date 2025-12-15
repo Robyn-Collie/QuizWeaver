@@ -11,7 +11,7 @@ The goal is to provide a tool for teachers that automates the creation of high-q
 The system is designed as a scalable **Agentic AI Pipeline**, moving beyond a simple script to a structured, modular architecture. This approach is detailed in our planning documents, which showcase professional system design and project management.
 
 *   **[System Architecture](./Project_Planning/01_System_Architecture.md):** Defines the "silo-based" architecture (Ingestion, Warehousing, Agentic Core, Output) that separates concerns and ensures scalability.
-*   **[Implementation Roadmap](./Project_planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
+*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
 *   **[Agent Specifications](./Project_Planning/03_Agent_Specifications.md):** Details the prompts, roles, and tools for each AI agent in the system.
 
 ### High-Level Flow
@@ -42,7 +42,33 @@ graph TD
 
 ## 2. Current Status & Usage
 
-The project is currently in **Phase 2** of its development. The core architecture is in place, and the application now supports a stateful, database-driven workflow.
+The project is currently in **Phase 3** of its development, with enhanced LLM agnosticism and Vertex AI support. The core architecture is in place, and the application now supports a stateful, database-driven workflow.
+
+### LLM Configuration & Vertex AI Setup
+
+The project supports multiple LLM providers, configurable via `config.yaml`. The default is Google AI Studio (Gemini API Key), but it now includes support for Google Cloud Vertex AI.
+
+To use **Google AI Studio (API Key)**:
+1.  Ensure `google-generativeai` is installed (`pip install -r requirements.txt`).
+2.  Set your API key as an environment variable: `export GEMINI_API_KEY="YOUR_API_KEY"`.
+3.  In `config.yaml`, set `llm.provider: "gemini"` or `llm.provider: "gemini-3-pro"`.
+
+To use **Google Cloud Vertex AI**:
+1.  Ensure `google-cloud-aiplatform` is installed (`pip install -r requirements.txt`).
+2.  Authenticate with Google Cloud. The recommended way is to log in with the `gcloud` CLI:
+    ```bash
+    gcloud auth application-default login
+    ```
+    Alternatively, you can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a service account key file.
+3.  In `config.yaml`, configure the `llm` section as follows:
+    ```yaml
+    llm:
+      provider: "vertex"
+      vertex_project_id: "your-gcp-project-id" # Replace with your GCP Project ID
+      vertex_location: "us-central1"       # Replace with your desired GCP region (e.g., us-central1, europe-west4)
+      model_name: "gemini-1.5-flash"         # Optional: Specify the Vertex AI model name
+    ```
+    Ensure that the Vertex AI API is enabled in your Google Cloud project.
 
 ### CLI Workflow
 
