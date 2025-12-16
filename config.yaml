@@ -45,9 +45,10 @@ prompts:
 
 # --- LLM Provider ---
 llm:
-  provider: "gemini" # Options: "gemini", "vertex"
-  vertex_project_id: "" # Your Google Cloud Project ID
-  vertex_location: "" # e.g., "us-central1"
+  provider: "vertex" # Options: "gemini", "vertex"
+  vertex_project_id: "quizweaver-8402" # Your Google Cloud Project ID
+  vertex_location: "global" # e.g., "us-central1"
+  model_name: "gemini-2.5-flash" # Stable model version
 
 # --- Logging ---
 logging:
