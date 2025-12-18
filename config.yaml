@@ -26,6 +26,12 @@ generation:
   default_grade_level: "7th Grade Science"
   # SOL standards to be covered. Can be a list of strings.
   sol_standards: [] # Example: ["SOL 6.1", "SOL 6.2a"]
+  # Toggle for AI image generation. If false, placeholders will be used.
+  generate_ai_images: true
+  # If true, force AI image generation even if extracted images are available.
+  prefer_generated_images: true
+  # If true, prompt the user to review questions before saving.
+  interactive_review: true
 
 # --- QTI Export Settings ---
 # Templates and identifiers for creating Canvas-compatible QTI zip files.
