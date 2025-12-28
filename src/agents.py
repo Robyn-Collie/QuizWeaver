@@ -135,10 +135,17 @@ Image Ratio Target: {int(image_ratio * 100)}%
 
                 # Normalization: Map keys if necessary
                 if "text" not in q:
-                    if "question_text" in q:
-                        q["text"] = q["question_text"]
-                    elif "question" in q:
-                        q["text"] = q["question"]
+                    # Check for various common keys returned by LLMs
+                    for key in ["question_text", "question", "stem", "prompt", "body"]:
+                        if key in q:
+                            q["text"] = q[key]
+                            break
+
+                # After all normalization attempts, if 'text' is still missing, log a warning
+                if "text" not in q:
+                    print(
+                        f"Warning: Question missing 'text' after normalization. Raw: {json.dumps(q)}"
+                    )
 
                 if "title" not in q and "question_title" in q:
                     q["title"] = q["question_title"]
@@ -202,8 +209,9 @@ Image Ratio Target: {int(image_ratio * 100)}%
 
             return valid_questions
 
-        except json.JSONDecodeError:
-            print(f"Error parsing Generator response: {response_text}")
+        except json.JSONDecodeError as e:
+            print(f"Error parsing Generator response: {e}")
+            print(f"Raw LLM Response: {response_text}")
             return []
 
 
@@ -276,7 +284,7 @@ class Orchestrator:
                 return questions
 
             print(
-                f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result["feedback"][:100]}..."
+                f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result['feedback'][:100]}..."
             )
             feedback = critique_result["feedback"]
 

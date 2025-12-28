@@ -12,6 +12,7 @@ __pycache__/
 extracted_images/
 generated_images/
 Quiz_Output/
+draft_preview.pdf
 
 # --- Database ---
 # Exclude the local SQLite database file

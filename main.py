@@ -74,7 +74,8 @@ def handle_generate(config, args):
 
     print(f"   - Grade Level: {grade_level}")
     if sol_standards:
-        print(f"   - SOL Standards: {', '.join(sol_standards)}")
+        sol_str = ", ".join(sol_standards)
+        print(f"   - SOL Standards: {sol_str}")
     print(f"   - Targeting {num_questions} questions.")
 
     print("\nStep 3: Generating questions with AI Agent...")
@@ -159,10 +160,22 @@ def handle_generate(config, args):
                 use_generated = True
 
             if use_generated:
-                api_key = os.getenv("GEMINI_API_KEY")
+                api_key = os.getenv(
+                    "GEMINI_API_KEY"
+                )  # Keep for potential Gemini provider if needed
                 prompt = q_data.get("text", "A relevant science diagram.")
+
+                # Get Vertex config
+                project_id = config.get("llm", {}).get("vertex_project_id")
+                location = config.get("llm", {}).get("vertex_location")
+
                 try:
-                    gen_path = generate_image(api_key, prompt)
+                    gen_path = generate_image(
+                        api_key=api_key,
+                        prompt=prompt,
+                        project_id=project_id,
+                        location=location,
+                    )
                     image_ref = os.path.basename(gen_path)
                     used_images.append((gen_path, image_ref))
                 except Exception as e:
@@ -174,8 +187,9 @@ def handle_generate(config, args):
                 used_images.append((image_path, image_ref))
             else:
                 # Placeholder
+                text_preview = q_data.get("text", "")[:50]
                 q_data["image_placeholder"] = (
-                    f"Image Recommendation: An image or diagram related to: {q_data.get('text', '')[:50]}..."
+                    f"Image Recommendation: An image or diagram related to: {text_preview}..."
                 )
                 image_ref = None
 
@@ -188,10 +202,22 @@ def handle_generate(config, args):
     if interactive_mode and not no_interactive:
 
         def regen_callback(q_data):
-            api_key = os.getenv("GEMINI_API_KEY")
+            api_key = os.getenv(
+                "GEMINI_API_KEY"
+            )  # Keep for potential Gemini provider if needed
             prompt = q_data.get("text", "A relevant science diagram.")
+
+            # Get Vertex config
+            project_id = config.get("llm", {}).get("vertex_project_id")
+            location = config.get("llm", {}).get("vertex_location")
+
             try:
-                return generate_image(api_key, prompt)
+                return generate_image(
+                    api_key=api_key,
+                    prompt=prompt,
+                    project_id=project_id,
+                    location=location,
+                )
             except Exception as e:
                 print(f"Error generating image: {e}")
                 return None
