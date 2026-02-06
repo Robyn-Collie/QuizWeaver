@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Cost Tracking - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Cost Tracking</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ provider }}</div>
+        <div class="stat-label">Current Provider</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_calls }}</div>
+        <div class="stat-label">Total API Calls</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">${{ "%.4f" | format(stats.total_cost) }}</div>
+        <div class="stat-label">Total Cost</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ "{:,}".format(stats.total_input_tokens + stats.total_output_tokens) }}</div>
+        <div class="stat-label">Total Tokens</div>
+    </div>
+</div>
+
+{% if stats.total_calls == 0 %}
+<div class="info-box">
+    <p>No API calls recorded. {% if provider == 'mock' %}Using mock provider has zero cost.{% endif %}</p>
+</div>
+{% endif %}
+
+{% if stats.by_provider %}
+<h2>By Provider</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Provider</th>
+            <th>Calls</th>
+            <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for name, data in stats.by_provider.items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td>{{ data.calls }}</td>
+            <td>${{ "%.4f" | format(data.cost) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if stats.by_day %}
+<h2>By Day</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Calls</th>
+            <th>Cost</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for day, data in stats.by_day.items() | sort %}
+        <tr>
+            <td>{{ day }}</td>
+            <td>{{ data.calls }}</td>
+            <td>${{ "%.4f" | format(data.cost) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Log Lesson - {{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Log Lesson - {{ class_obj.name }}</h1>
+
+<form method="POST" action="/classes/{{ class_obj.id }}/lessons/new" class="form">
+    <div class="form-group">
+        <label for="content">Lesson Content</label>
+        <textarea id="content" name="content" rows="6" required placeholder="What did you teach today? Include topics, activities, and key concepts covered."></textarea>
+    </div>
+    <div class="form-group">
+        <label for="topics">Topics (comma-separated, optional - auto-detected if blank)</label>
+        <input type="text" id="topics" name="topics" placeholder="e.g., photosynthesis, cell division">
+    </div>
+    <div class="form-group">
+        <label for="notes">Teacher Notes (optional)</label>
+        <textarea id="notes" name="notes" rows="3" placeholder="Observations, student engagement, areas to revisit..."></textarea>
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Log Lesson</button>
+        <a href="/classes/{{ class_obj.id }}/lessons" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

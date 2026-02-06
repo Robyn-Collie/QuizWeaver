@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ quiz.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ quiz.title }}</h1>
+
+<div class="quiz-info">
+    <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
+    {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
+    <p><strong>Questions:</strong> {{ questions | length }}</p>
+</div>
+
+<h2>Questions</h2>
+{% for q in questions %}
+<div class="question-card">
+    <div class="question-header">
+        <span class="question-number">Q{{ loop.index }}</span>
+        <span class="question-type">{{ q.type or 'unknown' }}</span>
+        <span class="question-points">{{ q.points or 0 }} pts</span>
+    </div>
+    <p class="question-text">{{ q.text }}</p>
+
+    {% if q.data and q.data.options is defined %}
+    <ul class="question-options">
+        {% for option in q.data.options %}
+        <li{% if q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
+            {{ option }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endfor %}
+
+<p><a href="/quizzes">&larr; Back to Quizzes</a></p>
+{% endblock %}
