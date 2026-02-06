@@ -168,15 +168,83 @@ class VertexAIProvider(LLMProvider):
         return Part.from_data(image_bytes, mime_type=mime_type)
 
 
+class MockLLMProvider(LLMProvider):
+    """
+    Mock implementation of LLMProvider for cost-free development and testing.
+    Returns fabricated but realistic responses without making external API calls.
+    """
+
+    def __init__(self):
+        """Initialize mock provider (no API keys needed)."""
+        from src.mock_responses import get_mock_response
+        self._get_mock_response = get_mock_response
+        self._call_count = 0
+
+    def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate fabricated content based on prompt context.
+
+        Args:
+            prompt_parts: List of prompt parts (text and images)
+            json_mode: Whether to return JSON (always True for mock)
+
+        Returns:
+            Fabricated but realistic JSON response
+        """
+        self._call_count += 1
+
+        # Use mock_responses module to generate realistic responses
+        response = self._get_mock_response(
+            prompt_parts=prompt_parts,
+            json_mode=json_mode
+        )
+
+        return response
+
+    def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Prepare a mock image context (no actual image loading).
+
+        Args:
+            image_path: Path to image file
+
+        Returns:
+            Mock image object (string representation)
+        """
+        # Return a mock image object that won't cause errors
+        return f"<MockImage: {image_path}>"
+
+
 # A factory function to get the correct provider based on configuration
 def get_provider(config):
     """
     Factory function to instantiate the correct LLM provider based on config.
     """
-    provider_name = config.get("llm", {}).get("provider", "gemini")
+    provider_name = config.get("llm", {}).get("provider", "mock")
     llm_config = config.get("llm", {})
 
-    if provider_name == "gemini":
+    # Check if using real provider and warn user
+    if provider_name in ["gemini", "gemini-3-pro", "vertex"]:
+        mode = llm_config.get("mode", "development")
+        if mode == "development":
+            print("\n⚠️  WARNING: Using real API - costs will be incurred!")
+            print(f"   Provider: {provider_name}")
+            print("   To use cost-free mock provider, set llm.provider: 'mock' in config.yaml")
+            print("   Continue with real API? (yes/no): ", end="")
+
+            # In automated environments, default to no
+            try:
+                response = input().strip().lower()
+                if response != "yes":
+                    print("\n   Switching to mock provider for cost-free development.")
+                    provider_name = "mock"
+            except (EOFError, KeyboardInterrupt):
+                print("\n   No input received. Switching to mock provider.")
+                provider_name = "mock"
+
+    if provider_name == "mock":
+        return MockLLMProvider()
+    elif provider_name == "gemini":
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
             raise ValueError(

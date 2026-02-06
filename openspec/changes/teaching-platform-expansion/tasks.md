@@ -4,33 +4,33 @@
 
 ### 1. MockLLMProvider Implementation
 
-- [ ] 1.1 Create `src/mock_responses.py` with response templates
-  - [ ] 1.1a Add analyst_response template (style profile JSON)
-  - [ ] 1.1b Add generator_response template (quiz questions JSON array)
-  - [ ] 1.1c Add critic_response template (approval/feedback JSON)
-  - [ ] 1.1d Add helper function to fill templates with context keywords
+- [x] 1.1 Create `src/mock_responses.py` with response templates
+  - [x] 1.1a Add analyst_response template (style profile JSON)
+  - [x] 1.1b Add generator_response template (quiz questions JSON array)
+  - [x] 1.1c Add critic_response template (approval/feedback JSON)
+  - [x] 1.1d Add helper function to fill templates with context keywords
 
-- [ ] 1.2 Implement `MockLLMProvider` class in `src/llm_provider.py`
-  - [ ] 1.2a Inherit from LLMProvider base class
-  - [ ] 1.2b Implement `generate()` method with template selection
-  - [ ] 1.2c Implement `prepare_image_context()` (return mock object)
-  - [ ] 1.2d Add randomization to avoid identical responses
+- [x] 1.2 Implement `MockLLMProvider` class in `src/llm_provider.py`
+  - [x] 1.2a Inherit from LLMProvider base class
+  - [x] 1.2b Implement `generate()` method with template selection
+  - [x] 1.2c Implement `prepare_image_context()` (return mock object)
+  - [x] 1.2d Add randomization to avoid identical responses
 
-- [ ] 1.3 Update `get_provider()` factory function
-  - [ ] 1.3a Add "mock" case to provider selection
-  - [ ] 1.3b Add user approval gate for non-mock providers
-  - [ ] 1.3c Display warning: "⚠️  Using real API - costs will be incurred"
+- [x] 1.3 Update `get_provider()` factory function
+  - [x] 1.3a Add "mock" case to provider selection
+  - [x] 1.3b Add user approval gate for non-mock providers
+  - [x] 1.3c Display warning: "⚠️  Using real API - costs will be incurred"
 
-- [ ] 1.4 Update `config.yaml`
-  - [ ] 1.4a Set default `llm.provider: "mock"`
-  - [ ] 1.4b Add `llm.mode: "development"` option
-  - [ ] 1.4c Add cost control settings (max_calls_per_session, max_cost_per_session)
+- [x] 1.4 Update `config.yaml`
+  - [x] 1.4a Set default `llm.provider: "mock"`
+  - [x] 1.4b Add `llm.mode: "development"` option
+  - [x] 1.4c Add cost control settings (max_calls_per_session, max_cost_per_session)
 
-- [ ] 1.5 Create tests for MockLLMProvider
-  - [ ] 1.5a Test mock provider returns valid JSON
-  - [ ] 1.5b Test responses match expected schemas
-  - [ ] 1.5c Test provider matches real provider interface
-  - [ ] 1.5d Test no external calls are made
+- [x] 1.5 Create tests for MockLLMProvider
+  - [x] 1.5a Test mock provider returns valid JSON
+  - [x] 1.5b Test responses match expected schemas
+  - [x] 1.5c Test provider matches real provider interface
+  - [x] 1.5d Test no external calls are made
 
 ### 2. Database Schema Extension
 

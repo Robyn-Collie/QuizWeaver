@@ -7,7 +7,13 @@
       "Bash(test:*)",
       "Bash(openspec init:*)",
       "Bash(openspec new change:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(openspec instructions apply:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(python:*)",
+      "Bash(pip install:*)"
     ]
   }
 }

@@ -51,7 +51,18 @@ prompts:
 
 # --- LLM Provider ---
 llm:
-  provider: "vertex" # Options: "gemini", "vertex"
+  # Provider options: "mock" (cost-free), "gemini", "gemini-3-pro", "vertex"
+  # IMPORTANT: Use "mock" during development to avoid API costs
+  provider: "mock"  # Default to mock for cost-free development
+
+  # Mode: "development" (prompts before real API calls) or "production" (no prompts)
+  mode: "development"
+
+  # Cost control settings (applied when using real providers)
+  max_calls_per_session: 50  # Maximum API calls before stopping
+  max_cost_per_session: 5.00  # Maximum cost in dollars before stopping
+
+  # Real provider settings (only used when provider != "mock")
   vertex_project_id: "quizweaver-8402" # Your Google Cloud Project ID
   vertex_location: "global" # e.g., "us-central1"
   model_name: "gemini-2.5-flash" # Stable model version
