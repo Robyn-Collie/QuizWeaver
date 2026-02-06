@@ -8,3 +8,4 @@ pillow
 google-cloud-aiplatform
 pytest
 pyyaml
+flask
