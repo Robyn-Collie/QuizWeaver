@@ -81,15 +81,17 @@ def get_qa_guidelines() -> str:
 
 
 class GeneratorAgent:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], provider=None):
         """Initialize the Generator Agent.
 
         Args:
             config: Application configuration dictionary containing LLM provider settings
                    and prompt file paths.
+            provider: Optional pre-created LLM provider instance. If None, creates one
+                     via get_provider (which may trigger an approval prompt).
         """
         self.config = config
-        self.provider = get_provider(config)
+        self.provider = provider or get_provider(config)
         self.base_prompt = load_prompt("generator_prompt.txt")
 
     def generate(
@@ -321,15 +323,17 @@ Image Ratio Target: {int(image_ratio * 100)}%
 
 
 class CriticAgent:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], provider=None):
         """Initialize the Critic Agent.
 
         Args:
             config: Application configuration dictionary containing LLM provider settings
                    and prompt file paths.
+            provider: Optional pre-created LLM provider instance. If None, creates one
+                     via get_provider (which may trigger an approval prompt).
         """
         self.config = config
-        self.provider = get_provider(config)
+        self.provider = provider or get_provider(config)
         self.base_prompt = load_prompt("critic_prompt.txt")
 
     def critique(
@@ -406,8 +410,10 @@ class Orchestrator:
                    LLM provider config, and retry limits.
         """
         self.config = config
-        self.generator = GeneratorAgent(config)
-        self.critic = CriticAgent(config)
+        # Create provider once to avoid duplicate approval prompts
+        provider = get_provider(config)
+        self.generator = GeneratorAgent(config, provider=provider)
+        self.critic = CriticAgent(config, provider=provider)
         self.max_retries = config.get("agent_loop", {}).get("max_retries", 3)
         self.last_metrics = None
 

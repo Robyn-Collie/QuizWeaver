@@ -41,13 +41,8 @@ def generate_image(api_key=None, prompt: str = "", project_id=None, location=Non
 
             vertexai.init(project=project_id, location=img_location)
 
-            # Load model (using hardcoded stable version)
-            # imagegeneration@006 is standard, but sometimes regional availability varies.
-            try:
-                model = ImageGenerationModel.from_pretrained("imagegeneration@006")
-            except Exception:
-                # Fallback to base name
-                model = ImageGenerationModel.from_pretrained("imagegeneration")
+            # Load model (Imagen 3 - replaces EOL imagegeneration@006)
+            model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-002")
 
             # Generate
             images = model.generate_images(

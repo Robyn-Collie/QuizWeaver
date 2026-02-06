@@ -65,10 +65,11 @@ class TestAgents(unittest.TestCase):
         self.assertEqual(result["status"], "REJECTED")
         self.assertIn("Too hard", result["feedback"])
 
+    @patch("src.agents.get_provider")
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_flow(self, mock_guidelines, MockCritic, MockGenerator):
+    def test_orchestrator_flow(self, mock_guidelines, MockCritic, MockGenerator, mock_get_provider):
         mock_guidelines.return_value = "Rules"
 
         # Setup mocks
@@ -295,12 +296,13 @@ class TestLessonContextInPrompts(unittest.TestCase):
 class TestOrchestratorCostWarnings(unittest.TestCase):
     """Tests for cost warnings and rate limit checks in the Orchestrator."""
 
+    @patch("src.agents.get_provider")
     @patch("src.agents.check_rate_limit")
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
     def test_orchestrator_aborts_when_rate_limit_exceeded(
-        self, mock_guidelines, MockCritic, MockGenerator, mock_rate_limit
+        self, mock_guidelines, MockCritic, MockGenerator, mock_rate_limit, mock_get_provider
     ):
         """Pipeline should return empty list when rate limits are exceeded."""
         mock_guidelines.return_value = "Rules"
