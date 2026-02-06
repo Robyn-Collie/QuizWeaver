@@ -174,6 +174,60 @@ def check_rate_limit(
     return is_exceeded, remaining_calls, remaining_budget
 
 
+def estimate_tokens(text: str) -> int:
+    """
+    Estimate token count from text using character-based heuristic.
+
+    Gemini models average ~4 characters per token for English text.
+
+    Args:
+        text: Input text string
+
+    Returns:
+        Estimated token count
+    """
+    if not text:
+        return 0
+    # ~4 chars per token is a reasonable approximation for English text
+    return max(1, len(text) // 4)
+
+
+def summarize_lesson_context(lesson_logs: list, assumed_knowledge: dict, max_chars: int = 2000) -> str:
+    """
+    Summarize lesson context to reduce token count in prompts.
+
+    Args:
+        lesson_logs: List of lesson log dicts with 'date' and 'topics' keys
+        assumed_knowledge: Dict of {topic: {depth, ...}}
+        max_chars: Maximum character length for the summary
+
+    Returns:
+        Concise string summary of lesson context
+    """
+    parts = []
+
+    if lesson_logs:
+        parts.append("Recent lessons:")
+        for log in lesson_logs[:10]:
+            topics = log.get("topics", [])
+            if topics:
+                parts.append(f"  {log.get('date', '?')}: {', '.join(topics)}")
+
+    if assumed_knowledge:
+        parts.append("Knowledge depths:")
+        depth_labels = {1: "intro", 2: "reinf", 3: "pract", 4: "mast", 5: "expert"}
+        for topic, data in assumed_knowledge.items():
+            depth = data.get("depth", 1)
+            parts.append(f"  {topic}: {depth_labels.get(depth, '?')}")
+
+    summary = "\n".join(parts)
+    if len(summary) > max_chars:
+        truncation_marker = "\n... (truncated)"
+        summary = summary[:max_chars - len(truncation_marker)] + truncation_marker
+
+    return summary
+
+
 def estimate_pipeline_cost(
     config: dict, max_retries: int = 3
 ) -> Dict[str, Any]:

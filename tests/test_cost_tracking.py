@@ -16,6 +16,8 @@ from src.cost_tracking import (
     check_rate_limit,
     format_cost_report,
     estimate_pipeline_cost,
+    estimate_tokens,
+    summarize_lesson_context,
     MODEL_PRICING,
     DEFAULT_LOG_FILE,
 )
@@ -579,6 +581,78 @@ class TestEstimatePipelineCost:
 
         assert result["max_attempts"] == 3
         assert result["max_calls"] == 6
+
+
+class TestEstimateTokens:
+    def test_estimate_tokens_empty_string(self):
+        """Empty string should return 0 tokens."""
+        assert estimate_tokens("") == 0
+
+    def test_estimate_tokens_none(self):
+        """None-like empty input should return 0."""
+        assert estimate_tokens("") == 0
+
+    def test_estimate_tokens_short_text(self):
+        """Short text should return at least 1 token."""
+        result = estimate_tokens("Hi")
+        assert result >= 1
+
+    def test_estimate_tokens_known_length(self):
+        """400 chars should estimate ~100 tokens."""
+        text = "a" * 400
+        result = estimate_tokens(text)
+        assert result == 100
+
+    def test_estimate_tokens_realistic_prompt(self):
+        """A typical prompt should give reasonable estimate."""
+        prompt = "You are a 7th grade teacher. Generate 10 quiz questions about photosynthesis."
+        result = estimate_tokens(prompt)
+        # ~80 chars -> ~20 tokens
+        assert 15 <= result <= 25
+
+
+class TestSummarizeLessonContext:
+    def test_summarize_empty(self):
+        """Empty inputs should return empty string."""
+        result = summarize_lesson_context([], {})
+        assert result == ""
+
+    def test_summarize_with_lessons(self):
+        """Should include lesson dates and topics."""
+        logs = [
+            {"date": "2026-02-01", "topics": ["photosynthesis", "cells"]},
+            {"date": "2026-01-28", "topics": ["respiration"]},
+        ]
+        result = summarize_lesson_context(logs, {})
+        assert "2026-02-01" in result
+        assert "photosynthesis" in result
+        assert "respiration" in result
+
+    def test_summarize_with_knowledge(self):
+        """Should include knowledge depths with short labels."""
+        knowledge = {
+            "photosynthesis": {"depth": 3},
+            "gravity": {"depth": 1},
+        }
+        result = summarize_lesson_context([], knowledge)
+        assert "photosynthesis" in result
+        assert "pract" in result
+        assert "gravity" in result
+        assert "intro" in result
+
+    def test_summarize_truncates_long_content(self):
+        """Should truncate when exceeding max_chars."""
+        logs = [{"date": f"2026-01-{i:02d}", "topics": [f"topic_{j}" for j in range(20)]} for i in range(1, 30)]
+        knowledge = {f"topic_{i}": {"depth": i % 5 + 1} for i in range(50)}
+        result = summarize_lesson_context(logs, knowledge, max_chars=500)
+        assert len(result) <= 500
+        assert "truncated" in result
+
+    def test_summarize_respects_max_chars(self):
+        """Result should never exceed max_chars."""
+        logs = [{"date": "2026-02-01", "topics": ["a"]}]
+        result = summarize_lesson_context(logs, {}, max_chars=50)
+        assert len(result) <= 50
 
 
 class TestIntegration:

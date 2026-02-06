@@ -8,8 +8,55 @@ from src.lesson_tracker import get_recent_lessons, get_assumed_knowledge
 from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
 
 
+class AgentMetrics:
+    """Tracks performance metrics for a pipeline run."""
+
+    def __init__(self):
+        self.start_time = None
+        self.end_time = None
+        self.generator_calls = 0
+        self.critic_calls = 0
+        self.errors = 0
+        self.approved = False
+        self.attempts = 0
+
+    def start(self):
+        self.start_time = time.time()
+
+    def stop(self):
+        self.end_time = time.time()
+
+    @property
+    def duration(self):
+        if self.start_time and self.end_time:
+            return self.end_time - self.start_time
+        return 0.0
+
+    @property
+    def total_calls(self):
+        return self.generator_calls + self.critic_calls
+
+    def report(self):
+        return {
+            "duration_seconds": round(self.duration, 3),
+            "generator_calls": self.generator_calls,
+            "critic_calls": self.critic_calls,
+            "total_llm_calls": self.total_calls,
+            "errors": self.errors,
+            "attempts": self.attempts,
+            "approved": self.approved,
+        }
+
+
 def load_prompt(filename: str) -> str:
-    """Helper to load a prompt from the prompts/ directory."""
+    """Load a prompt file from the prompts/ directory.
+
+    Args:
+        filename: Name of the prompt file (e.g., "generator_prompt.txt").
+
+    Returns:
+        Prompt text content, or empty string if file not found.
+    """
     path = os.path.join("prompts", filename)
     try:
         with open(path, "r") as f:
@@ -20,7 +67,11 @@ def load_prompt(filename: str) -> str:
 
 
 def get_qa_guidelines() -> str:
-    """Reads the QA guidelines from the specified file."""
+    """Read QA guidelines from qa_guidelines.txt file.
+
+    Returns:
+        QA guidelines text content, or empty string if file not found.
+    """
     try:
         with open("qa_guidelines.txt", "r") as f:
             return f.read()
@@ -31,6 +82,12 @@ def get_qa_guidelines() -> str:
 
 class GeneratorAgent:
     def __init__(self, config: Dict[str, Any]):
+        """Initialize the Generator Agent.
+
+        Args:
+            config: Application configuration dictionary containing LLM provider settings
+                   and prompt file paths.
+        """
         self.config = config
         self.provider = get_provider(config)
         self.base_prompt = load_prompt("generator_prompt.txt")
@@ -38,6 +95,31 @@ class GeneratorAgent:
     def generate(
         self, context: Dict[str, Any], feedback: Optional[str] = None
     ) -> List[Dict[str, Any]]:
+        """Generate quiz questions based on provided context and optional feedback.
+
+        Args:
+            context: Dictionary containing generation parameters including:
+                - content_summary: Lesson content summary text
+                - structured_data: Parsed structure from documents
+                - retake_text: Original quiz text for style reference
+                - num_questions: Number of questions to generate
+                - images: List of image file paths
+                - image_ratio: Target ratio of questions with images
+                - grade_level: Target grade level (e.g., "7th Grade")
+                - sol_standards: List of SOL standards to target
+                - lesson_logs: Recent lesson logs for class context
+                - assumed_knowledge: Student knowledge depth by topic
+            feedback: Optional feedback from Critic agent to improve generation.
+
+        Returns:
+            List of question dictionaries with normalized fields including:
+            - text: Question text
+            - type: Question type ("mc", "ma", "tf", etc.)
+            - options: List of answer options (for MC/MA)
+            - correct_index: Index of correct answer
+            - title: Optional question title
+            - image_ref: Optional image reference
+        """
         # Unpack context
         content_summary = context.get("content_summary", "")
         structured_data = context.get("structured_data", [])
@@ -240,6 +322,12 @@ Image Ratio Target: {int(image_ratio * 100)}%
 
 class CriticAgent:
     def __init__(self, config: Dict[str, Any]):
+        """Initialize the Critic Agent.
+
+        Args:
+            config: Application configuration dictionary containing LLM provider settings
+                   and prompt file paths.
+        """
         self.config = config
         self.provider = get_provider(config)
         self.base_prompt = load_prompt("critic_prompt.txt")
@@ -251,6 +339,21 @@ class CriticAgent:
         content_summary: str,
         class_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
+        """Critique generated questions for quality, alignment, and appropriateness.
+
+        Args:
+            questions: List of question dictionaries to review.
+            guidelines: QA guidelines text from qa_guidelines.txt.
+            content_summary: Original lesson content summary for reference.
+            class_context: Optional dictionary containing:
+                - lesson_logs: Recent lessons taught to the class
+                - assumed_knowledge: Student knowledge depth by topic
+
+        Returns:
+            Dictionary with critique result:
+            - status: "APPROVED" if questions pass, "REJECTED" if revisions needed
+            - feedback: None if approved, or feedback text explaining issues
+        """
         prompt_text = self.base_prompt
 
         questions_json = json.dumps(questions, indent=2)
@@ -296,14 +399,35 @@ class CriticAgent:
 
 class Orchestrator:
     def __init__(self, config: Dict[str, Any]):
+        """Initialize the Orchestrator to coordinate Generator and Critic agents.
+
+        Args:
+            config: Application configuration dictionary containing agent loop settings,
+                   LLM provider config, and retry limits.
+        """
         self.config = config
         self.generator = GeneratorAgent(config)
         self.critic = CriticAgent(config)
         self.max_retries = config.get("agent_loop", {}).get("max_retries", 3)
+        self.last_metrics = None
 
     def run(self, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Run the generate-critique feedback loop until approval or max retries.
+
+        Args:
+            context: Generation context dictionary containing all parameters needed
+                    by the Generator agent (content, images, standards, etc.).
+
+        Returns:
+            List of approved question dictionaries, or last draft if max retries reached.
+            Returns empty list if rate limits exceeded or too many consecutive errors.
+        """
         feedback = None
         guidelines = get_qa_guidelines()
+
+        # Initialize metrics tracking
+        metrics = AgentMetrics()
+        metrics.start()
 
         # Check rate limits before starting (skip for mock provider)
         provider_name = self.config.get("llm", {}).get("provider", "mock")
@@ -312,6 +436,8 @@ class Orchestrator:
             if is_exceeded:
                 print("   [WARNING] Rate limit exceeded! No remaining API budget.")
                 print("   Aborting pipeline. Check cost report with 'costs' command.")
+                metrics.stop()
+                self.last_metrics = metrics
                 return []
 
             estimate = estimate_pipeline_cost(self.config, self.max_retries)
@@ -332,11 +458,18 @@ class Orchestrator:
             # Generate with error handling
             try:
                 questions = self.generator.generate(context, feedback)
+                metrics.generator_calls += 1
+                metrics.attempts += 1
             except Exception as e:
                 consecutive_errors += 1
+                metrics.errors += 1
+                metrics.generator_calls += 1
+                metrics.attempts += 1
                 print(f"   [Agent Loop] Generator error: {e}")
                 if consecutive_errors >= max_errors:
                     print("   [Agent Loop] Too many consecutive errors. Aborting.")
+                    metrics.stop()
+                    self.last_metrics = metrics
                     return []
                 # Brief pause before retry (skip in mock mode)
                 if provider_name != "mock":
@@ -351,6 +484,8 @@ class Orchestrator:
                 )
                 if consecutive_errors >= max_errors:
                     print("   [Agent Loop] Too many consecutive failures. Aborting.")
+                    metrics.stop()
+                    self.last_metrics = metrics
                     return []
                 feedback = "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
                 continue
@@ -371,12 +506,18 @@ class Orchestrator:
                     questions, guidelines, content_summary,
                     class_context=class_context,
                 )
+                metrics.critic_calls += 1
             except Exception as e:
                 print(f"   [Agent Loop] Critic error: {e}. Skipping critique, returning draft.")
+                metrics.stop()
+                self.last_metrics = metrics
                 return questions
 
             if critique_result["status"] == "APPROVED":
                 print("   [Agent Loop] Draft APPROVED.")
+                metrics.stop()
+                metrics.approved = True
+                self.last_metrics = metrics
                 return questions
 
             print(
@@ -385,17 +526,21 @@ class Orchestrator:
             feedback = critique_result["feedback"]
 
         print("   [Agent Loop] Max retries reached. Returning last draft with warning.")
+        metrics.stop()
+        self.last_metrics = metrics
         return questions
 
 
 def run_agentic_pipeline(config, context, class_id=None):
-    """
-    Run the agentic quiz generation pipeline.
+    """Run the agentic quiz generation pipeline with optional class context enrichment.
 
     Args:
-        config: Application config dict
-        context: Generation context dict
-        class_id: Optional class ID to load lesson context for
+        config: Application configuration dictionary.
+        context: Generation context dictionary with content, images, and parameters.
+        class_id: Optional class ID to load recent lessons and assumed knowledge for.
+
+    Returns:
+        List of approved question dictionaries from the Orchestrator.
     """
     # Enrich context with class data if class_id provided
     if class_id is not None:

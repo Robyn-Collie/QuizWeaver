@@ -1,4 +1,5 @@
 import unittest
+import time
 from unittest.mock import MagicMock, patch
 from src.agents import GeneratorAgent, CriticAgent, Orchestrator
 
@@ -469,6 +470,100 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         self.assertEqual(result, [])
         # Should have tried twice before aborting
         self.assertEqual(mock_gen.generate.call_count, 2)
+
+
+class TestAgentMetrics(unittest.TestCase):
+    """Tests for AgentMetrics tracking."""
+
+    def test_metrics_report_structure(self):
+        """Metrics report should have all expected keys."""
+        from src.agents import AgentMetrics
+        m = AgentMetrics()
+        m.start()
+        m.generator_calls = 2
+        m.critic_calls = 1
+        m.errors = 0
+        m.attempts = 2
+        m.approved = True
+        m.stop()
+
+        report = m.report()
+        self.assertIn("duration_seconds", report)
+        self.assertIn("generator_calls", report)
+        self.assertIn("critic_calls", report)
+        self.assertIn("total_llm_calls", report)
+        self.assertIn("errors", report)
+        self.assertIn("attempts", report)
+        self.assertIn("approved", report)
+        self.assertEqual(report["total_llm_calls"], 3)
+        self.assertTrue(report["approved"])
+
+    def test_metrics_duration(self):
+        """Duration should be positive after start/stop."""
+        from src.agents import AgentMetrics
+        m = AgentMetrics()
+        m.start()
+        time.sleep(0.01)
+        m.stop()
+        self.assertGreater(m.duration, 0)
+
+    def test_metrics_duration_before_stop(self):
+        """Duration should be 0 before stop is called."""
+        from src.agents import AgentMetrics
+        m = AgentMetrics()
+        m.start()
+        self.assertEqual(m.duration, 0.0)
+
+    @patch("src.agents.GeneratorAgent")
+    @patch("src.agents.CriticAgent")
+    @patch("src.agents.get_qa_guidelines")
+    def test_orchestrator_tracks_metrics(
+        self, mock_guidelines, MockCritic, MockGenerator
+    ):
+        """Orchestrator should populate last_metrics after run."""
+        mock_guidelines.return_value = "Rules"
+        mock_gen = MockGenerator.return_value
+        mock_gen.generate.return_value = [{"text": "Q1"}]
+        MockCritic.return_value.critique.return_value = {
+            "status": "APPROVED", "feedback": None
+        }
+
+        config = {
+            "agent_loop": {"max_retries": 3},
+            "llm": {"provider": "mock"},
+        }
+        orch = Orchestrator(config)
+        orch.run({"content_summary": "Test"})
+
+        self.assertIsNotNone(orch.last_metrics)
+        report = orch.last_metrics.report()
+        self.assertEqual(report["generator_calls"], 1)
+        self.assertEqual(report["critic_calls"], 1)
+        self.assertTrue(report["approved"])
+        self.assertGreaterEqual(report["duration_seconds"], 0)
+
+    @patch("src.agents.GeneratorAgent")
+    @patch("src.agents.CriticAgent")
+    @patch("src.agents.get_qa_guidelines")
+    def test_orchestrator_metrics_on_failure(
+        self, mock_guidelines, MockCritic, MockGenerator
+    ):
+        """Metrics should track errors on failure."""
+        mock_guidelines.return_value = "Rules"
+        mock_gen = MockGenerator.return_value
+        mock_gen.generate.side_effect = RuntimeError("fail")
+
+        config = {
+            "agent_loop": {"max_retries": 3},
+            "llm": {"provider": "mock"},
+        }
+        orch = Orchestrator(config)
+        orch.run({"content_summary": "Test"})
+
+        self.assertIsNotNone(orch.last_metrics)
+        report = orch.last_metrics.report()
+        self.assertGreater(report["errors"], 0)
+        self.assertFalse(report["approved"])
 
 
 if __name__ == "__main__":
