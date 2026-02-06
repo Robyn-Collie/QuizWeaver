@@ -14,6 +14,7 @@
             <th>Date</th>
             <th>Topics</th>
             <th>Notes</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -22,6 +23,11 @@
             <td>{{ lesson.date }}</td>
             <td>{{ lesson.topics | join(', ') if lesson.topics else '(none)' }}</td>
             <td>{{ lesson.notes or '' }}</td>
+            <td>
+                <form method="POST" action="/classes/{{ class_obj.id }}/lessons/{{ lesson.id }}/delete" class="inline-form">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this lesson?')">Delete</button>
+                </form>
+            </td>
         </tr>
         {% endfor %}
     </tbody>

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Edit Class</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="/classes/{{ class_obj.id }}/edit" class="form">
+    <div class="form-group">
+        <label for="name">Class Name (required)</label>
+        <input type="text" id="name" name="name" value="{{ class_obj.name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="grade_level">Grade Level</label>
+        <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}">
+    </div>
+    <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" name="subject" value="{{ class_obj.subject or '' }}">
+    </div>
+    <div class="form-group">
+        <label for="standards">Standards (comma-separated)</label>
+        <input type="text" id="standards" name="standards" value="{{ class_obj.standards or '' }}">
+    </div>
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
