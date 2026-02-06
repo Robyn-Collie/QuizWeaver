@@ -35,7 +35,7 @@ class TestMockProvider:
     def test_analyst_response_schema(self):
         """Test that analyst response matches expected schema."""
         prompt = ["Analyze the style and determine question count"]
-        response = self.provider.generate(prompt, json_mode=True)
+        response = self.provider.generate(prompt, json_mode=False)
 
         data = json.loads(response)
 
@@ -67,7 +67,7 @@ class TestMockProvider:
     def test_critic_response_schema(self):
         """Test that critic response matches expected schema."""
         prompt = ["Review these questions and provide feedback"]
-        response = self.provider.generate(prompt, json_mode=True)
+        response = self.provider.generate(prompt, json_mode=False)
 
         data = json.loads(response)
 

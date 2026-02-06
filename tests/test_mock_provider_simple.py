@@ -40,7 +40,7 @@ def test_analyst_response_schema():
     """Test that analyst response matches expected schema."""
     provider = MockLLMProvider()
     prompt = ["Analyze the style and determine question count"]
-    response = provider.generate(prompt, json_mode=True)
+    response = provider.generate(prompt, json_mode=False)
 
     data = json.loads(response)
 
@@ -75,7 +75,7 @@ def test_critic_response_schema():
     """Test that critic response matches expected schema."""
     provider = MockLLMProvider()
     prompt = ["Review these questions and provide feedback"]
-    response = provider.generate(prompt, json_mode=True)
+    response = provider.generate(prompt, json_mode=False)
 
     data = json.loads(response)
 

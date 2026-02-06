@@ -198,13 +198,18 @@ def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,
     if not context_keywords:
         context_keywords = random.sample(SCIENCE_TOPICS, k=3)
 
-    # Detect agent type from prompt if not explicitly provided
-    if "style" in combined_text or "analyze" in combined_text:
-        agent_type = "analyst"
-    elif "review" in combined_text or "critic" in combined_text or "feedback" in combined_text:
-        agent_type = "critic"
-    else:
-        agent_type = "generator"
+    # When json_mode is True the caller is the GeneratorAgent; honour
+    # the default agent_type ("generator") instead of auto-detecting,
+    # because generator prompts contain words like "style" that would
+    # incorrectly trigger the analyst path.
+    if not json_mode:
+        # Auto-detect agent type from prompt text
+        if "style" in combined_text or "analyze" in combined_text:
+            agent_type = "analyst"
+        elif "review" in combined_text or "critic" in combined_text or "feedback" in combined_text:
+            agent_type = "critic"
+        else:
+            agent_type = "generator"
 
     # Return appropriate response
     if agent_type == "analyst":
