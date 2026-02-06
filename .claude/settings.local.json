@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(openspec status:*)",
+      "Bash(openspec --version:*)",
+      "Bash(if exist openspecmain-specs echo \"INITIALIZED\" else echo \"NOT_INITIALIZED\")",
+      "Bash(test:*)",
+      "Bash(openspec init:*)",
+      "Bash(openspec new change:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
