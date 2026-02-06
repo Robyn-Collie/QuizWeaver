@@ -45,6 +45,7 @@ def create_app(config=None):
 
     @app.teardown_appcontext
     def close_db_session(exception):
+        """Close the database session at the end of each request."""
         session = g.pop("db_session", None)
         if session is not None:
             session.close()

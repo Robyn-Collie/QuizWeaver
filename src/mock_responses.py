@@ -51,8 +51,12 @@ def get_analyst_response(prompt_parts: List[Any]) -> str:
 
     The analyst agent examines content and determines quiz characteristics.
 
+    Args:
+        prompt_parts: List of prompt parts (text strings and image contexts).
+
     Returns:
-        JSON string with style profile
+        JSON string with style profile including question count, image ratio,
+        difficulty distribution, and identified topics.
     """
     # Add some randomization to simulate real LLM variety
     image_ratio = random.choice([0.2, 0.25, 0.3, 0.35])
@@ -85,8 +89,14 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
 
     The generator agent creates quiz questions based on context.
 
+    Args:
+        prompt_parts: List of prompt parts (text strings and image contexts).
+        context_keywords: Optional list of topic keywords extracted from the prompt.
+            If None, random science topics are selected.
+
     Returns:
-        JSON string with array of questions
+        JSON string with array of 3-5 question objects, each containing
+        type, title, text, points, options, correct_index, and image_ref.
     """
     if not context_keywords:
         context_keywords = random.sample(SCIENCE_TOPICS, k=3)

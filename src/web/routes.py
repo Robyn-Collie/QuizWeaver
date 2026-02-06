@@ -4,6 +4,7 @@ Route handlers for QuizWeaver web frontend.
 
 import json
 import functools
+from datetime import date
 from flask import (
     render_template,
     redirect,
@@ -11,6 +12,7 @@ from flask import (
     request,
     abort,
     current_app,
+    flash,
     g,
     session as flask_session,
     jsonify,
@@ -52,6 +54,7 @@ def register_routes(app):
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
+        """Handle user login via form POST or render login page on GET."""
         if request.method == "POST":
             username = request.form.get("username", "")
             password = request.form.get("password", "")
@@ -72,6 +75,7 @@ def register_routes(app):
 
     @app.route("/logout")
     def logout():
+        """Clear session and redirect to login page."""
         flask_session.clear()
         return redirect(url_for("login"), code=303)
 
@@ -80,11 +84,13 @@ def register_routes(app):
     @app.route("/")
     @login_required
     def index():
+        """Redirect root URL to the dashboard."""
         return redirect(url_for("dashboard"))
 
     @app.route("/dashboard")
     @login_required
     def dashboard():
+        """Render dashboard with class, lesson, and quiz counts."""
         session = _get_session()
         config = current_app.config["APP_CONFIG"]
         classes = list_classes(session)
@@ -106,6 +112,7 @@ def register_routes(app):
     @app.route("/api/stats")
     @login_required
     def api_stats():
+        """Return JSON stats for dashboard charts (lessons by date, quizzes by class)."""
         session = _get_session()
 
         # Lessons by date
@@ -133,6 +140,7 @@ def register_routes(app):
     @app.route("/classes")
     @login_required
     def classes_list():
+        """List all classes with lesson and quiz counts."""
         session = _get_session()
         classes = list_classes(session)
         return render_template("classes/list.html", classes=classes)
@@ -140,6 +148,7 @@ def register_routes(app):
     @app.route("/classes/new", methods=["GET", "POST"])
     @login_required
     def class_create():
+        """Create a new class via form POST or render creation form on GET."""
         if request.method == "POST":
             name = request.form.get("name", "").strip()
             if not name:
@@ -158,13 +167,14 @@ def register_routes(app):
                 else None
             )
 
-            create_class(
+            new_cls = create_class(
                 session,
                 name=name,
                 grade_level=grade_level,
                 subject=subject,
                 standards=standards,
             )
+            flash(f"Class '{new_cls.name}' created successfully.", "success")
             return redirect(url_for("classes_list"), code=303)
 
         return render_template("classes/new.html")
@@ -172,6 +182,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>")
     @login_required
     def class_detail(class_id):
+        """Show class detail with knowledge depth, lessons, and quizzes."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -192,6 +203,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/edit", methods=["GET", "POST"])
     @login_required
     def class_edit(class_id):
+        """Edit class details via form POST or render edit form on GET."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -216,6 +228,7 @@ def register_routes(app):
                 subject=subject,
                 standards=standards,
             )
+            flash("Class updated successfully.", "success")
             return redirect(url_for("class_detail", class_id=class_id), code=303)
 
         return render_template("classes/edit.html", class_obj=class_obj)
@@ -223,10 +236,12 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/delete", methods=["POST"])
     @login_required
     def class_delete_route(class_id):
+        """Delete a class and redirect to the class list."""
         session = _get_session()
         success = delete_class(session, class_id)
         if not success:
             abort(404)
+        flash("Class deleted successfully.", "success")
         return redirect(url_for("classes_list"), code=303)
 
     # --- Lessons ---
@@ -234,6 +249,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/lessons")
     @login_required
     def lessons_list(class_id):
+        """List all lessons for a class with parsed topic lists."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -264,6 +280,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/lessons/new", methods=["GET", "POST"])
     @login_required
     def lesson_log(class_id):
+        """Log a new lesson via form POST or render the lesson form on GET."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -286,15 +303,21 @@ def register_routes(app):
                 topics=topics,
                 notes=notes,
             )
+            flash("Lesson logged successfully.", "success")
             return redirect(
                 url_for("lessons_list", class_id=class_id), code=303
             )
 
-        return render_template("lessons/new.html", class_obj=class_obj)
+        return render_template(
+            "lessons/new.html",
+            class_obj=class_obj,
+            today=date.today().isoformat(),
+        )
 
     @app.route("/classes/<int:class_id>/lessons/<int:lesson_id>/delete", methods=["POST"])
     @login_required
     def lesson_delete_route(class_id, lesson_id):
+        """Delete a lesson and redirect back to the lesson list."""
         session = _get_session()
         # Verify class exists
         class_obj = get_class(session, class_id)
@@ -304,6 +327,7 @@ def register_routes(app):
         success = delete_lesson(session, lesson_id)
         if not success:
             abort(404)
+        flash("Lesson deleted successfully.", "success")
         return redirect(url_for("lessons_list", class_id=class_id), code=303)
 
     # --- Quizzes ---
@@ -311,6 +335,7 @@ def register_routes(app):
     @app.route("/quizzes")
     @login_required
     def quizzes_list():
+        """List all quizzes with class names and question counts."""
         session = _get_session()
         quizzes = session.query(Quiz).order_by(Quiz.created_at.desc()).all()
         quiz_data = []
@@ -330,6 +355,7 @@ def register_routes(app):
     @app.route("/quizzes/<int:quiz_id>")
     @login_required
     def quiz_detail(quiz_id):
+        """Show quiz detail with all questions and parsed answer data."""
         session = _get_session()
         quiz = session.query(Quiz).filter_by(id=quiz_id).first()
         if not quiz:
@@ -362,6 +388,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/quizzes")
     @login_required
     def class_quizzes(class_id):
+        """List quizzes filtered to a specific class."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -390,6 +417,7 @@ def register_routes(app):
     @app.route("/classes/<int:class_id>/generate", methods=["GET", "POST"])
     @login_required
     def quiz_generate(class_id):
+        """Generate a quiz for a class via form POST or render the form on GET."""
         session = _get_session()
         class_obj = get_class(session, class_id)
         if not class_obj:
@@ -431,6 +459,7 @@ def register_routes(app):
     @app.route("/costs")
     @login_required
     def costs():
+        """Show API cost tracking dashboard with provider info."""
         config = current_app.config["APP_CONFIG"]
         provider = config.get("llm", {}).get("provider", "unknown")
         stats = get_cost_summary()

@@ -57,11 +57,31 @@ class GeminiProvider(LLMProvider):
     """
 
     def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
+        """
+        Initialize the Gemini provider with API credentials.
+
+        Args:
+            api_key: Google Gemini API key for authentication
+            model_name: Name of the Gemini model to use (default: gemini-1.5-flash)
+        """
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
         self._model_name = model_name
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using the Gemini API.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image objects)
+            json_mode: If True, configures the model to return JSON-formatted output
+
+        Returns:
+            Generated text response from the model, or empty JSON array on error
+
+        Raises:
+            Exception: Caught internally and returns "[]" to prevent crashes
+        """
         try:
             # The Gemini API expects a list of parts (text, images)
             generation_config = {}
@@ -91,6 +111,15 @@ class GeminiProvider(LLMProvider):
             return "[]"  # Return an empty JSON array on error
 
     def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Upload an image file to Gemini API for use in multimodal prompts.
+
+        Args:
+            image_path: Path to the image file to upload
+
+        Returns:
+            Gemini file object that can be passed to generate()
+        """
         return genai.upload_file(image_path)
 
 
@@ -103,10 +132,30 @@ class Gemini3ProProvider(LLMProvider):
     def __init__(
         self, api_key: str, model_name: str = "gemini-2.0-flash-exp"
     ):  # Using 2.0 Flash Exp as proxy for 3 Pro Preview if needed, or actual name
+        """
+        Initialize the Gemini 3 Pro provider with API credentials.
+
+        Args:
+            api_key: Google Gemini API key for authentication
+            model_name: Name of the advanced Gemini model (default: gemini-2.0-flash-exp)
+        """
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using the advanced Gemini 3 Pro API.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image objects)
+            json_mode: If True, configures the model to return JSON-formatted output
+
+        Returns:
+            Generated text response from the model, or empty JSON object on error
+
+        Raises:
+            Exception: Caught internally and returns "{}" to prevent crashes
+        """
         try:
             generation_config = {}
             if json_mode:
@@ -123,6 +172,15 @@ class Gemini3ProProvider(LLMProvider):
             return "{}"
 
     def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Upload an image file to Gemini API for use in multimodal prompts.
+
+        Args:
+            image_path: Path to the image file to upload
+
+        Returns:
+            Gemini file object that can be passed to generate()
+        """
         return genai.upload_file(image_path)
 
 
@@ -134,6 +192,17 @@ class VertexAIProvider(LLMProvider):
     def __init__(
         self, project_id: str, location: str, model_name: str = "gemini-1.5-flash"
     ):
+        """
+        Initialize the Vertex AI provider with Google Cloud credentials.
+
+        Args:
+            project_id: Google Cloud project ID
+            location: Google Cloud region (e.g., 'us-central1')
+            model_name: Name of the Vertex AI model to use (default: gemini-1.5-flash)
+
+        Raises:
+            ImportError: If google-cloud-aiplatform is not installed
+        """
         if not _VERTEX_AI_AVAILABLE:
             raise ImportError("google-cloud-aiplatform is not installed or available.")
 
@@ -154,6 +223,19 @@ class VertexAIProvider(LLMProvider):
         return item
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using the Vertex AI API.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image objects)
+            json_mode: If True, configures the model to return JSON-formatted output
+
+        Returns:
+            Generated text response from the model, or empty JSON object on error
+
+        Raises:
+            Exception: Caught internally and returns "{}" to prevent crashes
+        """
         try:
             generation_config = {}
             if json_mode:
@@ -187,6 +269,18 @@ class VertexAIProvider(LLMProvider):
             return "{}"
 
     def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Load an image file and convert it to a Vertex AI Part object.
+
+        Args:
+            image_path: Path to the image file to load
+
+        Returns:
+            Vertex AI Part object containing the image data
+
+        Raises:
+            ValueError: If the file is not a valid image or MIME type cannot be determined
+        """
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type or not mime_type.startswith("image/"):
             raise ValueError(
@@ -249,6 +343,24 @@ class MockLLMProvider(LLMProvider):
 def get_provider(config):
     """
     Factory function to instantiate the correct LLM provider based on config.
+
+    Includes cost control mechanism: prompts user for approval when using real APIs
+    in development mode. Automatically falls back to MockLLMProvider if user declines.
+
+    Args:
+        config: Application configuration dictionary containing 'llm' settings with:
+            - provider: One of 'mock', 'gemini', 'gemini-3-pro', 'vertex'
+            - mode: 'development' or 'production' (affects approval gate)
+            - model_name: Name of model to use (provider-specific)
+            - vertex_project_id: Required for Vertex AI provider
+            - vertex_location: Required for Vertex AI provider
+
+    Returns:
+        LLMProvider: Instance of the appropriate provider class
+
+    Raises:
+        ValueError: If provider is unsupported, missing API keys, or missing config values
+        ImportError: If Vertex AI selected but google-cloud-aiplatform not installed
     """
     provider_name = config.get("llm", {}).get("provider", "mock")
     llm_config = config.get("llm", {})
