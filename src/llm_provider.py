@@ -59,6 +59,7 @@ class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
+        self._model_name = model_name
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
         try:
@@ -70,6 +71,20 @@ class GeminiProvider(LLMProvider):
             response = self.model.generate_content(
                 prompt_parts, generation_config=generation_config
             )
+
+            # Log cost if token metadata available
+            try:
+                from src.cost_tracking import log_api_call
+                usage = getattr(response, 'usage_metadata', None)
+                if usage:
+                    log_api_call(
+                        "gemini", self._model_name,
+                        getattr(usage, 'prompt_token_count', 0),
+                        getattr(usage, 'candidates_token_count', 0),
+                    )
+            except Exception:
+                pass
+
             return response.text
         except Exception as e:
             print(f"An error occurred with the Gemini provider: {e}")
@@ -124,6 +139,7 @@ class VertexAIProvider(LLMProvider):
 
         vertexai.init(project=project_id, location=location)
         self.model = GenerativeModel(model_name)
+        self._model_name = model_name
 
     def _convert_to_vertex_part(self, item: Any) -> Any:
         if isinstance(item, PILImage.Image):
@@ -151,6 +167,20 @@ class VertexAIProvider(LLMProvider):
             response = self.model.generate_content(
                 vertex_prompt_parts, generation_config=generation_config
             )
+
+            # Log cost if token metadata available
+            try:
+                from src.cost_tracking import log_api_call
+                usage = getattr(response, 'usage_metadata', None)
+                if usage:
+                    log_api_call(
+                        "vertex", self._model_name,
+                        getattr(usage, 'prompt_token_count', 0),
+                        getattr(usage, 'candidates_token_count', 0),
+                    )
+            except Exception:
+                pass
+
             return response.text
         except Exception as e:
             print(f"An error occurred with the Vertex AI provider: {e}")
