@@ -11,11 +11,15 @@
         <div class="nav-brand">
             <a href="/dashboard">QuizWeaver</a>
         </div>
+        <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+            <span class="hamburger"></span>
+        </button>
         <ul class="nav-links">
             <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/classes">Classes</a></li>
             <li><a href="/quizzes">Quizzes</a></li>
             <li><a href="/costs">Costs</a></li>
+            <li><a href="/logout">Logout</a></li>
         </ul>
     </nav>
 

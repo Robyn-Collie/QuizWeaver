@@ -209,6 +209,20 @@ body {
     background: #f1f5f9;
 }
 
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+/* Inline forms (for delete buttons in action rows) */
+.inline-form {
+    display: inline;
+}
+
 /* Forms */
 .form {
     max-width: 600px;
@@ -403,15 +417,77 @@ h2 {
     margin: 1.5rem 0 1rem;
 }
 
+/* Nav Toggle (hamburger) */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-left: auto;
+}
+
+.hamburger,
+.hamburger::before,
+.hamburger::after {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text);
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+}
+
+.hamburger::before {
+    top: -7px;
+}
+
+.hamburger::after {
+    top: 7px;
+}
+
+/* Chart Container */
+.chart-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .navbar {
         padding: 0 1rem;
+        flex-wrap: wrap;
+    }
+
+    .nav-toggle {
+        display: block;
     }
 
     .nav-links {
-        margin-left: 1.5rem;
-        gap: 1rem;
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 0;
+        margin-left: 0;
+        padding: 0.5rem 0;
+    }
+
+    .nav-links.open {
+        display: flex;
+    }
+
+    .nav-links li a {
+        display: block;
+        padding: 0.5rem 0;
     }
 
     .container {
