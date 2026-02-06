@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_classes }}</div>
+        <div class="stat-label">Classes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_lessons }}</div>
+        <div class="stat-label">Lessons Logged</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_quizzes }}</div>
+        <div class="stat-label">Quizzes Generated</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ provider }}</div>
+        <div class="stat-label">LLM Provider</div>
+    </div>
+</div>
+
+<h2>Your Classes</h2>
+{% if classes %}
+<div class="class-list">
+    {% for cls in classes %}
+    <div class="class-card">
+        <h3><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></h3>
+        <p>
+            {% if cls.grade_level %}Grade: {{ cls.grade_level }}{% endif %}
+            {% if cls.subject %} | {{ cls.subject }}{% endif %}
+        </p>
+        <div class="class-stats">
+            <span>{{ cls.lesson_count }} lessons</span>
+            <span>{{ cls.quiz_count }} quizzes</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No classes yet. <a href="/classes/new">Create your first class</a>.</p>
+{% endif %}
+{% endblock %}
