@@ -1,0 +1,380 @@
+================================================================================
+LESSON 1: PHOTOSYNTHESIS - THE ENERGY PRODUCERS
+================================================================================
+
+Date: February 3, 2026
+Class: 7th Grade Science - Block A
+Duration: 90 minutes
+Standards: SOL 7.1, SOL 7.2
+
+Topics Covered:
+- Photosynthesis process and equation
+- Chloroplasts and chlorophyll function
+- Light-dependent and light-independent reactions
+- Factors affecting photosynthesis rate
+- Role of producers in ecosystems
+
+Detailed Content:
+
+Introduction (15 minutes):
+Students observed leaf cross-sections under microscopes to identify chloroplasts.
+We discussed why plants appear green (chlorophyll reflects green light). Showed
+time-lapse video of plant growth with and without sunlight.
+
+Core Instruction (40 minutes):
+Introduced the photosynthesis equation: 6CO2 + 6H2O + light energy -> C6H12O6 + 6O2
+Explained the two-stage process:
+1. Light-dependent reactions (occur in thylakoid membranes)
+   - Convert light energy to chemical energy (ATP and NADPH)
+   - Water molecules split, releasing oxygen as byproduct
+   - Requires chlorophyll to capture light energy
+
+2. Light-independent reactions/Calvin Cycle (occur in stroma)
+   - Use ATP and NADPH to convert CO2 into glucose
+   - Does not require direct light but needs products from light reactions
+   - Creates the food (glucose) that plants use for energy
+
+Discussed factors that affect photosynthesis rate:
+- Light intensity (more light = faster photosynthesis, up to a saturation point)
+- Carbon dioxide concentration (limiting factor in many environments)
+- Temperature (enzymes work best at optimal temperatures)
+- Water availability (essential reactant)
+
+Lab Activity (25 minutes):
+Students conducted floating leaf disk experiment to measure photosynthesis rate
+under different light conditions. Used baking soda solution to provide CO2,
+observed how many leaf disks floated after 10 minutes under bright light vs.
+dim light. Results showed clear correlation between light intensity and oxygen
+production (buoyancy).
+
+Wrap-up (10 minutes):
+Review of key vocabulary: photosynthesis, chloroplast, chlorophyll, stomata,
+glucose, producer, autotroph. Quick formative assessment using exit tickets.
+
+Key Concepts:
+- Photosynthesis converts light energy into chemical energy stored in glucose
+- Chloroplasts are the organelles where photosynthesis occurs
+- Oxygen is a byproduct released during photosynthesis
+- Plants are producers/autotrophs that make their own food
+- Light intensity, CO2, temperature, and water all affect photosynthesis rate
+
+Teacher Notes:
+Several students confused light-dependent and light-independent reactions - need
+to reinforce that Calvin Cycle doesn't directly use light but depends on products
+from light reactions. Great engagement during lab activity. Block A grasped the
+concept well overall. May need to review chemical equations and balancing for
+some students. Connect this to cellular respiration next week to show how
+photosynthesis and respiration are complementary processes.
+
+
+================================================================================
+LESSON 2: CELLULAR RESPIRATION - RELEASING STORED ENERGY
+================================================================================
+
+Date: February 10, 2026
+Class: 7th Grade Science - Block A & Block B
+Duration: 90 minutes
+Standards: SOL 7.1, SOL 7.2
+
+Topics Covered:
+- Cellular respiration process and equation
+- Aerobic vs. anaerobic respiration
+- Mitochondria structure and function
+- ATP as cellular energy currency
+- Connection between photosynthesis and cellular respiration
+
+Detailed Content:
+
+Introduction (10 minutes):
+Quick review of photosynthesis from last week. Asked students: "Plants make
+glucose during photosynthesis, but what do they do with it?" Led into discussion
+of how all organisms need to break down glucose to release usable energy (ATP).
+
+Core Instruction (40 minutes):
+Introduced cellular respiration equation: C6H12O6 + 6O2 -> 6CO2 + 6H2O + ATP
+Pointed out this is the reverse of photosynthesis! Discussed three stages:
+
+1. Glycolysis (occurs in cytoplasm)
+   - Breaks glucose into 2 pyruvate molecules
+   - Produces small amount of ATP
+   - Does not require oxygen (anaerobic)
+
+2. Krebs Cycle/Citric Acid Cycle (occurs in mitochondrial matrix)
+   - Further breaks down pyruvate
+   - Produces electron carriers (NADH, FADH2)
+   - Releases CO2 as waste product
+
+3. Electron Transport Chain (occurs on inner mitochondrial membrane)
+   - Uses electron carriers to produce large amounts of ATP
+   - Requires oxygen as final electron acceptor
+   - Produces water as byproduct
+
+Explained ATP (adenosine triphosphate) as the "energy currency" of cells - like
+rechargeable batteries that power cellular work.
+
+Compared aerobic respiration (with oxygen, produces ~36-38 ATP per glucose) vs.
+anaerobic respiration/fermentation (without oxygen, produces only 2 ATP per glucose).
+
+Discussed two types of fermentation:
+- Lactic acid fermentation (muscle cells during intense exercise, causes soreness)
+- Alcoholic fermentation (yeast, used to make bread, beer, wine)
+
+Demonstration (20 minutes):
+Set up yeast fermentation demonstration using balloons on bottles with
+sugar-water-yeast mixture. Balloons inflated due to CO2 production from
+fermentation. Students measured balloon circumference every 5 minutes.
+
+Comparison Activity (15 minutes):
+Created Venn diagram comparing photosynthesis and cellular respiration:
+- Both involve energy transformation
+- Photosynthesis stores energy, respiration releases energy
+- Photosynthesis requires light, respiration does not
+- Photosynthesis produces oxygen, respiration consumes oxygen
+- Equations are reverse of each other
+
+Wrap-up (5 minutes):
+Quick quiz: "Why do we breathe?" Answer: to get oxygen for cellular respiration
+and remove CO2 waste. Connected to upcoming lesson on respiratory system.
+
+Key Concepts:
+- Cellular respiration releases energy from glucose to produce ATP
+- Mitochondria are the "powerhouses" where most ATP is produced
+- Aerobic respiration requires oxygen and produces more ATP than anaerobic
+- Fermentation occurs when oxygen is not available
+- Cellular respiration and photosynthesis are complementary processes
+
+Teacher Notes:
+Block A had already learned photosynthesis, so the connection was clear. Block B
+needed more scaffolding since they're on a different pacing - spent extra time
+reviewing photosynthesis basics. Both blocks were fascinated by the yeast
+demonstration. Several students asked about why they get tired during exercise -
+good opportunity to explain lactic acid buildup. Need to revisit mitochondria
+structure in more detail. Consider adding diagram of energy flow through
+ecosystems to show how photosynthesis and respiration connect at ecosystem level.
+
+
+================================================================================
+LESSON 3: ECOSYSTEMS AND ENERGY FLOW
+================================================================================
+
+Date: February 17, 2026
+Class: 7th Grade Science - Block A & Block B
+Duration: 90 minutes
+Standards: SOL 7.3
+
+Topics Covered:
+- Ecosystem components (biotic and abiotic factors)
+- Energy flow through food chains and food webs
+- Trophic levels and energy pyramids
+- Nutrient cycles (carbon, nitrogen, water)
+- Symbiotic relationships
+
+Detailed Content:
+
+Introduction (15 minutes):
+Showed images of different ecosystems (desert, rainforest, coral reef, tundra).
+Students identified living organisms and non-living factors in each. Introduced
+terms biotic (living) and abiotic (non-living) factors. Discussed how organisms
+interact with both.
+
+Core Instruction (35 minutes):
+Explained energy flow through ecosystems:
+- Sun is ultimate energy source for most ecosystems
+- Producers (plants, algae) capture solar energy through photosynthesis
+- Consumers obtain energy by eating other organisms
+- Decomposers break down dead matter, recycling nutrients
+
+Introduced trophic levels:
+1. Producers (autotrophs) - plants, algae, some bacteria
+2. Primary consumers (herbivores) - eat producers
+3. Secondary consumers (carnivores/omnivores) - eat primary consumers
+4. Tertiary consumers (apex predators) - eat secondary consumers
+5. Decomposers (bacteria, fungi) - break down all levels
+
+Drew food chain example: Sun -> Grass -> Grasshopper -> Frog -> Snake -> Hawk
+
+Explained why food webs are more accurate than food chains:
+- Most organisms eat multiple food sources
+- Food webs show interconnections and complexity
+- Changes to one species affect multiple others
+
+Introduced energy pyramids:
+- Only ~10% of energy transfers to next trophic level
+- Most energy lost as heat through cellular respiration
+- This is why there are fewer apex predators than producers
+- Biomass pyramid shows similar pattern
+
+Discussed three major nutrient cycles briefly:
+1. Carbon cycle - photosynthesis removes CO2, respiration releases it
+2. Nitrogen cycle - bacteria convert atmospheric N2 to usable forms
+3. Water cycle - evaporation, condensation, precipitation
+
+Group Activity (30 minutes):
+Students worked in groups to create food webs for assigned ecosystems (pond,
+forest, ocean, grassland). Each group:
+- Identified at least 10 organisms
+- Showed energy flow with arrows
+- Labeled trophic levels
+- Predicted what would happen if one species was removed
+
+Groups presented their food webs and predictions. Great discussion about
+keystone species and cascade effects.
+
+Symbiosis Discussion (8 minutes):
+Briefly introduced three types of symbiotic relationships:
+- Mutualism (both benefit) - bees and flowers, clownfish and anemones
+- Commensalism (one benefits, one unaffected) - barnacles on whales
+- Parasitism (one benefits, one harmed) - ticks on dogs, tapeworms
+
+Wrap-up (2 minutes):
+Preview of next lesson on water cycle in detail.
+
+Key Concepts:
+- Ecosystems contain biotic and abiotic factors that interact
+- Energy flows one-way through ecosystems (Sun -> producers -> consumers)
+- Only 10% of energy transfers between trophic levels
+- Food webs show complex feeding relationships
+- Nutrient cycles recycle matter through ecosystems
+- Removing one species can have cascade effects on ecosystem
+
+Teacher Notes:
+Students really engaged with the food web activity. Several groups had
+sophisticated understanding of interconnections. Need to spend more time on
+decomposers - many students initially left them out of food webs. Block B needed
+extra scaffolding on energy pyramids (revisit 10% rule with specific numbers).
+Consider adding game or simulation to show predator-prey relationships and
+population dynamics. Connect to human impact on ecosystems in future lesson.
+Great opportunity to discuss local ecosystems and current environmental issues.
+
+
+================================================================================
+LESSON 4: THE WATER CYCLE - EARTH'S RECYCLING SYSTEM
+================================================================================
+
+Date: February 24, 2026
+Class: 8th Grade Earth Science - Block C
+Duration: 90 minutes
+Standards: SOL 8.2, SOL 8.4
+
+Topics Covered:
+- Water cycle processes (evaporation, condensation, precipitation, runoff)
+- Water reservoirs (oceans, atmosphere, groundwater, ice caps)
+- Energy source driving the water cycle
+- Human impact on water cycle
+- Water cycle's role in weather and climate
+
+Detailed Content:
+
+Introduction (10 minutes):
+Asked students: "Where does rain come from?" Collected various answers and built
+toward understanding that Earth has a fixed amount of water that continuously
+cycles. The water in their bodies might have been in a dinosaur, ocean, or cloud
+millions of years ago.
+
+Core Instruction (40 minutes):
+Drew water cycle diagram on board with students helping identify components:
+
+1. Evaporation
+   - Liquid water -> water vapor (gas)
+   - Occurs primarily from oceans (97% of water cycle)
+   - Also from lakes, rivers, soil, plants (transpiration)
+   - Requires heat energy from the Sun
+   - Higher temperature = faster evaporation
+
+2. Transpiration
+   - Water released by plants through stomata
+   - Contributes significantly to atmospheric moisture
+   - Plants act as "water pumps" from soil to atmosphere
+
+3. Condensation
+   - Water vapor -> liquid water droplets
+   - Occurs when air cools (rising air, nighttime, contact with cold surface)
+   - Forms clouds, fog, dew
+   - Requires condensation nuclei (dust, pollen, salt particles)
+
+4. Precipitation
+   - Water falls from clouds as rain, snow, sleet, or hail
+   - Occurs when water droplets become heavy enough
+   - Distribution varies greatly by location (tropical vs. desert)
+
+5. Runoff
+   - Water flows over land surface to streams, rivers, oceans
+   - Erosion and sediment transport occur
+   - Can cause flooding in heavy rainfall
+   - Impermeable surfaces (pavement) increase runoff
+
+6. Infiltration
+   - Water soaks into soil and becomes groundwater
+   - Recharges aquifers (underground water storage)
+   - Permeable soil allows more infiltration
+   - Trees and plants increase infiltration rates
+
+7. Groundwater Flow
+   - Slow movement through soil and rock
+   - Eventually reaches streams, lakes, or ocean
+   - Provides baseflow to streams during dry periods
+   - Supplies wells and springs
+
+Discussed water reservoirs and residence times:
+- Oceans: 97% of Earth's water, salty, average residence time ~3,000 years
+- Ice caps/glaciers: 2% of Earth's water, frozen, residence time ~10,000 years
+- Groundwater: 0.6%, can be ancient (thousands of years)
+- Lakes/rivers: 0.01%, relatively fast turnover (days to years)
+- Atmosphere: 0.001%, very fast turnover (average 9 days)
+
+Emphasized that the Sun drives the water cycle by providing energy for evaporation.
+
+Human Impact Discussion (15 minutes):
+- Urbanization increases runoff, decreases infiltration (flooding risk)
+- Deforestation reduces transpiration, affects local rainfall patterns
+- Groundwater pumping can deplete aquifers faster than they recharge
+- Climate change altering precipitation patterns (droughts, intense storms)
+- Pollution enters water cycle, affecting all reservoirs
+
+Demonstration and Lab (20 minutes):
+Set up terrarium demonstration showing miniature water cycle:
+- Sealed container with soil, plants, water
+- Heat lamp (Sun) causes evaporation
+- Water vapor condenses on cool lid
+- "Rain" drips back down to soil
+
+Students observed condensation forming within 10 minutes. Discussed how this
+models Earth's water cycle.
+
+Students also conducted evaporation rate experiment comparing:
+- Open dish (control)
+- Dish with fan (increased air movement)
+- Dish under heat lamp (increased temperature)
+- Covered dish (limited evaporation)
+Measured water levels after 15 minutes to quantify evaporation rates.
+
+Connection to Weather and Climate (5 minutes):
+Explained that water cycle is fundamental to weather:
+- Hurricanes require warm ocean water for evaporation
+- Thunderstorms form when humid air rises and condenses rapidly
+- Monsoons are seasonal wind patterns bringing precipitation
+- Climate zones partially defined by water availability
+
+Wrap-up (5 minutes):
+Review quiz: Asked students to trace the path of one water molecule through the
+entire cycle. Several students created creative narratives describing their
+molecule's journey through different reservoirs over millions of years.
+
+Key Concepts:
+- Water continuously cycles between liquid, gas, and solid forms
+- Sun provides energy driving evaporation
+- Major processes: evaporation, condensation, precipitation, infiltration, runoff
+- Most of Earth's water is in oceans; only 3% is freshwater
+- Groundwater is important freshwater reservoir with slow turnover
+- Human activities significantly impact the water cycle
+- Water cycle connects to weather, climate, and erosion
+
+Teacher Notes:
+8th graders had stronger grasp of phase changes than expected - good foundation
+for this lesson. Terrarium demonstration was highly effective visual aid.
+Several students made excellent connections to current drought in western US.
+Need to expand on groundwater systems in next lesson - consider field trip to
+water treatment plant or well site. Great opportunity to integrate with upcoming
+unit on weather systems. Consider adding case study on local watershed or water
+management issues. Students asked thoughtful questions about desalination and
+water conservation - pursue these topics in follow-up lesson.

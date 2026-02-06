@@ -1,0 +1,20 @@
+[
+  {
+    "name": "7th Grade Science - Block A",
+    "grade_level": "7th Grade",
+    "subject": "Science",
+    "standards": ["SOL 7.1", "SOL 7.2", "SOL 7.3"]
+  },
+  {
+    "name": "7th Grade Science - Block B",
+    "grade_level": "7th Grade",
+    "subject": "Science",
+    "standards": ["SOL 7.1", "SOL 7.2"]
+  },
+  {
+    "name": "8th Grade Earth Science - Block C",
+    "grade_level": "8th Grade",
+    "subject": "Earth Science",
+    "standards": ["SOL 8.1", "SOL 8.2", "SOL 8.3", "SOL 8.4"]
+  }
+]
