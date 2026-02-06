@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Classes - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Classes</h1>
+    <a href="/classes/new" class="btn btn-primary">New Class</a>
+</div>
+
+{% if classes %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Grade</th>
+            <th>Subject</th>
+            <th>Lessons</th>
+            <th>Quizzes</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cls in classes %}
+        <tr>
+            <td>{{ cls.id }}</td>
+            <td><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></td>
+            <td>{{ cls.grade_level or '' }}</td>
+            <td>{{ cls.subject or '' }}</td>
+            <td>{{ cls.lesson_count }}</td>
+            <td>{{ cls.quiz_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No classes found. <a href="/classes/new">Create your first class</a>.</p>
+{% endif %}
+{% endblock %}

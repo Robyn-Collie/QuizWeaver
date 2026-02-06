@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ class_obj.name }}</h1>
+
+<div class="class-info">
+    {% if class_obj.grade_level %}<p><strong>Grade:</strong> {{ class_obj.grade_level }}</p>{% endif %}
+    {% if class_obj.subject %}<p><strong>Subject:</strong> {{ class_obj.subject }}</p>{% endif %}
+</div>
+
+<div class="section-actions">
+    <a href="/classes/{{ class_obj.id }}/lessons" class="btn btn-secondary">View Lessons</a>
+    <a href="/classes/{{ class_obj.id }}/lessons/new" class="btn btn-primary">Log Lesson</a>
+    <a href="/classes/{{ class_obj.id }}/quizzes" class="btn btn-secondary">View Quizzes</a>
+</div>
+
+{% if knowledge %}
+<h2>Assumed Knowledge</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Topic</th>
+            <th>Depth</th>
+            <th>Last Taught</th>
+            <th>Mentions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for topic, data in knowledge.items() %}
+        <tr>
+            <td>{{ topic }}</td>
+            <td>{{ data.depth }}</td>
+            <td>{{ data.last_taught }}</td>
+            <td>{{ data.mention_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<h2>Recent Lessons</h2>
+{% if lessons %}
+<ul class="lesson-list">
+    {% for lesson in lessons[:5] %}
+    <li>
+        <strong>{{ lesson.date }}</strong>
+        {% if lesson.notes %} - {{ lesson.notes }}{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No lessons logged yet.</p>
+{% endif %}
+{% endblock %}
