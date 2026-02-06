@@ -4,7 +4,11 @@
 {% block content %}
 <h1>Log Lesson - {{ class_obj.name }}</h1>
 
-<form method="POST" action="/classes/{{ class_obj.id }}/lessons/new" class="form">
+<form method="POST" action="/classes/{{ class_obj.id }}/lessons/new" class="form" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="lesson_date">Lesson Date</label>
+        <input type="date" id="lesson_date" name="lesson_date" value="{{ today }}">
+    </div>
     <div class="form-group">
         <label for="content">Lesson Content</label>
         <textarea id="content" name="content" rows="6" required placeholder="What did you teach today? Include topics, activities, and key concepts covered."></textarea>
@@ -16,6 +20,10 @@
     <div class="form-group">
         <label for="notes">Teacher Notes (optional)</label>
         <textarea id="notes" name="notes" rows="3" placeholder="Observations, student engagement, areas to revisit..."></textarea>
+    </div>
+    <div class="form-group">
+        <label for="lesson_file">Upload Lesson File (optional, PDF or DOCX)</label>
+        <input type="file" id="lesson_file" name="lesson_file" accept=".pdf,.docx">
     </div>
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Log Lesson</button>
