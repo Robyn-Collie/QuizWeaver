@@ -1,4 +1,9 @@
-# Configuration for the Quiz Retake Generator
+# Configuration for QuizWeaver - AI-Powered Teaching Platform
+
+# --- Active Class ---
+# The currently active class for commands (set via: python main.py set-class <id>)
+# When set, commands like generate, log-lesson default to this class
+# active_class_id: 1
 
 # --- File Paths ---
 # Directories for input and output files.
