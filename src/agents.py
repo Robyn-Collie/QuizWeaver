@@ -2,6 +2,8 @@ import os
 import json
 from typing import Dict, List, Any, Optional
 from src.llm_provider import get_provider
+from src.database import get_engine, init_db, get_session, Class
+from src.lesson_tracker import get_recent_lessons, get_assumed_knowledge
 
 
 def load_prompt(filename: str) -> str:
@@ -62,9 +64,28 @@ class GeneratorAgent:
         if feedback:
             feedback_section = f"\n**CRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:**\n{feedback}\nYou must revise your output to address this feedback.\n"
 
+        # Build class context section
+        class_context_section = ""
+        lesson_logs = context.get("lesson_logs", [])
+        assumed_knowledge = context.get("assumed_knowledge", {})
+        if lesson_logs or assumed_knowledge:
+            class_context_section = "**Class Context:**\n"
+            if lesson_logs:
+                class_context_section += "Recent lessons taught to this class:\n"
+                for log in lesson_logs[:10]:
+                    topics = log.get("topics", [])
+                    class_context_section += f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+            if assumed_knowledge:
+                class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
+                for topic, data in assumed_knowledge.items():
+                    depth = data.get("depth", 1)
+                    label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(depth, "unknown")
+                    class_context_section += f"- {topic}: depth {depth} ({label})\n"
+
         # Prepare base prompt text
         prompt_text = self.base_prompt.replace("{grade_level}", str(grade_level))
         prompt_text = prompt_text.replace("{sol_section}", sol_section)
+        prompt_text = prompt_text.replace("{class_context}", class_context_section)
 
         full_prompt = f"""
 {prompt_text}
@@ -292,6 +313,52 @@ class Orchestrator:
         return questions
 
 
-def run_agentic_pipeline(config, context):
+def run_agentic_pipeline(config, context, class_id=None):
+    """
+    Run the agentic quiz generation pipeline.
+
+    Args:
+        config: Application config dict
+        context: Generation context dict
+        class_id: Optional class ID to load lesson context for
+    """
+    # Enrich context with class data if class_id provided
+    if class_id is not None:
+        try:
+            db_path = config.get("paths", {}).get("database_file", "quiz_warehouse.db")
+            engine = get_engine(db_path)
+            session = get_session(engine)
+
+            # Load recent lessons
+            recent = get_recent_lessons(session, class_id, days=14)
+            lesson_logs = []
+            for log in recent:
+                import json as _json
+                topics = _json.loads(log.topics) if isinstance(log.topics, str) else (log.topics or [])
+                lesson_logs.append({
+                    "date": str(log.date),
+                    "topics": topics,
+                    "notes": log.notes,
+                })
+            context["lesson_logs"] = lesson_logs
+
+            # Load assumed knowledge
+            knowledge = get_assumed_knowledge(session, class_id)
+            context["assumed_knowledge"] = knowledge
+
+            # Load class config
+            class_obj = session.query(Class).filter_by(id=class_id).first()
+            if class_obj:
+                context["class_config"] = {
+                    "name": class_obj.name,
+                    "grade_level": class_obj.grade_level,
+                    "subject": class_obj.subject,
+                    "standards": class_obj.standards,
+                }
+
+            session.close()
+        except Exception as e:
+            print(f"Warning: Could not load class context: {e}")
+
     orch = Orchestrator(config)
     return orch.run(context)
