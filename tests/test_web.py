@@ -9,7 +9,7 @@ import os
 import json
 import tempfile
 import pytest
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 # Import database models for test setup
 from src.database import Base, Class, LessonLog, Quiz, Question, get_engine, get_session
@@ -48,7 +48,7 @@ def app():
     session.add(block_a)
     session.commit()
 
-    # Add lesson logs for the legacy class
+    # Add lesson logs for the legacy class across multiple days
     lesson1 = LessonLog(
         class_id=legacy_class.id,
         date=date(2026, 2, 1),
@@ -121,8 +121,24 @@ def app():
 
 @pytest.fixture
 def client(app):
-    """Create a test client for the Flask app."""
+    """Create a logged-in test client (most tests need auth)."""
+    c = app.test_client()
+    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    return c
+
+
+@pytest.fixture
+def anon_client(app):
+    """Create an unauthenticated test client for auth tests."""
     return app.test_client()
+
+
+@pytest.fixture
+def auth_client(app):
+    """Alias for logged-in client (used by auth tests)."""
+    c = app.test_client()
+    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    return c
 
 
 # ============================================================
@@ -479,3 +495,303 @@ class TestNavigation:
         response = client.get("/quizzes")
         html = response.data.decode()
         assert "/dashboard" in html
+
+
+# ============================================================
+# Task 8: Quiz Generation Page Tests
+# ============================================================
+
+
+class TestQuizGeneration:
+    """Test quiz generation form and triggering from web."""
+
+    def test_generate_form_returns_200(self, client):
+        """Quiz generation form page loads."""
+        response = client.get("/classes/1/generate")
+        assert response.status_code == 200
+
+    def test_generate_form_has_fields(self, client):
+        """Quiz generation form has configuration fields."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert 'name="num_questions"' in html
+        assert 'name="grade_level"' in html
+
+    def test_generate_form_shows_class_name(self, client):
+        """Quiz generation form shows which class it's for."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert "Legacy Class" in html
+
+    def test_generate_form_404_for_invalid_class(self, client):
+        """Quiz generation returns 404 for nonexistent class."""
+        response = client.get("/classes/999/generate")
+        assert response.status_code == 404
+
+    def test_generate_post_creates_quiz(self, client):
+        """POST to generate creates a quiz and redirects to it."""
+        response = client.post("/classes/1/generate", data={
+            "num_questions": "5",
+            "grade_level": "7th Grade",
+            "sol_standards": "SOL 7.1",
+        }, follow_redirects=False)
+        # Should redirect to the new quiz detail
+        assert response.status_code in (302, 303)
+        assert "/quizzes/" in response.headers["Location"]
+
+    def test_generate_post_quiz_appears_in_list(self, client):
+        """After generating, quiz appears in the quizzes list."""
+        client.post("/classes/1/generate", data={
+            "num_questions": "5",
+            "grade_level": "7th Grade",
+        })
+        response = client.get("/quizzes")
+        html = response.data.decode()
+        assert "generated" in html.lower()
+
+    def test_generate_post_default_questions(self, client):
+        """Generate with default num_questions works."""
+        response = client.post("/classes/1/generate", data={
+            "grade_level": "7th Grade",
+        }, follow_redirects=False)
+        assert response.status_code in (302, 303)
+
+    def test_class_detail_has_generate_link(self, client):
+        """Class detail page has a link to generate a quiz."""
+        response = client.get("/classes/1")
+        html = response.data.decode()
+        assert "/classes/1/generate" in html
+
+
+# ============================================================
+# Task 9: Dashboard Charts / Stats API Tests
+# ============================================================
+
+
+class TestDashboardCharts:
+    """Test dashboard stats API and chart rendering."""
+
+    def test_stats_api_returns_json(self, client):
+        """Stats API endpoint returns JSON."""
+        response = client.get("/api/stats")
+        assert response.status_code == 200
+        assert response.content_type == "application/json"
+
+    def test_stats_api_has_lessons_by_date(self, client):
+        """Stats API includes lessons grouped by date."""
+        response = client.get("/api/stats")
+        data = response.get_json()
+        assert "lessons_by_date" in data
+
+    def test_stats_api_has_quizzes_by_class(self, client):
+        """Stats API includes quizzes grouped by class."""
+        response = client.get("/api/stats")
+        data = response.get_json()
+        assert "quizzes_by_class" in data
+
+    def test_stats_api_lessons_data_correct(self, client):
+        """Stats API lessons by date contains correct data."""
+        response = client.get("/api/stats")
+        data = response.get_json()
+        # We seeded lessons on 2026-02-01 and 2026-02-05
+        dates = [entry["date"] for entry in data["lessons_by_date"]]
+        assert "2026-02-01" in dates
+        assert "2026-02-05" in dates
+
+    def test_stats_api_quizzes_data_correct(self, client):
+        """Stats API quizzes by class contains correct data."""
+        response = client.get("/api/stats")
+        data = response.get_json()
+        class_names = [entry["class_name"] for entry in data["quizzes_by_class"]]
+        assert "Legacy Class" in class_names
+
+    def test_dashboard_has_chart_canvas(self, client):
+        """Dashboard includes canvas elements for charts."""
+        response = client.get("/dashboard")
+        html = response.data.decode()
+        assert "lessonsChart" in html or "lessons-chart" in html
+
+
+# ============================================================
+# Task 10: Authentication Tests
+# ============================================================
+
+
+class TestAuthentication:
+    """Test basic authentication for the web UI."""
+
+    def test_login_page_returns_200(self, anon_client):
+        """Login page loads."""
+        response = anon_client.get("/login")
+        assert response.status_code == 200
+
+    def test_login_page_has_form(self, anon_client):
+        """Login page has username and password fields."""
+        response = anon_client.get("/login")
+        html = response.data.decode()
+        assert 'name="username"' in html
+        assert 'name="password"' in html
+
+    def test_login_with_valid_credentials(self, anon_client):
+        """Login with valid credentials redirects to dashboard."""
+        response = anon_client.post("/login", data={
+            "username": "teacher",
+            "password": "quizweaver",
+        }, follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/dashboard" in response.headers["Location"]
+
+    def test_login_with_invalid_credentials(self, anon_client):
+        """Login with bad credentials shows error."""
+        response = anon_client.post("/login", data={
+            "username": "teacher",
+            "password": "wrongpassword",
+        })
+        html = response.data.decode()
+        assert response.status_code in (200, 401)
+        assert "invalid" in html.lower() or "incorrect" in html.lower()
+
+    def test_logout_redirects_to_login(self, client):
+        """Logout clears session and redirects to login."""
+        response = client.get("/logout", follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/login" in response.headers["Location"]
+
+    def test_protected_route_requires_login(self, anon_client):
+        """Dashboard requires login when auth is enabled."""
+        response = anon_client.get("/dashboard", follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/login" in response.headers["Location"]
+
+    def test_authenticated_user_can_access_dashboard(self, auth_client):
+        """Logged-in user can access dashboard."""
+        response = auth_client.get("/dashboard")
+        assert response.status_code == 200
+        assert b"QuizWeaver" in response.data
+
+    def test_authenticated_user_can_access_classes(self, auth_client):
+        """Logged-in user can access classes."""
+        response = auth_client.get("/classes")
+        assert response.status_code == 200
+
+
+# ============================================================
+# Task 11: Edit/Delete Actions Tests
+# ============================================================
+
+
+class TestEditDeleteActions:
+    """Test class edit, class delete, and lesson delete actions."""
+
+    def test_class_edit_form_returns_200(self, client):
+        """Class edit form loads."""
+        response = client.get("/classes/1/edit")
+        assert response.status_code == 200
+
+    def test_class_edit_form_prefilled(self, client):
+        """Class edit form is pre-filled with current values."""
+        response = client.get("/classes/1/edit")
+        html = response.data.decode()
+        assert "Legacy Class" in html
+        assert "7th Grade" in html
+
+    def test_class_edit_post_updates_class(self, client):
+        """POST to class edit updates the class."""
+        response = client.post("/classes/1/edit", data={
+            "name": "Updated Class Name",
+            "grade_level": "8th Grade",
+            "subject": "Biology",
+        }, follow_redirects=False)
+        assert response.status_code in (302, 303)
+
+        # Verify update
+        response = client.get("/classes/1")
+        html = response.data.decode()
+        assert "Updated Class Name" in html
+
+    def test_class_edit_404_for_invalid_id(self, client):
+        """Class edit returns 404 for nonexistent class."""
+        response = client.get("/classes/999/edit")
+        assert response.status_code == 404
+
+    def test_class_delete_post_removes_class(self, client):
+        """POST to class delete removes the class."""
+        # Delete Block A (class 2)
+        response = client.post("/classes/2/delete", follow_redirects=False)
+        assert response.status_code in (302, 303)
+
+        # Verify it's gone
+        response = client.get("/classes/2")
+        assert response.status_code == 404
+
+    def test_class_delete_404_for_invalid_id(self, client):
+        """Delete returns 404 for nonexistent class."""
+        response = client.post("/classes/999/delete")
+        assert response.status_code == 404
+
+    def test_lesson_delete_post_removes_lesson(self, client):
+        """POST to lesson delete removes the lesson."""
+        # Delete lesson 1
+        response = client.post("/classes/1/lessons/1/delete", follow_redirects=False)
+        assert response.status_code in (302, 303)
+
+        # Verify lesson count decreased
+        response = client.get("/classes/1/lessons")
+        html = response.data.decode()
+        # Only 1 lesson should remain (originally 2)
+        assert "cell division" in html
+        # photosynthesis lesson was deleted
+        assert "Students engaged well" not in html
+
+    def test_lesson_delete_404_for_invalid_id(self, client):
+        """Lesson delete returns 404 for nonexistent lesson."""
+        response = client.post("/classes/1/lessons/999/delete")
+        assert response.status_code == 404
+
+    def test_class_detail_has_edit_link(self, client):
+        """Class detail page has an edit link."""
+        response = client.get("/classes/1")
+        html = response.data.decode()
+        assert "/classes/1/edit" in html
+
+    def test_class_detail_has_delete_button(self, client):
+        """Class detail page has a delete button."""
+        response = client.get("/classes/1")
+        html = response.data.decode()
+        assert "/classes/1/delete" in html or "delete" in html.lower()
+
+
+# ============================================================
+# Task 12: Responsive Design Tests
+# ============================================================
+
+
+class TestResponsiveDesign:
+    """Test responsive design elements are present."""
+
+    def test_viewport_meta_tag(self, client):
+        """Pages include viewport meta tag for mobile."""
+        response = client.get("/dashboard")
+        html = response.data.decode()
+        assert 'name="viewport"' in html
+        assert "width=device-width" in html
+
+    def test_nav_has_mobile_toggle(self, client):
+        """Navigation has a mobile toggle element."""
+        response = client.get("/dashboard")
+        html = response.data.decode()
+        assert "nav-toggle" in html or "hamburger" in html or "menu-toggle" in html
+
+    def test_css_has_mobile_breakpoints(self, client):
+        """CSS file includes mobile media queries."""
+        response = client.get("/static/css/style.css")
+        assert response.status_code == 200
+        css = response.data.decode()
+        assert "@media" in css
+        assert "max-width" in css
+
+    def test_form_inputs_have_proper_types(self, client):
+        """Form inputs use appropriate HTML5 types for mobile."""
+        response = client.get("/classes/new")
+        html = response.data.decode()
+        assert 'type="text"' in html
