@@ -35,9 +35,9 @@ def test_migration_on_clean_db():
         print("[PASS] Migration runs successfully on clean DB")
     finally:
         try:
-        # Cleanup
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            # Cleanup
+            if os.path.exists(test_db):
+                os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
 
@@ -58,8 +58,8 @@ def test_migration_on_existing_db():
         print("[PASS] Migration runs successfully on existing DB")
     finally:
         try:
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            if os.path.exists(test_db):
+                os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
 
@@ -78,8 +78,8 @@ def test_migration_is_idempotent():
         print("[PASS] Migration is idempotent (can run multiple times)")
     finally:
         try:
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            if os.path.exists(test_db):
+                os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
 
@@ -116,13 +116,10 @@ def test_class_creation():
         print("[PASS] Class creation works correctly")
     finally:
         try:
-        try:
             if os.path.exists(test_db):
                 os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
-        except:
-            pass  # Ignore cleanup errors on Windows
 
 
 def test_relationships():
@@ -162,8 +159,8 @@ def test_relationships():
         print("[PASS] Relationships work correctly (Class 1:N LessonLogs)")
     finally:
         try:
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            if os.path.exists(test_db):
+                os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
 
@@ -201,8 +198,8 @@ def test_quiz_class_relationship():
         print("[PASS] Quiz-Class relationship works correctly")
     finally:
         try:
-        if os.path.exists(test_db):
-            os.remove(test_db)
+            if os.path.exists(test_db):
+                os.remove(test_db)
         except:
             pass  # Ignore cleanup errors
 

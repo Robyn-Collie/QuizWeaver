@@ -105,6 +105,72 @@ def get_active_class(session: Session, config: dict) -> Optional[Class]:
     return get_class(session, int(class_id))
 
 
+def delete_class(session: Session, class_id: int) -> bool:
+    """
+    Delete a class by ID.
+
+    Associated lesson_logs are removed via CASCADE.
+    Associated quizzes have class_id set to NULL via SET NULL.
+
+    Args:
+        session: SQLAlchemy session
+        class_id: ID of the class to delete
+
+    Returns:
+        True if the class was found and deleted, False otherwise
+    """
+    class_obj = session.query(Class).filter_by(id=class_id).first()
+    if class_obj is None:
+        return False
+    # Explicitly delete lesson_logs first to avoid SQLAlchemy trying to
+    # SET NULL on the NOT NULL class_id column before SQL CASCADE fires.
+    session.query(LessonLog).filter_by(class_id=class_id).delete()
+    session.delete(class_obj)
+    session.commit()
+    return True
+
+
+def update_class(
+    session: Session,
+    class_id: int,
+    name: Optional[str] = None,
+    grade_level: Optional[str] = None,
+    subject: Optional[str] = None,
+    standards: Optional[List[str]] = None,
+) -> Optional[Class]:
+    """
+    Update fields on an existing class.
+
+    Only non-None arguments are applied, leaving other fields unchanged.
+
+    Args:
+        session: SQLAlchemy session
+        class_id: ID of the class to update
+        name: New name (or None to keep current)
+        grade_level: New grade level (or None to keep current)
+        subject: New subject (or None to keep current)
+        standards: New standards list (or None to keep current)
+
+    Returns:
+        The updated Class object, or None if the class was not found
+    """
+    class_obj = session.query(Class).filter_by(id=class_id).first()
+    if class_obj is None:
+        return None
+
+    if name is not None:
+        class_obj.name = name
+    if grade_level is not None:
+        class_obj.grade_level = grade_level
+    if subject is not None:
+        class_obj.subject = subject
+    if standards is not None:
+        class_obj.standards = json.dumps(standards)
+
+    session.commit()
+    return class_obj
+
+
 def set_active_class(config_path: str, class_id: int) -> bool:
     """
     Update config.yaml with a new active_class_id.

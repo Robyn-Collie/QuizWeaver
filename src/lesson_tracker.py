@@ -210,6 +210,25 @@ def update_assumed_knowledge(
     return knowledge
 
 
+def delete_lesson(session: Session, lesson_id: int) -> bool:
+    """
+    Delete a single lesson log by ID.
+
+    Args:
+        session: SQLAlchemy session
+        lesson_id: ID of the LessonLog to delete
+
+    Returns:
+        True if the lesson was found and deleted, False otherwise
+    """
+    lesson = session.query(LessonLog).filter_by(id=lesson_id).first()
+    if lesson is None:
+        return False
+    session.delete(lesson)
+    session.commit()
+    return True
+
+
 def get_assumed_knowledge(session: Session, class_id: int) -> Dict[str, Any]:
     """
     Get the assumed knowledge dict for a class.
