@@ -369,7 +369,7 @@ def get_provider(config):
     if provider_name in ["gemini", "gemini-3-pro", "vertex"]:
         mode = llm_config.get("mode", "development")
         if mode == "development":
-            print("\n⚠️  WARNING: Using real API - costs will be incurred!")
+            print("\n[WARNING] Using real API - costs will be incurred!")
             print(f"   Provider: {provider_name}")
             print("   To use cost-free mock provider, set llm.provider: 'mock' in config.yaml")
             print("   Continue with real API? (yes/no): ", end="")
@@ -392,7 +392,10 @@ def get_provider(config):
             raise ValueError(
                 "GEMINI_API_KEY is not set in the environment for Gemini provider."
             )
-        return GeminiProvider(api_key=api_key)
+        return GeminiProvider(
+            api_key=api_key,
+            model_name=llm_config.get("model_name", "gemini-1.5-flash"),
+        )
     elif provider_name == "gemini-3-pro":
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
