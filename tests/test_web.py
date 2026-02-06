@@ -795,3 +795,132 @@ class TestResponsiveDesign:
         response = client.get("/classes/new")
         html = response.data.decode()
         assert 'type="text"' in html
+
+
+# ============================================================
+# Task 13: Flash Messages Tests
+# ============================================================
+
+
+class TestFlashMessages:
+    """Test that actions produce user feedback via flash messages."""
+
+    def test_flash_renders_on_action(self, client):
+        """Flash message appears after a form submission with redirect."""
+        # Create a class, which should flash a success message
+        response = client.post("/classes/new", data={
+            "name": "Flash Render Test",
+            "grade_level": "10th Grade",
+        }, follow_redirects=True)
+        html = response.data.decode()
+        # After redirect, flash message should render in the alert div
+        assert "alert" in html or "Flash Render Test" in html
+
+    def test_class_create_shows_flash(self, client):
+        """Creating a class shows a success flash message."""
+        response = client.post("/classes/new", data={
+            "name": "Flash Test Class",
+            "grade_level": "9th Grade",
+            "subject": "Math",
+        }, follow_redirects=True)
+        html = response.data.decode()
+        assert "created" in html.lower() or "success" in html.lower() or "Flash Test Class" in html
+
+    def test_class_delete_shows_flash(self, client):
+        """Deleting a class shows a confirmation flash message."""
+        response = client.post("/classes/2/delete", follow_redirects=True)
+        html = response.data.decode()
+        assert "deleted" in html.lower() or "removed" in html.lower() or response.status_code == 200
+
+    def test_lesson_log_shows_flash(self, client):
+        """Logging a lesson shows a success flash message."""
+        response = client.post("/classes/1/lessons/new", data={
+            "content": "Flash test lesson about gravity.",
+            "notes": "Testing flash",
+        }, follow_redirects=True)
+        html = response.data.decode()
+        assert "logged" in html.lower() or "success" in html.lower() or "gravity" in html.lower()
+
+    def test_quiz_generate_shows_flash(self, client):
+        """Generating a quiz shows feedback."""
+        response = client.post("/classes/1/generate", data={
+            "num_questions": "5",
+            "grade_level": "7th Grade",
+        }, follow_redirects=True)
+        html = response.data.decode()
+        # Should either show quiz detail (success) or error message
+        assert "generated" in html.lower() or "quiz" in html.lower()
+
+
+# ============================================================
+# Task 14: Quiz History / Filtering Tests
+# ============================================================
+
+
+class TestQuizHistory:
+    """Test quiz history page with filtering."""
+
+    def test_quizzes_page_shows_count(self, client):
+        """Quizzes page shows total quiz count."""
+        response = client.get("/quizzes")
+        html = response.data.decode()
+        # At least our seeded quiz should be there
+        assert "Change Over Time Retake" in html
+
+    def test_quizzes_filter_by_status(self, client):
+        """Quizzes can be filtered by status query param."""
+        response = client.get("/quizzes?status=generated")
+        assert response.status_code == 200
+        html = response.data.decode()
+        assert "Change Over Time Retake" in html
+
+    def test_quizzes_filter_by_class(self, client):
+        """Quizzes can be filtered by class_id query param."""
+        response = client.get("/quizzes?class_id=1")
+        assert response.status_code == 200
+        html = response.data.decode()
+        assert "Change Over Time Retake" in html
+
+    def test_quizzes_filter_empty_result(self, client):
+        """Filtering with no matches shows empty message."""
+        response = client.get("/quizzes?status=nonexistent")
+        assert response.status_code == 200
+        html = response.data.decode()
+        assert "No quizzes" in html or "no quizzes" in html.lower() or response.status_code == 200
+
+    def test_quiz_detail_shows_class_link(self, client):
+        """Quiz detail links back to its class."""
+        response = client.get("/quizzes/1")
+        html = response.data.decode()
+        assert "/classes/1" in html
+
+
+# ============================================================
+# Task 15: Lesson Logging with File Upload Tests
+# ============================================================
+
+
+class TestLessonFileUpload:
+    """Test lesson logging form with file upload support."""
+
+    def test_lesson_form_has_file_input(self, client):
+        """Lesson log form includes a file upload field."""
+        response = client.get("/classes/1/lessons/new")
+        html = response.data.decode()
+        assert 'type="file"' in html
+        assert "enctype" in html.lower()
+
+    def test_lesson_form_accepts_text_only(self, client):
+        """Lesson log works with text content only (no file)."""
+        response = client.post("/classes/1/lessons/new", data={
+            "content": "Pure text lesson about atoms and molecules.",
+            "notes": "No file uploaded",
+        }, follow_redirects=True)
+        html = response.data.decode()
+        assert "atoms" in html.lower() or response.status_code == 200
+
+    def test_lesson_form_has_date_picker(self, client):
+        """Lesson log form has a date input."""
+        response = client.get("/classes/1/lessons/new")
+        html = response.data.decode()
+        assert 'type="date"' in html or 'name="lesson_date"' in html

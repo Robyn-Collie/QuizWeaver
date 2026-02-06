@@ -337,7 +337,17 @@ def register_routes(app):
     def quizzes_list():
         """List all quizzes with class names and question counts."""
         session = _get_session()
-        quizzes = session.query(Quiz).order_by(Quiz.created_at.desc()).all()
+        query = session.query(Quiz)
+
+        # Apply optional filters
+        status_filter = request.args.get("status")
+        class_id_filter = request.args.get("class_id", type=int)
+        if status_filter:
+            query = query.filter(Quiz.status == status_filter)
+        if class_id_filter:
+            query = query.filter(Quiz.class_id == class_id_filter)
+
+        quizzes = query.order_by(Quiz.created_at.desc()).all()
         quiz_data = []
         for q in quizzes:
             class_obj = get_class(session, q.class_id) if q.class_id else None
@@ -444,6 +454,7 @@ def register_routes(app):
             )
 
             if quiz:
+                flash("Quiz generated successfully.", "success")
                 return redirect(url_for("quiz_detail", quiz_id=quiz.id), code=303)
             else:
                 return render_template(
