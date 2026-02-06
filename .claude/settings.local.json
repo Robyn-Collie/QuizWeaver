@@ -13,7 +13,9 @@
       "Bash(openspec instructions apply:*)",
       "Bash(python -m pytest:*)",
       "Bash(python:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Bash(sqlite3:*)",
+      "Bash(dir:*)"
     ]
   }
 }

@@ -34,32 +34,32 @@
 
 ### 2. Database Schema Extension
 
-- [ ] 2.1 Create database migration script
-  - [ ] 2.1a Create `migrations/001_add_classes.sql`
-  - [ ] 2.1b Add Classes table definition
-  - [ ] 2.1c Add LessonLogs table definition
-  - [ ] 2.1d Add Standards table definition (placeholder for Phase 2)
-  - [ ] 2.1e Add PerformanceData table definition (placeholder for Phase 2)
-  - [ ] 2.1f Add class_id column to Quizzes table (nullable)
+- [x] 2.1 Create database migration script
+  - [x] 2.1a Create `migrations/001_add_classes.sql`
+  - [x] 2.1b Add Classes table definition
+  - [x] 2.1c Add LessonLogs table definition
+  - [x] 2.1d Add Standards table definition (placeholder for Phase 2)
+  - [x] 2.1e Add PerformanceData table definition (placeholder for Phase 2)
+  - [x] 2.1f Add class_id column to Quizzes table (nullable)
 
-- [ ] 2.2 Implement migration runner
-  - [ ] 2.2a Create `src/migrations.py` with run_migrations() function
-  - [ ] 2.2b Check if migration needed (detect missing tables)
-  - [ ] 2.2c Execute migration SQL
-  - [ ] 2.2d Create default "Legacy Class" for existing quizzes
-  - [ ] 2.2e Call run_migrations() on startup in main.py
+- [x] 2.2 Implement migration runner
+  - [x] 2.2a Create `src/migrations.py` with run_migrations() function
+  - [x] 2.2b Check if migration needed (detect missing tables)
+  - [x] 2.2c Execute migration SQL
+  - [x] 2.2d Create default "Legacy Class" for existing quizzes
+  - [x] 2.2e Call run_migrations() on startup in main.py
 
-- [ ] 2.3 Update `src/database.py` with new models
-  - [ ] 2.3a Add Class model (SQLAlchemy ORM)
-  - [ ] 2.3b Add LessonLog model
-  - [ ] 2.3c Add relationships (Class 1:N LessonLogs, Class 1:N Quizzes)
-  - [ ] 2.3d Update Quiz model with class_id foreign key
+- [x] 2.3 Update `src/database.py` with new models
+  - [x] 2.3a Add Class model (SQLAlchemy ORM)
+  - [x] 2.3b Add LessonLog model
+  - [x] 2.3c Add relationships (Class 1:N LessonLogs, Class 1:N Quizzes)
+  - [x] 2.3d Update Quiz model with class_id foreign key
 
-- [ ] 2.4 Test database schema
-  - [ ] 2.4a Test migration runs successfully on clean DB
-  - [ ] 2.4b Test migration runs successfully on existing DB
-  - [ ] 2.4c Test migration is idempotent (can run multiple times)
-  - [ ] 2.4d Test relationships work correctly
+- [x] 2.4 Test database schema
+  - [x] 2.4a Test migration runs successfully on clean DB
+  - [x] 2.4b Test migration runs successfully on existing DB
+  - [x] 2.4c Test migration is idempotent (can run multiple times)
+  - [x] 2.4d Test relationships work correctly
 
 ### 3. Multi-Class Management Module
 
