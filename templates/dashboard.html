@@ -23,6 +23,36 @@
     </div>
 </div>
 
+<h2>Activity</h2>
+<div class="chart-container">
+    <canvas id="lessonsChart" width="400" height="200"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+fetch('/api/stats')
+    .then(r => r.json())
+    .then(data => {
+        const ctx = document.getElementById('lessonsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.lessons_by_date.map(d => d.date),
+                datasets: [{
+                    label: 'Lessons',
+                    data: data.lessons_by_date.map(d => d.count),
+                    backgroundColor: '#2563eb',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    });
+</script>
+
 <h2>Your Classes</h2>
 {% if classes %}
 <div class="class-list">
