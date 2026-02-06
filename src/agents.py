@@ -1,9 +1,11 @@
 import os
 import json
+import time
 from typing import Dict, List, Any, Optional
 from src.llm_provider import get_provider
 from src.database import get_engine, init_db, get_session, Class
 from src.lesson_tracker import get_recent_lessons, get_assumed_knowledge
+from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
 
 
 def load_prompt(filename: str) -> str:
@@ -247,10 +249,30 @@ class CriticAgent:
         questions: List[Dict[str, Any]],
         guidelines: str,
         content_summary: str,
+        class_context: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         prompt_text = self.base_prompt
 
         questions_json = json.dumps(questions, indent=2)
+
+        # Build class context section for critic
+        class_context_section = ""
+        if class_context:
+            lesson_logs = class_context.get("lesson_logs", [])
+            assumed_knowledge = class_context.get("assumed_knowledge", {})
+            if lesson_logs or assumed_knowledge:
+                class_context_section = "\n**Class Context:**\n"
+                if lesson_logs:
+                    class_context_section += "Recent lessons taught to this class:\n"
+                    for log in lesson_logs[:10]:
+                        topics = log.get("topics", [])
+                        class_context_section += f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                if assumed_knowledge:
+                    class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
+                    for topic, data in assumed_knowledge.items():
+                        depth = data.get("depth", 1)
+                        label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(depth, "unknown")
+                        class_context_section += f"- {topic}: depth {depth} ({label})\n"
 
         full_prompt = f"""
 {prompt_text}
@@ -260,7 +282,7 @@ class CriticAgent:
 
 **Reference Content Summary:**
 {content_summary}
-
+{class_context_section}
 **Quiz Draft:**
 {questions_json}
 """
@@ -283,22 +305,75 @@ class Orchestrator:
         feedback = None
         guidelines = get_qa_guidelines()
 
+        # Check rate limits before starting (skip for mock provider)
+        provider_name = self.config.get("llm", {}).get("provider", "mock")
+        if provider_name != "mock":
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(self.config)
+            if is_exceeded:
+                print("   [WARNING] Rate limit exceeded! No remaining API budget.")
+                print("   Aborting pipeline. Check cost report with 'costs' command.")
+                return []
+
+            estimate = estimate_pipeline_cost(self.config, self.max_retries)
+            if estimate["estimated_max_cost"] > 0:
+                print(f"   [Cost] Estimated max cost: ${estimate['estimated_max_cost']:.4f} "
+                      f"({estimate['max_calls']} calls, {estimate['model']})")
+                if remaining_budget < estimate["estimated_max_cost"]:
+                    print(f"   [WARNING] Remaining budget (${remaining_budget:.4f}) may not "
+                          f"cover worst-case cost (${estimate['estimated_max_cost']:.4f})")
+
+        questions = []
+        consecutive_errors = 0
+        max_errors = 2  # Abort after this many consecutive transient failures
+
         for attempt in range(self.max_retries):
             print(f"   [Agent Loop] Attempt {attempt + 1}/{self.max_retries}...")
-            questions = self.generator.generate(context, feedback)
+
+            # Generate with error handling
+            try:
+                questions = self.generator.generate(context, feedback)
+            except Exception as e:
+                consecutive_errors += 1
+                print(f"   [Agent Loop] Generator error: {e}")
+                if consecutive_errors >= max_errors:
+                    print("   [Agent Loop] Too many consecutive errors. Aborting.")
+                    return []
+                # Brief pause before retry (skip in mock mode)
+                if provider_name != "mock":
+                    time.sleep(min(2 ** consecutive_errors, 10))
+                feedback = "Your previous response caused an error. Please try again with valid output."
+                continue
 
             if not questions:
+                consecutive_errors += 1
                 print(
                     "   [Agent Loop] Generator failed to produce questions. Retrying..."
                 )
+                if consecutive_errors >= max_errors:
+                    print("   [Agent Loop] Too many consecutive failures. Aborting.")
+                    return []
                 feedback = "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
                 continue
 
+            # Reset error counter on successful generation
+            consecutive_errors = 0
+
+            # Critique with error handling
             print("   [Agent Loop] Critiquing draft...")
             content_summary = context.get("content_summary", "")
-            critique_result = self.critic.critique(
-                questions, guidelines, content_summary
-            )
+            class_context = {
+                "lesson_logs": context.get("lesson_logs", []),
+                "assumed_knowledge": context.get("assumed_knowledge", {}),
+            }
+
+            try:
+                critique_result = self.critic.critique(
+                    questions, guidelines, content_summary,
+                    class_context=class_context,
+                )
+            except Exception as e:
+                print(f"   [Agent Loop] Critic error: {e}. Skipping critique, returning draft.")
+                return questions
 
             if critique_result["status"] == "APPROVED":
                 print("   [Agent Loop] Draft APPROVED.")

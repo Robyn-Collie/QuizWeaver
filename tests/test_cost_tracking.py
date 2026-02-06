@@ -15,6 +15,7 @@ from src.cost_tracking import (
     get_cost_summary,
     check_rate_limit,
     format_cost_report,
+    estimate_pipeline_cost,
     MODEL_PRICING,
     DEFAULT_LOG_FILE,
 )
@@ -534,6 +535,51 @@ class TestMockProviderNoLogging:
 # ---------------------------------------------------------------------------
 # Integration: round-trip test
 # ---------------------------------------------------------------------------
+
+class TestEstimatePipelineCost:
+    def test_estimate_pipeline_cost_mock_provider(self):
+        """Mock provider should estimate zero cost."""
+        config = {"llm": {"provider": "mock"}}
+        result = estimate_pipeline_cost(config, max_retries=3)
+
+        assert result["provider"] == "mock"
+        assert result["estimated_max_cost"] == 0.0
+        assert result["max_calls"] == 6  # 2 calls per attempt * 3 attempts
+
+    def test_estimate_pipeline_cost_real_provider(self):
+        """Real provider should estimate non-zero cost."""
+        config = {
+            "llm": {
+                "provider": "gemini",
+                "model_name": "gemini-1.5-flash",
+            }
+        }
+        result = estimate_pipeline_cost(config, max_retries=3)
+
+        assert result["provider"] == "gemini"
+        assert result["estimated_max_cost"] > 0
+        assert result["max_calls"] == 6
+        assert result["calls_per_attempt"] == 2
+        assert result["max_attempts"] == 3
+
+    def test_estimate_pipeline_cost_expensive_model(self):
+        """Pro model should estimate higher cost than flash."""
+        flash_config = {"llm": {"provider": "gemini", "model_name": "gemini-1.5-flash"}}
+        pro_config = {"llm": {"provider": "gemini", "model_name": "gemini-1.5-pro"}}
+
+        flash_result = estimate_pipeline_cost(flash_config)
+        pro_result = estimate_pipeline_cost(pro_config)
+
+        assert pro_result["estimated_max_cost"] > flash_result["estimated_max_cost"]
+
+    def test_estimate_pipeline_cost_default_retries(self):
+        """Default max_retries should be 3."""
+        config = {"llm": {"provider": "gemini", "model_name": "gemini-1.5-flash"}}
+        result = estimate_pipeline_cost(config)
+
+        assert result["max_attempts"] == 3
+        assert result["max_calls"] == 6
+
 
 class TestIntegration:
     def test_log_then_summarize_then_format(self):
