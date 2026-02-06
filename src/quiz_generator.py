@@ -96,7 +96,13 @@ def generate_quiz(
     }
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)
-    questions_data = run_agentic_pipeline(config, context, class_id=class_id)
+    try:
+        questions_data = run_agentic_pipeline(config, context, class_id=class_id)
+    except Exception as e:
+        logger.error("generate_quiz: pipeline crashed: %s", e)
+        new_quiz.status = "failed"
+        session.commit()
+        return None
 
     if not questions_data:
         logger.warning("generate_quiz: pipeline returned no questions")
