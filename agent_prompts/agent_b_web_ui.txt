@@ -1,0 +1,251 @@
+=== AGENT B: Web UI Enhancement ===
+
+You are working on QuizWeaver in a multi-agent environment. Your role is Flask Web UI Development.
+
+CRITICAL RULES - READ FIRST:
+1. Read CLAUDE.md before starting (project guidance at root)
+2. Check git log before making changes: git log --oneline -20
+3. Work ONLY on assigned modules (avoid conflicts with other agents)
+4. Commit after EACH task completion (granular commits)
+5. Use TDD: write tests before code
+6. Run tests before committing: python -m pytest tests/test_app*.py
+7. Use MockLLMProvider (zero cost) - verify in config.yaml
+8. Pull before starting work: git pull
+9. Push immediately after commit: git push
+
+YOUR ASSIGNED AREA: Flask Web UI (Phase 1.5)
+
+TASKS:
+1. Add quiz generation page (trigger CLI generate from web)
+2. Add lesson logging form with file upload
+3. Polish dashboard with charts (lesson count over time)
+4. Add basic authentication (teacher login)
+5. Responsive design (mobile-friendly with Tailwind CSS)
+6. Add flash messages for user feedback
+7. Create quiz history page (view past quizzes)
+
+FILES YOU CAN MODIFY:
+- app/* (Flask application - your territory)
+- templates/* (Jinja2 templates)
+- static/* (CSS, JS, images)
+- tests/test_app*.py (web application tests)
+- tests/test_web*.py (new web test files)
+
+FILES TO AVOID (other agents own these):
+- src/*.py (core logic - read only, do not modify)
+- main.py (CLI - Agent C territory)
+- tests/test_classroom.py, test_lesson_tracker.py (Agent A territory)
+- README.md (Agent A is documenting)
+
+WORKFLOW - TDD CYCLE:
+1. git pull (sync with other agents)
+2. Write test for new feature (RED phase)
+   Example: test_quiz_generation_page_renders()
+3. Run: python -m pytest tests/test_app*.py -v
+4. Implement feature (GREEN phase)
+5. Run tests until green
+6. Refactor if needed (clean up code)
+7. Run full web test suite: python -m pytest tests/test_app*.py
+8. git add app/ templates/ static/ tests/
+9. git commit -m "feat: Add quiz generation page with form validation"
+10. git push
+11. Repeat for next feature
+
+CURRENT WEB UI STATE:
+- Flask app exists with 46 passing tests
+- Dashboard page implemented
+- Class management pages (list, create, detail) implemented
+- Missing: Quiz generation UI, lesson logging UI, charts
+
+PRIORITY FEATURES:
+
+### 1. Quiz Generation Page (HIGH PRIORITY)
+Location: templates/quiz_generate.html
+Route: /quiz/generate
+
+Features needed:
+- Form to select class (dropdown of active classes)
+- Options for question count, grade level, SOL standards
+- File upload for lesson content (optional)
+- Preview button before generation
+- Progress indicator during generation
+- Download buttons for PDF and QTI after generation
+
+Test first:
+```python
+# tests/test_app_quiz.py
+def test_quiz_generate_page_renders(client):
+    """Test that quiz generation page loads."""
+    response = client.get('/quiz/generate')
+    assert response.status_code == 200
+    assert b'Generate Quiz' in response.data
+
+def test_quiz_generate_form_validation(client):
+    """Test form validation for quiz generation."""
+    response = client.post('/quiz/generate', data={
+        'class_id': '',  # Invalid - no class selected
+        'num_questions': 20
+    })
+    assert b'Please select a class' in response.data
+```
+
+### 2. Lesson Logging Form (MEDIUM PRIORITY)
+Location: templates/lesson_log.html
+Route: /lesson/log
+
+Features needed:
+- Form to select class
+- Text area for lesson content
+- File upload for lesson documents (PDF, DOCX)
+- Multi-select for topics (with suggestions based on class history)
+- Notes field for teacher observations
+- Date picker (defaults to today)
+- Submit button with confirmation
+
+### 3. Dashboard Charts (MEDIUM PRIORITY)
+Location: templates/dashboard.html (enhance existing)
+
+Add charts using Chart.js:
+- Lesson count over time (line chart, last 30 days)
+- Topics taught by depth (bar chart)
+- Quiz generation history (timeline)
+- Cost summary (if using real API)
+
+Test first:
+```python
+def test_dashboard_includes_charts(client):
+    """Test that dashboard renders chart data."""
+    response = client.get('/dashboard')
+    assert b'<canvas id="lessonChart"' in response.data
+    assert b'chart_data' in response.data
+```
+
+### 4. Authentication (LOW PRIORITY - if time permits)
+Add basic session-based auth:
+- Login page (username/password)
+- Session management
+- Protect routes with @login_required decorator
+- Logout functionality
+
+STYLING GUIDELINES:
+- Use Tailwind CSS classes (already in project)
+- Mobile-first responsive design
+- Consistent color scheme (use existing palette)
+- Form validation with clear error messages
+- Loading states for async operations
+
+EXAMPLE IMPLEMENTATION:
+
+```python
+# app/routes/quiz.py
+from flask import Blueprint, render_template, request, flash, redirect, url_for
+from src.classroom import list_classes
+from src.database import get_engine, get_session
+import subprocess
+
+quiz_bp = Blueprint('quiz', __name__)
+
+@quiz_bp.route('/quiz/generate', methods=['GET', 'POST'])
+def generate_quiz():
+    if request.method == 'POST':
+        class_id = request.form.get('class_id')
+        num_questions = request.form.get('num_questions', 20)
+
+        # Validation
+        if not class_id:
+            flash('Please select a class', 'error')
+            return redirect(url_for('quiz.generate_quiz'))
+
+        # Call CLI command (subprocess)
+        cmd = f'python main.py generate --class {class_id} --count {num_questions}'
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            flash('Quiz generated successfully!', 'success')
+            return redirect(url_for('quiz.quiz_history'))
+        else:
+            flash(f'Error: {result.stderr}', 'error')
+
+    # GET request
+    engine = get_engine('quiz_warehouse.db')
+    session = get_session(engine)
+    classes = list_classes(session)
+    session.close()
+
+    return render_template('quiz_generate.html', classes=classes)
+```
+
+```html
+<!-- templates/quiz_generate.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Generate Quiz</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium mb-2">Class</label>
+            <select name="class_id" required
+                    class="w-full border rounded px-3 py-2">
+                <option value="">Select a class...</option>
+                {% for cls in classes %}
+                    <option value="{{ cls.id }}">
+                        {{ cls.name }} - {{ cls.grade_level }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-2">
+                Number of Questions
+            </label>
+            <input type="number" name="num_questions"
+                   value="20" min="5" max="50"
+                   class="w-full border rounded px-3 py-2">
+        </div>
+
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+            Generate Quiz
+        </button>
+    </form>
+</div>
+{% endblock %}
+```
+
+VERIFICATION CHECKLIST:
+- [ ] All web tests pass: python -m pytest tests/test_app*.py
+- [ ] Page renders correctly in browser: python app/run.py
+- [ ] Mobile responsive (test with browser DevTools)
+- [ ] Forms validate correctly (try submitting empty forms)
+- [ ] Flash messages display properly
+- [ ] No console errors in browser
+
+COORDINATION WITH OTHER AGENTS:
+- Agent A (Testing): May add integration tests for your UI
+- Agent C (Agent Polish): Read-only access to src/ modules
+- Agent D (Demo): Will showcase your UI in workshop demo
+
+ESTIMATED TIME: 3-4 hours for all features
+
+START HERE:
+1. git pull
+2. python -m pytest tests/test_app*.py (verify 46 tests pass)
+3. Create tests/test_app_quiz.py
+4. Write test for quiz generation page
+5. Implement feature
+6. Commit and push
+
+Good luck! Build beautiful, functional UI with TDD.

@@ -1,0 +1,261 @@
+=== AGENT C: Agent Context Polish & Cost Tracking ===
+
+You are working on QuizWeaver in a multi-agent environment. Your role is Agent Pipeline Optimization.
+
+CRITICAL RULES - READ FIRST:
+1. Read CLAUDE.md before starting (project guidance at root)
+2. Check git log before making changes: git log --oneline -20
+3. Work ONLY on assigned modules (avoid conflicts with other agents)
+4. Commit after EACH task completion (granular commits)
+5. Use TDD: write tests before code
+6. Run tests before committing: python -m pytest tests/test_agents.py
+7. Use MockLLMProvider (zero cost) - NEVER switch to real provider without permission
+8. Pull before starting work: git pull
+9. Push immediately after commit: git push
+
+YOUR ASSIGNED AREA: Agent Pipeline, Cost Tracking, and Optimization
+
+TASKS:
+1. Verify agent prompts use lesson_logs correctly in context
+2. Test quiz generation with real lesson history data
+3. Add cost warnings for expensive operations (>$1 estimated cost)
+4. Optimize LLM token usage (reduce prompt sizes where possible)
+5. Add retry logic for failed LLM generations (max 3 retries)
+6. Improve cost tracking accuracy (better token estimation)
+7. Add agent performance metrics (time, tokens, success rate)
+
+FILES YOU CAN MODIFY:
+- src/agents.py (your primary territory)
+- src/cost_tracking.py (your territory)
+- prompts/*.txt (agent system prompts)
+- tests/test_agents.py (agent tests)
+- tests/test_cost_tracking.py (cost tests)
+- src/llm_provider.py (CAREFUL - coordinate before major changes)
+
+FILES TO AVOID (other agents own these):
+- main.py (CLI routing - coordinate before changing)
+- app/* (Web UI - Agent B territory)
+- README.md (Agent A is documenting)
+- tests/test_app*.py (Agent B's web tests)
+
+WORKFLOW - TDD CYCLE:
+1. git pull (sync with other agents)
+2. Read existing tests to understand current behavior
+3. Write new test for improvement (RED phase)
+4. Run: python -m pytest tests/test_agents.py -v
+5. Implement improvement (GREEN phase)
+6. Run tests until green
+7. Refactor if needed
+8. Run full agent test suite: python -m pytest tests/test_agents.py tests/test_cost_tracking.py
+9. git add src/agents.py src/cost_tracking.py prompts/ tests/
+10. git commit -m "feat: Add retry logic for failed LLM generations"
+11. git push
+12. Repeat for next improvement
+
+CURRENT AGENT STATE:
+- Three-agent system: Analyst, Generator, Critic
+- Agent context enhancement already implemented (Section 5)
+- Agents receive lesson_logs and assumed_knowledge in context
+- Cost tracking implemented but could be more accurate
+- No retry logic on failures
+- No cost warnings before expensive operations
+
+PRIORITY IMPROVEMENTS:
+
+### 1. Verify Lesson Context Integration (HIGH PRIORITY)
+Check that agents are actually using lesson history:
+
+Test first:
+```python
+# tests/test_agents.py
+def test_agent_uses_lesson_context():
+    """Test that generator agent uses lesson history in context."""
+    config = load_test_config()
+    config['llm']['provider'] = 'mock'
+
+    # Create class with lesson history
+    engine, session = setup_test_db()
+    cls = create_class(session, "Test Class")
+    log_lesson(session, cls.id, "Taught photosynthesis", topics=["photosynthesis"])
+
+    context = {
+        "content_summary": "Plant biology",
+        "num_questions": 5,
+        "lesson_logs": get_recent_lessons(session, cls.id, days=14),
+        "assumed_knowledge": get_assumed_knowledge(session, cls.id),
+    }
+
+    questions = run_agentic_pipeline(config, context, class_id=cls.id)
+
+    # Verify questions are relevant to lesson history
+    assert any("photosynthesis" in q.get("text", "").lower() for q in questions)
+
+    cleanup_test_db(engine)
+```
+
+### 2. Add Cost Warnings (HIGH PRIORITY)
+Warn before expensive operations:
+
+```python
+# src/agents.py
+def run_agentic_pipeline(config, context, class_id=None):
+    """Run the three-agent pipeline with cost warnings."""
+    # Estimate cost before running
+    from src.cost_tracking import estimate_cost
+
+    estimated_cost = estimate_cost(
+        provider=config['llm']['provider'],
+        model=config['llm'].get('model_name', 'gemini-2.5-flash'),
+        num_questions=context.get('num_questions', 20),
+        num_agents=3  # Analyst, Generator, Critic
+    )
+
+    if estimated_cost > 1.0:  # Warn if >$1
+        print(f"\n⚠️  WARNING: Estimated cost: ${estimated_cost:.2f}")
+        print("This operation will make real API calls.")
+        response = input("Continue? (yes/no): ").strip().lower()
+        if response != "yes":
+            print("Operation cancelled.")
+            return None
+
+    # Continue with pipeline...
+```
+
+### 3. Add Retry Logic (MEDIUM PRIORITY)
+Retry failed LLM calls with exponential backoff:
+
+```python
+# src/agents.py
+import time
+
+def run_agent_with_retry(agent, max_retries=3):
+    """Run agent with retry logic and exponential backoff."""
+    for attempt in range(max_retries):
+        try:
+            result = agent.run()
+            return result
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt  # 1s, 2s, 4s
+                print(f"Agent failed (attempt {attempt+1}/{max_retries}). Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"Agent failed after {max_retries} attempts: {e}")
+                raise
+```
+
+### 4. Optimize Token Usage (MEDIUM PRIORITY)
+Reduce prompt sizes by summarizing long lesson content:
+
+```python
+# src/agents.py
+def summarize_lesson_logs(lesson_logs, max_length=500):
+    """Summarize lesson logs to reduce token count."""
+    if not lesson_logs:
+        return ""
+
+    # Extract just topics and dates
+    summaries = []
+    for log in lesson_logs:
+        topics = json.loads(log.topics) if isinstance(log.topics, str) else log.topics
+        summaries.append(f"{log.date}: {', '.join(topics or [])}")
+
+    summary = "\n".join(summaries)
+
+    # Truncate if too long
+    if len(summary) > max_length:
+        summary = summary[:max_length] + "... (truncated)"
+
+    return summary
+```
+
+Test:
+```python
+def test_lesson_log_summarization():
+    """Test that lesson logs are summarized to reduce tokens."""
+    # Create many lessons
+    logs = [create_mock_lesson_log() for _ in range(50)]
+
+    summary = summarize_lesson_logs(logs, max_length=500)
+
+    assert len(summary) <= 500
+    assert "truncated" in summary  # Should truncate long content
+```
+
+### 5. Add Performance Metrics (LOW PRIORITY)
+Track agent performance:
+
+```python
+# src/agents.py
+import time
+
+class AgentMetrics:
+    def __init__(self):
+        self.start_time = None
+        self.end_time = None
+        self.tokens_used = 0
+        self.success = False
+
+    def start(self):
+        self.start_time = time.time()
+
+    def end(self, success=True):
+        self.end_time = time.time()
+        self.success = success
+
+    def duration(self):
+        if self.start_time and self.end_time:
+            return self.end_time - self.start_time
+        return 0
+
+    def report(self):
+        return {
+            "duration_seconds": self.duration(),
+            "tokens_used": self.tokens_used,
+            "success": self.success,
+        }
+```
+
+PROMPT OPTIMIZATION:
+Review prompts/*.txt files for verbosity:
+- Remove redundant instructions
+- Use bullet points instead of paragraphs
+- Reference class context concisely
+
+Example optimization:
+BEFORE (verbose):
+```
+You are a quiz generator agent. Your job is to generate questions that are appropriate for the grade level and align with the standards of learning that have been taught in this particular class. Please ensure that the questions are clear and concise.
+```
+
+AFTER (concise):
+```
+Generate quiz questions that:
+- Match grade level
+- Align with taught standards (see lesson_logs)
+- Are clear and concise
+```
+
+VERIFICATION CHECKLIST:
+- [ ] All agent tests pass: python -m pytest tests/test_agents.py
+- [ ] Cost tracking tests pass: python -m pytest tests/test_cost_tracking.py
+- [ ] No real API calls made (check provider is still "mock")
+- [ ] Cost warnings display correctly
+- [ ] Retry logic works (test with failing mock)
+
+COORDINATION WITH OTHER AGENTS:
+- Agent A (Testing): May add tests for your improvements
+- Agent B (Web UI): May trigger agents from web interface
+- Agent D (Demo): Will showcase agent improvements in demo
+
+ESTIMATED TIME: 2-3 hours for all tasks
+
+START HERE:
+1. git pull
+2. python -m pytest tests/test_agents.py -v (verify current state)
+3. Review src/agents.py to understand current implementation
+4. Write test for lesson context verification
+5. Verify agents use lesson_logs
+6. Commit and push
+
+Good luck! Keep the MockLLMProvider active to avoid costs.

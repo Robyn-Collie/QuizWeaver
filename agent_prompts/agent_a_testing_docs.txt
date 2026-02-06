@@ -1,0 +1,139 @@
+=== AGENT A: Testing & Documentation ===
+
+You are working on QuizWeaver in a multi-agent environment. Your role is Testing & Documentation.
+
+CRITICAL RULES - READ FIRST:
+1. Read CLAUDE.md before starting (project guidance at root)
+2. Check git log before making changes: git log --oneline -20
+3. Work ONLY on assigned modules (avoid conflicts with other agents)
+4. Commit after EACH task completion (granular commits)
+5. Use TDD: write tests before code
+6. Run tests before committing: python -m pytest
+7. Use MockLLMProvider (zero cost) - verify in config.yaml
+8. Pull before starting work: git pull
+9. Push immediately after commit: git push
+
+YOUR ASSIGNED AREA: Testing & Documentation
+
+TASKS:
+1. Run full test suite, identify coverage gaps
+2. Add missing tests for edge cases
+3. Update README.md with new CLI commands (new-class, log-lesson, list-classes, set-class, list-lessons, cost-summary)
+4. Document Flask web UI setup and usage
+5. Create docs/USER_GUIDE.md for teachers
+6. Verify all docstrings are complete
+7. Add API documentation if web UI has endpoints
+
+FILES YOU CAN MODIFY:
+- README.md (update with new features)
+- docs/* (create new documentation files)
+- tests/* (add new test files only, avoid modifying existing unless fixing bugs)
+- src/**/*.py (ONLY to add/update docstrings, no logic changes)
+
+FILES TO AVOID (other agents own these):
+- main.py (CLI routing - Agent C territory)
+- config.yaml (Agent D may update for demo)
+- app/* (Web UI - Agent B owns this)
+- src/agents.py (Agent C owns agent logic)
+- src/classroom.py, src/lesson_tracker.py (stable, avoid changes)
+
+WORKFLOW - FOLLOW STRICTLY:
+1. git pull (sync with other agents)
+2. python -m pytest (verify current state - should see 202 tests)
+3. Identify gaps:
+   - Which modules lack edge case tests?
+   - Which error paths are untested?
+   - Which functions lack docstrings?
+4. Write new test (TDD - RED phase)
+5. Run: python -m pytest tests/test_<module>.py
+6. If needed, add docstrings or fix bugs
+7. Run full suite: python -m pytest
+8. git add <files>
+9. git commit -m "test: Add edge case tests for <module>"
+10. git push
+11. Repeat for next task
+
+EXAMPLES OF GOOD COMMITS:
+- "test: Add edge case tests for classroom deletion with existing quizzes"
+- "docs: Update README with multi-class CLI commands"
+- "docs: Create USER_GUIDE.md with teacher workflow examples"
+- "test: Add integration tests for lesson tracking with date filters"
+
+CURRENT PROJECT STATE:
+- 202 tests currently passing
+- Phase 1 complete (all backend features done)
+- Flask web UI partially implemented (46 web tests)
+- Missing: comprehensive documentation, edge case test coverage
+
+SPECIFIC TEST GAPS TO ADDRESS:
+1. Classroom module:
+   - Test deleting a class with existing lesson logs (should cascade)
+   - Test creating class with duplicate names (should allow)
+   - Test set_active_class with invalid class_id
+
+2. Lesson tracker module:
+   - Test logging lesson with no content (should error)
+   - Test list_lessons with invalid date range
+   - Test topic extraction with empty text
+
+3. Cost tracking:
+   - Test get_cost_summary with corrupted log file
+   - Test rate limit enforcement
+
+4. Web UI (if time permits):
+   - Test form validation on class creation
+   - Test unauthorized access to protected routes
+
+DOCUMENTATION PRIORITIES:
+1. README.md - Add "Multi-Class Management" section with examples
+2. docs/USER_GUIDE.md - Step-by-step teacher workflow
+3. Docstrings - Ensure all public functions have proper docstrings
+
+EXAMPLE TEST TO ADD:
+
+```python
+# tests/test_classroom_edge_cases.py
+def test_delete_class_cascades_lesson_logs():
+    """Test that deleting a class also deletes its lesson logs."""
+    engine, session = setup_test_db()
+
+    # Create class with lesson
+    cls = create_class(session, "Test Class")
+    log_lesson(session, cls.id, "Content", topics=["topic1"])
+
+    # Verify lesson exists
+    logs = session.query(LessonLog).filter_by(class_id=cls.id).all()
+    assert len(logs) == 1
+
+    # Delete class
+    session.delete(cls)
+    session.commit()
+
+    # Verify logs were cascade deleted
+    logs = session.query(LessonLog).filter_by(class_id=cls.id).all()
+    assert len(logs) == 0
+
+    cleanup_test_db(engine)
+```
+
+VERIFICATION BEFORE PUSHING:
+- [ ] All tests pass: python -m pytest
+- [ ] No syntax errors in docs (spell check)
+- [ ] No merge conflicts: git status
+- [ ] Commit message is descriptive
+
+COORDINATION WITH OTHER AGENTS:
+- Agent B (Web UI): May need your test patterns for web tests
+- Agent C (Agent Polish): May need tests for agent improvements
+- Agent D (Demo): Will reference your USER_GUIDE.md
+
+ESTIMATED TIME: 2-3 hours for full task list
+
+START HERE:
+1. git pull
+2. python -m pytest -v > test_results.txt
+3. Review test_results.txt for coverage gaps
+4. Pick first gap and write test
+5. Commit and push
+
+Good luck! Remember: Test first, then document, then commit.

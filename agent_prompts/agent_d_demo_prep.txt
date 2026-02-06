@@ -1,0 +1,409 @@
+=== AGENT D: Workshop Demo Preparation ===
+
+You are working on QuizWeaver in a multi-agent environment. Your role is Demo Content Creation.
+
+CRITICAL RULES - READ FIRST:
+1. Read CLAUDE.md before starting (project guidance at root)
+2. Check git log before making changes: git log --oneline -20
+3. Work ONLY on assigned modules (avoid conflicts with other agents)
+4. Commit after EACH task completion (granular commits)
+5. DO NOT modify code in src/ or app/ (content creation only)
+6. Pull before starting work: git pull
+7. Push immediately after commit: git push
+
+YOUR ASSIGNED AREA: Demo Materials & Workshop Content
+
+TASKS:
+1. Create sample demo data (classes, lessons, quizzes)
+2. Write demo script (step-by-step walkthrough)
+3. Create workshop slides (key talking points)
+4. Prepare 5-minute demo video script
+5. Test full demo flow end-to-end
+6. Create "reset demo" script to restore clean state
+7. Document impressive stats (test count, feature list, time saved)
+
+FILES YOU CAN CREATE:
+- demo_data/* (sample classes, lessons, quiz content)
+- demo_script.md (step-by-step demo walkthrough)
+- workshop_slides.md (presentation outline)
+- demo_video_script.md (narration for video)
+- docs/DEMO.md (how to run the demo)
+- reset_demo.sh (script to reset demo database)
+
+FILES TO AVOID (other agents own these):
+- src/*.py (code - DO NOT TOUCH)
+- app/*.py (web UI code - DO NOT TOUCH)
+- main.py (CLI - DO NOT TOUCH)
+- config.yaml (read only - don't modify)
+- tests/*.py (test code - DO NOT TOUCH)
+
+WORKFLOW - CONTENT CREATION:
+1. git pull (sync with other agents)
+2. Test CLI manually to understand features:
+   - python main.py new-class --name "Demo Class" --grade "7th Grade" --subject "Science"
+   - python main.py log-lesson --text "Taught photosynthesis today"
+   - python main.py list-classes
+   - python main.py generate
+3. Create demo content (no code changes)
+4. git add demo_data/ demo_script.md workshop_slides.md
+5. git commit -m "demo: Add workshop demo script with sample data"
+6. git push
+7. Repeat for next content piece
+
+CURRENT PROJECT STATE (for demo):
+- 202 tests passing (showcase this!)
+- Phase 1 complete: Multi-class management, lesson tracking, cost controls
+- Flask web UI with 46 tests (visual demo option)
+- Zero-cost development with MockLLMProvider (major selling point)
+
+DEMO STORY ARC (15-minute presentation):
+
+### Act 1: The Problem (2 minutes)
+"Teachers spend hours creating retake quizzes. I wanted to automate this with AI, but development is expensive. How do you iterate on an agentic system without burning hundreds of dollars?"
+
+### Act 2: The Solution - MockLLMProvider (5 minutes)
+1. Show config.yaml: llm.provider: "mock"
+2. Explain fabricated responses (zero cost, unlimited iteration)
+3. Live demo: Generate a quiz with mock mode
+4. Show test suite: python -m pytest -v (202 tests, zero API costs!)
+
+### Act 3: The Architecture (5 minutes)
+1. Show three-agent system (Analyst, Generator, Critic)
+2. Show OpenSpec workflow (proposal → specs → design → tasks)
+3. Show multi-class management CLI
+4. Show lesson tracking and "teaching memory"
+
+### Act 4: The Stats (2 minutes)
+- Zero dollars spent on development
+- 202 automated tests
+- 7 new CLI commands
+- Flask web UI with 46 tests
+- Built in ~6 hours with agentic SDLC
+
+### Closing (1 minute)
+"This is the power of spec-driven development with cost-conscious AI assistance."
+
+DEMO SCRIPT TEMPLATE:
+
+```markdown
+# QuizWeaver Workshop Demo Script
+
+## Setup (Do this before demo)
+1. Reset demo database: bash reset_demo.sh
+2. Start fresh: cp quiz_warehouse_clean.db quiz_warehouse.db
+3. Open terminal in project root
+4. Have browser ready for web UI demo
+
+## Demo Flow (15 minutes total)
+
+### 1. Introduction (1 min)
+"I'm going to show you QuizWeaver - an AI-powered teaching assistant built using agentic SDLC. The impressive part isn't just what it does, but how it was built: zero cost development using MockLLMProvider."
+
+### 2. Show MockLLMProvider (3 min)
+```bash
+# Show config
+cat config.yaml | grep -A 5 "llm:"
+
+# Show mock responses
+cat src/mock_responses.py | head -40
+
+# Explain: "This fabricates realistic LLM responses - zero cost"
+```
+
+### 3. Create Demo Class (2 min)
+```bash
+# Create a class
+python main.py new-class --name "7th Grade Science - Block A" --grade "7th Grade" --subject "Science" --standards "SOL 7.1,SOL 7.2"
+
+# List classes
+python main.py list-classes
+```
+
+### 4. Log Lessons (2 min)
+```bash
+# Log first lesson
+python main.py log-lesson --text "Taught photosynthesis: light-dependent and light-independent reactions. Students built leaf diagrams." --notes "Class engaged, good questions"
+
+# Log second lesson
+python main.py log-lesson --text "Reviewed cellular respiration and compared to photosynthesis. Energy cycle discussion." --topics "cellular respiration,photosynthesis"
+
+# Show lesson history
+python main.py list-lessons
+```
+
+### 5. Generate Quiz (3 min)
+```bash
+# Generate quiz (uses mock provider)
+python main.py generate --count 15 --no-interactive
+
+# Show output
+ls -lh Quiz_Output/
+
+# Open PDF
+open Quiz_Output/ChangeOverTime_Retake_*.pdf
+```
+
+Explain while quiz generates:
+- "Three agents working: Analyst analyzes style, Generator creates questions, Critic reviews quality"
+- "Agent context includes lesson history - questions align with what was taught"
+- "Using MockLLMProvider - this costs $0"
+
+### 6. Show Test Suite (2 min)
+```bash
+# Run tests
+python -m pytest -v --tb=short
+
+# Highlight stats
+python -m pytest --co -q | wc -l
+# "202 automated tests - all pass, all free"
+```
+
+### 7. Show Web UI (2 min - if time permits)
+```bash
+# Start Flask app
+python app/run.py
+```
+
+Open browser to http://localhost:5000
+- Show dashboard
+- Show class list
+- Show quiz generation form
+
+## Closing Stats (1 min)
+"Built in 6 hours with Claude Code + OpenSpec:
+- Zero dollars spent (MockLLMProvider)
+- 202 automated tests
+- Multi-class management
+- Lesson tracking with teaching memory
+- Cost-conscious by design"
+
+## Q&A Points
+- "How do you switch to real API?" → Change config.yaml, but user must approve
+- "Does it actually work?" → Yes, we have 202 tests proving it
+- "Can I use this?" → GitHub link in docs
+- "How much would this cost with real API?" → ~$20-30 total if we had used Gemini
+
+## Backup Demo (if live demo fails)
+- Show pre-recorded video
+- Walk through code in VS Code
+- Show test results from file
+```
+
+SAMPLE DEMO DATA TO CREATE:
+
+### demo_data/sample_classes.json
+```json
+[
+  {
+    "name": "7th Grade Science - Block A",
+    "grade_level": "7th Grade",
+    "subject": "Science",
+    "standards": ["SOL 7.1", "SOL 7.2", "SOL 7.3"]
+  },
+  {
+    "name": "7th Grade Science - Block B",
+    "grade_level": "7th Grade",
+    "subject": "Science",
+    "standards": ["SOL 7.1", "SOL 7.2"]
+  }
+]
+```
+
+### demo_data/sample_lessons.txt
+```
+=== Lesson 1: Introduction to Photosynthesis ===
+Date: 2026-02-01
+Topics: photosynthesis, chloroplasts, light energy
+Content:
+Today we introduced photosynthesis as the process by which plants convert light energy into chemical energy. Students learned about chloroplasts, the light-dependent reactions, and the light-independent reactions (Calvin cycle). We built leaf diagrams showing the flow of energy and materials.
+
+Key concepts:
+- 6CO2 + 6H2O + light → C6H12O6 + 6O2
+- Chlorophyll absorbs light
+- Stomata allow gas exchange
+
+Notes: Students were very engaged. Good questions about why leaves are green.
+
+=== Lesson 2: Cellular Respiration ===
+Date: 2026-02-03
+Topics: cellular respiration, mitochondria, ATP
+Content:
+Reviewed cellular respiration as the reverse process of photosynthesis. Discussed how cells break down glucose to produce ATP. Emphasized the energy cycle: plants make glucose, animals break it down for energy.
+
+Key concepts:
+- C6H12O6 + 6O2 → 6CO2 + 6H2O + ATP
+- Mitochondria are the powerhouse
+- Three stages: glycolysis, Krebs cycle, electron transport chain
+
+Notes: Need to reinforce difference between aerobic and anaerobic respiration.
+```
+
+RESET DEMO SCRIPT:
+
+### reset_demo.sh
+```bash
+#!/bin/bash
+# Reset demo database to clean state
+
+echo "Resetting demo database..."
+
+# Backup current DB
+if [ -f "quiz_warehouse.db" ]; then
+    cp quiz_warehouse.db "quiz_warehouse_backup_$(date +%Y%m%d_%H%M%S).db"
+    echo "Backed up current database"
+fi
+
+# Create fresh DB
+rm -f quiz_warehouse.db
+python -c "from src.migrations import initialize_db; initialize_db('quiz_warehouse.db')"
+
+echo "Demo database reset complete"
+echo "Run demo setup:"
+echo "  python demo_data/setup_demo.py"
+```
+
+### demo_data/setup_demo.py
+```python
+"""
+Setup demo data for workshop presentation.
+Run this before starting the demo.
+"""
+import sys
+sys.path.insert(0, '..')
+
+from src.database import get_engine, get_session
+from src.classroom import create_class
+from src.lesson_tracker import log_lesson
+
+def setup_demo():
+    engine = get_engine('quiz_warehouse.db')
+    session = get_session(engine)
+
+    # Create demo class
+    demo_class = create_class(
+        session,
+        name="7th Grade Science - Block A",
+        grade_level="7th Grade",
+        subject="Science",
+        standards=["SOL 7.1", "SOL 7.2", "SOL 7.3"]
+    )
+
+    print(f"Created class: {demo_class.name} (ID: {demo_class.id})")
+
+    # Log demo lessons
+    log_lesson(
+        session,
+        class_id=demo_class.id,
+        content="Taught photosynthesis: light-dependent and light-independent reactions.",
+        topics=["photosynthesis", "chloroplasts", "light energy"],
+        notes="Class engaged, good questions"
+    )
+
+    log_lesson(
+        session,
+        class_id=demo_class.id,
+        content="Reviewed cellular respiration and compared to photosynthesis.",
+        topics=["cellular respiration", "mitochondria", "ATP"],
+        notes="Need to reinforce aerobic vs anaerobic"
+    )
+
+    print("Demo data created successfully!")
+    session.close()
+
+if __name__ == "__main__":
+    setup_demo()
+```
+
+WORKSHOP SLIDES OUTLINE:
+
+### workshop_slides.md
+```markdown
+# QuizWeaver - Agentic SDLC Demo
+## Teaching Platform Built with Zero-Cost Development
+
+---
+
+## Slide 1: The Problem
+- Teachers spend hours creating retake quizzes
+- AI development is expensive ($100s in API costs)
+- How to iterate without burning budget?
+
+---
+
+## Slide 2: The Solution - MockLLMProvider
+- Fabricated LLM responses (zero cost)
+- Same interface as real providers
+- Unlimited iteration during development
+- Switch to real API only when ready
+
+---
+
+## Slide 3: Architecture
+```
+Three-Agent System:
+1. Analyst: Analyzes quiz style
+2. Generator: Creates questions
+3. Critic: Reviews quality
+
+Context-Aware:
+- Uses lesson history
+- Tracks assumed knowledge
+- Aligns with taught topics
+```
+
+---
+
+## Slide 4: Features
+✅ Multi-class management
+✅ Lesson tracking with teaching memory
+✅ Cost controls and warnings
+✅ Web UI + CLI interface
+✅ 202 automated tests
+
+---
+
+## Slide 5: The Stats
+- **Cost**: $0 (MockLLMProvider)
+- **Tests**: 202 passing
+- **Time**: ~6 hours total
+- **Commits**: 20+ granular commits
+- **Agents**: Built with multi-agent SDLC
+
+---
+
+## Slide 6: Demo Time!
+[Live demonstration]
+
+---
+
+## Slide 7: Key Takeaways
+1. Cost-conscious AI development is possible
+2. TDD works great with AI assistants
+3. Spec-driven development scales
+4. Multi-agent parallelization accelerates work
+```
+
+VERIFICATION CHECKLIST:
+- [ ] Demo script is clear and step-by-step
+- [ ] All demo commands work (test them!)
+- [ ] Sample data is realistic
+- [ ] Reset script restores clean state
+- [ ] Workshop slides tell compelling story
+- [ ] Stats are accurate (run tests to verify)
+
+COORDINATION WITH OTHER AGENTS:
+- Agent A (Testing): Reference test count in demo
+- Agent B (Web UI): Showcase web interface if ready
+- Agent C (Agent Polish): Demo agent improvements
+
+ESTIMATED TIME: 2-3 hours for all materials
+
+START HERE:
+1. git pull
+2. Test CLI manually to understand features
+3. Create demo_script.md with step-by-step walkthrough
+4. Test each command in script
+5. Create sample data files
+6. Commit and push
+
+Good luck! Make the demo shine and tell the story well.
