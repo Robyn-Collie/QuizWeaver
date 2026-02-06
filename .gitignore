@@ -18,6 +18,13 @@ draft_preview.pdf
 # Exclude the local SQLite database file
 quiz_warehouse.db
 
+# --- UAT Scaffolding (not yet functional) ---
+Audits/
+UAT_SYSTEM_OVERVIEW.md
+run_autonomous_uat.sh
+test_uat_setup.sh
+
 # --- IDE & System Files ---
 .clinerules
 .bin/
+nul
