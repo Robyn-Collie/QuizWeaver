@@ -15,7 +15,13 @@
       "Bash(python:*)",
       "Bash(pip install:*)",
       "Bash(sqlite3:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(if exist CLAUDE.md echo \"FOUND\" else echo \"NOT FOUND\")",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(openspec --help:*)",
+      "Bash(openspec update --help:*)",
+      "Bash(openspec update:*)"
     ]
   }
 }

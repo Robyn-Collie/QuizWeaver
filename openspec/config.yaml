@@ -1,20 +1,117 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+# Project context for OpenSpec artifact generation
+# This context is included in every OpenSpec planning request
+context: |
+  # QuizWeaver - AI-Powered Teaching Platform
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  ## Tech Stack
+  - Python 3.9+, SQLite, SQLAlchemy ORM
+  - LLM: Gemini/Vertex AI with MockLLMProvider for dev
+  - CLI: argparse
+  - Testing: pytest
+  - Output: PDF (reportlab), QTI (Canvas-compatible)
+
+  ## Critical Constraints
+  - MUST use MockLLMProvider during development (zero cost)
+  - NEVER make real API calls without explicit user permission
+  - Maintain backward compatibility with existing quiz generation
+  - Test multi-class isolation thoroughly
+  - Security-first design, GDPR compliance for student data
+  - Privacy-first: all student data anonymized, local-first storage
+
+  ## Architecture
+  CLI (main.py) → Business Logic (classroom, agents) → Database (SQLAlchemy) → LLM Providers
+
+  Three-agent system for quiz generation:
+  1. Analyst Agent: Analyzes quiz style, determines question count/image ratio
+  2. Generator Agent: Creates questions matching style profile
+  3. Critic Agent: Reviews questions for quality and alignment
+
+  ## Key Modules
+  - src/agents.py: Analyst, Generator, Critic agents
+  - src/classroom.py: Multi-class management (Phase 1, Section 3)
+  - src/lesson_tracker.py: Lesson logging & assumed knowledge (Phase 1, Section 4)
+  - src/llm_provider.py: LLM abstraction with MockLLMProvider
+  - src/mock_responses.py: Fabricated LLM responses for development
+  - src/database.py: SQLAlchemy ORM models
+  - src/migrations.py: Idempotent migration runner
+  - src/ingestion.py: Content ingestion (PDF, DOCX, multimodal)
+  - src/image_gen.py: Image generation (Vertex Imagen)
+  - src/output.py: PDF and QTI export
+  - src/review.py: Human-in-the-loop review interface
+
+  ## Development Rules
+  - Use pytest for testing: `python -m pytest`
+  - Install deps: `pip install -r requirements.txt`
+  - Migrations are idempotent (safe to run multiple times)
+  - All database changes go through migrations/ directory
+  - Use MockLLMProvider by default (config.yaml: `llm.provider: "mock"`)
+  - Real API calls require explicit user approval
+  - Document cost implications of any LLM-using feature
+
+  ## Database Models
+  - Lesson: Ingested lesson content
+  - Asset: Extracted images from lessons
+  - Class: Teacher's class/block (multi-class support)
+  - LessonLog: Tracks lessons taught to each class
+  - Quiz: Generated quizzes
+  - Question: Individual quiz questions
+  - FeedbackLog: Human and AI feedback
+  - PerformanceData: Student performance (Phase 2)
+
+  ## Current Status
+  Phase 1 (Foundation) in progress:
+  - ✅ Section 1: MockLLMProvider (complete, all tests passing)
+  - ✅ Section 2: Database Schema (complete, all tests passing)
+  - ⏳ Section 3: Multi-Class Management (next)
+
+  Progress: 13/59 tasks complete (22%)
+
+  ## Known Edge Cases
+  - Windows file locking on SQLite databases (use engine.dispose() before cleanup)
+  - Unicode encoding issues on Windows (use ASCII [PASS]/[FAIL] instead of ✓/✗)
+  - Existing quizzes need migration to "Legacy Class" for backward compatibility
+  - Cost tracking not yet implemented (Section 6)
+
+  ## Principles
+  - Teacher-in-Control: All AI content requires teacher approval
+  - Privacy-First: Student data is anonymized, local-first storage
+  - Cost-Conscious: Mock providers for development, real APIs only with permission
+  - Graceful Degradation: System works even with irregular logging
+  - Pluggable: Features can be enabled/disabled per teacher preference
+
+# Per-artifact rules for consistent artifact generation
+rules:
+  proposal:
+    - Keep under 800 words for scannability
+    - Include clear success criteria (measurable outcomes)
+    - Document cost implications of features (API calls, compute, storage)
+    - Include a "Non-goals" section to scope down
+    - Reference existing modules and how they'll be extended
+
+  specs:
+    - Include concrete examples and code snippets where helpful
+    - Specify error handling behavior explicitly
+    - Document test scenarios (happy path, edge cases, errors)
+    - Define API contracts clearly (function signatures, return types)
+    - Consider backward compatibility with existing features
+    - Document security implications (input validation, PII handling)
+
+  design:
+    - Justify architectural decisions with trade-offs
+    - Consider backward compatibility explicitly
+    - Document migration strategy for breaking changes
+    - Include diagrams or ASCII art for complex flows
+    - Explain why chosen approach over alternatives
+    - Document impact on existing modules
+    - Consider parallelization opportunities (can tasks run concurrently?)
+
+  tasks:
+    - Break into max 2-hour chunks for single-session completion
+    - Mark dependencies explicitly (task 5 depends on tasks 3+4)
+    - Include verification steps for each task (how to test it works)
+    - Specify files to be created/modified
+    - Include test file creation in tasks
+    - Group related subtasks hierarchically (e.g., 3.1a, 3.1b under 3.1)
+    - Mark tasks that can be parallelized (independent modules)
