@@ -3,7 +3,7 @@ Flask application factory for QuizWeaver web frontend.
 """
 
 import os
-from flask import Flask, g
+from flask import Flask, g, send_from_directory
 
 from src.database import get_engine, init_db, get_session
 from src.web.routes import register_routes
@@ -51,5 +51,14 @@ def create_app(config=None):
             session.close()
 
     register_routes(app)
+
+    # Serve generated quiz images
+    generated_images_dir = os.path.abspath(
+        config.get("paths", {}).get("generated_images_dir", "generated_images")
+    )
+
+    @app.route("/generated_images/<path:filename>")
+    def serve_generated_image(filename):
+        return send_from_directory(generated_images_dir, filename)
 
     return app

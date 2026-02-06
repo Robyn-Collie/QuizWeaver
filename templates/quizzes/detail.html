@@ -20,12 +20,22 @@
     </div>
     <p class="question-text">{{ q.text }}</p>
 
+    {% if q.data and q.data.image_ref is defined and q.data.image_ref %}
+    <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image">
+    {% endif %}
+
     {% if q.data and q.data.options is defined %}
     <ul class="question-options">
         {% for option in q.data.options %}
+        {% if option is mapping %}
+        <li{% if q.data.correct_answers is defined and option.id in q.data.correct_answers %} class="correct"{% endif %}>
+            <strong>{{ option.id }}.</strong> {{ option.text }}
+        </li>
+        {% else %}
         <li{% if q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
             {{ option }}
         </li>
+        {% endif %}
         {% endfor %}
     </ul>
     {% endif %}

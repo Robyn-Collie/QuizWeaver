@@ -326,6 +326,13 @@ body {
     margin-bottom: 1rem;
 }
 
+.question-image {
+    max-width: 400px;
+    border-radius: var(--radius);
+    margin: 0.75rem 0;
+    border: 1px solid var(--border);
+}
+
 .question-header {
     display: flex;
     gap: 0.75rem;
