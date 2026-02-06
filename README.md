@@ -1,108 +1,298 @@
-# Quiz Retake Generator: An Agentic AI Pipeline
+# QuizWeaver - AI-Powered Teaching Platform
 
-This project is a portfolio piece demonstrating the principles of **Agentic AI** and **Enterprise-Grade Data Engineering**. It transforms a simple task—generating a quiz retake—into a robust, multi-agent pipeline that mimics the architecture of a production AI system.
-
-The goal is to provide a tool for teachers that automates the creation of high-quality, curriculum-aligned assessments through an iterative, AI-driven feedback loop.
+QuizWeaver is an AI-powered teaching assistant that helps educators manage classes, track lessons, and generate curriculum-aligned assessments. It features a multi-agent quiz generation pipeline, a CLI interface, and a web dashboard.
 
 ---
 
-## 1. Project Vision & Architecture
+## Features
 
-The system is designed as a scalable **Agentic AI Pipeline**, moving beyond a simple script to a structured, modular architecture. This approach is detailed in our planning documents, which showcase professional system design and project management.
+- **Multi-Class Management** -- Create and manage multiple class blocks with independent lesson histories
+- **Lesson Tracking** -- Log lessons with automatic topic extraction and assumed knowledge depth tracking (1-5 scale)
+- **AI Quiz Generation** -- Three-agent pipeline (Generator, Critic, Orchestrator) produces quality questions
+- **Web Dashboard** -- Flask-based UI for managing classes, lessons, quizzes, and viewing cost reports
+- **Cost Control** -- MockLLMProvider for zero-cost development; approval gate for real API calls
+- **Multiple Output Formats** -- PDF preview and Canvas-compatible QTI packages
+- **Local-First** -- SQLite database, no cloud dependencies for core functionality
 
-*   **[System Architecture](./Project_Planning/01_System_Architecture.md):** Defines the "silo-based" architecture (Ingestion, Warehousing, Agentic Core, Output) that separates concerns and ensures scalability.
-*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md):** Outlines the phased development plan, from refactoring the POC to implementing the full agentic workflow.
-*   **[Agent Specifications](./Project_Planning/03_Agent_Specifications.md):** Details the prompts, roles, and tools for each AI agent in the system.
+---
 
-### High-Level Flow
-```mermaid
-graph TD
-    User[Teacher] -->|Uploads Lesson/Retake| Ingestion[Ingestion Silo]
-    Ingestion -->|Text/Images| Warehouse[(Data Warehouse)]
+## Quick Start
 
-    subgraph Agentic_Core [Agentic Pipeline]
-        Orchestrator[Orchestrator Agent]
-        Analyst[Analyst Agent]
-        Generator[Generator Agent]
-        Critic[Critic Agent]
+### Installation
 
-        Orchestrator -->|Trigger| Analyst
-        Analyst -->|Style Profile| Warehouse
-        Orchestrator -->|Context + Profile| Generator
-        Generator -->|Draft Quiz| Critic
-        Critic -->|Feedback| Generator
-        Critic -->|Approval| Warehouse
-    end
+```bash
+pip install -r requirements.txt
+```
 
-    Warehouse -->|Approved Quiz| Output[Output Silo]
-    Output -->|QTI Zip / PDF| User
+### Initialize Database
+
+```bash
+python -c "from src.migrations import init_database_with_migrations; init_database_with_migrations('quiz_warehouse.db')"
+```
+
+### Run Tests
+
+```bash
+python -m pytest -v
 ```
 
 ---
 
-## 2. Current Status & Usage
+## CLI Commands
 
-The project is currently in **Phase 3** of its development, with enhanced LLM agnosticism and Vertex AI support. The core architecture is in place, and the application now supports a stateful, database-driven workflow.
+### Content & Quiz Generation
 
-### LLM Configuration & Vertex AI Setup
+```bash
+# Ingest content from Content_Summary/ directory
+python main.py ingest
 
-The project supports multiple LLM providers, configurable via `config.yaml`. The default is Google AI Studio (Gemini API Key), but it now includes support for Google Cloud Vertex AI.
+# Generate a quiz (uses MockLLMProvider by default -- zero cost)
+python main.py generate
 
-To use **Google AI Studio (API Key)**:
-1.  Ensure `google-generativeai` is installed (`pip install -r requirements.txt`).
-2.  Set your API key as an environment variable: `export GEMINI_API_KEY="YOUR_API_KEY"`.
-3.  In `config.yaml`, set `llm.provider: "gemini"` or `llm.provider: "gemini-3-pro"`.
+# Generate with specific parameters
+python main.py generate --count 20 --grade "8th Grade" --sol "SOL 8.1" "SOL 8.2"
 
-To use **Google Cloud Vertex AI**:
-1.  Ensure `google-cloud-aiplatform` is installed (`pip install -r requirements.txt`).
-2.  Authenticate with Google Cloud. The recommended way is to log in with the `gcloud` CLI:
-    ```bash
-    gcloud auth application-default login
-    ```
-    Alternatively, you can set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to point to a service account key file.
-3.  In `config.yaml`, configure the `llm` section as follows:
-    ```yaml
-    llm:
-      provider: "vertex"
-      vertex_project_id: "your-gcp-project-id" # Replace with your GCP Project ID
-      vertex_location: "us-central1"       # Replace with your desired GCP region (e.g., us-central1, europe-west4)
-      model_name: "gemini-1.5-flash"         # Optional: Specify the Vertex AI model name
-    ```
-    Ensure that the Vertex AI API is enabled in your Google Cloud project.
+# Generate for a specific class (overrides active class)
+python main.py generate --class 2
 
-### CLI Workflow
+# Skip interactive review
+python main.py generate --no-interactive
+```
 
-1.  **Ingest Content:**
-    ```bash
-    python main.py ingest
-    ```
-    This command reads all documents from the `Content_Summary` directory, processes them, and saves their content to the local `quiz_warehouse.db` database. It intelligently skips any files that have already been ingested.
+### Class Management
 
-2.  **Generate a Quiz:**
-    ```bash
-    python main.py generate
-    ```
-    This command creates a new quiz run in the database, uses the ingested content to generate questions via the configured AI model, and saves the results. It produces a PDF preview and a Canvas-compatible QTI zip file in the `Quiz_Output` directory.
+```bash
+# Create a new class
+python main.py new-class --name "7th Grade Science - Block A" --grade "7th Grade" --subject "Science"
 
-### CLI Options for `generate`
-*   `--count <number>`: Specify the number of questions to generate.
-*   `--grade "<grade>"`: Set the target grade level (e.g., `"8th Grade History"`).
-*   `--sol <id1> <id2>`: List the specific SOL standards to cover.
+# Create with standards
+python main.py new-class --name "8th Grade Bio" --grade "8th Grade" --subject "Biology" --standards "SOL 8.1,SOL 8.2"
+
+# List all classes
+python main.py list-classes
+
+# Set the active class (used as default for other commands)
+python main.py set-class 2
+```
+
+### Lesson Tracking
+
+```bash
+# Log a lesson with inline text
+python main.py log-lesson --text "Today we covered photosynthesis and the light reactions"
+
+# Log a lesson from a file
+python main.py log-lesson --file lesson_notes.txt
+
+# Log with manual topic override and notes
+python main.py log-lesson --text "Cell division review" --topics "mitosis,meiosis" --notes "Students struggled with metaphase"
+
+# Log to a specific class
+python main.py log-lesson --class 3 --text "Introduction to genetics"
+
+# List lessons for the active class
+python main.py list-lessons
+
+# Filter lessons
+python main.py list-lessons --last 7            # Last 7 days
+python main.py list-lessons --topic "photosynthesis"
+python main.py list-lessons --from 2026-01-01 --to 2026-01-31
+```
+
+### Cost Tracking
+
+```bash
+# View API cost summary (only relevant when using real LLM providers)
+python main.py cost-summary
+```
 
 ---
 
-## 3. Project Roadmap & Best Practices
+## Web Interface
 
-This project is being developed following a professional, phased roadmap. We have also codified our engineering standards, including our use of pre-commit hooks, automated testing, and future extensibility patterns.
+QuizWeaver includes a Flask web dashboard for browser-based management.
 
-*   **[Implementation Roadmap](./Project_Planning/02_Implementation_Roadmap.md)**
-*   **[Development Practices](./Project_Planning/05_Development_Practices.md)**
-*   **[Pedagogical Evaluation Rubric](./Project_Planning/04_Evaluation_Rubric.md)**
+### Running the Web Server
 
-This project is actively under development. Follow the commit history to see the progression from a simple script to a full-fledged agentic application.
+```bash
+# Start the development server
+python -c "from src.web.app import create_app; create_app().run(debug=True)"
+```
+
+Then open http://localhost:5000 in your browser.
+
+### Web Pages
+
+| Route | Description |
+|-------|-------------|
+| `/dashboard` | Overview with class, lesson, and quiz counts |
+| `/classes` | List all classes with lesson/quiz stats |
+| `/classes/new` | Create a new class (form) |
+| `/classes/<id>` | Class detail with knowledge depth, lessons, quizzes |
+| `/classes/<id>/lessons` | Lesson history for a class |
+| `/classes/<id>/lessons/new` | Log a new lesson (form) |
+| `/quizzes` | List all generated quizzes |
+| `/quizzes/<id>` | Quiz detail with all questions |
+| `/costs` | API cost tracking dashboard |
 
 ---
 
-## 4. License
+## Architecture
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+```
+CLI (main.py)  /  Web (Flask)
+        |
+   +----+----+
+   |         |
+Classroom  Lesson Tracker  -->  Quiz Generator
+   |         |                       |
+   +----+----+              Agentic Pipeline
+        |                  (Generator + Critic)
+   Database (SQLite)              |
+                           LLM Provider
+                        (Mock | Gemini | Vertex)
+                               |
+                          Cost Tracking
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system diagram and module responsibilities.
+
+### Project Structure
+
+```
+QuizWeaver/
+├── main.py                 # CLI entry point
+├── config.yaml             # Application configuration
+├── requirements.txt        # Python dependencies
+│
+├── src/
+│   ├── classroom.py        # Multi-class CRUD (create, get, list, delete, update)
+│   ├── lesson_tracker.py   # Lesson logging, topic extraction, knowledge tracking
+│   ├── quiz_generator.py   # Reusable generate_quiz() function
+│   ├── agents.py           # Agentic pipeline (Generator, Critic, Orchestrator)
+│   ├── cost_tracking.py    # API cost logging, rate limits, reports
+│   ├── database.py         # SQLAlchemy ORM models
+│   ├── migrations.py       # Idempotent database migration runner
+│   ├── llm_provider.py     # LLM abstraction (Mock, Gemini, Vertex AI)
+│   ├── mock_responses.py   # Fabricated LLM responses for development
+│   ├── ingestion.py        # Content ingestion (PDF, DOCX, multimodal)
+│   ├── image_gen.py        # Image generation (Vertex Imagen)
+│   ├── output.py           # PDF and QTI export
+│   ├── review.py           # Interactive review interface
+│   └── web/
+│       ├── app.py          # Flask application factory
+│       └── routes.py       # Web route handlers
+│
+├── tests/                  # 160+ tests (pytest)
+├── templates/              # Jinja2 HTML templates
+├── static/                 # CSS and static assets
+├── migrations/             # SQL migration scripts
+├── prompts/                # Agent system prompts
+├── docs/                   # Documentation
+│   ├── ARCHITECTURE.md     # System architecture
+│   ├── COST_STRATEGY.md    # Cost control approach
+│   └── USER_GUIDE.md       # Teacher user guide
+│
+├── Content_Summary/        # Input: Lesson content files
+├── Retake/                 # Input: Original quizzes for style analysis
+├── Quiz_Output/            # Output: Generated PDFs and QTI packages
+├── extracted_images/       # Extracted images from PDFs
+└── generated_images/       # AI-generated images
+```
+
+---
+
+## LLM Provider Configuration
+
+QuizWeaver defaults to **MockLLMProvider** (zero cost) for development. To use a real provider:
+
+### Mock Provider (Default -- Zero Cost)
+
+```yaml
+# config.yaml
+llm:
+  provider: "mock"
+```
+
+### Google Gemini
+
+```bash
+export GEMINI_API_KEY="your-api-key"
+```
+
+```yaml
+llm:
+  provider: "gemini"
+  model_name: "gemini-2.5-flash"
+  mode: "development"  # Prompts before real API calls
+```
+
+### Google Vertex AI
+
+```bash
+gcloud auth application-default login
+```
+
+```yaml
+llm:
+  provider: "vertex"
+  vertex_project_id: "your-project-id"
+  vertex_location: "us-central1"
+  model_name: "gemini-2.5-flash"
+  mode: "development"
+```
+
+### Cost Limits
+
+```yaml
+llm:
+  max_calls_per_session: 50    # Maximum API calls before stopping
+  max_cost_per_session: 5.00   # Maximum dollars before stopping
+```
+
+See [docs/COST_STRATEGY.md](docs/COST_STRATEGY.md) for detailed cost estimates.
+
+---
+
+## Development
+
+### Running Tests
+
+```bash
+# Full suite
+python -m pytest -v
+
+# Specific module
+python -m pytest tests/test_classroom.py -v
+python -m pytest tests/test_quiz_generator.py -v
+
+# Exclude known external-dependency failures
+python -m pytest --ignore=tests/test_model_optimizer.py -v
+```
+
+### Key Development Rules
+
+1. **Always use MockLLMProvider** during development (`llm.provider: "mock"`)
+2. **Test-Driven Development** -- Write tests before implementation
+3. **Backward Compatibility** -- Existing quiz generation must continue working
+4. **Local-First** -- SQLite + file-based config, no cloud dependencies for core
+5. **Teacher-in-Control** -- All AI-generated content requires teacher approval
+
+### Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `classes` | Teacher classes/blocks |
+| `lesson_logs` | Lessons taught to each class |
+| `quizzes` | Generated quiz records |
+| `questions` | Individual quiz questions |
+| `lessons` | Ingested content (PDFs, DOCX) |
+| `assets` | Extracted images |
+| `performance_data` | Student performance (Phase 2) |
+| `feedback_logs` | Human and AI feedback |
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
