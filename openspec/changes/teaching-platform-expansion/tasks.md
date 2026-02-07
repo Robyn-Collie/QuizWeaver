@@ -63,105 +63,105 @@
 
 ### 3. Multi-Class Management Module
 
-- [ ] 3.1 Create `src/classroom.py` module
-  - [ ] 3.1a Implement create_class(session, name, grade, subject, standards)
-  - [ ] 3.1b Implement get_class(session, class_id)
-  - [ ] 3.1c Implement list_classes(session)
-  - [ ] 3.1d Implement get_active_class(config) - reads from config
-  - [ ] 3.1e Implement set_active_class(class_id) - updates config
+- [x] 3.1 Create `src/classroom.py` module
+  - [x] 3.1a Implement create_class(session, name, grade, subject, standards)
+  - [x] 3.1b Implement get_class(session, class_id)
+  - [x] 3.1c Implement list_classes(session)
+  - [x] 3.1d Implement get_active_class(config) - reads from config
+  - [x] 3.1e Implement set_active_class(class_id) - updates config
 
-- [ ] 3.2 Add CLI commands to `main.py`
-  - [ ] 3.2a Add `new-class` command with argparse
-  - [ ] 3.2b Add `list-classes` command
-  - [ ] 3.2c Add `set-class` command
-  - [ ] 3.2d Add `--class` flag to existing commands (generate, etc.)
+- [x] 3.2 Add CLI commands to `main.py`
+  - [x] 3.2a Add `new-class` command with argparse
+  - [x] 3.2b Add `list-classes` command
+  - [x] 3.2c Add `set-class` command
+  - [x] 3.2d Add `--class` flag to existing commands (generate, etc.)
 
-- [ ] 3.3 Implement handle_new_class()
-  - [ ] 3.3a Parse arguments (name, grade, subject, standards)
-  - [ ] 3.3b Call classroom.create_class()
-  - [ ] 3.3c Display confirmation with class ID and details
-  - [ ] 3.3d Prompt to set as active class
+- [x] 3.3 Implement handle_new_class()
+  - [x] 3.3a Parse arguments (name, grade, subject, standards)
+  - [x] 3.3b Call classroom.create_class()
+  - [x] 3.3c Display confirmation with class ID and details
+  - [x] 3.3d Prompt to set as active class
 
-- [ ] 3.4 Implement handle_list_classes()
-  - [ ] 3.4a Query all classes from database
-  - [ ] 3.4b Format output with ID, name, grade, lesson count, quiz count
-  - [ ] 3.4c Mark active class with `*` indicator
-  - [ ] 3.4d Sort by most recently used
+- [x] 3.4 Implement handle_list_classes()
+  - [x] 3.4a Query all classes from database
+  - [x] 3.4b Format output with ID, name, grade, lesson count, quiz count
+  - [x] 3.4c Mark active class with `*` indicator
+  - [x] 3.4d Sort by most recently used
 
-- [ ] 3.5 Implement handle_set_class()
-  - [ ] 3.5a Validate class_id exists
-  - [ ] 3.5b Update config.yaml with active_class_id
-  - [ ] 3.5c Display confirmation
+- [x] 3.5 Implement handle_set_class()
+  - [x] 3.5a Validate class_id exists
+  - [x] 3.5b Update config.yaml with active_class_id
+  - [x] 3.5c Display confirmation
 
-- [ ] 3.6 Test multi-class functionality
-  - [ ] 3.6a Test creating multiple classes
-  - [ ] 3.6b Test class context isolation
-  - [ ] 3.6c Test switching active class
-  - [ ] 3.6d Test --class flag overrides config
+- [x] 3.6 Test multi-class functionality
+  - [x] 3.6a Test creating multiple classes
+  - [x] 3.6b Test class context isolation
+  - [x] 3.6c Test switching active class
+  - [x] 3.6d Test --class flag overrides config
 
 ### 4. Lesson Tracking Module
 
-- [ ] 4.1 Create `src/lesson_tracker.py` module
-  - [ ] 4.1a Implement log_lesson(session, class_id, content, topics, date)
-  - [ ] 4.1b Implement get_recent_lessons(session, class_id, days=14)
-  - [ ] 4.1c Implement list_lessons(session, class_id, filters)
-  - [ ] 4.1d Implement update_assumed_knowledge(session, class_id, topics)
+- [x] 4.1 Create `src/lesson_tracker.py` module
+  - [x] 4.1a Implement log_lesson(session, class_id, content, topics, date)
+  - [x] 4.1b Implement get_recent_lessons(session, class_id, days=14)
+  - [x] 4.1c Implement list_lessons(session, class_id, filters)
+  - [x] 4.1d Implement update_assumed_knowledge(session, class_id, topics)
 
-- [ ] 4.2 Implement simple topic extraction
-  - [ ] 4.2a Create extract_topics(text) using keyword matching
-  - [ ] 4.2b Define science topic keywords (photosynthesis, mitosis, etc.)
-  - [ ] 4.2c Return list of detected topics
-  - [ ] 4.2d Allow manual topic override via --topics flag
+- [x] 4.2 Implement simple topic extraction
+  - [x] 4.2a Create extract_topics(text) using keyword matching
+  - [x] 4.2b Define science topic keywords (photosynthesis, mitosis, etc.)
+  - [x] 4.2c Return list of detected topics
+  - [x] 4.2d Allow manual topic override via --topics flag
 
-- [ ] 4.3 Implement assumed knowledge tracking
-  - [ ] 4.3a Create KnowledgeState model (topic, depth, last_taught)
-  - [ ] 4.3b Store as JSON in Class.config['assumed_knowledge']
-  - [ ] 4.3c Increment depth on repeated topic mentions
-  - [ ] 4.3d Cap depth at 5 (expert level)
+- [x] 4.3 Implement assumed knowledge tracking
+  - [x] 4.3a Create KnowledgeState model (topic, depth, last_taught)
+  - [x] 4.3b Store as JSON in Class.config['assumed_knowledge']
+  - [x] 4.3c Increment depth on repeated topic mentions
+  - [x] 4.3d Cap depth at 5 (expert level)
 
-- [ ] 4.4 Add CLI commands for lesson tracking
-  - [ ] 4.4a Add `log-lesson` command with --text and --file options
-  - [ ] 4.4b Add `list-lessons` command with filters (--last, --from, --to, --topic)
-  - [ ] 4.4c Add --notes option for teacher observations
+- [x] 4.4 Add CLI commands for lesson tracking
+  - [x] 4.4a Add `log-lesson` command with --text and --file options
+  - [x] 4.4b Add `list-lessons` command with filters (--last, --from, --to, --topic)
+  - [x] 4.4c Add --notes option for teacher observations
 
-- [ ] 4.5 Implement handle_log_lesson()
-  - [ ] 4.5a Parse arguments (text, file, notes, topics override)
-  - [ ] 4.5b Extract topics if not provided
-  - [ ] 4.5c Call lesson_tracker.log_lesson()
-  - [ ] 4.5d Update assumed knowledge
-  - [ ] 4.5e Display confirmation with topics detected
+- [x] 4.5 Implement handle_log_lesson()
+  - [x] 4.5a Parse arguments (text, file, notes, topics override)
+  - [x] 4.5b Extract topics if not provided
+  - [x] 4.5c Call lesson_tracker.log_lesson()
+  - [x] 4.5d Update assumed knowledge
+  - [x] 4.5e Display confirmation with topics detected
 
-- [ ] 4.6 Implement handle_list_lessons()
-  - [ ] 4.6a Parse filters (last N days, date range, topic)
-  - [ ] 4.6b Query lesson logs
-  - [ ] 4.6c Format output with date, topics, depth changes
-  - [ ] 4.6d Optionally show full lesson content with --verbose
+- [x] 4.6 Implement handle_list_lessons()
+  - [x] 4.6a Parse filters (last N days, date range, topic)
+  - [x] 4.6b Query lesson logs
+  - [x] 4.6c Format output with date, topics, depth changes
+  - [x] 4.6d Optionally show full lesson content with --verbose
 
-- [ ] 4.7 Test lesson tracking
-  - [ ] 4.7a Test logging lessons with text input
-  - [ ] 4.7b Test logging lessons with file input
-  - [ ] 4.7c Test topic extraction
-  - [ ] 4.7d Test assumed knowledge updates
-  - [ ] 4.7e Test listing lessons with various filters
+- [x] 4.7 Test lesson tracking
+  - [x] 4.7a Test logging lessons with text input
+  - [x] 4.7b Test logging lessons with file input
+  - [x] 4.7c Test topic extraction
+  - [x] 4.7d Test assumed knowledge updates
+  - [x] 4.7e Test listing lessons with various filters
 
 ### 5. Agent Context Enhancement
 
-- [ ] 5.1 Update `run_agentic_pipeline()` in `src/agents.py`
-  - [ ] 5.1a Add class_id parameter
-  - [ ] 5.1b Load recent lesson logs for class (via lesson_tracker)
-  - [ ] 5.1c Load class config (grade, standards, assumed knowledge)
-  - [ ] 5.1d Add to context dict: lesson_logs, assumed_knowledge, class_config
+- [x] 5.1 Update `run_agentic_pipeline()` in `src/agents.py`
+  - [x] 5.1a Add class_id parameter
+  - [x] 5.1b Load recent lesson logs for class (via lesson_tracker)
+  - [x] 5.1c Load class config (grade, standards, assumed knowledge)
+  - [x] 5.1d Add to context dict: lesson_logs, assumed_knowledge, class_config
 
-- [ ] 5.2 Update agent prompts to use class context
-  - [ ] 5.2a Update `prompts/analyst_prompt.txt` to reference lesson logs
-  - [ ] 5.2b Update `prompts/generator_prompt.txt` to align with taught topics
-  - [ ] 5.2c Update `prompts/critic_prompt.txt` to verify alignment with class history
+- [x] 5.2 Update agent prompts to use class context
+  - [x] 5.2a Update `prompts/analyst_prompt.txt` to reference lesson logs
+  - [x] 5.2b Update `prompts/generator_prompt.txt` to align with taught topics
+  - [x] 5.2c Update `prompts/critic_prompt.txt` to verify alignment with class history
 
-- [ ] 5.3 Update handle_generate() in main.py
-  - [ ] 5.3a Get active_class_id or use --class flag
-  - [ ] 5.3b Pass class_id to run_agentic_pipeline()
-  - [ ] 5.3c Display class context being used
-  - [ ] 5.3d Associate generated quiz with class_id
+- [x] 5.3 Update handle_generate() in main.py
+  - [x] 5.3a Get active_class_id or use --class flag
+  - [x] 5.3b Pass class_id to run_agentic_pipeline()
+  - [x] 5.3c Display class context being used
+  - [x] 5.3d Associate generated quiz with class_id
 
 - [ ] 5.4 Test agent context enhancement
   - [ ] 5.4a Log lessons for a class
@@ -171,28 +171,28 @@
 
 ### 6. Cost Tracking Infrastructure
 
-- [ ] 6.1 Create `src/cost_tracking.py` module
-  - [ ] 6.1a Implement log_api_call(provider, model, input_tokens, output_tokens, cost)
-  - [ ] 6.1b Implement get_cost_summary() to read api_costs.log
-  - [ ] 6.1c Implement check_rate_limit() based on config settings
-  - [ ] 6.1d Implement format_cost_report() for human-readable output
+- [x] 6.1 Create `src/cost_tracking.py` module
+  - [x] 6.1a Implement log_api_call(provider, model, input_tokens, output_tokens, cost)
+  - [x] 6.1b Implement get_cost_summary() to read api_costs.log
+  - [x] 6.1c Implement check_rate_limit() based on config settings
+  - [x] 6.1d Implement format_cost_report() for human-readable output
 
-- [ ] 6.2 Integrate cost tracking with real providers
-  - [ ] 6.2a Update GeminiProvider.generate() to log calls
-  - [ ] 6.2b Update VertexAIProvider.generate() to log calls
-  - [ ] 6.2c Estimate costs based on model pricing
-  - [ ] 6.2d Write logs to api_costs.log
+- [x] 6.2 Integrate cost tracking with real providers
+  - [x] 6.2a Update GeminiProvider.generate() to log calls
+  - [x] 6.2b Update VertexAIProvider.generate() to log calls
+  - [x] 6.2c Estimate costs based on model pricing
+  - [x] 6.2d Write logs to api_costs.log
 
-- [ ] 6.3 Add CLI command for cost summary
-  - [ ] 6.3a Add `cost-summary` command
-  - [ ] 6.3b Display total calls, total cost, cost by agent, cost by day
-  - [ ] 6.3c Warn if cost exceeds threshold
+- [x] 6.3 Add CLI command for cost summary
+  - [x] 6.3a Add `cost-summary` command
+  - [x] 6.3b Display total calls, total cost, cost by agent, cost by day
+  - [x] 6.3c Warn if cost exceeds threshold
 
-- [ ] 6.4 Test cost tracking
-  - [ ] 6.4a Test mock provider logs nothing
-  - [ ] 6.4b Test real provider logs correctly (use test mode)
-  - [ ] 6.4c Test rate limiting stops execution
-  - [ ] 6.4d Test cost summary displays correctly
+- [x] 6.4 Test cost tracking
+  - [x] 6.4a Test mock provider logs nothing
+  - [x] 6.4b Test real provider logs correctly (use test mode)
+  - [x] 6.4c Test rate limiting stops execution
+  - [x] 6.4d Test cost summary displays correctly
 
 ### 7. Documentation Updates
 

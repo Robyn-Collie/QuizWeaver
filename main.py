@@ -493,6 +493,8 @@ def handle_list_lessons(config, args):
         return
 
     import json
+    verbose = getattr(args, "verbose", False)
+
     print(f"\n{'Date':<12} {'Topics':<40} {'Notes'}")
     print(f"{'---':<12} {'---':<40} {'---'}")
 
@@ -501,6 +503,9 @@ def handle_list_lessons(config, args):
         topics_str = ", ".join(topics)[:38] if topics else "(none)"
         notes_str = (lesson.notes or "")[:30]
         print(f"{str(lesson.date):<12} {topics_str:<40} {notes_str}")
+        if verbose and lesson.content:
+            print(f"{'':>12} Content: {lesson.content}")
+            print()
 
     print(f"\nTotal lessons: {len(lessons)}")
 
@@ -631,6 +636,9 @@ def main():
     )
     parser_list_lessons.add_argument(
         "--topic", type=str, help="Filter by topic name."
+    )
+    parser_list_lessons.add_argument(
+        "--verbose", action="store_true", help="Show full lesson content."
     )
     parser_list_lessons.add_argument(
         "--class", dest="class_id", type=int, help="Override active class."

@@ -60,19 +60,43 @@ def get_class(session: Session, class_id: int) -> Optional[Class]:
 
 def list_classes(session: Session) -> List[dict]:
     """
-    Query all classes with lesson and quiz counts.
+    Query all classes with lesson and quiz counts, sorted by most recently used.
+
+    "Most recently used" is determined by the latest lesson log or quiz
+    creation date for each class. Classes with no activity sort last
+    (ordered by class ID as a tiebreaker).
 
     Args:
         session: SQLAlchemy session
 
     Returns:
-        List of dicts with class info plus lesson_count and quiz_count
+        List of dicts with class info plus lesson_count and quiz_count,
+        sorted by most recently used first
     """
-    classes = session.query(Class).order_by(Class.id).all()
+    from sqlalchemy import func
+
+    classes = session.query(Class).all()
     result = []
     for cls in classes:
         lesson_count = session.query(LessonLog).filter_by(class_id=cls.id).count()
         quiz_count = session.query(Quiz).filter_by(class_id=cls.id).count()
+
+        # Determine most recent activity date
+        latest_lesson = (
+            session.query(func.max(LessonLog.created_at))
+            .filter(LessonLog.class_id == cls.id)
+            .scalar()
+        )
+        latest_quiz = (
+            session.query(func.max(Quiz.created_at))
+            .filter(Quiz.class_id == cls.id)
+            .scalar()
+        )
+        last_used = max(
+            filter(None, [latest_lesson, latest_quiz]),
+            default=None,
+        )
+
         result.append({
             "id": cls.id,
             "name": cls.name,
@@ -82,7 +106,11 @@ def list_classes(session: Session) -> List[dict]:
             "lesson_count": lesson_count,
             "quiz_count": quiz_count,
             "created_at": cls.created_at,
+            "last_used": last_used,
         })
+
+    # Sort: most recently used first; classes with no activity go last (by ID)
+    result.sort(key=lambda c: (c["last_used"] is not None, c["last_used"] or "", c["id"]), reverse=True)
     return result
 
 
