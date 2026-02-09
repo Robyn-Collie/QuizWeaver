@@ -9,3 +9,4 @@ google-cloud-aiplatform
 pytest
 pyyaml
 flask
+openai

@@ -22,6 +22,8 @@ from src.classroom import create_class, get_class, list_classes, update_class, d
 from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
 from src.cost_tracking import get_cost_summary
 from src.quiz_generator import generate_quiz
+from src.llm_provider import get_provider_info, PROVIDER_REGISTRY
+from src.web.config_utils import save_config
 
 
 # Default credentials for Phase 1.5 basic auth
@@ -444,8 +446,9 @@ def register_routes(app):
         if not class_obj:
             abort(404)
 
+        config = current_app.config["APP_CONFIG"]
+
         if request.method == "POST":
-            config = current_app.config["APP_CONFIG"]
             num_questions = int(request.form.get("num_questions", 20))
             grade_level = request.form.get("grade_level", "").strip() or None
             sol_raw = request.form.get("sol_standards", "").strip()
@@ -466,6 +469,9 @@ def register_routes(app):
                     cognitive_distribution = None
             difficulty = int(request.form.get("difficulty", 3))
 
+            # Per-quiz provider override
+            provider_override = request.form.get("provider", "").strip() or None
+
             quiz = generate_quiz(
                 session,
                 class_id=class_id,
@@ -476,19 +482,31 @@ def register_routes(app):
                 cognitive_framework=cognitive_framework,
                 cognitive_distribution=cognitive_distribution,
                 difficulty=difficulty,
+                provider_name=provider_override,
             )
 
             if quiz:
                 flash("Quiz generated successfully.", "success")
                 return redirect(url_for("quiz_detail", quiz_id=quiz.id), code=303)
             else:
+                providers = get_provider_info(config)
+                current_provider = config.get("llm", {}).get("provider", "mock")
                 return render_template(
                     "quizzes/generate.html",
                     class_obj=class_obj,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Quiz generation failed. Please try again.",
                 )
 
-        return render_template("quizzes/generate.html", class_obj=class_obj)
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
+        return render_template(
+            "quizzes/generate.html",
+            class_obj=class_obj,
+            providers=providers,
+            current_provider=current_provider,
+        )
 
     # --- Costs ---
 
@@ -500,6 +518,53 @@ def register_routes(app):
         provider = config.get("llm", {}).get("provider", "unknown")
         stats = get_cost_summary()
         return render_template("costs.html", stats=stats, provider=provider)
+
+    # --- Settings ---
+
+    @app.route("/settings", methods=["GET", "POST"])
+    @login_required
+    def settings():
+        """Manage LLM provider settings."""
+        config = current_app.config["APP_CONFIG"]
+
+        if request.method == "POST":
+            provider = request.form.get("provider", "mock").strip()
+            model_name = request.form.get("model_name", "").strip()
+            api_key = request.form.get("api_key", "").strip()
+            base_url = request.form.get("base_url", "").strip()
+
+            # Update config in-memory
+            if "llm" not in config:
+                config["llm"] = {}
+            config["llm"]["provider"] = provider
+
+            if model_name:
+                config["llm"]["model_name"] = model_name
+            if api_key:
+                config["llm"]["api_key"] = api_key
+            if base_url:
+                config["llm"]["base_url"] = base_url
+            elif provider not in ("openai-compatible",):
+                # Clear base_url if not needed
+                config["llm"].pop("base_url", None)
+
+            # Persist to config.yaml
+            save_config(config)
+
+            flash("Settings saved successfully.", "success")
+            return redirect(url_for("settings"), code=303)
+
+        # GET: render settings page
+        llm_config = config.get("llm", {})
+        providers = get_provider_info(config)
+        current_provider = llm_config.get("provider", "mock")
+
+        return render_template(
+            "settings.html",
+            providers=providers,
+            current_provider=current_provider,
+            llm_config=llm_config,
+        )
 
     # --- Help ---
 

@@ -480,16 +480,17 @@ class CriticAgent:
 
 
 class Orchestrator:
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], web_mode: bool = False):
         """Initialize the Orchestrator to coordinate Generator and Critic agents.
 
         Args:
             config: Application configuration dictionary containing agent loop settings,
                    LLM provider config, and retry limits.
+            web_mode: If True, skip interactive input() approval gate (for web UI).
         """
         self.config = config
         # Create provider once to avoid duplicate approval prompts
-        provider = get_provider(config)
+        provider = get_provider(config, web_mode=web_mode)
         self.generator = GeneratorAgent(config, provider=provider)
         self.critic = CriticAgent(config, provider=provider)
         self.max_retries = config.get("agent_loop", {}).get("max_retries", 3)
@@ -621,13 +622,14 @@ class Orchestrator:
         return questions
 
 
-def run_agentic_pipeline(config, context, class_id=None):
+def run_agentic_pipeline(config, context, class_id=None, web_mode=False):
     """Run the agentic quiz generation pipeline with optional class context enrichment.
 
     Args:
         config: Application configuration dictionary.
         context: Generation context dictionary with content, images, and parameters.
         class_id: Optional class ID to load recent lessons and assumed knowledge for.
+        web_mode: If True, skip interactive input() approval gate (for web UI).
 
     Returns:
         List of approved question dictionaries from the Orchestrator.
@@ -670,5 +672,5 @@ def run_agentic_pipeline(config, context, class_id=None):
         except Exception as e:
             print(f"Warning: Could not load class context: {e}")
 
-    orch = Orchestrator(config)
+    orch = Orchestrator(config, web_mode=web_mode)
     return orch.run(context)

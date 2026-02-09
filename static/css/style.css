@@ -714,6 +714,118 @@ input[type="range"] {
     color: var(--text-muted);
 }
 
+/* Settings Page */
+.settings-form {
+    max-width: 700px;
+}
+
+.settings-form .text-muted {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.provider-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.provider-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.provider-card:hover {
+    border-color: var(--primary);
+    background: #f8faff;
+}
+
+.provider-card.selected {
+    border-color: var(--primary);
+    background: #eff6ff;
+}
+
+.provider-card.unavailable {
+    opacity: 0.7;
+}
+
+.provider-card input[type="radio"] {
+    margin-top: 0.25rem;
+    width: auto;
+}
+
+.provider-card-body {
+    flex: 1;
+}
+
+.provider-card-body strong {
+    display: inline;
+    margin-right: 0.5rem;
+}
+
+.provider-card-body p {
+    margin: 0.25rem 0 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.provider-reason {
+    font-size: 0.8rem;
+    color: var(--warning);
+    font-style: italic;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.badge-available {
+    background: #dcfce7;
+    color: var(--success);
+}
+
+.badge-unavailable {
+    background: #fef3c7;
+    color: var(--warning);
+}
+
+.provider-fields {
+    margin-top: 0.5rem;
+}
+
+small.text-muted {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+/* Alert variants */
+.alert-success {
+    background: #f0fdf4;
+    color: var(--success);
+    border: 1px solid #bbf7d0;
+}
+
+.alert-warning {
+    background: #fffbeb;
+    color: var(--warning);
+    border: 1px solid #fde68a;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .navbar {

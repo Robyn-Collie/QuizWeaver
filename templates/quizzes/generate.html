@@ -59,9 +59,22 @@
         <span id="difficulty-label">3 - Moderate</span>
     </div>
 
+    {% if providers is defined and providers %}
+    <div class="form-group">
+        <label for="provider">AI Provider <span class="help-tip" data-tip="Choose which AI model generates this quiz. Default uses your global setting from Settings page.">?</span></label>
+        <select id="provider" name="provider">
+            <option value="">Use default ({{ current_provider|default('mock') }})</option>
+            {% for p in providers %}
+            <option value="{{ p.key }}" {% if not p.available %}disabled{% endif %}>
+                {{ p.label }}{% if not p.available %} (not configured){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Generate Quiz</button>
-        <span class="help-tip" data-tip="Uses MockLLMProvider by default (zero cost). Change provider in config for real AI generation.">?</span>
         <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>

@@ -339,8 +339,186 @@ class MockLLMProvider(LLMProvider):
         return f"<MockImage: {image_path}>"
 
 
+class OpenAICompatibleProvider(LLMProvider):
+    """
+    LLM provider for any OpenAI-compatible API.
+    Works with OpenAI, Anthropic, Mistral, Ollama, OpenRouter, vLLM, LiteLLM, etc.
+    """
+
+    def __init__(self, api_key: str, base_url: str, model_name: str = "gpt-4o"):
+        """
+        Initialize the OpenAI-compatible provider.
+
+        Args:
+            api_key: API key for authentication
+            base_url: Base URL of the OpenAI-compatible API (e.g., https://api.openai.com/v1)
+            model_name: Model name to use (e.g., gpt-4o, mistral-large, llama3)
+        """
+        from openai import OpenAI
+        self.client = OpenAI(api_key=api_key, base_url=base_url)
+        self._model_name = model_name
+
+    def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using an OpenAI-compatible API.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image dicts)
+            json_mode: If True, request JSON-formatted output
+
+        Returns:
+            Generated text response, or empty JSON on error
+        """
+        try:
+            content_parts = []
+            for part in prompt_parts:
+                if isinstance(part, str):
+                    content_parts.append({"type": "text", "text": part})
+                elif isinstance(part, dict) and part.get("type") == "image_url":
+                    content_parts.append(part)
+                # Skip unknown types gracefully
+
+            messages = [{"role": "user", "content": content_parts}]
+            kwargs = {"model": self._model_name, "messages": messages}
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            response = self.client.chat.completions.create(**kwargs)
+
+            # Log cost if usage data available
+            try:
+                from src.cost_tracking import log_api_call
+                usage = response.usage
+                if usage:
+                    log_api_call(
+                        "openai-compatible", self._model_name,
+                        getattr(usage, 'prompt_tokens', 0),
+                        getattr(usage, 'completion_tokens', 0),
+                    )
+            except Exception:
+                pass
+
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"An error occurred with the OpenAI-compatible provider: {e}")
+            return "[]"
+
+    def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Encode an image as a base64 data URL for OpenAI vision format.
+
+        Args:
+            image_path: Path to the image file
+
+        Returns:
+            Dict in OpenAI image_url format with base64-encoded data
+        """
+        import base64
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type:
+            mime_type = "image/png"
+        with open(image_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        return {
+            "type": "image_url",
+            "image_url": {"url": f"data:{mime_type};base64,{b64}"}
+        }
+
+
+# --- Provider Registry ---
+# Metadata about available providers for UI display and configuration
+
+PROVIDER_REGISTRY = {
+    "mock": {
+        "label": "Mock (Development)",
+        "description": "Zero-cost fabricated responses for testing",
+        "category": "built-in",
+    },
+    "gemini": {
+        "label": "Google Gemini Flash",
+        "description": "Fast, cost-effective model via Gemini API",
+        "category": "built-in",
+        "env_var": "GEMINI_API_KEY",
+    },
+    "gemini-3-pro": {
+        "label": "Google Gemini Pro",
+        "description": "Advanced multimodal model via Gemini API",
+        "category": "built-in",
+        "env_var": "GEMINI_API_KEY",
+    },
+    "vertex": {
+        "label": "Google Vertex AI",
+        "description": "Enterprise Gemini via Google Cloud",
+        "category": "built-in",
+        "requires_config": ["vertex_project_id", "vertex_location"],
+    },
+    "openai": {
+        "label": "OpenAI",
+        "description": "GPT-4o, GPT-4, etc. via OpenAI API",
+        "category": "openai-compatible",
+        "env_var": "OPENAI_API_KEY",
+        "default_base_url": "https://api.openai.com/v1",
+        "default_model": "gpt-4o",
+    },
+    "openai-compatible": {
+        "label": "Custom (OpenAI-Compatible)",
+        "description": "Any OpenAI-compatible API (Ollama, Mistral, OpenRouter, etc.)",
+        "category": "openai-compatible",
+    },
+}
+
+
+def get_provider_info(config):
+    """
+    Return a list of provider info dicts with availability status.
+
+    Args:
+        config: Application configuration dictionary
+
+    Returns:
+        List of dicts with keys: key, label, description, available, reason
+    """
+    llm_config = config.get("llm", {})
+    result = []
+    for key, meta in PROVIDER_REGISTRY.items():
+        info = {
+            "key": key,
+            "label": meta["label"],
+            "description": meta["description"],
+            "available": True,
+            "reason": "",
+        }
+
+        if key == "mock":
+            # Always available
+            pass
+        elif meta.get("env_var"):
+            env_val = os.getenv(meta["env_var"]) or llm_config.get("api_key", "")
+            if not env_val:
+                info["available"] = False
+                info["reason"] = f"Set {meta['env_var']} or enter API key in settings"
+        elif key == "vertex":
+            if not _VERTEX_AI_AVAILABLE:
+                info["available"] = False
+                info["reason"] = "google-cloud-aiplatform not installed"
+            else:
+                for cfg_key in meta.get("requires_config", []):
+                    if not llm_config.get(cfg_key):
+                        info["available"] = False
+                        info["reason"] = f"Missing config: {cfg_key}"
+                        break
+        elif key == "openai-compatible":
+            # Available if user has configured base_url and api_key
+            if not llm_config.get("base_url") or not llm_config.get("api_key"):
+                info["available"] = False
+                info["reason"] = "Configure base URL and API key in settings"
+
+        result.append(info)
+    return result
+
+
 # A factory function to get the correct provider based on configuration
-def get_provider(config):
+def get_provider(config, web_mode=False):
     """
     Factory function to instantiate the correct LLM provider based on config.
 
@@ -349,11 +527,15 @@ def get_provider(config):
 
     Args:
         config: Application configuration dictionary containing 'llm' settings with:
-            - provider: One of 'mock', 'gemini', 'gemini-3-pro', 'vertex'
+            - provider: One of 'mock', 'gemini', 'gemini-3-pro', 'vertex',
+                       'openai', 'openai-compatible'
             - mode: 'development' or 'production' (affects approval gate)
             - model_name: Name of model to use (provider-specific)
             - vertex_project_id: Required for Vertex AI provider
             - vertex_location: Required for Vertex AI provider
+            - api_key: API key for OpenAI/custom providers
+            - base_url: Base URL for OpenAI-compatible providers
+        web_mode: If True, skip interactive input() approval gate (for web UI)
 
     Returns:
         LLMProvider: Instance of the appropriate provider class
@@ -366,9 +548,10 @@ def get_provider(config):
     llm_config = config.get("llm", {})
 
     # Check if using real provider and warn user
-    if provider_name in ["gemini", "gemini-3-pro", "vertex"]:
+    real_providers = ["gemini", "gemini-3-pro", "vertex", "openai", "openai-compatible"]
+    if provider_name in real_providers:
         mode = llm_config.get("mode", "development")
-        if mode == "development":
+        if mode == "development" and not web_mode:
             print("\n[WARNING] Using real API - costs will be incurred!")
             print(f"   Provider: {provider_name}")
             print("   To use cost-free mock provider, set llm.provider: 'mock' in config.yaml")
@@ -421,6 +604,29 @@ def get_provider(config):
             project_id=project_id,
             location=location,
             model_name=llm_config.get("model_name", "gemini-1.5-flash"),
+        )
+    elif provider_name == "openai":
+        api_key = os.getenv("OPENAI_API_KEY") or llm_config.get("api_key", "")
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is not set in the environment and no api_key in config for OpenAI provider."
+            )
+        return OpenAICompatibleProvider(
+            api_key=api_key,
+            base_url="https://api.openai.com/v1",
+            model_name=llm_config.get("model_name", "gpt-4o"),
+        )
+    elif provider_name == "openai-compatible":
+        api_key = llm_config.get("api_key", "")
+        base_url = llm_config.get("base_url", "")
+        if not base_url:
+            raise ValueError(
+                "base_url must be set in config.yaml llm section for openai-compatible provider."
+            )
+        return OpenAICompatibleProvider(
+            api_key=api_key or "no-key",
+            base_url=base_url,
+            model_name=llm_config.get("model_name", "default"),
         )
     else:
         raise ValueError(f"Unsupported LLM provider: {provider_name}")

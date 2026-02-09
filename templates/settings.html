@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Settings - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+
+<form method="POST" action="/settings" class="form settings-form">
+    <h2>LLM Provider</h2>
+    <p class="text-muted">Choose which AI model generates your quizzes. Use Mock for free development, or connect a real provider.</p>
+
+    <div class="form-group">
+        <label>Provider</label>
+        <div class="provider-cards">
+            {% for p in providers %}
+            <label class="provider-card {% if p.key == current_provider %}selected{% endif %} {% if not p.available %}unavailable{% endif %}">
+                <input type="radio" name="provider" value="{{ p.key }}"
+                       {% if p.key == current_provider %}checked{% endif %}
+                       onchange="toggleProviderFields()">
+                <div class="provider-card-body">
+                    <strong>{{ p.label }}</strong>
+                    {% if p.available %}
+                    <span class="badge badge-available">Ready</span>
+                    {% else %}
+                    <span class="badge badge-unavailable">Setup needed</span>
+                    {% endif %}
+                    <p>{{ p.description }}</p>
+                    {% if not p.available and p.reason %}
+                    <p class="provider-reason">{{ p.reason }}</p>
+                    {% endif %}
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="provider-fields" id="fields-model" style="display:none">
+        <div class="form-group">
+            <label for="model_name">Model Name</label>
+            <input type="text" id="model_name" name="model_name"
+                   value="{{ llm_config.get('model_name', '') }}"
+                   placeholder="e.g., gpt-4o, gemini-2.5-flash, llama3">
+        </div>
+    </div>
+
+    <div class="provider-fields" id="fields-apikey" style="display:none">
+        <div class="form-group">
+            <label for="api_key">API Key</label>
+            <input type="password" id="api_key" name="api_key"
+                   value=""
+                   placeholder="{% if llm_config.get('api_key') %}(key set - leave blank to keep){% else %}Enter API key{% endif %}">
+            {% if llm_config.get('api_key') %}
+            <small class="text-muted">API key is configured. Leave blank to keep current key.</small>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="provider-fields" id="fields-baseurl" style="display:none">
+        <div class="form-group">
+            <label for="base_url">Base URL</label>
+            <input type="url" id="base_url" name="base_url"
+                   value="{{ llm_config.get('base_url', '') }}"
+                   placeholder="e.g., http://localhost:11434/v1">
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+    </div>
+</form>
+
+<script>
+function toggleProviderFields() {
+    var selected = document.querySelector('input[name="provider"]:checked');
+    if (!selected) return;
+    var val = selected.value;
+
+    // Hide all conditional fields
+    document.getElementById('fields-model').style.display = 'none';
+    document.getElementById('fields-apikey').style.display = 'none';
+    document.getElementById('fields-baseurl').style.display = 'none';
+
+    // Show fields based on provider
+    if (val === 'mock') {
+        // No extra fields needed
+    } else if (val === 'gemini' || val === 'gemini-3-pro' || val === 'vertex') {
+        document.getElementById('fields-model').style.display = 'block';
+    } else if (val === 'openai') {
+        document.getElementById('fields-model').style.display = 'block';
+        document.getElementById('fields-apikey').style.display = 'block';
+    } else if (val === 'openai-compatible') {
+        document.getElementById('fields-model').style.display = 'block';
+        document.getElementById('fields-apikey').style.display = 'block';
+        document.getElementById('fields-baseurl').style.display = 'block';
+    }
+
+    // Update card selection visual
+    document.querySelectorAll('.provider-card').forEach(function(card) {
+        card.classList.remove('selected');
+    });
+    selected.closest('.provider-card').classList.add('selected');
+}
+
+// Run on page load to show correct fields
+toggleProviderFields();
+</script>
+{% endblock %}

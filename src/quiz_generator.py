@@ -8,6 +8,7 @@ Uses MockLLMProvider by default for zero-cost development.
 Run tests with: python -m pytest tests/test_quiz_generator.py -v
 """
 
+import copy
 import json
 import logging
 from typing import Optional, List
@@ -33,6 +34,7 @@ def generate_quiz(
     cognitive_framework: Optional[str] = None,
     cognitive_distribution: Optional[dict] = None,
     difficulty: int = 3,
+    provider_name: Optional[str] = None,
 ) -> Optional[Quiz]:
     """
     Generate a quiz for a given class using the agentic pipeline.
@@ -48,10 +50,18 @@ def generate_quiz(
         cognitive_framework: "blooms" or "dok" or None
         cognitive_distribution: dict mapping level number to question count
         difficulty: Difficulty level 1-5 (default 3)
+        provider_name: Override provider (e.g., "openai", "mock"). If None,
+                       uses config default.
 
     Returns:
         A Quiz ORM object with questions attached, or None on failure
     """
+    # Apply provider override if specified
+    run_config = config
+    if provider_name:
+        run_config = copy.deepcopy(config)
+        run_config["llm"]["provider"] = provider_name
+
     # Validate class exists
     class_obj = get_class(session, class_id)
     if class_obj is None:
@@ -94,6 +104,7 @@ def generate_quiz(
         "cognitive_framework": validated_framework,
         "cognitive_distribution": validated_distribution,
         "difficulty": difficulty,
+        "provider": run_config.get("llm", {}).get("provider", "mock"),
     }
 
     # Create quiz record with status "generating"
@@ -114,7 +125,7 @@ def generate_quiz(
         "retake_text": "",
         "num_questions": num_questions,
         "images": [],
-        "image_ratio": config.get("generation", {}).get("target_image_ratio", 0.0),
+        "image_ratio": run_config.get("generation", {}).get("target_image_ratio", 0.0),
         "grade_level": resolved_grade,
         "sol_standards": resolved_sol,
         "cognitive_framework": validated_framework,
@@ -124,7 +135,9 @@ def generate_quiz(
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)
     try:
-        questions_data = run_agentic_pipeline(config, context, class_id=class_id)
+        questions_data = run_agentic_pipeline(
+            run_config, context, class_id=class_id, web_mode=True
+        )
     except Exception as e:
         logger.error("generate_quiz: pipeline crashed: %s", e)
         new_quiz.status = "failed"
