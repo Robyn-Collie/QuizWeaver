@@ -10,11 +10,11 @@
 
 <form method="POST" action="/classes/{{ class_obj.id }}/edit" class="form">
     <div class="form-group">
-        <label for="name">Class Name (required)</label>
+        <label for="name">Class Name (required) <span class="help-tip" data-tip="A unique name for your class or block period">?</span></label>
         <input type="text" id="name" name="name" value="{{ class_obj.name }}" required>
     </div>
     <div class="form-group">
-        <label for="grade_level">Grade Level</label>
+        <label for="grade_level">Grade Level <span class="help-tip" data-tip="Used to calibrate quiz difficulty and vocabulary level">?</span></label>
         <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}">
     </div>
     <div class="form-group">
@@ -22,7 +22,7 @@
         <input type="text" id="subject" name="subject" value="{{ class_obj.subject or '' }}">
     </div>
     <div class="form-group">
-        <label for="standards">Standards (comma-separated)</label>
+        <label for="standards">Standards (comma-separated) <span class="help-tip" data-tip="SOL or other standards to target when generating quizzes for this class">?</span></label>
         <input type="text" id="standards" name="standards" value="{{ class_obj.standards or '' }}">
     </div>
     <div class="form-actions">

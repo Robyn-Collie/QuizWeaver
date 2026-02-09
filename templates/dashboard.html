@@ -4,6 +4,28 @@
 {% block content %}
 <h1>Dashboard</h1>
 
+<div class="getting-started" id="gettingStarted">
+    <button class="dismiss-btn" onclick="dismissGettingStarted()" aria-label="Dismiss">&times;</button>
+    <h2>Welcome to QuizWeaver</h2>
+    <ol>
+        <li><a href="/classes/new">Create a class</a> - set up your class with grade level and standards</li>
+        <li><strong>Log lessons</strong> - record what you teach so quizzes match your instruction</li>
+        <li><strong>Generate quizzes</strong> - AI creates assessments based on your lesson history</li>
+    </ol>
+    <p style="margin-top: 0.5rem;"><a href="/help">Read the full guide</a></p>
+</div>
+<script>
+(function() {
+    if (localStorage.getItem('hideGettingStarted') === 'true') {
+        document.getElementById('gettingStarted').style.display = 'none';
+    }
+})();
+function dismissGettingStarted() {
+    localStorage.setItem('hideGettingStarted', 'true');
+    document.getElementById('gettingStarted').style.display = 'none';
+}
+</script>
+
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-value">{{ total_classes }}</div>

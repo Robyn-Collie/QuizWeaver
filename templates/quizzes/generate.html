@@ -10,19 +10,20 @@
 
 <form method="POST" action="/classes/{{ class_obj.id }}/generate" class="form">
     <div class="form-group">
-        <label for="num_questions">Number of Questions</label>
+        <label for="num_questions">Number of Questions <span class="help-tip" data-tip="Number of questions to generate (1-50). Default is 20.">?</span></label>
         <input type="number" id="num_questions" name="num_questions" value="20" min="1" max="50" required>
     </div>
     <div class="form-group">
-        <label for="grade_level">Grade Level</label>
+        <label for="grade_level">Grade Level <span class="help-tip" data-tip="Used to calibrate quiz difficulty and vocabulary level">?</span></label>
         <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}" placeholder="e.g., 7th Grade">
     </div>
     <div class="form-group">
-        <label for="sol_standards">SOL Standards (optional)</label>
+        <label for="sol_standards">SOL Standards (optional) <span class="help-tip" data-tip="Comma-separated list of SOL standards to target in quiz questions">?</span></label>
         <input type="text" id="sol_standards" name="sol_standards" placeholder="e.g., SOL 7.1, SOL 7.2">
     </div>
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Generate Quiz</button>
+        <span class="help-tip" data-tip="Uses MockLLMProvider by default (zero cost). Change provider in config for real AI generation.">?</span>
         <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>

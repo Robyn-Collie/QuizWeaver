@@ -10,11 +10,11 @@
         <input type="date" id="lesson_date" name="lesson_date" value="{{ today }}">
     </div>
     <div class="form-group">
-        <label for="content">Lesson Content</label>
+        <label for="content">Lesson Content <span class="help-tip" data-tip="Describe what you taught - topics are auto-detected from this text and used for quiz generation">?</span></label>
         <textarea id="content" name="content" rows="6" required placeholder="What did you teach today? Include topics, activities, and key concepts covered."></textarea>
     </div>
     <div class="form-group">
-        <label for="topics">Topics (comma-separated, optional - auto-detected if blank)</label>
+        <label for="topics">Topics (comma-separated, optional - auto-detected if blank) <span class="help-tip" data-tip="Leave blank for auto-detection, or enter topics manually separated by commas">?</span></label>
         <input type="text" id="topics" name="topics" placeholder="e.g., photosynthesis, cell division">
     </div>
     <div class="form-group">

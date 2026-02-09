@@ -924,3 +924,63 @@ class TestLessonFileUpload:
         response = client.get("/classes/1/lessons/new")
         html = response.data.decode()
         assert 'type="date"' in html or 'name="lesson_date"' in html
+
+
+class TestHelpPage:
+    """Test help page and user guidance features."""
+
+    def test_help_page_returns_200(self, client):
+        """Help page returns 200 OK."""
+        response = client.get("/help")
+        assert response.status_code == 200
+
+    def test_help_page_has_sections(self, client):
+        """Help page contains all expected sections."""
+        response = client.get("/help")
+        html = response.data.decode()
+        assert "Workflow Overview" in html
+        assert "Managing Classes" in html
+        assert "Logging Lessons" in html
+        assert "Generating Quizzes" in html
+        assert "Cost Tracking" in html
+        assert "Tips" in html
+
+    def test_help_page_has_nav_link(self, client):
+        """Help link appears in the navigation bar."""
+        response = client.get("/dashboard")
+        html = response.data.decode()
+        assert 'href="/help"' in html
+
+    def test_dashboard_has_getting_started(self, client):
+        """Dashboard shows the getting started banner."""
+        response = client.get("/dashboard")
+        html = response.data.decode()
+        assert "getting-started" in html
+        assert "Welcome to QuizWeaver" in html
+
+    def test_form_tooltips_on_class_create(self, client):
+        """New class form has help tooltips."""
+        response = client.get("/classes/new")
+        html = response.data.decode()
+        assert "help-tip" in html
+        assert "data-tip" in html
+
+    def test_form_tooltips_on_lesson_log(self, client):
+        """Lesson log form has help tooltips."""
+        response = client.get("/classes/1/lessons/new")
+        html = response.data.decode()
+        assert "help-tip" in html
+        assert "data-tip" in html
+
+    def test_form_tooltips_on_quiz_generate(self, client):
+        """Quiz generate form has help tooltips."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert "help-tip" in html
+        assert "data-tip" in html
+
+    def test_help_page_requires_login(self, anon_client):
+        """Help page redirects to login when not authenticated."""
+        response = anon_client.get("/help", follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/login" in response.headers["Location"]

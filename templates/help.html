@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Help - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Help &amp; Getting Started</h1>
+
+<div class="help-toc info-box">
+    <strong>On this page:</strong>
+    <a href="#workflow">Workflow Overview</a> |
+    <a href="#classes">Managing Classes</a> |
+    <a href="#lessons">Logging Lessons</a> |
+    <a href="#quizzes">Generating Quizzes</a> |
+    <a href="#costs">Cost Tracking</a> |
+    <a href="#tips">Tips &amp; Troubleshooting</a>
+</div>
+
+<section class="help-section" id="workflow">
+    <h2>Workflow Overview</h2>
+    <p>QuizWeaver follows a three-step workflow to generate quizzes tailored to what you've actually taught:</p>
+    <ol class="help-steps">
+        <li>
+            <strong>Create a class</strong> - Set up each class or block period with its grade level and standards.
+            <a href="/classes/new">Create a class now</a>
+        </li>
+        <li>
+            <strong>Log lessons</strong> - Record what you teach each day. Topics are auto-detected from your content.
+        </li>
+        <li>
+            <strong>Generate quizzes</strong> - QuizWeaver uses your lesson history to create assessments that match what students have actually learned.
+        </li>
+    </ol>
+</section>
+
+<section class="help-section" id="classes">
+    <h2>Managing Classes</h2>
+    <dl class="help-dl">
+        <dt>Create a class</dt>
+        <dd>Go to <a href="/classes/new">Classes &gt; New Class</a>. Provide a name (required), and optionally a grade level, subject, and SOL standards.</dd>
+
+        <dt>Edit a class</dt>
+        <dd>From the class detail page, click "Edit" to update the name, grade level, subject, or standards.</dd>
+
+        <dt>Delete a class</dt>
+        <dd>From the class detail page, click "Delete". This removes the class and all its lessons. Quizzes already generated are kept.</dd>
+
+        <dt>View class detail</dt>
+        <dd>Click a class name to see its assumed knowledge (topics taught so far), lesson history, and generated quizzes.</dd>
+    </dl>
+</section>
+
+<section class="help-section" id="lessons">
+    <h2>Logging Lessons</h2>
+    <dl class="help-dl">
+        <dt>Text entry</dt>
+        <dd>Describe what you taught - key concepts, activities, and topics covered. The more detail you provide, the better the generated quizzes will be.</dd>
+
+        <dt>File upload</dt>
+        <dd>You can upload a PDF or DOCX file with your lesson materials instead of typing content.</dd>
+
+        <dt>Topic auto-detection</dt>
+        <dd>Leave the Topics field blank and QuizWeaver will extract topics from your content. Or enter topics manually, separated by commas.</dd>
+
+        <dt>Assumed knowledge</dt>
+        <dd>As you log more lessons, QuizWeaver builds a picture of what students should know. This is shown on the class detail page and used during quiz generation.</dd>
+    </dl>
+</section>
+
+<section class="help-section" id="quizzes">
+    <h2>Generating Quizzes</h2>
+    <dl class="help-dl">
+        <dt>Question count</dt>
+        <dd>Choose how many questions to generate (1-50). Default is 20.</dd>
+
+        <dt>Grade level</dt>
+        <dd>Pre-filled from your class settings. Used to calibrate question difficulty and vocabulary.</dd>
+
+        <dt>SOL Standards</dt>
+        <dd>Optionally target specific standards. Enter as comma-separated values (e.g., "SOL 7.1, SOL 7.2").</dd>
+
+        <dt>Mock vs Real provider</dt>
+        <dd>By default, QuizWeaver uses the MockLLMProvider which generates sample questions at zero cost. To use a real AI provider (Gemini), update the LLM provider setting in your configuration.</dd>
+
+        <dt>Quiz status</dt>
+        <dd><span class="status status-generated">generated</span> = ready to review,
+            <span class="status status-generating">generating</span> = in progress,
+            <span class="status status-failed">failed</span> = an error occurred during generation.</dd>
+    </dl>
+</section>
+
+<section class="help-section" id="costs">
+    <h2>Cost Tracking</h2>
+    <dl class="help-dl">
+        <dt>What it shows</dt>
+        <dd>The <a href="/costs">Costs page</a> displays your API usage, total cost, and current LLM provider.</dd>
+
+        <dt>Mock provider = free</dt>
+        <dd>When using the MockLLMProvider (the default), all quiz generation is completely free. No API calls are made.</dd>
+
+        <dt>Real provider costs</dt>
+        <dd>If using Gemini or Vertex AI, costs are tracked per request and displayed on the costs page. You will be prompted for approval before any real API call.</dd>
+    </dl>
+</section>
+
+<section class="help-section" id="tips">
+    <h2>Tips &amp; Troubleshooting</h2>
+    <dl class="help-dl">
+        <dt>Quiz generation failed</dt>
+        <dd>Check that the class has at least one lesson logged. The quiz generator needs lesson content to work with.</dd>
+
+        <dt>Topics not detected</dt>
+        <dd>Enter topics manually in the comma-separated field. Auto-detection works best with detailed, descriptive lesson content.</dd>
+
+        <dt>Best results</dt>
+        <dd>Log lessons regularly with detailed content. The more context QuizWeaver has, the better it can align quiz questions with what students actually learned.</dd>
+
+        <dt>Multiple classes</dt>
+        <dd>Each class tracks its own lessons and knowledge independently. Quizzes are generated per-class, so students in different blocks get assessments matched to their instruction.</dd>
+    </dl>
+</section>
+
+{% endblock %}

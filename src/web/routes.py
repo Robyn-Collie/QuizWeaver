@@ -475,3 +475,11 @@ def register_routes(app):
         provider = config.get("llm", {}).get("provider", "unknown")
         stats = get_cost_summary()
         return render_template("costs.html", stats=stats, provider=provider)
+
+    # --- Help ---
+
+    @app.route("/help")
+    @login_required
+    def help_page():
+        """Render the help and getting started guide."""
+        return render_template("help.html")
