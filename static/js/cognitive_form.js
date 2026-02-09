@@ -16,6 +16,48 @@ const DOK_LEVELS = [
     {number: 4, name: "Extended Thinking", color: "#EF4444"}
 ];
 
+// Default percentage spreads for each framework (must sum to 100)
+const DEFAULT_SPREADS = {
+    blooms: [
+        {level: 1, pct: 15},  // Remember
+        {level: 2, pct: 25},  // Understand
+        {level: 3, pct: 25},  // Apply
+        {level: 4, pct: 20},  // Analyze
+        {level: 5, pct: 10},  // Evaluate
+        {level: 6, pct: 5}    // Create
+    ],
+    dok: [
+        {level: 1, pct: 25},  // Recall
+        {level: 2, pct: 40},  // Skill/Concept
+        {level: 3, pct: 25},  // Strategic Thinking
+        {level: 4, pct: 10}   // Extended Thinking
+    ]
+};
+
+function computeDefaultCounts(framework, total) {
+    var spread = DEFAULT_SPREADS[framework];
+    if (!spread) return {};
+    var counts = {};
+    var assigned = 0;
+    // First pass: floor of each proportion
+    spread.forEach(function(s) {
+        var raw = total * s.pct / 100;
+        counts[s.level] = Math.floor(raw);
+        assigned += counts[s.level];
+    });
+    // Distribute remainder to levels with largest fractional parts
+    var remainder = total - assigned;
+    if (remainder > 0) {
+        var fractionals = spread.map(function(s) {
+            return {level: s.level, frac: (total * s.pct / 100) - Math.floor(total * s.pct / 100)};
+        }).sort(function(a, b) { return b.frac - a.frac; });
+        for (var i = 0; i < remainder && i < fractionals.length; i++) {
+            counts[fractionals[i].level]++;
+        }
+    }
+    return counts;
+}
+
 const QUESTION_TYPES = ["mc", "tf", "fill_in_blank", "short_answer", "matching", "essay"];
 const QUESTION_TYPE_LABELS = {
     "mc": "MC", "tf": "T/F", "fill_in_blank": "Fill-in",
@@ -41,11 +83,14 @@ const DIFFICULTY_LABELS = {
     var difficultyLabel = document.getElementById("difficulty-label");
     var form = document.querySelector("form.form");
 
+    var currentFramework = "";
+
     // Radio change handler
     radios.forEach(function(radio) {
         radio.addEventListener("change", function() {
             var value = this.value;
             hiddenFramework.value = value;
+            currentFramework = value;
 
             if (value === "") {
                 distGroup.style.display = "none";
@@ -53,13 +98,43 @@ const DIFFICULTY_LABELS = {
             } else {
                 distGroup.style.display = "";
                 var levels = value === "blooms" ? BLOOMS_LEVELS : DOK_LEVELS;
-                buildTable(levels);
+                var total = parseInt(numQuestionsInput.value) || 20;
+                var defaults = computeDefaultCounts(value, total);
+                buildTable(levels, defaults);
             }
         });
     });
 
-    function buildTable(levels) {
+    function buildTable(levels, defaultCounts) {
         tbody.innerHTML = "";
+
+        // Add action buttons row before the table body
+        var existingActions = document.getElementById("cognitive-actions");
+        if (existingActions) existingActions.remove();
+        var actionsDiv = document.createElement("div");
+        actionsDiv.id = "cognitive-actions";
+        actionsDiv.className = "cognitive-actions";
+        var clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "btn btn-sm btn-outline";
+        clearBtn.textContent = "Clear All";
+        clearBtn.addEventListener("click", function() {
+            var inputs = document.querySelectorAll(".level-count");
+            inputs.forEach(function(input) { input.value = "0"; });
+            updateTotal();
+        });
+        var resetBtn = document.createElement("button");
+        resetBtn.type = "button";
+        resetBtn.className = "btn btn-sm btn-outline";
+        resetBtn.textContent = "Reset Defaults";
+        resetBtn.addEventListener("click", function() {
+            applyDefaults();
+        });
+        actionsDiv.appendChild(resetBtn);
+        actionsDiv.appendChild(clearBtn);
+        var tableEl = document.getElementById("cognitive-table");
+        tableEl.parentNode.insertBefore(actionsDiv, tableEl);
+
         levels.forEach(function(level) {
             var tr = document.createElement("tr");
 
@@ -80,7 +155,7 @@ const DIFFICULTY_LABELS = {
             countInput.setAttribute("data-level", level.number);
             countInput.min = "0";
             countInput.max = "50";
-            countInput.value = "0";
+            countInput.value = (defaultCounts && defaultCounts[level.number]) ? defaultCounts[level.number] : "0";
             countInput.addEventListener("change", updateTotal);
             countInput.addEventListener("input", updateTotal);
             tdCount.appendChild(countInput);
@@ -110,6 +185,18 @@ const DIFFICULTY_LABELS = {
         updateTotal();
     }
 
+    function applyDefaults() {
+        if (!currentFramework) return;
+        var total = parseInt(numQuestionsInput.value) || 20;
+        var defaults = computeDefaultCounts(currentFramework, total);
+        var inputs = document.querySelectorAll(".level-count");
+        inputs.forEach(function(input) {
+            var level = parseInt(input.getAttribute("data-level"));
+            input.value = defaults[level] || 0;
+        });
+        updateTotal();
+    }
+
     function updateTotal() {
         var inputs = document.querySelectorAll(".level-count");
         var total = 0;
@@ -133,8 +220,20 @@ const DIFFICULTY_LABELS = {
         }
     }
 
-    // Update target when num_questions changes
-    numQuestionsInput.addEventListener("change", updateTotal);
+    // Update target when num_questions changes; re-apply defaults if distribution matches current defaults
+    numQuestionsInput.addEventListener("change", function() {
+        updateTotal();
+        if (currentFramework) {
+            // Check if user has customized or if we should auto-update defaults
+            var inputs = document.querySelectorAll(".level-count");
+            var allZero = true;
+            inputs.forEach(function(input) {
+                if (parseInt(input.value) !== 0) allZero = false;
+            });
+            // If all zero (user cleared), re-apply defaults for new total
+            if (allZero) applyDefaults();
+        }
+    });
     numQuestionsInput.addEventListener("input", updateTotal);
 
     // Difficulty slider

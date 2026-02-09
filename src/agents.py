@@ -180,7 +180,7 @@ class GeneratorAgent:
             cognitive_section = f"**Cognitive Framework: {framework_label}**\n"
             cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
             if cognitive_distribution and levels:
-                cognitive_section += "Target distribution by cognitive level:\n"
+                cognitive_section += "MANDATORY distribution by cognitive level (you MUST follow this exactly):\n"
                 for lvl in levels:
                     num = lvl["number"]
                     entry = cognitive_distribution.get(str(num)) or cognitive_distribution.get(num)
@@ -189,12 +189,22 @@ class GeneratorAgent:
                     if isinstance(entry, dict):
                         count = entry.get("count", 0)
                         types = entry.get("types", [])
-                        types_str = ", ".join(types) if types else "any"
                     else:
                         count = int(entry)
-                        types_str = "any"
+                        types = []
                     if count > 0:
-                        cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, types: {types_str}\n"
+                        if types and len(types) > 0:
+                            # Compute exact per-type counts via round-robin
+                            type_counts = {}
+                            for i in range(count):
+                                t = types[i % len(types)]
+                                type_counts[t] = type_counts.get(t, 0) + 1
+                            type_breakdown = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
+                            cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
+                        else:
+                            cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, type: any\n"
+                cognitive_section += "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
+                cognitive_section += "Each question MUST have a \"type\" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n"
             cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
             cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
             cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
@@ -217,6 +227,13 @@ class GeneratorAgent:
 **Task:**
 Generate {num_questions} unique quiz questions.
 Image Ratio Target: {int(image_ratio * 100)}%
+
+**Image Policy:**
+Do NOT include image URLs or links in your response — any URLs you generate will be fake.
+Instead, if a question would benefit from a visual (diagram, chart, photo, etc.), include an
+"image_description" field with a clear description of the ideal image, e.g.:
+"image_description": "Simple diagram showing photosynthesis inputs (water, CO2, sunlight) and outputs (glucose, oxygen)"
+The teacher will add or generate the actual image later. Do NOT include "image" or "image_url" fields.
 
 ---
 **Content Summary:**
@@ -433,9 +450,22 @@ class CriticAgent:
                         entry = distribution.get(str(num)) or distribution.get(num)
                         if entry is None:
                             continue
-                        count = entry.get("count", entry) if isinstance(entry, dict) else int(entry)
+                        if isinstance(entry, dict):
+                            count = entry.get("count", 0)
+                            types = entry.get("types", [])
+                        else:
+                            count = int(entry)
+                            types = []
                         if count > 0:
                             cognitive_validation_section += f"  - Level {num} ({lvl['name']}): {count} questions\n"
+                            if types:
+                                type_counts = {}
+                                for i in range(count):
+                                    t = types[i % len(types)]
+                                    type_counts[t] = type_counts.get(t, 0) + 1
+                                type_req = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
+                                cognitive_validation_section += f"    REQUIRED question types: {type_req}\n"
+                    cognitive_validation_section += "- CRITICAL: Verify each level's question types EXACTLY match the required counts above. If a level requires 1x mc, 1x tf, 1x fill_in_blank, there must be exactly those types. Flag any mismatch as a FAIL.\n"
         prompt_text = prompt_text.replace("{cognitive_section}", cognitive_validation_section)
 
         questions_json = json.dumps(questions, indent=2)

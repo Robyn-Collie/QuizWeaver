@@ -18,8 +18,8 @@
         <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}" placeholder="e.g., 7th Grade">
     </div>
     <div class="form-group">
-        <label for="sol_standards">SOL Standards (optional) <span class="help-tip" data-tip="Comma-separated list of SOL standards to target in quiz questions">?</span></label>
-        <input type="text" id="sol_standards" name="sol_standards" placeholder="e.g., SOL 7.1, SOL 7.2">
+        <label for="sol_standards">Standards (optional) <span class="help-tip" data-tip="Comma-separated list of standards to target in quiz questions. Pre-filled from class settings if available.">?</span></label>
+        <input type="text" id="sol_standards" name="sol_standards" value="{{ class_obj.standards|join(', ') if class_obj.standards else '' }}" placeholder="e.g., SOL 7.1, SOL 7.2">
     </div>
     <div class="form-group">
         <label>Cognitive Framework</label>
@@ -78,5 +78,185 @@
         <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
+
+<div id="generate-progress" class="generate-progress" style="display:none">
+    <div class="progress-card">
+        <h2 id="progress-title">Generating Quiz...</h2>
+        <p class="progress-subtitle">Here's what QuizWeaver is doing:</p>
+        <ul class="progress-checklist" id="progress-checklist">
+            <li id="step-0" data-desc="Validating your settings and preparing the generation request">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Preparing request</span>
+                <span class="step-desc">Validating settings and building configuration</span>
+            </li>
+            <li id="step-1" data-desc="Pulling recent lessons, topics taught, and assumed student knowledge for this class">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Loading class context</span>
+                <span class="step-desc">Retrieving lesson history and assumed knowledge</span>
+            </li>
+            <li id="step-2" data-desc="Establishing a connection to the selected AI model">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Connecting to AI provider</span>
+                <span class="step-desc">Sending prompt to <strong id="provider-name-display">your AI model</strong></span>
+            </li>
+            <li id="step-3" data-desc="The Generator Agent is crafting questions matched to your grade level, standards, and cognitive framework">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Generating questions</span>
+                <span class="step-desc">Generator Agent is crafting questions from your content</span>
+            </li>
+            <li id="step-4" data-desc="The Critic Agent reviews each question for quality, alignment with standards, and grade-level appropriateness">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Quality review</span>
+                <span class="step-desc">Critic Agent checking alignment, accuracy, and quality</span>
+            </li>
+            <li id="step-5" data-desc="Storing the approved questions in the database and finalizing the quiz record">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Saving quiz</span>
+                <span class="step-desc">Storing questions and finalizing your quiz</span>
+            </li>
+        </ul>
+        <div id="progress-error" class="progress-error" style="display:none">
+            <strong>Generation failed</strong>
+            <p id="progress-error-msg"></p>
+            <a href="" class="btn btn-primary" id="progress-retry-btn">Try Again</a>
+        </div>
+        <p class="progress-hint" id="progress-hint">This may take 15-60 seconds depending on your provider and question count.</p>
+    </div>
+</div>
+
 <script src="/static/js/cognitive_form.js"></script>
+<script>
+(function() {
+    var form = document.querySelector('form.form');
+    var overlay = document.getElementById('generate-progress');
+    var checklist = document.getElementById('progress-checklist');
+    var titleEl = document.getElementById('progress-title');
+    var hintEl = document.getElementById('progress-hint');
+    var errorEl = document.getElementById('progress-error');
+    var errorMsg = document.getElementById('progress-error-msg');
+    var retryBtn = document.getElementById('progress-retry-btn');
+    var providerDisplay = document.getElementById('provider-name-display');
+    var totalSteps = 6;
+    var currentStep = 0;
+    var timers = [];
+    var finished = false;
+
+    function setStepState(idx, state) {
+        var li = document.getElementById('step-' + idx);
+        if (!li) return;
+        var icon = li.querySelector('.step-icon');
+        icon.className = 'step-icon step-' + state;
+        li.classList.remove('step-active', 'step-complete', 'step-failed');
+        if (state === 'active') li.classList.add('step-active');
+        else if (state === 'done') li.classList.add('step-complete');
+        else if (state === 'error') li.classList.add('step-failed');
+    }
+
+    function advanceTo(idx) {
+        if (finished || idx >= totalSteps) return;
+        // Complete all previous steps
+        for (var i = 0; i < idx; i++) {
+            setStepState(i, 'done');
+        }
+        // Mark current as active
+        setStepState(idx, 'active');
+        currentStep = idx;
+    }
+
+    function completeAll() {
+        finished = true;
+        for (var i = 0; i < totalSteps; i++) {
+            setStepState(i, 'done');
+        }
+        titleEl.textContent = 'Quiz Generated!';
+        hintEl.textContent = 'Redirecting to your quiz...';
+    }
+
+    function showError(msg) {
+        finished = true;
+        // Mark current step as failed
+        setStepState(currentStep, 'error');
+        // Mark remaining as skipped
+        for (var i = currentStep + 1; i < totalSteps; i++) {
+            setStepState(i, 'skipped');
+        }
+        titleEl.textContent = 'Generation Failed';
+        hintEl.style.display = 'none';
+        errorEl.style.display = 'block';
+        errorMsg.textContent = msg || 'An unexpected error occurred. Please try again.';
+        retryBtn.href = window.location.href;
+    }
+
+    function clearTimers() {
+        for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+        timers = [];
+    }
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        overlay.style.display = 'flex';
+
+        // Show selected provider's friendly name
+        var providerSelect = document.getElementById('provider');
+        if (providerSelect) {
+            var selected = providerSelect.options[providerSelect.selectedIndex];
+            // Use the option label text, stripping "(not configured)" etc.
+            var name = selected.value
+                ? selected.text.replace(/\s*\(.*\)\s*$/, '')
+                : '{{ current_provider|default("mock") }}';
+            providerDisplay.textContent = name;
+        }
+
+        // Animate through steps on a schedule (spread out for real providers)
+        var isMock = !providerSelect || !providerSelect.value;
+        var delays = isMock
+            ? [0, 500, 1000, 1500, 2500, 3500]
+            : [0, 1500, 3000, 6000, 25000, 50000];
+        for (var i = 0; i < delays.length; i++) {
+            (function(idx, delay) {
+                timers.push(setTimeout(function() { advanceTo(idx); }, delay));
+            })(i, delays[i]);
+        }
+
+        // Update hint after a while so user knows it's still working
+        if (!isMock) {
+            timers.push(setTimeout(function() {
+                if (!finished) hintEl.textContent = 'Still working... real AI providers can take up to 2 minutes for large quizzes.';
+            }, 20000));
+            timers.push(setTimeout(function() {
+                if (!finished) hintEl.textContent = 'Almost there... the AI is reviewing and refining your questions.';
+            }, 45000));
+        }
+
+        // Submit via fetch
+        var formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            redirect: 'follow',
+        })
+        .then(function(response) {
+            clearTimers();
+            if (response.redirected) {
+                // Success - server redirected to quiz detail
+                completeAll();
+                setTimeout(function() {
+                    window.location.href = response.url;
+                }, 800);
+            } else {
+                // Server returned the form page again (error)
+                return response.text().then(function(html) {
+                    var match = html.match(/class="alert alert-error">(.*?)<\/div>/);
+                    var msg = match ? match[1] : 'Quiz generation failed. Check your provider settings and try again.';
+                    showError(msg);
+                });
+            }
+        })
+        .catch(function(err) {
+            clearTimers();
+            showError('Network error: ' + err.message);
+        });
+    });
+})();
+</script>
 {% endblock %}

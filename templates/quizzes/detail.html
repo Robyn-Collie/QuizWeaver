@@ -8,6 +8,9 @@
     <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
     {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
     <p><strong>Questions:</strong> {{ questions | length }}</p>
+    {% if style_profile and style_profile.sol_standards is defined and style_profile.sol_standards %}
+    <p><strong>Standards:</strong> {{ style_profile.sol_standards|join(', ') }}</p>
+    {% endif %}
     {% if style_profile and style_profile.cognitive_framework is defined and style_profile.cognitive_framework %}
     <p><strong>Framework:</strong> {{ style_profile.cognitive_framework|capitalize }}</p>
     {% endif %}
@@ -35,10 +38,25 @@
     <p class="question-text">{{ q.text }}</p>
 
     {% if q.data and q.data.image_ref is defined and q.data.image_ref %}
-    <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image">
+    <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
+         onerror="this.style.display='none'">
+    {% elif q.data and q.data.image_description is defined and q.data.image_description %}
+    <div class="image-placeholder">
+        <strong>Suggested image:</strong> {{ q.data.image_description }}
+    </div>
+    {% elif q.data and q.data.image is defined and q.data.image %}
+    <div class="question-image-external" data-src="{{ q.data.image }}">
+        <img src="{{ q.data.image }}" alt="Question image" class="question-image" referrerpolicy="no-referrer"
+             onerror="this.parentElement.innerHTML='<span class=\'image-placeholder\'>Image: AI suggested a diagram here but the URL is unavailable. Consider adding your own image.</span>'">
+    </div>
     {% endif %}
 
-    {% if q.data and q.data.options is defined %}
+    {% if q.type == 'tf' or q.question_type == 'tf' %}
+    <div class="tf-answer">
+        <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
+        <span class="tf-option {% if q.data.correct_answer == 'False' or q.data.answer == 'False' %}correct{% endif %}">False</span>
+    </div>
+    {% elif q.data and q.data.options is defined %}
     <ul class="question-options">
         {% for option in q.data.options %}
         {% if option is mapping %}
@@ -46,12 +64,21 @@
             <strong>{{ option.id }}.</strong> {{ option.text }}
         </li>
         {% else %}
-        <li{% if q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
+        <li{% if q.data.correct_answer is defined and option == q.data.correct_answer %} class="correct"{% elif q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
             {{ option }}
         </li>
         {% endif %}
         {% endfor %}
     </ul>
+    {% endif %}
+
+    {% if q.data %}
+    {% set answer = q.data.correct_answer or q.data.answer or none %}
+    {% if answer and q.type != 'tf' and q.question_type != 'tf' %}
+    <div class="question-answer">
+        <strong>Answer:</strong> {{ answer }}
+    </div>
+    {% endif %}
     {% endif %}
 </div>
 {% endfor %}
