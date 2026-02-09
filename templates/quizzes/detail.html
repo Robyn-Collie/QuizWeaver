@@ -8,6 +8,12 @@
     <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
     {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
     <p><strong>Questions:</strong> {{ questions | length }}</p>
+    {% if style_profile and style_profile.cognitive_framework is defined and style_profile.cognitive_framework %}
+    <p><strong>Framework:</strong> {{ style_profile.cognitive_framework|capitalize }}</p>
+    {% endif %}
+    {% if style_profile and style_profile.difficulty is defined and style_profile.difficulty %}
+    <p><strong>Difficulty:</strong> {{ style_profile.difficulty }}/5</p>
+    {% endif %}
 </div>
 
 <h2>Questions</h2>
@@ -17,6 +23,11 @@
         <span class="question-number">Q{{ loop.index }}</span>
         <span class="question-type">{{ q.type or 'unknown' }}</span>
         <span class="question-points">{{ q.points or 0 }} pts</span>
+        {% if q.data and q.data.cognitive_level is defined and q.data.cognitive_level %}
+        <span class="cognitive-badge cognitive-badge-{{ q.data.cognitive_level_number|default(0) }}">
+            {{ q.data.cognitive_level }}
+        </span>
+        {% endif %}
     </div>
     <p class="question-text">{{ q.text }}</p>
 

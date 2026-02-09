@@ -388,11 +388,22 @@ def register_routes(app):
                 "data": data,
             })
 
+        # Parse style_profile for template use
+        style_profile = quiz.style_profile
+        if isinstance(style_profile, str):
+            try:
+                style_profile = json.loads(style_profile)
+            except (json.JSONDecodeError, ValueError):
+                style_profile = {}
+        if not isinstance(style_profile, dict):
+            style_profile = {}
+
         return render_template(
             "quizzes/detail.html",
             quiz=quiz,
             questions=parsed_questions,
             class_obj=class_obj,
+            style_profile=style_profile,
         )
 
     @app.route("/classes/<int:class_id>/quizzes")
@@ -444,6 +455,17 @@ def register_routes(app):
                 else None
             )
 
+            # Parse cognitive framework fields
+            cognitive_framework = request.form.get("cognitive_framework", "").strip() or None
+            cognitive_distribution = None
+            dist_raw = request.form.get("cognitive_distribution", "").strip()
+            if dist_raw:
+                try:
+                    cognitive_distribution = json.loads(dist_raw)
+                except (json.JSONDecodeError, ValueError):
+                    cognitive_distribution = None
+            difficulty = int(request.form.get("difficulty", 3))
+
             quiz = generate_quiz(
                 session,
                 class_id=class_id,
@@ -451,6 +473,9 @@ def register_routes(app):
                 num_questions=num_questions,
                 grade_level=grade_level,
                 sol_standards=sol_standards,
+                cognitive_framework=cognitive_framework,
+                cognitive_distribution=cognitive_distribution,
+                difficulty=difficulty,
             )
 
             if quiz:

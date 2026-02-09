@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 
 from src.agents import run_agentic_pipeline
 from src.classroom import get_class
+from src.cognitive_frameworks import validate_distribution
 from src.database import Quiz, Question
 
 
@@ -29,6 +30,9 @@ def generate_quiz(
     num_questions: int = 20,
     grade_level: Optional[str] = None,
     sol_standards: Optional[List[str]] = None,
+    cognitive_framework: Optional[str] = None,
+    cognitive_distribution: Optional[dict] = None,
+    difficulty: int = 3,
 ) -> Optional[Quiz]:
     """
     Generate a quiz for a given class using the agentic pipeline.
@@ -41,6 +45,9 @@ def generate_quiz(
         grade_level: Override grade level; falls back to class grade_level,
                      then config default
         sol_standards: List of SOL standards to target; falls back to config
+        cognitive_framework: "blooms" or "dok" or None
+        cognitive_distribution: dict mapping level number to question count
+        difficulty: Difficulty level 1-5 (default 3)
 
     Returns:
         A Quiz ORM object with questions attached, or None on failure
@@ -65,11 +72,28 @@ def generate_quiz(
     if resolved_sol is None:
         resolved_sol = config.get("generation", {}).get("sol_standards", [])
 
+    # Validate cognitive distribution if provided
+    validated_framework = cognitive_framework
+    validated_distribution = cognitive_distribution
+    if cognitive_framework and cognitive_distribution:
+        is_valid, error_msg = validate_distribution(
+            cognitive_framework, cognitive_distribution, num_questions
+        )
+        if not is_valid:
+            logger.warning(
+                "generate_quiz: invalid cognitive distribution: %s", error_msg
+            )
+            validated_framework = None
+            validated_distribution = None
+
     # Build style profile
     style_profile = {
         "grade_level": resolved_grade,
         "sol_standards": resolved_sol,
         "num_questions": num_questions,
+        "cognitive_framework": validated_framework,
+        "cognitive_distribution": validated_distribution,
+        "difficulty": difficulty,
     }
 
     # Create quiz record with status "generating"
@@ -93,6 +117,9 @@ def generate_quiz(
         "image_ratio": config.get("generation", {}).get("target_image_ratio", 0.0),
         "grade_level": resolved_grade,
         "sol_standards": resolved_sol,
+        "cognitive_framework": validated_framework,
+        "cognitive_distribution": validated_distribution,
+        "difficulty": difficulty,
     }
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)

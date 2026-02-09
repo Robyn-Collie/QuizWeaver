@@ -984,3 +984,171 @@ class TestHelpPage:
         response = anon_client.get("/help", follow_redirects=False)
         assert response.status_code in (302, 303)
         assert "/login" in response.headers["Location"]
+
+
+# ============================================================
+# Cognitive Framework Tests
+# ============================================================
+
+
+class TestCognitiveFrameworkForm:
+    """Test cognitive framework controls on the generate form."""
+
+    def test_generate_form_has_framework_radios(self, client):
+        """Generate form should have radio buttons for cognitive framework."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert "cognitive_framework_radio" in html
+        assert "Bloom" in html
+        assert "DOK" in html
+
+    def test_generate_form_has_difficulty_slider(self, client):
+        """Generate form should have a difficulty range slider."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert 'id="difficulty"' in html
+        assert 'type="range"' in html
+
+    def test_generate_form_has_distribution_table(self, client):
+        """Generate form should have the cognitive distribution table container."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert "cognitive-table" in html
+        assert "cognitive-distribution-group" in html
+
+    def test_generate_form_has_cognitive_js(self, client):
+        """Generate form should include the cognitive_form.js script."""
+        response = client.get("/classes/1/generate")
+        html = response.data.decode()
+        assert "cognitive_form.js" in html
+
+    def test_post_with_blooms_framework(self, client):
+        """POST with Bloom's framework should redirect to quiz detail."""
+        dist = json.dumps({"1": {"count": 10, "types": ["mc"]}, "2": {"count": 10, "types": ["mc"]}})
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "20",
+                "grade_level": "7th Grade",
+                "cognitive_framework": "blooms",
+                "cognitive_distribution": dist,
+                "difficulty": "4",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in (302, 303)
+
+    def test_post_with_dok_framework(self, client):
+        """POST with DOK framework should redirect to quiz detail."""
+        dist = json.dumps({"1": {"count": 5, "types": ["mc"]}, "2": {"count": 5, "types": ["tf"]}, "3": {"count": 5, "types": ["mc"]}, "4": {"count": 5, "types": ["mc"]}})
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "20",
+                "grade_level": "7th Grade",
+                "cognitive_framework": "dok",
+                "cognitive_distribution": dist,
+                "difficulty": "3",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in (302, 303)
+
+    def test_post_without_framework_backward_compat(self, client):
+        """POST without framework should still work (backward compatibility)."""
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "20",
+                "grade_level": "7th Grade",
+            },
+            follow_redirects=False,
+        )
+        assert response.status_code in (302, 303)
+
+
+class TestCognitiveFrameworkQuizDetail:
+    """Test cognitive badges and info on the quiz detail page."""
+
+    def test_quiz_detail_shows_cognitive_badge(self, app):
+        """Quiz detail should show cognitive badges when question data has cognitive_level."""
+        # Seed a quiz with cognitive-tagged questions
+        from src.database import get_engine, get_session, Quiz, Question
+        engine = app.config["DB_ENGINE"]
+        session = get_session(engine)
+
+        quiz = Quiz(
+            title="Bloom's Quiz",
+            class_id=1,
+            status="generated",
+            style_profile=json.dumps({
+                "grade_level": "7th Grade",
+                "cognitive_framework": "blooms",
+                "difficulty": 4,
+            }),
+        )
+        session.add(quiz)
+        session.commit()
+
+        q1 = Question(
+            quiz_id=quiz.id,
+            question_type="mc",
+            title="CogQ1",
+            text="Test cognitive question",
+            points=5.0,
+            data=json.dumps({
+                "type": "mc",
+                "text": "Test cognitive question",
+                "options": ["A", "B", "C", "D"],
+                "correct_index": 0,
+                "cognitive_level": "Remember",
+                "cognitive_framework": "blooms",
+                "cognitive_level_number": 1,
+            }),
+        )
+        session.add(q1)
+        session.commit()
+
+        c = app.test_client()
+        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        response = c.get(f"/quizzes/{quiz.id}")
+        html = response.data.decode()
+        assert "cognitive-badge" in html
+        assert "Remember" in html
+        session.close()
+
+    def test_quiz_detail_shows_framework_info(self, app):
+        """Quiz detail should show framework and difficulty in quiz info."""
+        from src.database import get_engine, get_session, Quiz
+        engine = app.config["DB_ENGINE"]
+        session = get_session(engine)
+
+        quiz = Quiz(
+            title="DOK Quiz",
+            class_id=1,
+            status="generated",
+            style_profile=json.dumps({
+                "grade_level": "7th Grade",
+                "cognitive_framework": "dok",
+                "difficulty": 3,
+            }),
+        )
+        session.add(quiz)
+        session.commit()
+
+        c = app.test_client()
+        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        response = c.get(f"/quizzes/{quiz.id}")
+        html = response.data.decode()
+        assert "Dok" in html or "dok" in html.lower()
+        assert "3/5" in html
+        session.close()
+
+    def test_quiz_detail_no_badge_without_cognitive(self, app):
+        """Quiz detail should NOT show cognitive badge when data has no cognitive_level."""
+        c = app.test_client()
+        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        # Use the existing quiz (id=1) which has no cognitive data
+        response = c.get("/quizzes/1")
+        html = response.data.decode()
+        assert "cognitive-badge" not in html

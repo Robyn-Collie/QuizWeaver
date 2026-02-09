@@ -598,6 +598,122 @@ h2 {
     margin-bottom: 2rem;
 }
 
+/* Cognitive Framework Styles */
+.radio-group {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.cognitive-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.75rem;
+}
+
+.cognitive-table th,
+.cognitive-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.cognitive-table th {
+    background: #f1f5f9;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.cognitive-table input[type="number"] {
+    width: 60px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.cognitive-table .type-checkboxes {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.cognitive-table .type-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.level-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.cognitive-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Bloom's level colors */
+.cognitive-badge-1 { background: #8B5CF6; }
+.cognitive-badge-2 { background: #3B82F6; }
+.cognitive-badge-3 { background: #10B981; }
+.cognitive-badge-4 { background: #F59E0B; color: #1e293b; }
+.cognitive-badge-5 { background: #EF4444; }
+.cognitive-badge-6 { background: #EC4899; }
+/* DOK uses same 1-4 colors */
+.cognitive-badge-0 { background: #64748b; }
+
+.cognitive-total {
+    font-weight: 600;
+}
+
+.cognitive-total.valid {
+    color: var(--success);
+}
+
+.cognitive-total.invalid {
+    color: var(--danger);
+}
+
+.validation-msg {
+    font-size: 0.8rem;
+    margin-left: 0.5rem;
+}
+
+/* Difficulty Slider */
+input[type="range"] {
+    width: 100%;
+    margin: 0.5rem 0;
+}
+
+#difficulty-label {
+    display: block;
+    text-align: center;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .navbar {

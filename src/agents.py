@@ -6,6 +6,7 @@ from src.llm_provider import get_provider
 from src.database import get_engine, init_db, get_session, Class
 from src.lesson_tracker import get_recent_lessons, get_assumed_knowledge
 from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
+from src.cognitive_frameworks import get_framework, BLOOMS_LEVELS, DOK_LEVELS
 
 
 class AgentMetrics:
@@ -168,10 +169,42 @@ class GeneratorAgent:
                     label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(depth, "unknown")
                     class_context_section += f"- {topic}: depth {depth} ({label})\n"
 
+        # Build cognitive framework section
+        cognitive_section = ""
+        cognitive_framework = context.get("cognitive_framework")
+        cognitive_distribution = context.get("cognitive_distribution")
+        difficulty = context.get("difficulty", 3)
+        if cognitive_framework:
+            levels = get_framework(cognitive_framework)
+            framework_label = "Bloom's Taxonomy" if cognitive_framework == "blooms" else "Webb's DOK"
+            cognitive_section = f"**Cognitive Framework: {framework_label}**\n"
+            cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
+            if cognitive_distribution and levels:
+                cognitive_section += "Target distribution by cognitive level:\n"
+                for lvl in levels:
+                    num = lvl["number"]
+                    entry = cognitive_distribution.get(str(num)) or cognitive_distribution.get(num)
+                    if entry is None:
+                        continue
+                    if isinstance(entry, dict):
+                        count = entry.get("count", 0)
+                        types = entry.get("types", [])
+                        types_str = ", ".join(types) if types else "any"
+                    else:
+                        count = int(entry)
+                        types_str = "any"
+                    if count > 0:
+                        cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, types: {types_str}\n"
+            cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
+            cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
+            cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
+            cognitive_section += '- "cognitive_level_number": the level number (integer)\n'
+
         # Prepare base prompt text
         prompt_text = self.base_prompt.replace("{grade_level}", str(grade_level))
         prompt_text = prompt_text.replace("{sol_section}", sol_section)
         prompt_text = prompt_text.replace("{class_context}", class_context_section)
+        prompt_text = prompt_text.replace("{cognitive_section}", cognitive_section)
 
         full_prompt = f"""
 {prompt_text}
@@ -291,6 +324,26 @@ Image Ratio Target: {int(image_ratio * 100)}%
                         elif ans in q["options"]:
                             q["correct_index"] = q["options"].index(ans)
 
+                # Normalize cognitive level fields
+                if "cognitive_level" not in q:
+                    for key in ["bloom_level", "blooms_level", "dok_level", "webb_level"]:
+                        if key in q:
+                            q["cognitive_level"] = q[key]
+                            break
+                if "cognitive_level" in q and "cognitive_framework" not in q:
+                    # Infer framework from level name
+                    level_name = str(q["cognitive_level"]).strip()
+                    blooms_names = {lvl["name"].lower(): lvl for lvl in BLOOMS_LEVELS}
+                    dok_names = {lvl["name"].lower(): lvl for lvl in DOK_LEVELS}
+                    if level_name.lower() in blooms_names:
+                        q["cognitive_framework"] = "blooms"
+                        if "cognitive_level_number" not in q:
+                            q["cognitive_level_number"] = blooms_names[level_name.lower()]["number"]
+                    elif level_name.lower() in dok_names:
+                        q["cognitive_framework"] = "dok"
+                        if "cognitive_level_number" not in q:
+                            q["cognitive_level_number"] = dok_names[level_name.lower()]["number"]
+
                 if "type" not in q:
                     # Try to infer type
                     if "options" in q:
@@ -342,6 +395,7 @@ class CriticAgent:
         guidelines: str,
         content_summary: str,
         class_context: Optional[Dict[str, Any]] = None,
+        cognitive_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Critique generated questions for quality, alignment, and appropriateness.
 
@@ -359,6 +413,30 @@ class CriticAgent:
             - feedback: None if approved, or feedback text explaining issues
         """
         prompt_text = self.base_prompt
+
+        # Build cognitive validation section for critic
+        cognitive_validation_section = ""
+        if cognitive_config:
+            framework = cognitive_config.get("cognitive_framework")
+            distribution = cognitive_config.get("cognitive_distribution")
+            difficulty = cognitive_config.get("difficulty", 3)
+            if framework:
+                levels = get_framework(framework)
+                framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
+                cognitive_validation_section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
+                cognitive_validation_section += f"- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
+                cognitive_validation_section += f"- Target difficulty: {difficulty}/5\n"
+                if distribution and levels:
+                    cognitive_validation_section += "- Verify distribution matches targets:\n"
+                    for lvl in levels:
+                        num = lvl["number"]
+                        entry = distribution.get(str(num)) or distribution.get(num)
+                        if entry is None:
+                            continue
+                        count = entry.get("count", entry) if isinstance(entry, dict) else int(entry)
+                        if count > 0:
+                            cognitive_validation_section += f"  - Level {num} ({lvl['name']}): {count} questions\n"
+        prompt_text = prompt_text.replace("{cognitive_section}", cognitive_validation_section)
 
         questions_json = json.dumps(questions, indent=2)
 
@@ -506,11 +584,17 @@ class Orchestrator:
                 "lesson_logs": context.get("lesson_logs", []),
                 "assumed_knowledge": context.get("assumed_knowledge", {}),
             }
+            cognitive_config = {
+                "cognitive_framework": context.get("cognitive_framework"),
+                "cognitive_distribution": context.get("cognitive_distribution"),
+                "difficulty": context.get("difficulty", 3),
+            }
 
             try:
                 critique_result = self.critic.critique(
                     questions, guidelines, content_summary,
                     class_context=class_context,
+                    cognitive_config=cognitive_config,
                 )
                 metrics.critic_calls += 1
             except Exception as e:

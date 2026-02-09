@@ -2,6 +2,7 @@ Role: {grade_level} teacher and curriculum designer.
 
 {sol_section}
 {class_context}
+{cognitive_section}
 
 Rules:
 - Follow all qa_guidelines.txt rules strictly

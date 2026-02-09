@@ -5,6 +5,7 @@ Validate the quiz draft against QA Guidelines:
 - If class context provided: verify questions align with taught lessons
 - Flag topics NOT in assumed knowledge
 - Verify difficulty matches knowledge depth levels
+{cognitive_section}
 
 Response format:
 - Violations found: Start with "REJECTED:" then list specific violations

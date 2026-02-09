@@ -83,6 +83,10 @@ def get_analyst_response(prompt_parts: List[Any]) -> str:
     return json.dumps(response, indent=2)
 
 
+BLOOMS_LEVEL_NAMES = ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"]
+DOK_LEVEL_NAMES = ["Recall", "Skill/Concept", "Strategic Thinking", "Extended Thinking"]
+
+
 def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] = None) -> str:
     """
     Generate mock generator response (quiz questions JSON array).
@@ -100,6 +104,17 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
     """
     if not context_keywords:
         context_keywords = random.sample(SCIENCE_TOPICS, k=3)
+
+    # Detect cognitive framework from prompt
+    combined_text = " ".join(str(p) for p in prompt_parts).lower()
+    cognitive_framework = None
+    cognitive_levels = None
+    if "bloom" in combined_text:
+        cognitive_framework = "blooms"
+        cognitive_levels = BLOOMS_LEVEL_NAMES
+    elif "dok" in combined_text or "webb" in combined_text:
+        cognitive_framework = "dok"
+        cognitive_levels = DOK_LEVEL_NAMES
 
     # Generate 3-5 mock questions
     num_questions = random.randint(3, 5)
@@ -136,6 +151,13 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "correct_index": random.randint(0, 1),
                 "image_ref": None
             }
+
+        # Add cognitive tags if framework detected
+        if cognitive_framework and cognitive_levels:
+            level_idx = i % len(cognitive_levels)
+            question["cognitive_level"] = cognitive_levels[level_idx]
+            question["cognitive_framework"] = cognitive_framework
+            question["cognitive_level_number"] = level_idx + 1
 
         questions.append(question)
 
