@@ -22,7 +22,7 @@ from flask import (
     jsonify,
     send_file,
 )
-from src.database import LessonLog, Quiz, Question, get_session
+from src.database import LessonLog, Quiz, Question, StudySet, StudyCard, get_session
 from src.classroom import create_class, get_class, list_classes, update_class, delete_class
 from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
 from src.cost_tracking import get_cost_summary
@@ -30,6 +30,13 @@ from src.quiz_generator import generate_quiz
 from src.llm_provider import get_provider_info, PROVIDER_REGISTRY
 from src.web.config_utils import save_config
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
+from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
+from src.study_export import (
+    export_flashcards_tsv,
+    export_flashcards_csv,
+    export_study_pdf,
+    export_study_docx,
+)
 
 
 # Default credentials for Phase 1.5 basic auth
@@ -849,6 +856,223 @@ def register_routes(app):
             current_provider=current_provider,
             llm_config=llm_config,
         )
+
+    # --- Study Materials ---
+
+    @app.route("/study")
+    @login_required
+    def study_list():
+        """List study sets, optionally filtered by class or material type."""
+        session = _get_session()
+        query = session.query(StudySet)
+
+        class_id_filter = request.args.get("class_id", type=int)
+        type_filter = request.args.get("type")
+        if class_id_filter:
+            query = query.filter(StudySet.class_id == class_id_filter)
+        if type_filter:
+            query = query.filter(StudySet.material_type == type_filter)
+
+        study_sets = query.order_by(StudySet.created_at.desc()).all()
+
+        set_data = []
+        for ss in study_sets:
+            class_obj = get_class(session, ss.class_id) if ss.class_id else None
+            card_count = session.query(StudyCard).filter_by(study_set_id=ss.id).count()
+            set_data.append({
+                "id": ss.id,
+                "title": ss.title,
+                "material_type": ss.material_type,
+                "status": ss.status,
+                "class_name": class_obj.name if class_obj else "N/A",
+                "card_count": card_count,
+                "created_at": ss.created_at,
+            })
+
+        classes = list_classes(session)
+        return render_template(
+            "study/list.html",
+            study_sets=set_data,
+            classes=classes,
+            current_class_id=class_id_filter,
+            current_type=type_filter,
+        )
+
+    @app.route("/study/generate", methods=["GET", "POST"])
+    @login_required
+    def study_generate():
+        """Generate study material via form POST or render form on GET."""
+        session = _get_session()
+        config = current_app.config["APP_CONFIG"]
+        classes = list_classes(session)
+
+        if request.method == "POST":
+            class_id = request.form.get("class_id", type=int)
+            material_type = request.form.get("material_type", "flashcard").strip()
+            quiz_id = request.form.get("quiz_id", type=int) or None
+            topic = request.form.get("topic", "").strip() or None
+            title = request.form.get("title", "").strip() or None
+
+            if not class_id:
+                return render_template(
+                    "study/generate.html",
+                    classes=classes,
+                    error="Please select a class.",
+                ), 400
+
+            study_set = generate_study_material(
+                session,
+                class_id=class_id,
+                material_type=material_type,
+                config=config,
+                quiz_id=quiz_id,
+                topic=topic,
+                title=title,
+            )
+
+            if study_set:
+                flash("Study material generated successfully.", "success")
+                return redirect(url_for("study_detail", study_set_id=study_set.id), code=303)
+            else:
+                return render_template(
+                    "study/generate.html",
+                    classes=classes,
+                    error="Generation failed. Please try again.",
+                ), 500
+
+        return render_template("study/generate.html", classes=classes)
+
+    @app.route("/study/<int:study_set_id>")
+    @login_required
+    def study_detail(study_set_id):
+        """Show study set detail with all cards."""
+        session = _get_session()
+        study_set = session.query(StudySet).filter_by(id=study_set_id).first()
+        if not study_set:
+            abort(404)
+
+        cards = (
+            session.query(StudyCard)
+            .filter_by(study_set_id=study_set_id)
+            .order_by(StudyCard.sort_order, StudyCard.id)
+            .all()
+        )
+        class_obj = get_class(session, study_set.class_id) if study_set.class_id else None
+
+        # Parse card data for template
+        parsed_cards = []
+        for card in cards:
+            card_data = card.data
+            if isinstance(card_data, str):
+                try:
+                    card_data = json.loads(card_data)
+                except (json.JSONDecodeError, ValueError):
+                    card_data = {}
+            if not isinstance(card_data, dict):
+                card_data = {}
+            parsed_cards.append({
+                "id": card.id,
+                "card_type": card.card_type,
+                "sort_order": card.sort_order,
+                "front": card.front,
+                "back": card.back,
+                "data": card_data,
+            })
+
+        return render_template(
+            "study/detail.html",
+            study_set=study_set,
+            cards=parsed_cards,
+            class_obj=class_obj,
+        )
+
+    @app.route("/study/<int:study_set_id>/export/<format_name>")
+    @login_required
+    def study_export(study_set_id, format_name):
+        """Download study material in the requested format."""
+        if format_name not in ("tsv", "csv", "pdf", "docx"):
+            abort(404)
+
+        session = _get_session()
+        study_set = session.query(StudySet).filter_by(id=study_set_id).first()
+        if not study_set:
+            abort(404)
+
+        cards = (
+            session.query(StudyCard)
+            .filter_by(study_set_id=study_set_id)
+            .order_by(StudyCard.sort_order, StudyCard.id)
+            .all()
+        )
+
+        # Sanitize title for filename
+        safe_title = re.sub(r"[^\w\s\-]", "", study_set.title or "study")
+        safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "study"
+
+        if format_name == "tsv":
+            tsv_str = export_flashcards_tsv(study_set, cards)
+            buf = BytesIO(tsv_str.encode("utf-8"))
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.tsv",
+                mimetype="text/tab-separated-values",
+            )
+        elif format_name == "csv":
+            csv_str = export_flashcards_csv(study_set, cards)
+            buf = BytesIO(csv_str.encode("utf-8"))
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.csv",
+                mimetype="text/csv",
+            )
+        elif format_name == "pdf":
+            buf = export_study_pdf(study_set, cards)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.pdf",
+                mimetype="application/pdf",
+            )
+        elif format_name == "docx":
+            buf = export_study_docx(study_set, cards)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.docx",
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+    @app.route("/api/study-sets/<int:study_set_id>", methods=["DELETE"])
+    @login_required
+    def api_study_set_delete(study_set_id):
+        """Delete a study set and all its cards."""
+        session = _get_session()
+        study_set = session.query(StudySet).filter_by(id=study_set_id).first()
+        if not study_set:
+            return jsonify({"ok": False, "error": "Study set not found"}), 404
+
+        # Cards are cascade-deleted via relationship
+        session.delete(study_set)
+        session.commit()
+        return jsonify({"ok": True})
+
+    @app.route("/api/classes/<int:class_id>/quizzes")
+    @login_required
+    def api_class_quizzes(class_id):
+        """Return quizzes for a class as JSON (used by study generate form)."""
+        session = _get_session()
+        quizzes = (
+            session.query(Quiz)
+            .filter_by(class_id=class_id)
+            .order_by(Quiz.created_at.desc())
+            .all()
+        )
+        return jsonify([
+            {"id": q.id, "title": q.title or f"Quiz #{q.id}"}
+            for q in quizzes
+        ])
 
     # --- Help ---
 

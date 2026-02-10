@@ -88,6 +88,7 @@ class Class(Base):
     lesson_logs = relationship("LessonLog", back_populates="class_obj")
     quizzes = relationship("Quiz", back_populates="class_obj")
     performance_data = relationship("PerformanceData", back_populates="class_obj")
+    study_sets = relationship("StudySet", back_populates="class_obj")
 
 
 class LessonLog(Base):
@@ -180,6 +181,7 @@ class Quiz(Base):
     questions = relationship("Question", back_populates="quiz")
     feedback = relationship("FeedbackLog", back_populates="quiz")
     performance_data = relationship("PerformanceData", back_populates="quiz")
+    study_sets = relationship("StudySet", back_populates="quiz")
 
 
 class Question(Base):
@@ -205,6 +207,64 @@ class Question(Base):
     sort_order = Column(Integer, default=0)
     data = Column(JSON)  # For options, correct_index, is_true, image_ref, etc.
     quiz = relationship("Quiz", back_populates="questions")
+
+
+class StudySet(Base):
+    """Represents a set of study materials (flashcards, study guide, etc.).
+
+    Attributes:
+        id: Primary key.
+        class_id: Foreign key to the Class this study set belongs to.
+        quiz_id: Optional FK to a Quiz used as source material.
+        title: Title of the study set.
+        material_type: Type of material (flashcard, study_guide, vocabulary, review_sheet).
+        status: Generation status (pending, generating, generated, failed).
+        config: JSON object with generation config used.
+        created_at: Timestamp when the study set was created.
+        cards: Relationship to StudyCard objects with cascade delete.
+        class_obj: Relationship to the parent Class object.
+        quiz: Relationship to the source Quiz object.
+    """
+    __tablename__ = "study_sets"
+    id = Column(Integer, primary_key=True)
+    class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    title = Column(String, nullable=False)
+    material_type = Column(String, nullable=False)  # flashcard, study_guide, vocabulary, review_sheet
+    status = Column(String, default="pending")  # pending, generating, generated, failed
+    config = Column(Text)  # JSON text
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    class_obj = relationship("Class", back_populates="study_sets")
+    quiz = relationship("Quiz", back_populates="study_sets")
+    cards = relationship("StudyCard", back_populates="study_set", cascade="all, delete-orphan")
+
+
+class StudyCard(Base):
+    """Represents a single card/section within a study set.
+
+    Attributes:
+        id: Primary key.
+        study_set_id: Foreign key to the parent StudySet.
+        card_type: Type of card (flashcard, section, term, fact).
+        sort_order: Display order within the set.
+        front: Term, heading, or question side.
+        back: Definition, content, or answer side.
+        data: JSON text for extras (tags, examples, part_of_speech, etc.).
+        study_set: Relationship to the parent StudySet object.
+    """
+    __tablename__ = "study_cards"
+    id = Column(Integer, primary_key=True)
+    study_set_id = Column(Integer, ForeignKey("study_sets.id", ondelete="CASCADE"), nullable=False)
+    card_type = Column(String, nullable=False)  # flashcard, section, term, fact
+    sort_order = Column(Integer, default=0)
+    front = Column(Text)  # term / heading
+    back = Column(Text)  # definition / content
+    data = Column(Text)  # JSON text for extras
+
+    # Relationships
+    study_set = relationship("StudySet", back_populates="cards")
 
 
 class FeedbackLog(Base):

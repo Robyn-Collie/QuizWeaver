@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}{{ study_set.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ study_set.title }}</h1>
+
+<div class="quiz-info">
+    <p><strong>Type:</strong> <span class="study-type-badge study-type-{{ study_set.material_type }}">{{ study_set.material_type.replace('_', ' ').title() }}</span></p>
+    <p><strong>Class:</strong> {{ class_obj.name if class_obj else 'N/A' }}</p>
+    <p><strong>Cards:</strong> {{ cards|length }}</p>
+    <p><strong>Status:</strong> <span class="status status-{{ study_set.status }}">{{ study_set.status }}</span></p>
+    {% if study_set.created_at %}
+    <p><strong>Created:</strong> {{ study_set.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    {% endif %}
+</div>
+
+<div class="export-actions">
+    <span class="export-label">Export:</span>
+    <a href="/study/{{ study_set.id }}/export/tsv" class="btn btn-sm btn-outline">TSV (Anki)</a>
+    <a href="/study/{{ study_set.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
+    <a href="/study/{{ study_set.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
+    <a href="/study/{{ study_set.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
+</div>
+
+{% if study_set.material_type == 'flashcard' %}
+<!-- Flashcard Grid -->
+<div class="flashcard-grid">
+    {% for card in cards %}
+    <div class="flip-card" onclick="this.classList.toggle('flipped')">
+        <div class="flip-card-inner">
+            <div class="flip-card-front">
+                <span class="flip-card-number">{{ loop.index }}</span>
+                <p>{{ card.front }}</p>
+                <span class="flip-hint">Click to flip</span>
+            </div>
+            <div class="flip-card-back">
+                <p>{{ card.back }}</p>
+                {% if card.data.tags %}
+                <div class="flip-card-tags">
+                    {% for tag in card.data.tags %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% elif study_set.material_type == 'study_guide' %}
+<!-- Study Guide Sections -->
+{% for card in cards %}
+<div class="study-section">
+    <h2>{{ card.front }}</h2>
+    <p>{{ card.back }}</p>
+    {% if card.data.key_points %}
+    <div class="key-points">
+        <strong>Key Points:</strong>
+        <ul>
+            {% for point in card.data.key_points %}
+            <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endfor %}
+
+{% elif study_set.material_type == 'vocabulary' %}
+<!-- Vocabulary Table -->
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Term</th>
+            <th>Definition</th>
+            <th>Example</th>
+            <th>Part of Speech</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for card in cards %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td><strong>{{ card.front }}</strong></td>
+            <td>{{ card.back }}</td>
+            <td><em>{{ card.data.get('example', '') }}</em></td>
+            <td>{{ card.data.get('part_of_speech', '') }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% elif study_set.material_type == 'review_sheet' %}
+<!-- Review Sheet -->
+{% for card in cards %}
+<div class="review-item review-type-{{ card.data.get('type', 'fact') }}">
+    <div class="review-item-header">
+        <h3>{{ card.front }}</h3>
+        {% if card.data.get('type') %}
+        <span class="review-type-tag">{{ card.data.type.upper() }}</span>
+        {% endif %}
+    </div>
+    <p>{{ card.back }}</p>
+</div>
+{% endfor %}
+
+{% else %}
+<!-- Generic cards -->
+{% for card in cards %}
+<div class="question-card">
+    <div class="question-header">
+        <span class="question-number">{{ loop.index }}</span>
+    </div>
+    <p><strong>{{ card.front }}</strong></p>
+    <p>{{ card.back }}</p>
+</div>
+{% endfor %}
+{% endif %}
+
+<div class="section-actions">
+    <a href="/study" class="btn btn-secondary">Back to Study Materials</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/study.js"></script>
+{% endblock %}

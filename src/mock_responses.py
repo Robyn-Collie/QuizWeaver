@@ -206,6 +206,74 @@ def get_critic_response(prompt_parts: List[Any], iteration: int = 1) -> str:
     return json.dumps(response, indent=2)
 
 
+def get_study_material_response(prompt_parts: List[Any], material_type: str,
+                                context_keywords: List[str] = None) -> str:
+    """
+    Generate mock study material response based on material type.
+
+    Args:
+        prompt_parts: List of prompt parts (text and images).
+        material_type: One of flashcard, study_guide, vocabulary, review_sheet.
+        context_keywords: Optional topic keywords from the prompt.
+
+    Returns:
+        JSON string with study material items.
+    """
+    if not context_keywords:
+        context_keywords = random.sample(SCIENCE_TOPICS, k=3)
+
+    topic1 = context_keywords[0] if len(context_keywords) > 0 else "science"
+    topic2 = context_keywords[1] if len(context_keywords) > 1 else "biology"
+    topic3 = context_keywords[2] if len(context_keywords) > 2 else "chemistry"
+
+    if material_type == "flashcard":
+        items = [
+            {"front": f"What is {topic1}?", "back": f"The process of {topic1} in living organisms.", "tags": [topic1, "definition"]},
+            {"front": f"Define {topic2}", "back": f"{topic2.capitalize()} is a fundamental concept in science that involves cellular processes.", "tags": [topic2]},
+            {"front": f"Key function of {topic3}", "back": f"{topic3.capitalize()} plays an essential role in maintaining biological systems.", "tags": [topic3]},
+            {"front": f"Stages of {topic1}", "back": f"Stage 1: Initiation, Stage 2: Progression, Stage 3: Completion of {topic1}.", "tags": [topic1, "stages"]},
+            {"front": f"Compare {topic1} and {topic2}", "back": f"{topic1.capitalize()} involves energy conversion while {topic2} involves structural changes.", "tags": [topic1, topic2, "comparison"]},
+            {"front": f"Where does {topic1} occur?", "back": f"{topic1.capitalize()} primarily occurs in specialized cellular structures.", "tags": [topic1, "location"]},
+            {"front": f"Why is {topic2} important?", "back": f"{topic2.capitalize()} is essential for growth, repair, and reproduction.", "tags": [topic2, "importance"]},
+            {"front": f"Products of {topic3}", "back": f"The main products of {topic3} include energy and waste byproducts.", "tags": [topic3, "products"]},
+            {"front": f"Factors affecting {topic1}", "back": f"Temperature, light, and availability of resources affect the rate of {topic1}.", "tags": [topic1, "factors"]},
+            {"front": f"Real-world application of {topic2}", "back": f"{topic2.capitalize()} has applications in medicine, agriculture, and biotechnology.", "tags": [topic2, "application"]},
+        ]
+    elif material_type == "study_guide":
+        items = [
+            {"heading": f"Introduction to {topic1.capitalize()}", "content": f"{topic1.capitalize()} is a fundamental process in biology. It involves the conversion of energy and materials within living systems. Understanding {topic1} is essential for grasping how organisms function.", "key_points": [f"{topic1.capitalize()} is a core biological process", "It involves energy transformation", "All living organisms depend on it"]},
+            {"heading": f"{topic2.capitalize()}: Key Concepts", "content": f"{topic2.capitalize()} encompasses several important mechanisms. These mechanisms work together to maintain the structure and function of living organisms. Students should focus on the relationship between {topic2} and overall organism health.", "key_points": [f"{topic2.capitalize()} has multiple components", "It is critical for organism survival", f"Related to {topic1}"]},
+            {"heading": f"The Role of {topic3.capitalize()}", "content": f"{topic3.capitalize()} is closely related to both {topic1} and {topic2}. It provides the chemical basis for many biological reactions. Understanding {topic3} helps explain why organisms need specific nutrients.", "key_points": [f"{topic3.capitalize()} supports biological reactions", f"Connected to {topic1} and {topic2}", "Explains nutrient requirements"]},
+            {"heading": "Review and Connections", "content": f"All three topics -- {topic1}, {topic2}, and {topic3} -- are interconnected. Changes in one process can affect the others. For the assessment, focus on how these processes work together in living systems.", "key_points": ["Topics are interconnected", "Changes propagate between systems", "Focus on integration for assessment"]},
+        ]
+    elif material_type == "vocabulary":
+        items = [
+            {"term": topic1.capitalize(), "definition": f"The biological process of {topic1} in living organisms.", "example": f"Plants use {topic1} to convert sunlight into energy.", "part_of_speech": "noun"},
+            {"term": topic2.capitalize(), "definition": f"A fundamental concept involving {topic2} in cellular biology.", "example": f"{topic2.capitalize()} occurs during cell growth.", "part_of_speech": "noun"},
+            {"term": topic3.capitalize(), "definition": f"The study and process of {topic3} in biological systems.", "example": f"{topic3.capitalize()} reactions occur in the mitochondria.", "part_of_speech": "noun"},
+            {"term": "Organism", "definition": "An individual living thing that can function independently.", "example": "A tree is a complex organism.", "part_of_speech": "noun"},
+            {"term": "Cellular", "definition": "Relating to or consisting of living cells.", "example": "Cellular processes keep organisms alive.", "part_of_speech": "adjective"},
+            {"term": "Metabolism", "definition": "The chemical processes that occur within a living organism to maintain life.", "example": f"Metabolism includes both {topic1} and {topic3}.", "part_of_speech": "noun"},
+            {"term": "Enzyme", "definition": "A substance produced by a living organism that acts as a catalyst.", "example": f"Enzymes speed up {topic3} reactions.", "part_of_speech": "noun"},
+            {"term": "Substrate", "definition": "The substance on which an enzyme acts.", "example": "The substrate binds to the enzyme's active site.", "part_of_speech": "noun"},
+        ]
+    elif material_type == "review_sheet":
+        items = [
+            {"heading": f"Key Formula: {topic1.capitalize()}", "content": f"6CO2 + 6H2O -> C6H12O6 + 6O2 (simplified equation for {topic1})", "type": "formula"},
+            {"heading": f"Important Fact: {topic2.capitalize()}", "content": f"{topic2.capitalize()} is divided into distinct phases, each with specific characteristics and outcomes.", "type": "fact"},
+            {"heading": f"Core Concept: {topic3.capitalize()}", "content": f"{topic3.capitalize()} involves breaking down complex molecules into simpler ones, releasing energy in the process. This energy is stored as ATP.", "type": "concept"},
+            {"heading": "Key Dates and Discoveries", "content": f"The process of {topic1} was first described in detail in the early 1800s. Modern understanding has expanded significantly.", "type": "fact"},
+            {"heading": f"Comparison: {topic1.capitalize()} vs {topic3.capitalize()}", "content": f"{topic1.capitalize()} builds complex molecules (anabolic) while {topic3} breaks them down (catabolic). Both are essential for life.", "type": "concept"},
+            {"heading": "Quick Reference: Cell Structures", "content": f"Chloroplast: site of {topic1}. Mitochondria: site of {topic3}. Nucleus: controls {topic2}.", "type": "fact"},
+        ]
+    else:
+        items = [
+            {"front": f"What is {topic1}?", "back": f"A key concept in science.", "tags": [topic1]},
+        ]
+
+    return json.dumps(items, indent=2)
+
+
 def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,
                       agent_type: str = "generator") -> str:
     """

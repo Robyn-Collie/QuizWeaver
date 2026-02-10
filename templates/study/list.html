@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Study Materials - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Study Materials</h1>
+    <a href="/study/generate" class="btn btn-primary">+ Generate</a>
+</div>
+
+<div class="section-actions" style="margin-top:0">
+    <form method="GET" action="/study" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
+        <select name="class_id" onchange="this.form.submit()" class="btn btn-outline" style="padding:0.35rem 0.75rem;">
+            <option value="">All Classes</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}" {% if current_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="type" onchange="this.form.submit()" class="btn btn-outline" style="padding:0.35rem 0.75rem;">
+            <option value="">All Types</option>
+            <option value="flashcard" {% if current_type == 'flashcard' %}selected{% endif %}>Flashcards</option>
+            <option value="study_guide" {% if current_type == 'study_guide' %}selected{% endif %}>Study Guide</option>
+            <option value="vocabulary" {% if current_type == 'vocabulary' %}selected{% endif %}>Vocabulary</option>
+            <option value="review_sheet" {% if current_type == 'review_sheet' %}selected{% endif %}>Review Sheet</option>
+        </select>
+    </form>
+</div>
+
+{% if study_sets %}
+<div class="study-grid">
+    {% for ss in study_sets %}
+    <div class="study-card" data-id="{{ ss.id }}">
+        <div class="study-card-header">
+            <span class="study-type-badge study-type-{{ ss.material_type }}">{{ ss.material_type.replace('_', ' ').title() }}</span>
+            <span class="status status-{{ ss.status }}">{{ ss.status }}</span>
+        </div>
+        <h3><a href="/study/{{ ss.id }}">{{ ss.title }}</a></h3>
+        <p class="study-card-meta">{{ ss.class_name }} &middot; {{ ss.card_count }} cards</p>
+        <div class="study-card-footer">
+            <span class="study-card-date">{{ ss.created_at.strftime('%b %d, %Y') if ss.created_at else '' }}</span>
+            <div class="study-card-actions">
+                <div class="export-dropdown">
+                    <button class="btn btn-sm btn-outline export-dropdown-toggle">Export</button>
+                    <div class="export-dropdown-menu">
+                        <a href="/study/{{ ss.id }}/export/tsv">TSV (Anki)</a>
+                        <a href="/study/{{ ss.id }}/export/csv">CSV</a>
+                        <a href="/study/{{ ss.id }}/export/pdf">PDF</a>
+                        <a href="/study/{{ ss.id }}/export/docx">Word</a>
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-danger study-delete-btn" data-id="{{ ss.id }}">Delete</button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No study materials yet.</p>
+    <a href="/study/generate" class="btn btn-primary">Generate Your First Study Set</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/study.js"></script>
+{% endblock %}

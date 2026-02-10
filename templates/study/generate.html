@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Generate Study Material - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Generate Study Material</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="/study/generate" class="form" id="study-generate-form">
+    <div class="form-group">
+        <label for="class_id">Class <span class="help-tip" data-tip="Select the class this study material is for.">?</span></label>
+        <select id="class_id" name="class_id" required>
+            <option value="">-- Select a class --</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}">{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Material Type</label>
+        <div class="radio-group">
+            <label><input type="radio" name="material_type" value="flashcard" checked> Flashcards</label>
+            <label><input type="radio" name="material_type" value="study_guide"> Study Guide</label>
+            <label><input type="radio" name="material_type" value="vocabulary"> Vocabulary</label>
+            <label><input type="radio" name="material_type" value="review_sheet"> Review Sheet</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="quiz_id">Source Quiz (optional) <span class="help-tip" data-tip="Generate study material based on an existing quiz's questions. Select a class first to see available quizzes.">?</span></label>
+        <select id="quiz_id" name="quiz_id">
+            <option value="">-- None (use topic instead) --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="topic">Topic (optional) <span class="help-tip" data-tip="Free-text topic to focus the study material on. Used when no source quiz is selected.">?</span></label>
+        <input type="text" id="topic" name="topic" placeholder="e.g., Photosynthesis, Cell Division">
+    </div>
+
+    <div class="form-group">
+        <label for="title">Title (optional) <span class="help-tip" data-tip="Custom title for this study set. Auto-generated if left blank.">?</span></label>
+        <input type="text" id="title" name="title" placeholder="e.g., Chapter 5 Flashcards">
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="generate-btn">Generate</button>
+        <a href="/study" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<div id="study-generate-progress" class="generate-progress" style="display:none">
+    <div class="progress-card">
+        <h2 id="study-progress-title">Generating Study Material...</h2>
+        <p class="progress-subtitle">Building your study materials</p>
+        <ul class="progress-checklist">
+            <li id="study-step-0" class="step-active">
+                <span class="step-icon step-active"></span>
+                <span class="step-label">Preparing content</span>
+                <span class="step-desc">Loading class context and quiz data</span>
+            </li>
+            <li id="study-step-1">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Generating material</span>
+                <span class="step-desc">AI is creating your study content</span>
+            </li>
+            <li id="study-step-2">
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Saving results</span>
+                <span class="step-desc">Storing cards and finalizing</span>
+            </li>
+        </ul>
+        <p class="progress-hint">This usually takes 5-30 seconds.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/study.js"></script>
+{% endblock %}

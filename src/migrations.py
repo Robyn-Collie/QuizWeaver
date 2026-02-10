@@ -71,9 +71,15 @@ def check_if_migration_needed(db_path):
             # Table will be created by ORM with sort_order column
             sort_order_exists = True
 
+        # Check if study_sets table exists (migration 003)
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='study_sets'"
+        )
+        study_sets_exists = cursor.fetchone() is not None
+
         conn.close()
 
-        return not sort_order_exists
+        return not sort_order_exists or not study_sets_exists
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True
