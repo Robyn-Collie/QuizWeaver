@@ -2,12 +2,20 @@
 {% block title %}{{ quiz.title }} - QuizWeaver{% endblock %}
 
 {% block content %}
-<h1>{{ quiz.title }}</h1>
+<div class="quiz-title-row">
+    <h1 class="quiz-title-display" data-quiz-id="{{ quiz.id }}">{{ quiz.title }}</h1>
+    <button class="btn btn-sm btn-outline edit-title-btn" title="Edit title">Edit Title</button>
+</div>
+<div class="quiz-title-edit" style="display:none;" data-quiz-id="{{ quiz.id }}">
+    <input type="text" class="quiz-title-input" value="{{ quiz.title }}" />
+    <button class="btn btn-sm btn-primary save-title-btn">Save</button>
+    <button class="btn btn-sm btn-secondary cancel-title-btn">Cancel</button>
+</div>
 
 <div class="quiz-info">
     <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
     {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
-    <p><strong>Questions:</strong> {{ questions | length }}</p>
+    <p><strong>Questions:</strong> <span id="question-count">{{ questions | length }}</span></p>
     {% if style_profile and style_profile.sol_standards is defined and style_profile.sol_standards %}
     <p><strong>Standards:</strong> {{ style_profile.sol_standards|join(', ') }}</p>
     {% endif %}
@@ -33,9 +41,9 @@
 
 <h2>Questions</h2>
 {% for q in questions %}
-<div class="question-card">
+<div class="question-card" data-question-id="{{ q.id }}" data-quiz-id="{{ quiz.id }}">
     <div class="question-header">
-        <span class="question-number">Q{{ loop.index }}</span>
+        <span class="question-number">Q<span class="q-index">{{ loop.index }}</span></span>
         <span class="question-type">{{ q.type or 'unknown' }}</span>
         <span class="question-points">{{ q.points or 0 }} pts</span>
         {% if q.data and q.data.cognitive_level is defined and q.data.cognitive_level %}
@@ -43,54 +51,146 @@
             {{ q.data.cognitive_level }}
         </span>
         {% endif %}
+        <span class="question-actions">
+            <button class="btn btn-sm btn-outline btn-edit-question" title="Edit">Edit</button>
+            <button class="btn btn-sm btn-outline btn-move-up" title="Move up">Up</button>
+            <button class="btn btn-sm btn-outline btn-move-down" title="Move down">Down</button>
+            <button class="btn btn-sm btn-outline btn-regen-question" title="Regenerate">Regen</button>
+            <button class="btn btn-sm btn-outline btn-upload-image" title="Upload image">Image</button>
+            <button class="btn btn-sm btn-danger btn-delete-question" title="Delete">Delete</button>
+            <input type="file" class="image-file-input" accept=".png,.jpg,.jpeg,.gif,.webp" style="display:none;">
+        </span>
     </div>
-    <p class="question-text">{{ q.text }}</p>
 
-    {% if q.data and q.data.image_ref is defined and q.data.image_ref %}
-    <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
-         onerror="this.style.display='none'">
-    {% elif q.data and q.data.image_description is defined and q.data.image_description %}
-    <div class="image-placeholder">
-        <strong>Suggested image:</strong> {{ q.data.image_description }}
-    </div>
-    {% elif q.data and q.data.image is defined and q.data.image %}
-    <div class="question-image-external" data-src="{{ q.data.image }}">
-        <img src="{{ q.data.image }}" alt="Question image" class="question-image" referrerpolicy="no-referrer"
-             onerror="this.parentElement.innerHTML='<span class=\'image-placeholder\'>Image: AI suggested a diagram here but the URL is unavailable. Consider adding your own image.</span>'">
-    </div>
-    {% endif %}
+    {# --- View mode --- #}
+    <div class="question-view-mode">
+        <p class="question-text">{{ q.text }}</p>
 
-    {% if q.type == 'tf' or q.question_type == 'tf' %}
-    <div class="tf-answer">
-        <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
-        <span class="tf-option {% if q.data.correct_answer == 'False' or q.data.answer == 'False' %}correct{% endif %}">False</span>
-    </div>
-    {% elif q.data and q.data.options is defined %}
-    <ul class="question-options">
-        {% for option in q.data.options %}
-        {% if option is mapping %}
-        <li{% if q.data.correct_answers is defined and option.id in q.data.correct_answers %} class="correct"{% endif %}>
-            <strong>{{ option.id }}.</strong> {{ option.text }}
-        </li>
-        {% else %}
-        <li{% if q.data.correct_answer is defined and option == q.data.correct_answer %} class="correct"{% elif q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
-            {{ option }}
-        </li>
+        {% if q.data and q.data.image_ref is defined and q.data.image_ref %}
+        <div class="question-image-wrapper">
+            <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
+                 onerror="this.style.display='none'">
+            <button class="btn btn-sm btn-outline btn-remove-image">Remove Image</button>
+        </div>
+        {% elif q.data and q.data.image_description is defined and q.data.image_description %}
+        <div class="image-placeholder">
+            <strong>Suggested image:</strong> {{ q.data.image_description }}
+        </div>
+        {% elif q.data and q.data.image is defined and q.data.image %}
+        <div class="question-image-external" data-src="{{ q.data.image }}">
+            <img src="{{ q.data.image }}" alt="Question image" class="question-image" referrerpolicy="no-referrer"
+                 onerror="this.parentElement.innerHTML='<span class=\'image-placeholder\'>Image unavailable. Consider uploading your own.</span>'">
+        </div>
         {% endif %}
-        {% endfor %}
-    </ul>
-    {% endif %}
 
-    {% if q.data %}
-    {% set answer = q.data.correct_answer or q.data.answer or none %}
-    {% if answer and q.type != 'tf' and q.question_type != 'tf' %}
-    <div class="question-answer">
-        <strong>Answer:</strong> {{ answer }}
+        {% if q.type == 'tf' or q.question_type == 'tf' %}
+        <div class="tf-answer">
+            <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
+            <span class="tf-option {% if q.data.correct_answer == 'False' or q.data.answer == 'False' %}correct{% endif %}">False</span>
+        </div>
+        {% elif q.data and q.data.options is defined %}
+        <ul class="question-options">
+            {% for option in q.data.options %}
+            {% if option is mapping %}
+            <li{% if q.data.correct_answers is defined and option.id in q.data.correct_answers %} class="correct"{% endif %}>
+                <strong>{{ option.id }}.</strong> {{ option.text }}
+            </li>
+            {% else %}
+            <li{% if q.data.correct_answer is defined and option == q.data.correct_answer %} class="correct"{% elif q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
+                {{ option }}
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if q.data %}
+        {% set answer = q.data.correct_answer or q.data.answer or none %}
+        {% if answer and q.type != 'tf' and q.question_type != 'tf' %}
+        <div class="question-answer">
+            <strong>Answer:</strong> {{ answer }}
+        </div>
+        {% endif %}
+        {% endif %}
     </div>
-    {% endif %}
-    {% endif %}
+
+    {# --- Edit mode (hidden by default) --- #}
+    <div class="question-edit-mode" style="display:none;">
+        <div class="form-group">
+            <label>Question Text</label>
+            <textarea class="edit-question-text" rows="3">{{ q.text }}</textarea>
+        </div>
+        <div class="edit-row">
+            <div class="form-group form-group-inline">
+                <label>Points</label>
+                <input type="number" class="edit-question-points" value="{{ q.points or 1 }}" min="0" step="0.5">
+            </div>
+            <div class="form-group form-group-inline">
+                <label>Type</label>
+                <select class="edit-question-type">
+                    <option value="mc" {% if q.type == 'mc' %}selected{% endif %}>Multiple Choice</option>
+                    <option value="tf" {% if q.type == 'tf' %}selected{% endif %}>True/False</option>
+                    <option value="ma" {% if q.type == 'ma' %}selected{% endif %}>Multiple Answer</option>
+                    <option value="fill_in_blank" {% if q.type == 'fill_in_blank' %}selected{% endif %}>Fill in Blank</option>
+                    <option value="short_answer" {% if q.type == 'short_answer' %}selected{% endif %}>Short Answer</option>
+                    <option value="matching" {% if q.type == 'matching' %}selected{% endif %}>Matching</option>
+                    <option value="essay" {% if q.type == 'essay' %}selected{% endif %}>Essay</option>
+                </select>
+            </div>
+        </div>
+
+        {# MC/MA options editor #}
+        <div class="edit-options-section" {% if q.type not in ('mc', 'ma') and q.type != none %}style="display:none;"{% endif %}>
+            <label>Options</label>
+            <div class="edit-options-list">
+                {% if q.data and q.data.options is defined %}
+                {% for option in q.data.options %}
+                <div class="edit-option-row">
+                    <input type="radio" name="correct_{{ q.id }}" class="edit-correct-radio" value="{{ loop.index0 }}"
+                           {% if q.data.correct_index is defined and loop.index0 == q.data.correct_index %}checked{% endif %}>
+                    <input type="text" class="edit-option-text" value="{% if option is mapping %}{{ option.text }}{% else %}{{ option }}{% endif %}">
+                    <button class="btn btn-sm btn-outline btn-remove-option" title="Remove option">x</button>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <button class="btn btn-sm btn-outline btn-add-option">+ Add Option</button>
+        </div>
+
+        {# TF correct answer #}
+        <div class="edit-tf-section" {% if q.type != 'tf' %}style="display:none;"{% endif %}>
+            <label>Correct Answer</label>
+            <div class="radio-group">
+                <label><input type="radio" name="tf_{{ q.id }}" class="edit-tf-radio" value="True"
+                    {% if q.data and (q.data.correct_answer == 'True' or q.data.answer == 'True') %}checked{% endif %}> True</label>
+                <label><input type="radio" name="tf_{{ q.id }}" class="edit-tf-radio" value="False"
+                    {% if q.data and (q.data.correct_answer == 'False' or q.data.answer == 'False') %}checked{% endif %}> False</label>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-sm btn-primary btn-save-question">Save</button>
+            <button class="btn btn-sm btn-secondary btn-cancel-edit">Cancel</button>
+        </div>
+    </div>
+
+    {# --- Regenerate panel (hidden by default) --- #}
+    <div class="question-regen-panel" style="display:none;">
+        <div class="form-group">
+            <label>Teacher Notes (optional guidance for the new question)</label>
+            <textarea class="regen-notes" rows="2" placeholder="e.g., Make it about cellular respiration instead"></textarea>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-sm btn-primary btn-regen-submit">Regenerate</button>
+            <button class="btn btn-sm btn-secondary btn-regen-cancel">Cancel</button>
+        </div>
+    </div>
 </div>
 {% endfor %}
 
 <p><a href="/quizzes">&larr; Back to Quizzes</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/quiz_edit.js') }}"></script>
 {% endblock %}

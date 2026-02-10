@@ -3,10 +3,12 @@ Route handlers for QuizWeaver web frontend.
 """
 
 import json
+import os
 import re
 import functools
 from io import BytesIO
 from datetime import date
+from werkzeug.utils import secure_filename
 from flask import (
     render_template,
     redirect,
@@ -377,7 +379,7 @@ def register_routes(app):
         if not quiz:
             abort(404)
 
-        questions = session.query(Question).filter_by(quiz_id=quiz_id).all()
+        questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
         class_obj = get_class(session, quiz.class_id) if quiz.class_id else None
 
         parsed_questions = []
@@ -453,7 +455,7 @@ def register_routes(app):
         if not quiz:
             abort(404)
 
-        questions = session.query(Question).filter_by(quiz_id=quiz_id).all()
+        questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
 
         # Parse style_profile
         style_profile = quiz.style_profile
@@ -511,6 +513,211 @@ def register_routes(app):
                 download_name=f"{safe_title}.qti.zip",
                 mimetype="application/zip",
             )
+
+    # --- Quiz Editing API ---
+
+    ALLOWED_IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+
+    @app.route("/api/quizzes/<int:quiz_id>/title", methods=["PUT"])
+    @login_required
+    def api_quiz_title(quiz_id):
+        """Update quiz title."""
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            return jsonify({"ok": False, "error": "Quiz not found"}), 404
+        data = request.get_json(silent=True) or {}
+        title = (data.get("title") or "").strip()
+        if not title:
+            return jsonify({"ok": False, "error": "Title cannot be empty"}), 400
+        quiz.title = title
+        session.commit()
+        return jsonify({"ok": True, "title": quiz.title})
+
+    @app.route("/api/questions/<int:question_id>", methods=["PUT"])
+    @login_required
+    def api_question_edit(question_id):
+        """Update question text, points, type, options, correct answer."""
+        session = _get_session()
+        question = session.query(Question).filter_by(id=question_id).first()
+        if not question:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+        payload = request.get_json(silent=True) or {}
+
+        # Update scalar fields
+        if "text" in payload:
+            text = (payload["text"] or "").strip()
+            if not text:
+                return jsonify({"ok": False, "error": "Question text cannot be empty"}), 400
+            question.text = text
+        if "points" in payload:
+            question.points = float(payload["points"])
+        if "question_type" in payload:
+            question.question_type = payload["question_type"]
+
+        # Merge into data JSON
+        q_data = question.data
+        if isinstance(q_data, str):
+            q_data = json.loads(q_data)
+        if not isinstance(q_data, dict):
+            q_data = {}
+
+        if "text" in payload:
+            q_data["text"] = question.text
+        if "question_type" in payload:
+            q_data["type"] = payload["question_type"]
+        if "options" in payload:
+            q_data["options"] = payload["options"]
+        if "correct_index" in payload:
+            q_data["correct_index"] = payload["correct_index"]
+        if "correct_answer" in payload:
+            q_data["correct_answer"] = payload["correct_answer"]
+        if "points" in payload:
+            q_data["points"] = question.points
+
+        question.data = q_data
+        # Force SQLAlchemy to detect the JSON change
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(question, "data")
+        session.commit()
+
+        return jsonify({"ok": True, "question": {
+            "id": question.id,
+            "text": question.text,
+            "points": question.points,
+            "question_type": question.question_type,
+            "data": question.data,
+        }})
+
+    @app.route("/api/questions/<int:question_id>", methods=["DELETE"])
+    @login_required
+    def api_question_delete(question_id):
+        """Delete a question from its quiz."""
+        session = _get_session()
+        question = session.query(Question).filter_by(id=question_id).first()
+        if not question:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+        session.delete(question)
+        session.commit()
+        return jsonify({"ok": True})
+
+    @app.route("/api/quizzes/<int:quiz_id>/reorder", methods=["PUT"])
+    @login_required
+    def api_quiz_reorder(quiz_id):
+        """Reorder questions within a quiz."""
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            return jsonify({"ok": False, "error": "Quiz not found"}), 404
+        payload = request.get_json(silent=True) or {}
+        question_ids = payload.get("question_ids", [])
+
+        # Validate: the IDs must exactly match the quiz's question IDs
+        actual_ids = set(
+            row[0] for row in session.query(Question.id).filter_by(quiz_id=quiz_id).all()
+        )
+        if set(question_ids) != actual_ids:
+            return jsonify({"ok": False, "error": "Question IDs do not match quiz"}), 400
+
+        for idx, qid in enumerate(question_ids):
+            session.query(Question).filter_by(id=qid).update({"sort_order": idx})
+        session.commit()
+        return jsonify({"ok": True})
+
+    @app.route("/api/questions/<int:question_id>/image", methods=["POST"])
+    @login_required
+    def api_question_image_upload(question_id):
+        """Upload an image for a question."""
+        session = _get_session()
+        question = session.query(Question).filter_by(id=question_id).first()
+        if not question:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+
+        if "image" not in request.files:
+            return jsonify({"ok": False, "error": "No image file provided"}), 400
+        file = request.files["image"]
+        if not file.filename:
+            return jsonify({"ok": False, "error": "No image file provided"}), 400
+
+        ext = os.path.splitext(file.filename)[1].lower()
+        if ext not in ALLOWED_IMAGE_EXTENSIONS:
+            return jsonify({"ok": False, "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}"}), 400
+
+        safe_name = secure_filename(file.filename)
+        # Add question_id prefix to avoid collisions
+        filename = f"upload_{question_id}_{safe_name}"
+
+        config = current_app.config["APP_CONFIG"]
+        images_dir = os.path.abspath(
+            config.get("paths", {}).get("generated_images_dir", "generated_images")
+        )
+        os.makedirs(images_dir, exist_ok=True)
+        file.save(os.path.join(images_dir, filename))
+
+        # Update question data
+        q_data = question.data
+        if isinstance(q_data, str):
+            q_data = json.loads(q_data)
+        if not isinstance(q_data, dict):
+            q_data = {}
+        q_data["image_ref"] = filename
+        q_data.pop("image_description", None)
+
+        question.data = q_data
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(question, "data")
+        session.commit()
+
+        return jsonify({"ok": True, "image_ref": filename})
+
+    @app.route("/api/questions/<int:question_id>/image", methods=["DELETE"])
+    @login_required
+    def api_question_image_remove(question_id):
+        """Remove image reference from a question (does not delete file)."""
+        session = _get_session()
+        question = session.query(Question).filter_by(id=question_id).first()
+        if not question:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+
+        q_data = question.data
+        if isinstance(q_data, str):
+            q_data = json.loads(q_data)
+        if not isinstance(q_data, dict):
+            q_data = {}
+        q_data.pop("image_ref", None)
+
+        question.data = q_data
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(question, "data")
+        session.commit()
+
+        return jsonify({"ok": True})
+
+    @app.route("/api/questions/<int:question_id>/regenerate", methods=["POST"])
+    @login_required
+    def api_question_regenerate(question_id):
+        """Regenerate a single question using the LLM."""
+        session = _get_session()
+        question = session.query(Question).filter_by(id=question_id).first()
+        if not question:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+
+        payload = request.get_json(silent=True) or {}
+        teacher_notes = (payload.get("teacher_notes") or "").strip()
+
+        config = current_app.config["APP_CONFIG"]
+        from src.question_regenerator import regenerate_question
+        result = regenerate_question(session, question_id, teacher_notes, config)
+        if result is None:
+            return jsonify({"ok": False, "error": "Regeneration failed"}), 500
+
+        return jsonify({"ok": True, "question": {
+            "id": result.id,
+            "text": result.text,
+            "points": result.points,
+            "question_type": result.question_type,
+            "data": result.data if isinstance(result.data, dict) else json.loads(result.data) if isinstance(result.data, str) else {},
+        }})
 
     # --- Quiz Generation ---
 

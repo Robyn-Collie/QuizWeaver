@@ -36,6 +36,7 @@ def create_app(config=None):
 
     app.config["APP_CONFIG"] = config
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
+    app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB upload limit
 
     # Create a single engine for the app lifetime
     db_path = config["paths"]["database_file"]

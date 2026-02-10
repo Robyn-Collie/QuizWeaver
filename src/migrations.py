@@ -30,7 +30,7 @@ def get_migration_files(migrations_dir="migrations"):
 
 def check_if_migration_needed(db_path):
     """
-    Check if database needs migration by testing for new tables.
+    Check if database needs migration by testing for new tables/columns.
 
     Args:
         db_path: Path to SQLite database file
@@ -52,10 +52,28 @@ def check_if_migration_needed(db_path):
         )
         classes_exists = cursor.fetchone() is not None
 
+        if not classes_exists:
+            conn.close()
+            return True
+
+        # Check if sort_order column exists on questions table
+        # (if questions table doesn't exist yet, ORM will create it with the column)
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='questions'"
+        )
+        questions_exists = cursor.fetchone() is not None
+
+        if questions_exists:
+            cursor.execute("PRAGMA table_info(questions)")
+            columns = [row[1] for row in cursor.fetchall()]
+            sort_order_exists = "sort_order" in columns
+        else:
+            # Table will be created by ORM with sort_order column
+            sort_order_exists = True
+
         conn.close()
 
-        # If classes table doesn't exist, we need to migrate
-        return not classes_exists
+        return not sort_order_exists
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True
@@ -111,10 +129,14 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
                 if verbose:
                     print("[OK]")
             except sqlite3.OperationalError as e:
-                # Check if error is due to column already existing (safe to ignore)
-                if "duplicate column name" in str(e).lower():
+                err_msg = str(e).lower()
+                # Safe to ignore: column already exists or table not yet created by ORM
+                if "duplicate column name" in err_msg:
                     if verbose:
                         print("[OK] (already applied)")
+                elif "no such table" in err_msg:
+                    if verbose:
+                        print("[OK] (table managed by ORM)")
                 else:
                     raise
 

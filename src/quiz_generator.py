@@ -151,13 +151,14 @@ def generate_quiz(
         return None
 
     # Store questions
-    for q_data in questions_data:
+    for idx, q_data in enumerate(questions_data):
         question_record = Question(
             quiz_id=new_quiz.id,
             question_type=q_data.get("type"),
             title=q_data.get("title"),
             text=q_data.get("text"),
             points=q_data.get("points"),
+            sort_order=idx,
             data=q_data,
         )
         session.add(question_record)

@@ -202,6 +202,7 @@ class Question(Base):
     title = Column(String)
     text = Column(Text)
     points = Column(Float)
+    sort_order = Column(Integer, default=0)
     data = Column(JSON)  # For options, correct_index, is_true, image_ref, etc.
     quiz = relationship("Quiz", back_populates="questions")
 
