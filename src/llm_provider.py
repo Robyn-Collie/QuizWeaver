@@ -1,19 +1,16 @@
 from abc import ABC, abstractmethod
-import google.generativeai as genai
 import os
 import mimetypes
 from PIL import Image as PILImage
 import io
 from typing import Any
 
-# Try to import vertexai only if available (will be installed from requirements.txt)
+# Check if google-genai SDK is available (lazy import in provider classes)
 try:
-    import vertexai
-    from vertexai.generative_models import GenerativeModel, Part
-
-    _VERTEX_AI_AVAILABLE = True
+    from google import genai as _genai_module
+    _GENAI_AVAILABLE = True
 except ImportError:
-    _VERTEX_AI_AVAILABLE = False
+    _GENAI_AVAILABLE = False
 
 
 class LLMProvider(ABC):
@@ -53,19 +50,21 @@ class LLMProvider(ABC):
 
 class GeminiProvider(LLMProvider):
     """
-    Concrete implementation of the LLMProvider for Google's Gemini models.
+    Concrete implementation of the LLMProvider for Google's Gemini models
+    using the unified google-genai SDK.
+    Handles both Gemini Flash and Gemini Pro — model is specified per-instance.
     """
 
-    def __init__(self, api_key: str, model_name: str = "gemini-1.5-flash"):
+    def __init__(self, api_key: str, model_name: str = "gemini-2.5-flash"):
         """
         Initialize the Gemini provider with API credentials.
 
         Args:
             api_key: Google Gemini API key for authentication
-            model_name: Name of the Gemini model to use (default: gemini-1.5-flash)
+            model_name: Name of the Gemini model to use (default: gemini-2.5-flash)
         """
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model_name)
+        from google import genai
+        self.client = genai.Client(api_key=api_key)
         self._model_name = model_name
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
@@ -78,18 +77,16 @@ class GeminiProvider(LLMProvider):
 
         Returns:
             Generated text response from the model, or empty JSON array on error
-
-        Raises:
-            Exception: Caught internally and returns "[]" to prevent crashes
         """
         try:
-            # The Gemini API expects a list of parts (text, images)
-            generation_config = {}
+            config = {}
             if json_mode:
-                generation_config = {"response_mime_type": "application/json"}
+                config["response_mime_type"] = "application/json"
 
-            response = self.model.generate_content(
-                prompt_parts, generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=self._model_name,
+                contents=prompt_parts,
+                config=config if config else None,
             )
 
             # Log cost if token metadata available
@@ -108,7 +105,7 @@ class GeminiProvider(LLMProvider):
             return response.text
         except Exception as e:
             print(f"An error occurred with the Gemini provider: {e}")
-            return "[]"  # Return an empty JSON array on error
+            return "[]"
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
@@ -120,77 +117,17 @@ class GeminiProvider(LLMProvider):
         Returns:
             Gemini file object that can be passed to generate()
         """
-        return genai.upload_file(image_path)
-
-
-class Gemini3ProProvider(LLMProvider):
-    """
-    Concrete implementation for the advanced Gemini 3 Pro model.
-    Specialized for multimodal tasks and structured output.
-    """
-
-    def __init__(
-        self, api_key: str, model_name: str = "gemini-2.0-flash-exp"
-    ):  # Using 2.0 Flash Exp as proxy for 3 Pro Preview if needed, or actual name
-        """
-        Initialize the Gemini 3 Pro provider with API credentials.
-
-        Args:
-            api_key: Google Gemini API key for authentication
-            model_name: Name of the advanced Gemini model (default: gemini-2.0-flash-exp)
-        """
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model_name)
-
-    def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
-        """
-        Generate content using the advanced Gemini 3 Pro API.
-
-        Args:
-            prompt_parts: List of prompt components (text strings and/or image objects)
-            json_mode: If True, configures the model to return JSON-formatted output
-
-        Returns:
-            Generated text response from the model, or empty JSON object on error
-
-        Raises:
-            Exception: Caught internally and returns "{}" to prevent crashes
-        """
-        try:
-            generation_config = {}
-            if json_mode:
-                generation_config = {"response_mime_type": "application/json"}
-
-            # Gemini 3 Pro specific configurations could go here (e.g., thinking_level)
-            # For now, we stick to the standard generate_content interface which is compatible
-            response = self.model.generate_content(
-                prompt_parts, generation_config=generation_config
-            )
-            return response.text
-        except Exception as e:
-            print(f"An error occurred with the Gemini 3 Pro provider: {e}")
-            return "{}"
-
-    def prepare_image_context(self, image_path: str) -> Any:
-        """
-        Upload an image file to Gemini API for use in multimodal prompts.
-
-        Args:
-            image_path: Path to the image file to upload
-
-        Returns:
-            Gemini file object that can be passed to generate()
-        """
-        return genai.upload_file(image_path)
+        return self.client.files.upload(file=image_path)
 
 
 class VertexAIProvider(LLMProvider):
     """
-    Concrete implementation of the LLMProvider for Google Cloud Vertex AI models.
+    Concrete implementation of the LLMProvider for Google Cloud Vertex AI models
+    using the unified google-genai SDK with vertexai=True.
     """
 
     def __init__(
-        self, project_id: str, location: str, model_name: str = "gemini-1.5-flash"
+        self, project_id: str, location: str, model_name: str = "gemini-2.5-flash"
     ):
         """
         Initialize the Vertex AI provider with Google Cloud credentials.
@@ -198,29 +135,19 @@ class VertexAIProvider(LLMProvider):
         Args:
             project_id: Google Cloud project ID
             location: Google Cloud region (e.g., 'us-central1')
-            model_name: Name of the Vertex AI model to use (default: gemini-1.5-flash)
+            model_name: Name of the Vertex AI model to use (default: gemini-2.5-flash)
 
         Raises:
-            ImportError: If google-cloud-aiplatform is not installed
+            ImportError: If google-genai is not installed
         """
-        if not _VERTEX_AI_AVAILABLE:
-            raise ImportError("google-cloud-aiplatform is not installed or available.")
+        if not _GENAI_AVAILABLE:
+            raise ImportError("google-genai is not installed or available.")
 
-        vertexai.init(project=project_id, location=location)
-        self.model = GenerativeModel(model_name)
+        from google import genai
+        self.client = genai.Client(
+            vertexai=True, project=project_id, location=location
+        )
         self._model_name = model_name
-
-    def _convert_to_vertex_part(self, item: Any) -> Any:
-        if isinstance(item, PILImage.Image):
-            # Convert PIL Image to bytes and then to Vertex AI Part
-            byte_arr = io.BytesIO()
-            item.save(byte_arr, format="PNG")
-            byte_arr.seek(0)
-            return Part.from_data(byte_arr.getvalue(), mime_type="image/png")
-        elif isinstance(item, str):
-            return item
-        # Assume any other type is already a VertexAI Part/Image or compatible
-        return item
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
         """
@@ -232,22 +159,16 @@ class VertexAIProvider(LLMProvider):
 
         Returns:
             Generated text response from the model, or empty JSON object on error
-
-        Raises:
-            Exception: Caught internally and returns "{}" to prevent crashes
         """
         try:
-            generation_config = {}
+            config = {}
             if json_mode:
-                generation_config = {"response_mime_type": "application/json"}
+                config["response_mime_type"] = "application/json"
 
-            # Convert prompt_parts to Vertex AI compatible format
-            vertex_prompt_parts = [
-                self._convert_to_vertex_part(p) for p in prompt_parts
-            ]
-
-            response = self.model.generate_content(
-                vertex_prompt_parts, generation_config=generation_config
+            response = self.client.models.generate_content(
+                model=self._model_name,
+                contents=prompt_parts,
+                config=config if config else None,
             )
 
             # Log cost if token metadata available
@@ -270,13 +191,13 @@ class VertexAIProvider(LLMProvider):
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
-        Load an image file and convert it to a Vertex AI Part object.
+        Load an image file as bytes for Vertex AI multimodal prompts.
 
         Args:
             image_path: Path to the image file to load
 
         Returns:
-            Vertex AI Part object containing the image data
+            Dict with mime_type and data suitable for the Vertex AI API
 
         Raises:
             ValueError: If the file is not a valid image or MIME type cannot be determined
@@ -287,9 +208,10 @@ class VertexAIProvider(LLMProvider):
                 f"Could not determine image MIME type or it's not an image: {image_path}"
             )
 
+        from google.genai import types
         with open(image_path, "rb") as f:
             image_bytes = f.read()
-        return Part.from_data(image_bytes, mime_type=mime_type)
+        return types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
 
 
 class MockLLMProvider(LLMProvider):
@@ -426,7 +348,9 @@ class OpenAICompatibleProvider(LLMProvider):
 
 
 # --- Provider Registry ---
-# Metadata about available providers for UI display and configuration
+# Metadata about available providers for UI display and configuration.
+# default_model: the model used when user hasn't set llm.model_name.
+# Update these defaults when Google/OpenAI deprecate model versions.
 
 PROVIDER_REGISTRY = {
     "mock": {
@@ -439,18 +363,21 @@ PROVIDER_REGISTRY = {
         "description": "Fast, cost-effective model via Gemini API",
         "category": "built-in",
         "env_var": "GEMINI_API_KEY",
+        "default_model": "gemini-2.5-flash",
     },
-    "gemini-3-pro": {
+    "gemini-pro": {
         "label": "Google Gemini Pro",
-        "description": "Advanced multimodal model via Gemini API",
+        "description": "Advanced model via Gemini API",
         "category": "built-in",
         "env_var": "GEMINI_API_KEY",
+        "default_model": "gemini-2.5-pro",
     },
     "vertex": {
         "label": "Google Vertex AI",
         "description": "Enterprise Gemini via Google Cloud",
         "category": "built-in",
         "requires_config": ["vertex_project_id", "vertex_location"],
+        "default_model": "gemini-2.5-flash",
     },
     "openai": {
         "label": "OpenAI",
@@ -464,8 +391,19 @@ PROVIDER_REGISTRY = {
         "label": "Custom (OpenAI-Compatible)",
         "description": "Any OpenAI-compatible API (Ollama, Mistral, OpenRouter, etc.)",
         "category": "openai-compatible",
+        "default_model": "default",
     },
 }
+
+# Backward-compat aliases: old provider names → current names
+_PROVIDER_ALIASES = {
+    "gemini-3-pro": "gemini-pro",
+}
+
+
+def _resolve_provider_name(name):
+    """Resolve backward-compatible provider aliases."""
+    return _PROVIDER_ALIASES.get(name, name)
 
 
 def get_provider_info(config):
@@ -498,9 +436,9 @@ def get_provider_info(config):
                 info["available"] = False
                 info["reason"] = f"Set {meta['env_var']} or enter API key in settings"
         elif key == "vertex":
-            if not _VERTEX_AI_AVAILABLE:
+            if not _GENAI_AVAILABLE:
                 info["available"] = False
-                info["reason"] = "google-cloud-aiplatform not installed"
+                info["reason"] = "google-genai not installed"
             else:
                 for cfg_key in meta.get("requires_config", []):
                     if not llm_config.get(cfg_key):
@@ -527,7 +465,7 @@ def get_provider(config, web_mode=False):
 
     Args:
         config: Application configuration dictionary containing 'llm' settings with:
-            - provider: One of 'mock', 'gemini', 'gemini-3-pro', 'vertex',
+            - provider: One of 'mock', 'gemini', 'gemini-pro', 'vertex',
                        'openai', 'openai-compatible'
             - mode: 'development' or 'production' (affects approval gate)
             - model_name: Name of model to use (provider-specific)
@@ -542,13 +480,23 @@ def get_provider(config, web_mode=False):
 
     Raises:
         ValueError: If provider is unsupported, missing API keys, or missing config values
-        ImportError: If Vertex AI selected but google-cloud-aiplatform not installed
+        ImportError: If Vertex AI selected but google-genai not installed
     """
     provider_name = config.get("llm", {}).get("provider", "mock")
     llm_config = config.get("llm", {})
 
+    # Resolve backward-compatible aliases (e.g., gemini-3-pro → gemini-pro)
+    provider_name = _resolve_provider_name(provider_name)
+
+    # Read default model from registry
+    registry_entry = PROVIDER_REGISTRY.get(provider_name, {})
+    default_model = registry_entry.get("default_model", "default")
+
+    # User's model_name always takes priority over registry default
+    model_name = llm_config.get("model_name") or default_model
+
     # Check if using real provider and warn user
-    real_providers = ["gemini", "gemini-3-pro", "vertex", "openai", "openai-compatible"]
+    real_providers = ["gemini", "gemini-pro", "vertex", "openai", "openai-compatible"]
     if provider_name in real_providers:
         mode = llm_config.get("mode", "development")
         if mode == "development" and not web_mode:
@@ -569,30 +517,20 @@ def get_provider(config, web_mode=False):
 
     if provider_name == "mock":
         return MockLLMProvider()
-    elif provider_name == "gemini":
-        api_key = os.getenv("GEMINI_API_KEY")
+    elif provider_name in ("gemini", "gemini-pro"):
+        api_key = os.getenv("GEMINI_API_KEY") or llm_config.get("api_key", "")
         if not api_key:
             raise ValueError(
-                "GEMINI_API_KEY is not set in the environment for Gemini provider."
+                "GEMINI_API_KEY not set and no api_key in config."
             )
         return GeminiProvider(
             api_key=api_key,
-            model_name=llm_config.get("model_name", "gemini-1.5-flash"),
-        )
-    elif provider_name == "gemini-3-pro":
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError(
-                "GEMINI_API_KEY is not set in the environment for Gemini 3 Pro provider."
-            )
-        return Gemini3ProProvider(
-            api_key=api_key,
-            model_name=llm_config.get("model_name", "gemini-2.0-flash-exp"),
+            model_name=model_name,
         )
     elif provider_name == "vertex":
-        if not _VERTEX_AI_AVAILABLE:
+        if not _GENAI_AVAILABLE:
             raise ImportError(
-                "Vertex AI provider selected but google-cloud-aiplatform is not installed."
+                "Vertex AI provider selected but google-genai is not installed."
             )
         project_id = llm_config.get("vertex_project_id")
         location = llm_config.get("vertex_location")
@@ -603,7 +541,7 @@ def get_provider(config, web_mode=False):
         return VertexAIProvider(
             project_id=project_id,
             location=location,
-            model_name=llm_config.get("model_name", "gemini-1.5-flash"),
+            model_name=model_name,
         )
     elif provider_name == "openai":
         api_key = os.getenv("OPENAI_API_KEY") or llm_config.get("api_key", "")
@@ -614,7 +552,7 @@ def get_provider(config, web_mode=False):
         return OpenAICompatibleProvider(
             api_key=api_key,
             base_url="https://api.openai.com/v1",
-            model_name=llm_config.get("model_name", "gpt-4o"),
+            model_name=model_name,
         )
     elif provider_name == "openai-compatible":
         api_key = llm_config.get("api_key", "")
@@ -626,7 +564,7 @@ def get_provider(config, web_mode=False):
         return OpenAICompatibleProvider(
             api_key=api_key or "no-key",
             base_url=base_url,
-            model_name=llm_config.get("model_name", "default"),
+            model_name=model_name,
         )
     else:
         raise ValueError(f"Unsupported LLM provider: {provider_name}")

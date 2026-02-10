@@ -1093,7 +1093,7 @@ def register_routes(app):
         # Temporarily set env var for providers that need it
         old_env = {}
         try:
-            if provider_name in ("gemini", "gemini-3-pro") and api_key:
+            if provider_name in ("gemini", "gemini-pro", "gemini-3-pro") and api_key:
                 old_env["GEMINI_API_KEY"] = os.environ.get("GEMINI_API_KEY")
                 os.environ["GEMINI_API_KEY"] = api_key
             elif provider_name == "openai" and api_key:

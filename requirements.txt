@@ -1,11 +1,10 @@
-google-generativeai
+google-genai
 python-dotenv
 PyMuPDF
 reportlab
 python-docx
 sqlalchemy
 pillow
-google-cloud-aiplatform
 pytest
 pyyaml
 flask

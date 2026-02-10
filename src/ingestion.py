@@ -25,7 +25,7 @@ def ingest_content(session, config):
             ingest_config = config.copy()
             if "llm" not in ingest_config:
                 ingest_config["llm"] = {}
-            ingest_config["llm"]["provider"] = "gemini-3-pro"
+            ingest_config["llm"]["provider"] = "gemini-pro"
             llm_provider = get_provider(ingest_config)
         except Exception as e:
             print(
