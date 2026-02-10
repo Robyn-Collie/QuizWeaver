@@ -22,6 +22,15 @@
     {% endif %}
 </div>
 
+<div class="export-actions">
+    <span class="export-label">Export:</span>
+    <a href="/quizzes/{{ quiz.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
+    <a href="/quizzes/{{ quiz.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
+    <a href="/quizzes/{{ quiz.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
+    <a href="/quizzes/{{ quiz.id }}/export/gift" class="btn btn-sm btn-outline">GIFT (Moodle)</a>
+    <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
+</div>
+
 <h2>Questions</h2>
 {% for q in questions %}
 <div class="question-card">

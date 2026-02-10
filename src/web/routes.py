@@ -3,7 +3,9 @@ Route handlers for QuizWeaver web frontend.
 """
 
 import json
+import re
 import functools
+from io import BytesIO
 from datetime import date
 from flask import (
     render_template,
@@ -16,6 +18,7 @@ from flask import (
     g,
     session as flask_session,
     jsonify,
+    send_file,
 )
 from src.database import LessonLog, Quiz, Question, get_session
 from src.classroom import create_class, get_class, list_classes, update_class, delete_class
@@ -24,6 +27,7 @@ from src.cost_tracking import get_cost_summary
 from src.quiz_generator import generate_quiz
 from src.llm_provider import get_provider_info, PROVIDER_REGISTRY
 from src.web.config_utils import save_config
+from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
 
 
 # Default credentials for Phase 1.5 basic auth
@@ -434,6 +438,79 @@ def register_routes(app):
             quizzes=quiz_data,
             class_obj=class_obj,
         )
+
+    # --- Quiz Export ---
+
+    @app.route("/quizzes/<int:quiz_id>/export/<format_name>")
+    @login_required
+    def quiz_export(quiz_id, format_name):
+        """Download a quiz in the requested format (csv, docx, gift, pdf, qti)."""
+        if format_name not in ("csv", "docx", "gift", "pdf", "qti"):
+            abort(404)
+
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            abort(404)
+
+        questions = session.query(Question).filter_by(quiz_id=quiz_id).all()
+
+        # Parse style_profile
+        style_profile = quiz.style_profile
+        if isinstance(style_profile, str):
+            try:
+                style_profile = json.loads(style_profile)
+            except (json.JSONDecodeError, ValueError):
+                style_profile = {}
+        if not isinstance(style_profile, dict):
+            style_profile = {}
+
+        # Sanitize title for filename
+        safe_title = re.sub(r"[^\w\s\-]", "", quiz.title or "quiz")
+        safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "quiz"
+
+        if format_name == "csv":
+            csv_str = export_csv(quiz, questions, style_profile)
+            buf = BytesIO(csv_str.encode("utf-8"))
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.csv",
+                mimetype="text/csv",
+            )
+        elif format_name == "docx":
+            buf = export_docx(quiz, questions, style_profile)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.docx",
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        elif format_name == "gift":
+            gift_str = export_gift(quiz, questions)
+            buf = BytesIO(gift_str.encode("utf-8"))
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.gift.txt",
+                mimetype="text/plain",
+            )
+        elif format_name == "pdf":
+            buf = export_pdf(quiz, questions, style_profile)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.pdf",
+                mimetype="application/pdf",
+            )
+        elif format_name == "qti":
+            buf = export_qti(quiz, questions)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.qti.zip",
+                mimetype="application/zip",
+            )
 
     # --- Quiz Generation ---
 

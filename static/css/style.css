@@ -561,7 +561,22 @@ body {
 }
 
 .quiz-info {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Export Actions */
+.export-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1.5rem;
+    flex-wrap: wrap;
+}
+
+.export-label {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.9rem;
 }
 
 /* Lesson List */
