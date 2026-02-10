@@ -22,7 +22,7 @@ from flask import (
     jsonify,
     send_file,
 )
-from src.database import LessonLog, Quiz, Question, StudySet, StudyCard, get_session
+from src.database import LessonLog, Quiz, Question, StudySet, StudyCard, Rubric, RubricCriterion, get_session
 from src.classroom import create_class, get_class, list_classes, update_class, delete_class
 from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
 from src.cost_tracking import get_cost_summary
@@ -37,6 +37,9 @@ from src.study_export import (
     export_study_pdf,
     export_study_docx,
 )
+from src.variant_generator import generate_variant, READING_LEVELS
+from src.rubric_generator import generate_rubric
+from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
 
 
 # Default credentials for Phase 1.5 basic auth
@@ -413,12 +416,26 @@ def register_routes(app):
         if not isinstance(style_profile, dict):
             style_profile = {}
 
+        # Variant lineage info
+        parent_quiz = None
+        if quiz.parent_quiz_id:
+            parent_quiz = session.query(Quiz).filter_by(id=quiz.parent_quiz_id).first()
+
+        variant_count = session.query(Quiz).filter_by(parent_quiz_id=quiz_id).count()
+
+        # Rubrics for this quiz
+        rubrics = session.query(Rubric).filter_by(quiz_id=quiz_id).order_by(Rubric.created_at.desc()).all()
+
         return render_template(
             "quizzes/detail.html",
             quiz=quiz,
             questions=parsed_questions,
             class_obj=class_obj,
             style_profile=style_profile,
+            parent_quiz=parent_quiz,
+            variant_count=variant_count,
+            rubrics=rubrics,
+            reading_levels=READING_LEVELS,
         )
 
     @app.route("/classes/<int:class_id>/quizzes")
@@ -1073,6 +1090,232 @@ def register_routes(app):
             {"id": q.id, "title": q.title or f"Quiz #{q.id}"}
             for q in quizzes
         ])
+
+    # --- Variants ---
+
+    @app.route("/quizzes/<int:quiz_id>/generate-variant", methods=["GET", "POST"])
+    @login_required
+    def quiz_generate_variant(quiz_id):
+        """Generate a reading-level variant of a quiz."""
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            abort(404)
+
+        config = current_app.config["APP_CONFIG"]
+
+        if request.method == "POST":
+            reading_level = request.form.get("reading_level", "").strip()
+            title = request.form.get("title", "").strip() or None
+
+            if reading_level not in READING_LEVELS:
+                return render_template(
+                    "quizzes/generate_variant.html",
+                    quiz=quiz,
+                    reading_levels=READING_LEVELS,
+                    error="Please select a valid reading level.",
+                ), 400
+
+            variant = generate_variant(
+                session,
+                quiz_id=quiz_id,
+                reading_level=reading_level,
+                config=config,
+                title=title,
+            )
+            if variant:
+                flash("Variant generated successfully.", "success")
+                return redirect(url_for("quiz_detail", quiz_id=variant.id), code=303)
+            else:
+                return render_template(
+                    "quizzes/generate_variant.html",
+                    quiz=quiz,
+                    reading_levels=READING_LEVELS,
+                    error="Variant generation failed. Please try again.",
+                ), 500
+
+        return render_template(
+            "quizzes/generate_variant.html",
+            quiz=quiz,
+            reading_levels=READING_LEVELS,
+        )
+
+    @app.route("/quizzes/<int:quiz_id>/variants")
+    @login_required
+    def quiz_variants(quiz_id):
+        """List all variants of a quiz."""
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            abort(404)
+
+        variants = (
+            session.query(Quiz)
+            .filter_by(parent_quiz_id=quiz_id)
+            .order_by(Quiz.created_at.desc())
+            .all()
+        )
+        variant_data = []
+        for v in variants:
+            question_count = session.query(Question).filter_by(quiz_id=v.id).count()
+            variant_data.append({
+                "id": v.id,
+                "title": v.title,
+                "reading_level": v.reading_level,
+                "status": v.status,
+                "question_count": question_count,
+                "created_at": v.created_at,
+            })
+
+        return render_template(
+            "quizzes/variants.html",
+            quiz=quiz,
+            variants=variant_data,
+        )
+
+    # --- Rubrics ---
+
+    @app.route("/quizzes/<int:quiz_id>/generate-rubric", methods=["GET", "POST"])
+    @login_required
+    def quiz_generate_rubric(quiz_id):
+        """Generate a scoring rubric for a quiz."""
+        session = _get_session()
+        quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+        if not quiz:
+            abort(404)
+
+        config = current_app.config["APP_CONFIG"]
+
+        if request.method == "POST":
+            title = request.form.get("title", "").strip() or None
+
+            rubric = generate_rubric(
+                session,
+                quiz_id=quiz_id,
+                config=config,
+                title=title,
+            )
+            if rubric:
+                flash("Rubric generated successfully.", "success")
+                return redirect(url_for("rubric_detail", rubric_id=rubric.id), code=303)
+            else:
+                return render_template(
+                    "quizzes/generate_rubric.html",
+                    quiz=quiz,
+                    error="Rubric generation failed. Please try again.",
+                ), 500
+
+        return render_template("quizzes/generate_rubric.html", quiz=quiz)
+
+    @app.route("/rubrics/<int:rubric_id>")
+    @login_required
+    def rubric_detail(rubric_id):
+        """View rubric detail with all criteria and proficiency levels."""
+        session = _get_session()
+        rubric = session.query(Rubric).filter_by(id=rubric_id).first()
+        if not rubric:
+            abort(404)
+
+        criteria = (
+            session.query(RubricCriterion)
+            .filter_by(rubric_id=rubric_id)
+            .order_by(RubricCriterion.sort_order, RubricCriterion.id)
+            .all()
+        )
+
+        quiz = session.query(Quiz).filter_by(id=rubric.quiz_id).first()
+
+        # Parse levels JSON for template
+        parsed_criteria = []
+        for c in criteria:
+            levels = c.levels
+            if isinstance(levels, str):
+                try:
+                    levels = json.loads(levels)
+                except (json.JSONDecodeError, ValueError):
+                    levels = []
+            if not isinstance(levels, list):
+                levels = []
+            parsed_criteria.append({
+                "id": c.id,
+                "criterion": c.criterion,
+                "description": c.description,
+                "max_points": c.max_points,
+                "levels": levels,
+            })
+
+        total_points = sum(c.max_points or 0 for c in criteria)
+
+        return render_template(
+            "rubrics/detail.html",
+            rubric=rubric,
+            criteria=parsed_criteria,
+            quiz=quiz,
+            total_points=total_points,
+        )
+
+    @app.route("/rubrics/<int:rubric_id>/export/<format_name>")
+    @login_required
+    def rubric_export(rubric_id, format_name):
+        """Download a rubric in the requested format (pdf, docx, csv)."""
+        if format_name not in ("pdf", "docx", "csv"):
+            abort(404)
+
+        session = _get_session()
+        rubric = session.query(Rubric).filter_by(id=rubric_id).first()
+        if not rubric:
+            abort(404)
+
+        criteria = (
+            session.query(RubricCriterion)
+            .filter_by(rubric_id=rubric_id)
+            .order_by(RubricCriterion.sort_order, RubricCriterion.id)
+            .all()
+        )
+
+        # Sanitize title for filename
+        safe_title = re.sub(r"[^\w\s\-]", "", rubric.title or "rubric")
+        safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "rubric"
+
+        if format_name == "csv":
+            csv_str = export_rubric_csv(rubric, criteria)
+            buf = BytesIO(csv_str.encode("utf-8"))
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.csv",
+                mimetype="text/csv",
+            )
+        elif format_name == "docx":
+            buf = export_rubric_docx(rubric, criteria)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.docx",
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        elif format_name == "pdf":
+            buf = export_rubric_pdf(rubric, criteria)
+            return send_file(
+                buf,
+                as_attachment=True,
+                download_name=f"{safe_title}.pdf",
+                mimetype="application/pdf",
+            )
+
+    @app.route("/api/rubrics/<int:rubric_id>", methods=["DELETE"])
+    @login_required
+    def api_rubric_delete(rubric_id):
+        """Delete a rubric and all its criteria."""
+        session = _get_session()
+        rubric = session.query(Rubric).filter_by(id=rubric_id).first()
+        if not rubric:
+            return jsonify({"ok": False, "error": "Rubric not found"}), 404
+
+        # Criteria are cascade-deleted via relationship
+        session.delete(rubric)
+        session.commit()
+        return jsonify({"ok": True})
 
     # --- Help ---
 

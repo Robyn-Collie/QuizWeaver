@@ -7,7 +7,7 @@ real LLM API behavior without making external calls or incurring costs.
 
 import json
 import random
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 
 # Sample topics for generating realistic content
@@ -272,6 +272,151 @@ def get_study_material_response(prompt_parts: List[Any], material_type: str,
         ]
 
     return json.dumps(items, indent=2)
+
+
+def get_variant_response(questions_data: List[Dict], reading_level: str,
+                         context_keywords: List[str] = None) -> str:
+    """Generate mock variant response by modifying question text for reading level.
+
+    Args:
+        questions_data: List of question dicts from the source quiz.
+        reading_level: Target reading level (ell, below_grade, on_grade, advanced).
+        context_keywords: Optional topic keywords.
+
+    Returns:
+        JSON string with array of rewritten question objects.
+    """
+    level_adjustments = {
+        "ell": {
+            "prefix": "What is",
+            "suffix": "(Choose the best answer.)",
+            "simplify": True,
+        },
+        "below_grade": {
+            "prefix": "Look at the choices below.",
+            "suffix": "(Hint: Think about what you learned in class.)",
+            "simplify": True,
+        },
+        "on_grade": {
+            "prefix": "",
+            "suffix": "",
+            "simplify": False,
+        },
+        "advanced": {
+            "prefix": "Analyze and evaluate",
+            "suffix": "Support your reasoning.",
+            "simplify": False,
+        },
+    }
+    adj = level_adjustments.get(reading_level, level_adjustments["on_grade"])
+
+    result = []
+    for i, q in enumerate(questions_data):
+        new_q = dict(q)
+        original_text = q.get("text", "")
+
+        if adj["simplify"]:
+            # Simplify: shorten text, use simpler language
+            if adj["prefix"]:
+                new_q["text"] = f"{adj['prefix']} {original_text.lower().rstrip('?.')}? {adj['suffix']}".strip()
+            else:
+                new_q["text"] = original_text
+        else:
+            if adj["prefix"]:
+                new_q["text"] = f"{adj['prefix']} the following: {original_text} {adj['suffix']}".strip()
+            else:
+                new_q["text"] = original_text
+
+        new_q["title"] = f"Question {i + 1}"
+        result.append(new_q)
+
+    return json.dumps(result, indent=2)
+
+
+def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
+                        context_keywords: List[str] = None) -> str:
+    """Generate mock rubric response with criteria and proficiency levels.
+
+    Args:
+        questions_data: List of question dicts from the quiz.
+        style_profile: Optional style profile dict with framework/standards info.
+        context_keywords: Optional topic keywords.
+
+    Returns:
+        JSON string with array of criterion objects.
+    """
+    if not context_keywords:
+        context_keywords = random.sample(SCIENCE_TOPICS, k=3)
+
+    topic = context_keywords[0] if context_keywords else "science"
+
+    # Detect question types present
+    q_types = set()
+    for q in questions_data:
+        q_types.add(q.get("type", q.get("question_type", "multiple_choice")))
+
+    criteria = [
+        {
+            "criterion": "Content Knowledge",
+            "description": f"Demonstrates understanding of key {topic} concepts",
+            "max_points": 10,
+            "levels": [
+                {"level": 1, "label": "Beginning", "description": f"Shows minimal understanding of {topic} concepts. Unable to identify basic facts."},
+                {"level": 2, "label": "Developing", "description": f"Shows partial understanding of {topic} concepts. Can identify some basic facts."},
+                {"level": 3, "label": "Proficient", "description": f"Demonstrates solid understanding of {topic} concepts. Correctly applies knowledge."},
+                {"level": 4, "label": "Advanced", "description": f"Shows deep understanding of {topic} concepts. Makes connections across topics."},
+            ],
+        },
+        {
+            "criterion": "Scientific Vocabulary",
+            "description": f"Uses appropriate scientific terminology related to {topic}",
+            "max_points": 5,
+            "levels": [
+                {"level": 1, "label": "Beginning", "description": "Rarely uses scientific terms or uses them incorrectly."},
+                {"level": 2, "label": "Developing", "description": "Sometimes uses scientific terms but with limited accuracy."},
+                {"level": 3, "label": "Proficient", "description": "Consistently uses scientific terms accurately."},
+                {"level": 4, "label": "Advanced", "description": "Uses precise scientific vocabulary and explains terms in context."},
+            ],
+        },
+        {
+            "criterion": "Critical Thinking",
+            "description": "Applies analysis and reasoning to answer questions",
+            "max_points": 10,
+            "levels": [
+                {"level": 1, "label": "Beginning", "description": "Provides answers without reasoning or evidence."},
+                {"level": 2, "label": "Developing", "description": "Shows some reasoning but conclusions may be unsupported."},
+                {"level": 3, "label": "Proficient", "description": "Applies logical reasoning with supporting evidence."},
+                {"level": 4, "label": "Advanced", "description": "Demonstrates sophisticated analysis with multiple perspectives."},
+            ],
+        },
+        {
+            "criterion": "Application of Concepts",
+            "description": f"Applies {topic} concepts to new scenarios",
+            "max_points": 10,
+            "levels": [
+                {"level": 1, "label": "Beginning", "description": "Cannot apply concepts beyond memorized examples."},
+                {"level": 2, "label": "Developing", "description": "Can apply concepts in familiar contexts only."},
+                {"level": 3, "label": "Proficient", "description": "Successfully applies concepts to new but similar scenarios."},
+                {"level": 4, "label": "Advanced", "description": "Creatively applies concepts to novel and complex scenarios."},
+            ],
+        },
+    ]
+
+    # Add a multiple-choice-specific criterion if MC questions exist
+    if "multiple_choice" in q_types or "mc" in q_types:
+        criteria.append({
+            "criterion": "Multiple Choice Analysis",
+            "description": "Ability to evaluate options and eliminate distractors",
+            "max_points": 5,
+            "levels": [
+                {"level": 1, "label": "Beginning", "description": "Selects answers randomly without analysis."},
+                {"level": 2, "label": "Developing", "description": "Can eliminate one distractor but struggles with similar options."},
+                {"level": 3, "label": "Proficient", "description": "Correctly identifies the best answer by eliminating distractors."},
+                {"level": 4, "label": "Advanced", "description": "Explains why each distractor is incorrect and defends the correct choice."},
+            ],
+        })
+
+    return json.dumps(criteria, indent=2)
 
 
 def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,

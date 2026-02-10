@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ rubric.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ rubric.title }}</h1>
+
+<div class="quiz-info">
+    <p><strong>Status:</strong> <span class="status status-{{ rubric.status }}">{{ rubric.status }}</span></p>
+    {% if quiz %}
+    <p><strong>Quiz:</strong> <a href="/quizzes/{{ quiz.id }}">{{ quiz.title }}</a></p>
+    {% endif %}
+    <p><strong>Criteria:</strong> {{ criteria|length }}</p>
+    <p><strong>Total Points:</strong> {{ total_points }}</p>
+</div>
+
+<div class="export-actions">
+    <span class="export-label">Export:</span>
+    <a href="/rubrics/{{ rubric.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
+    <a href="/rubrics/{{ rubric.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
+    <a href="/rubrics/{{ rubric.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
+</div>
+
+<div class="section-actions">
+    <button class="btn btn-sm btn-danger" id="delete-rubric-btn" data-rubric-id="{{ rubric.id }}">Delete Rubric</button>
+</div>
+
+{% if criteria %}
+<div class="rubric-table-wrapper">
+    <table class="rubric-table">
+        <thead>
+            <tr>
+                <th class="rubric-col-criterion">Criterion</th>
+                <th class="rubric-col-pts">Max Pts</th>
+                <th class="rubric-col-level">Beginning</th>
+                <th class="rubric-col-level">Developing</th>
+                <th class="rubric-col-level">Proficient</th>
+                <th class="rubric-col-level">Advanced</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in criteria %}
+            <tr>
+                <td>
+                    <strong>{{ c.criterion }}</strong>
+                    {% if c.description %}
+                    <br><span class="rubric-criterion-desc">{{ c.description }}</span>
+                    {% endif %}
+                </td>
+                <td class="rubric-pts">{{ c.max_points }}</td>
+                {% for level_label in ['Beginning', 'Developing', 'Proficient', 'Advanced'] %}
+                <td class="rubric-level-cell rubric-level-{{ loop.index }}">
+                    {% for lv in c.levels %}
+                        {% if lv.label == level_label %}
+                        {{ lv.description }}
+                        {% endif %}
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><strong>Total</strong></td>
+                <td class="rubric-pts"><strong>{{ total_points }}</strong></td>
+                <td colspan="4"></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No criteria found for this rubric.</p>
+</div>
+{% endif %}
+
+{% if quiz %}
+<p><a href="/quizzes/{{ quiz.id }}">&larr; Back to Quiz</a></p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/rubric.js') }}"></script>
+{% endblock %}

@@ -77,9 +77,15 @@ def check_if_migration_needed(db_path):
         )
         study_sets_exists = cursor.fetchone() is not None
 
+        # Check if rubrics table exists (migration 004)
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='rubrics'"
+        )
+        rubrics_exists = cursor.fetchone() is not None
+
         conn.close()
 
-        return not sort_order_exists or not study_sets_exists
+        return not sort_order_exists or not study_sets_exists or not rubrics_exists
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True

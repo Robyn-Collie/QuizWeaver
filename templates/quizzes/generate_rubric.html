@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Generate Rubric - {{ quiz.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Generate Rubric</h1>
+<p>Create a scoring rubric for <strong><a href="/quizzes/{{ quiz.id }}">{{ quiz.title }}</a></strong>.</p>
+
+{% if error is defined and error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<div class="info-box">
+    The rubric will be automatically aligned to the quiz's question types, cognitive levels, and standards.
+</div>
+
+<form method="POST" class="form" id="rubric-form">
+    <div class="form-group">
+        <label>Title (optional)</label>
+        <input type="text" name="title" placeholder="Auto-generated if left blank">
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="generate-btn">Generate Rubric</button>
+        <a href="/quizzes/{{ quiz.id }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+document.getElementById('rubric-form').addEventListener('submit', function() {
+    var btn = document.getElementById('generate-btn');
+    btn.textContent = 'Generating...';
+    btn.disabled = true;
+});
+</script>
+{% endblock %}

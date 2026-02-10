@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Variants - {{ quiz.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Variants of {{ quiz.title }}</h1>
+<p><a href="/quizzes/{{ quiz.id }}">&larr; Back to source quiz</a></p>
+
+{% if variants %}
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Reading Level</th>
+            <th>Status</th>
+            <th>Questions</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for v in variants %}
+        <tr>
+            <td><a href="/quizzes/{{ v.id }}">{{ v.title }}</a></td>
+            <td>
+                {% if v.reading_level %}
+                <span class="reading-level-badge reading-level-{{ v.reading_level }}">{{ v.reading_level|replace('_', ' ')|title }}</span>
+                {% else %}
+                N/A
+                {% endif %}
+            </td>
+            <td><span class="status status-{{ v.status }}">{{ v.status }}</span></td>
+            <td>{{ v.question_count }}</td>
+            <td>{{ v.created_at.strftime('%Y-%m-%d') if v.created_at else 'N/A' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <p>No variants have been generated yet.</p>
+    <a href="/quizzes/{{ quiz.id }}/generate-variant" class="btn btn-primary">Generate Variant</a>
+</div>
+{% endif %}
+{% endblock %}

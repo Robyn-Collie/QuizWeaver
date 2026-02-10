@@ -158,6 +158,8 @@ class Quiz(Base):
         id: Primary key.
         title: Title of the quiz.
         class_id: Foreign key to the Class this quiz is for (nullable for legacy quizzes).
+        parent_quiz_id: FK to source quiz if this is a reading-level variant.
+        reading_level: Reading level for variants (ell, below_grade, on_grade, advanced).
         status: Generation status (pending, generating, generated, failed, complete).
         style_profile: JSON object containing analyzed style from original quiz.
         created_at: Timestamp when the quiz was created.
@@ -165,11 +167,15 @@ class Quiz(Base):
         questions: Relationship to Question objects in this quiz.
         feedback: Relationship to FeedbackLog objects for this quiz.
         performance_data: Relationship to PerformanceData objects for this quiz.
+        parent_quiz: Relationship to the source quiz (for variants).
+        variants: Relationship to variant quizzes derived from this quiz.
     """
     __tablename__ = "quizzes"
     id = Column(Integer, primary_key=True)
     title = Column(String)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="SET NULL"))  # New field
+    parent_quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
+    reading_level = Column(String)  # ell, below_grade, on_grade, advanced
     status = Column(
         String, default="pending"
     )  # pending, generating, generated, failed, complete
@@ -182,6 +188,7 @@ class Quiz(Base):
     feedback = relationship("FeedbackLog", back_populates="quiz")
     performance_data = relationship("PerformanceData", back_populates="quiz")
     study_sets = relationship("StudySet", back_populates="quiz")
+    parent_quiz = relationship("Quiz", remote_side=[id], backref="variants")
 
 
 class Question(Base):
@@ -285,6 +292,59 @@ class FeedbackLog(Base):
     feedback_text = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
     quiz = relationship("Quiz", back_populates="feedback")
+
+
+class Rubric(Base):
+    """Represents a scoring rubric aligned to a quiz.
+
+    Attributes:
+        id: Primary key.
+        quiz_id: Foreign key to the Quiz this rubric is for.
+        title: Title of the rubric.
+        status: Generation status (pending, generating, generated, failed).
+        config: JSON text with generation config used.
+        created_at: Timestamp when the rubric was created.
+        quiz: Relationship to the parent Quiz object.
+        criteria: Relationship to RubricCriterion objects with cascade delete.
+    """
+    __tablename__ = "rubrics"
+    id = Column(Integer, primary_key=True)
+    quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String, nullable=False)
+    status = Column(String, default="pending")  # pending, generating, generated, failed
+    config = Column(Text)  # JSON text
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    quiz = relationship("Quiz", backref="rubrics")
+    criteria = relationship("RubricCriterion", back_populates="rubric", cascade="all, delete-orphan")
+
+
+class RubricCriterion(Base):
+    """Represents a single criterion row within a rubric.
+
+    Attributes:
+        id: Primary key.
+        rubric_id: Foreign key to the parent Rubric.
+        sort_order: Display order within the rubric.
+        criterion: What is being assessed (e.g., "Scientific Vocabulary").
+        description: Detailed description of the criterion.
+        max_points: Maximum points for this criterion.
+        levels: JSON text with proficiency level descriptors
+                (array of {level, label, description}).
+        rubric: Relationship to the parent Rubric object.
+    """
+    __tablename__ = "rubric_criteria"
+    id = Column(Integer, primary_key=True)
+    rubric_id = Column(Integer, ForeignKey("rubrics.id", ondelete="CASCADE"), nullable=False)
+    sort_order = Column(Integer, default=0)
+    criterion = Column(Text, nullable=False)  # What's being assessed
+    description = Column(Text)  # Detailed description
+    max_points = Column(Float, default=5.0)
+    levels = Column(Text)  # JSON: [{level, label, description}]
+
+    # Relationships
+    rubric = relationship("Rubric", back_populates="criteria")
 
 
 def get_engine(db_path):

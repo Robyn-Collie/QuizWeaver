@@ -14,6 +14,9 @@
 
 <div class="quiz-info">
     <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
+    {% if quiz.reading_level %}
+    <p><strong>Reading Level:</strong> <span class="reading-level-badge reading-level-{{ quiz.reading_level }}">{{ quiz.reading_level|replace('_', ' ')|title }}</span></p>
+    {% endif %}
     {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
     <p><strong>Questions:</strong> <span id="question-count">{{ questions | length }}</span></p>
     {% if style_profile and style_profile.sol_standards is defined and style_profile.sol_standards %}
@@ -30,6 +33,18 @@
     {% endif %}
 </div>
 
+{# Variant lineage #}
+{% if parent_quiz %}
+<div class="variant-lineage">
+    <strong>Source Quiz:</strong> <a href="/quizzes/{{ parent_quiz.id }}">{{ parent_quiz.title }}</a>
+</div>
+{% endif %}
+{% if variant_count and variant_count > 0 %}
+<div class="variant-lineage">
+    <strong>Variants:</strong> <a href="/quizzes/{{ quiz.id }}/variants">{{ variant_count }} variant{{ 's' if variant_count != 1 }}</a>
+</div>
+{% endif %}
+
 <div class="export-actions">
     <span class="export-label">Export:</span>
     <a href="/quizzes/{{ quiz.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
@@ -38,6 +53,24 @@
     <a href="/quizzes/{{ quiz.id }}/export/gift" class="btn btn-sm btn-outline">GIFT (Moodle)</a>
     <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
 </div>
+
+<div class="section-actions">
+    <a href="/quizzes/{{ quiz.id }}/generate-variant" class="btn btn-sm btn-secondary">Generate Variant</a>
+    <a href="/quizzes/{{ quiz.id }}/generate-rubric" class="btn btn-sm btn-secondary">Generate Rubric</a>
+</div>
+
+{# Rubrics for this quiz #}
+{% if rubrics %}
+<div class="rubric-list-section">
+    <h2>Rubrics</h2>
+    {% for r in rubrics %}
+    <div class="rubric-card">
+        <a href="/rubrics/{{ r.id }}">{{ r.title }}</a>
+        <span class="status status-{{ r.status }}">{{ r.status }}</span>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <h2>Questions</h2>
 {% for q in questions %}
