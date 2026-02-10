@@ -622,6 +622,37 @@ a:hover {
     font-weight: 500;
 }
 
+/* ===== AI Notices ===== */
+.ai-notice {
+    background: var(--accent-light);
+    border: 1px solid rgba(233, 196, 106, 0.4);
+    border-left: 4px solid var(--accent);
+    color: var(--text);
+    padding: 0.875rem 1.25rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.ai-notice strong {
+    color: var(--text);
+}
+
+.ai-notice small {
+    color: var(--text-muted);
+}
+
+.ai-notice small a {
+    color: var(--secondary);
+}
+
+.ai-notice-privacy {
+    background: var(--warning-light);
+    border-color: rgba(244, 162, 97, 0.4);
+    border-left-color: var(--warning);
+}
+
 /* ===== Status Badges ===== */
 .status {
     display: inline-block;
@@ -885,6 +916,154 @@ a:hover {
     padding: 1.25rem;
     margin-bottom: 2rem;
     box-shadow: var(--shadow-sm);
+}
+
+/* ===== Dashboard Sections ===== */
+.dashboard-classes .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.dashboard-classes .section-header h2 {
+    margin: 0;
+}
+
+/* ===== Tool Cards Grid ===== */
+.tool-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.tool-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text);
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+    color: var(--text);
+}
+
+.tool-card-icon {
+    margin-bottom: 0.5rem;
+}
+
+.tool-card h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+}
+
+.tool-card p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* ===== Activity Feed ===== */
+.activity-feed {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 800;
+    margin-top: 2px;
+}
+
+.activity-icon-lesson {
+    background: var(--accent-light);
+    color: #8a6d1f;
+    border: 1px solid var(--accent);
+}
+
+.activity-icon-quiz {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-content span {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.activity-preview {
+    color: var(--text-muted) !important;
+    font-size: 0.8rem !important;
+    font-weight: 500 !important;
+    margin-top: 0.15rem;
+}
+
+.activity-date {
+    flex-shrink: 0;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ===== Test Connection ===== */
+.test-connection-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.test-result {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.test-success {
+    color: var(--success);
+}
+
+.test-failure {
+    color: var(--danger);
 }
 
 /* ===== Cognitive Framework Styles ===== */
@@ -2309,6 +2488,10 @@ small.text-muted {
     }
 
     .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .tool-cards-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 

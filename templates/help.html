@@ -10,6 +10,7 @@
     <a href="#classes">Managing Classes</a> |
     <a href="#lessons">Logging Lessons</a> |
     <a href="#quizzes">Generating Quizzes</a> |
+    <a href="#provider-setup">Provider Setup</a> |
     <a href="#costs">Cost Tracking</a> |
     <a href="#tips">Tips &amp; Troubleshooting</a>
 </div>
@@ -78,12 +79,30 @@
         <dd>Optionally target specific standards. Enter as comma-separated values (e.g., "SOL 7.1, SOL 7.2").</dd>
 
         <dt>Mock vs Real provider</dt>
-        <dd>By default, QuizWeaver uses the MockLLMProvider which generates sample questions at zero cost. To use a real AI provider (Gemini), update the LLM provider setting in your configuration.</dd>
+        <dd>By default, QuizWeaver uses <strong>Mock mode</strong>, which is a demo/testing mode that returns pre-written placeholder content. Mock-generated quizzes are <em>not</em> customized to your lessons &mdash; they use generic sample questions so you can explore the interface at zero cost. To generate real, lesson-aligned quizzes, <a href="/settings">configure a real AI provider</a> in Settings.</dd>
 
         <dt>Quiz status</dt>
         <dd><span class="status status-generated">generated</span> = ready to review,
             <span class="status status-generating">generating</span> = in progress,
             <span class="status status-failed">failed</span> = an error occurred during generation.</dd>
+    </dl>
+</section>
+
+<section class="help-section" id="provider-setup">
+    <h2>Provider Setup</h2>
+    <p>To generate quizzes customized to your lessons, connect a real AI provider. QuizWeaver supports several options:</p>
+    <dl class="help-dl">
+        <dt>Google Gemini</dt>
+        <dd>Get a free API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Enter the key in <a href="/settings">Settings</a> and select the Gemini provider.</dd>
+
+        <dt>OpenAI</dt>
+        <dd>Get an API key from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a>. Enter the key in <a href="/settings">Settings</a> and select the OpenAI provider.</dd>
+
+        <dt>Local model (Ollama)</dt>
+        <dd>Run a local model with Ollama or any OpenAI-compatible server. Select "OpenAI Compatible" in <a href="/settings">Settings</a> and set the Base URL (e.g., <code>http://localhost:11434/v1</code>).</dd>
+
+        <dt>Test Connection</dt>
+        <dd>After entering your provider details, use the "Test Connection" button on the <a href="/settings">Settings page</a> to verify everything works before saving.</dd>
     </dl>
 </section>
 
@@ -93,8 +112,8 @@
         <dt>What it shows</dt>
         <dd>The <a href="/costs">Costs page</a> displays your API usage, total cost, and current LLM provider.</dd>
 
-        <dt>Mock provider = free</dt>
-        <dd>When using the MockLLMProvider (the default), all quiz generation is completely free. No API calls are made.</dd>
+        <dt>Mock provider = demo mode</dt>
+        <dd>When using Mock mode (the default), all quiz generation is completely free. No API calls are made. However, the content is generic placeholder text, not customized to your lessons.</dd>
 
         <dt>Real provider costs</dt>
         <dd>If using Gemini or Vertex AI, costs are tracked per request and displayed on the costs page. You will be prompted for approval before any real API call.</dd>

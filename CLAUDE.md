@@ -10,7 +10,27 @@ Originally a quiz retake generator, QuizWeaver is expanding into a comprehensive
 - Analyzes performance gaps between assumed and actual learning
 - Automates administrative burden while keeping teachers firmly in control
 - Protects student privacy through anonymization
+- **Builds AI literacy** — helps teachers understand, evaluate, and responsibly use AI
 - **Minimizes cost through mock LLM providers during development**
+
+## AI Literacy & Responsible AI Principles
+
+QuizWeaver is built on research-backed principles for responsible AI use in education. These guide every design and implementation decision:
+
+1. **Human-in-the-Loop** — Teachers review and approve all AI-generated content before it reaches students. AI assists; teachers decide. *(U.S. Dept. of Education, 2023; UNESCO, 2024)*
+2. **Glass Box, Not Black Box** — The system explains what it does and why. Teachers can see which lessons informed a quiz, what cognitive levels were targeted, and how questions were generated. No hidden algorithms. *(Khosravi et al., "Explainable AI in Education," 2022; Springer, 2024)*
+3. **Deterministic Layers** — Standards alignment, cognitive frameworks (Bloom's, DOK), and rubric criteria are rule-based, not AI-generated. AI operates within teacher-defined constraints. *(ISTE Standards, 2024)*
+4. **Verification Over Trust** — AI output is a draft, not a deliverable. The UI encourages editing, regeneration, and critical review at every step. *(Digital Promise AI Literacy Framework, 2024)*
+5. **Privacy by Design** — Student data is anonymized. Local-first architecture (SQLite) means no cloud dependency. No student PII in AI prompts. *(UNESCO AI Competency Framework, 2024)*
+6. **Cost Transparency** — Teachers see exactly what AI calls cost and can control spending. Mock mode enables full exploration at zero cost. *(Digital Promise, 2024)*
+7. **Equity & Access** — Support for multiple LLM providers (including free/local models via Ollama) ensures the tool works regardless of school budget. Reading-level variants and scaffolded content support diverse learners. *(ISTE Standards, 2024; UNESCO, 2024)*
+
+### Sources
+- UNESCO (2024). *AI Competency Framework for Teachers.* https://www.unesco.org/en/articles/ai-competency-framework-teachers
+- U.S. Department of Education (2023). *AI and the Future of Teaching and Learning.* https://www.ed.gov/sites/ed/files/documents/ai-report/ai-report.pdf
+- ISTE (2024). *ISTE Standards for Educators.* https://iste.org/standards/educators
+- Digital Promise (2024). *AI Literacy: A Framework to Understand, Evaluate, and Use Emerging Technology.* https://digitalpromise.org/2024/06/18/ai-literacy-a-framework-to-understand-evaluate-and-use-emerging-technology/
+- Khosravi, H. et al. (2022). *Explainable AI in Education.* Computers and Education: AI, 3. https://www.sciencedirect.com/science/article/pii/S2666920X22000297
 
 ## Tech Stack
 

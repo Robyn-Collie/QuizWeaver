@@ -4,6 +4,11 @@
 {% block content %}
 <h1>Log Lesson - {{ class_obj.name }}</h1>
 
+<div class="ai-notice ai-notice-privacy">
+    <strong>Privacy Notice:</strong> Lesson content you enter here may be sent to your configured AI provider when generating quizzes, study materials, or other content. <strong>Do not include student names or personally identifying information.</strong>
+    <br><small>Learn more: <a href="/help#provider-setup">Provider Setup</a></small>
+</div>
+
 <form method="POST" action="/classes/{{ class_obj.id }}/lessons/new" class="form" enctype="multipart/form-data">
     <div class="form-group">
         <label for="lesson_date">Lesson Date</label>

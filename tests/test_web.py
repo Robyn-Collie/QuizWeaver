@@ -208,18 +208,19 @@ class TestDashboard:
         # We seeded 2 lessons
         assert "2" in html
 
-    def test_dashboard_shows_quiz_count(self, client):
-        """Dashboard shows total quiz count."""
+    def test_dashboard_shows_tool_cards(self, client):
+        """Dashboard shows tool cards for key workflows."""
         response = client.get("/dashboard")
         html = response.data.decode()
-        # We seeded 1 quiz
-        assert "1" in html
+        assert "Generate Quiz" in html
+        assert "Study Materials" in html
 
-    def test_dashboard_shows_provider_status(self, client):
-        """Dashboard shows current LLM provider (mock)."""
+    def test_dashboard_shows_recent_activity(self, client):
+        """Dashboard shows recent activity section with class data."""
         response = client.get("/dashboard")
         html = response.data.decode()
-        assert "mock" in html.lower()
+        assert "Recent Activity" in html
+        assert "Legacy Class" in html
 
 
 # ============================================================
@@ -605,11 +606,11 @@ class TestDashboardCharts:
         class_names = [entry["class_name"] for entry in data["quizzes_by_class"]]
         assert "Legacy Class" in class_names
 
-    def test_dashboard_has_chart_canvas(self, client):
-        """Dashboard includes canvas elements for charts."""
+    def test_dashboard_has_tools_section(self, client):
+        """Dashboard includes Tools section with workflow links."""
         response = client.get("/dashboard")
         html = response.data.decode()
-        assert "lessonsChart" in html or "lessons-chart" in html
+        assert "Tools" in html or "Recent Activity" in html
 
 
 # ============================================================

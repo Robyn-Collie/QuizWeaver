@@ -27,7 +27,7 @@ from src.classroom import create_class, get_class, list_classes, update_class, d
 from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
 from src.cost_tracking import get_cost_summary
 from src.quiz_generator import generate_quiz
-from src.llm_provider import get_provider_info, PROVIDER_REGISTRY
+from src.llm_provider import get_provider_info, get_provider, PROVIDER_REGISTRY
 from src.web.config_utils import save_config
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
 from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
@@ -229,21 +229,55 @@ def register_routes(app):
     @app.route("/dashboard")
     @login_required
     def dashboard():
-        """Render dashboard with class, lesson, and quiz counts."""
+        """Render dashboard with classes, tools, and recent activity."""
         session = _get_session()
-        config = current_app.config["APP_CONFIG"]
         classes = list_classes(session)
         total_lessons = session.query(LessonLog).count()
-        total_quizzes = session.query(Quiz).count()
-        provider = config.get("llm", {}).get("provider", "unknown")
+
+        # Recent activity: 5 most recent lessons and quizzes
+        recent_lesson_rows = (
+            session.query(LessonLog)
+            .order_by(LessonLog.date.desc(), LessonLog.id.desc())
+            .limit(5)
+            .all()
+        )
+        recent_lessons = []
+        for l in recent_lesson_rows:
+            cls = get_class(session, l.class_id)
+            topics = json.loads(l.topics) if l.topics else []
+            recent_lessons.append({
+                "id": l.id,
+                "date": str(l.date),
+                "class_id": l.class_id,
+                "class_name": cls.name if cls else "Unknown",
+                "topics": topics,
+                "preview": (l.content or "")[:80],
+            })
+
+        recent_quiz_rows = (
+            session.query(Quiz)
+            .order_by(Quiz.id.desc())
+            .limit(5)
+            .all()
+        )
+        recent_quizzes = []
+        for q in recent_quiz_rows:
+            cls = get_class(session, q.class_id)
+            recent_quizzes.append({
+                "id": q.id,
+                "title": q.title,
+                "status": q.status,
+                "class_id": q.class_id,
+                "class_name": cls.name if cls else "Unknown",
+            })
 
         return render_template(
             "dashboard.html",
             classes=classes,
             total_classes=len(classes),
             total_lessons=total_lessons,
-            total_quizzes=total_quizzes,
-            provider=provider,
+            recent_lessons=recent_lessons,
+            recent_quizzes=recent_quizzes,
         )
 
     # --- Stats API ---
@@ -1019,6 +1053,76 @@ def register_routes(app):
             current_provider=current_provider,
             llm_config=llm_config,
         )
+
+    # --- Test Provider API ---
+
+    @app.route("/api/settings/test-provider", methods=["POST"])
+    @login_required
+    def test_provider():
+        """Test an LLM provider connection without saving settings."""
+        import time
+
+        data = request.get_json(silent=True) or {}
+        provider_name = data.get("provider", "mock").strip()
+        model_name = data.get("model_name", "").strip()
+        api_key = data.get("api_key", "").strip()
+        base_url = data.get("base_url", "").strip()
+
+        # Mock provider: instant success
+        if provider_name == "mock":
+            return jsonify({
+                "success": True,
+                "message": "Mock provider always available",
+                "latency_ms": 0,
+            })
+
+        # Build temporary config (do NOT save)
+        temp_config = {
+            "llm": {
+                "provider": provider_name,
+                "mode": "production",  # skip interactive approval
+            }
+        }
+        if model_name:
+            temp_config["llm"]["model_name"] = model_name
+        if api_key:
+            temp_config["llm"]["api_key"] = api_key
+        if base_url:
+            temp_config["llm"]["base_url"] = base_url
+
+        # Temporarily set env var for providers that need it
+        old_env = {}
+        try:
+            if provider_name in ("gemini", "gemini-3-pro") and api_key:
+                old_env["GEMINI_API_KEY"] = os.environ.get("GEMINI_API_KEY")
+                os.environ["GEMINI_API_KEY"] = api_key
+            elif provider_name == "openai" and api_key:
+                old_env["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY")
+                os.environ["OPENAI_API_KEY"] = api_key
+
+            start = time.time()
+            provider = get_provider(temp_config, web_mode=True)
+            response = provider.generate(["Say hello in one sentence."])
+            elapsed_ms = int((time.time() - start) * 1000)
+
+            return jsonify({
+                "success": True,
+                "message": f"Connected successfully ({elapsed_ms}ms)",
+                "latency_ms": elapsed_ms,
+            })
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": str(e),
+                "latency_ms": 0,
+            })
+        finally:
+            # Restore env vars
+            for key, val in old_env.items():
+                if val is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = val
 
     # --- Study Materials ---
 

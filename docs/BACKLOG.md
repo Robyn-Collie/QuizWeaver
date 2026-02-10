@@ -13,19 +13,74 @@
 
 ## LLM Provider Configuration
 
-### BL-001: LLM Provider Setup UI [P1]
-- [ ] Settings page where teachers can configure LLM providers (Gemini, Vertex AI, OpenAI-compatible)
-- [ ] API key entry with masked display
-- [ ] Connection test button ("Test Connection") that makes a minimal API call and reports success/failure
-- [ ] Provider selection dropdown with status indicators (configured, not configured, error)
+### BL-001: LLM Provider Setup UI [P1] `[~] partially done`
+- [x] Settings page where teachers can configure LLM providers (Gemini, Vertex AI, OpenAI-compatible)
+- [x] API key entry with masked display
+- [x] Connection test button ("Test Connection") that makes a minimal API call and reports success/failure
+- [x] Provider selection dropdown with status indicators (configured, not configured, error)
 - [ ] Support for multiple configured providers with a "default" selection
 - [ ] Clear error messages when configuration is wrong (invalid key, wrong endpoint, quota exceeded)
-- [ ] Should be truly LLM-agnostic — any supported provider works seamlessly
+- [x] Should be truly LLM-agnostic — any supported provider works seamlessly
 
 ### BL-002: Per-Task Provider Selection [P2]
 - [ ] When generating quizzes, study materials, variants, etc., allow teacher to pick which LLM provider to use
 - [ ] Dropdown on generation forms showing only configured/tested providers
 - [ ] Remember last-used provider per task type
+
+### BL-018: Provider Setup Wizard [P1]
+- [ ] Guided step-by-step flow for configuring a real LLM provider
+- [ ] Steps: pick provider → get API key (with links to AI Studio / OpenAI / Ollama docs) → paste key → test → done
+- [ ] Inline help explaining what each provider is, cost implications, and privacy considerations
+- [ ] Contextual AI literacy: explain what an API key is, why local models (Ollama) are more private, what "tokens" mean
+- [ ] Accessible from "Setup needed" badges on providers and from the getting-started banner
+- [ ] References: [UNESCO AI Competency Framework (2024)](https://www.unesco.org/en/articles/ai-competency-framework-teachers), [Digital Promise AI Literacy Framework (2024)](https://digitalpromise.org/2024/06/18/ai-literacy-a-framework-to-understand-evaluate-and-use-emerging-technology/)
+
+---
+
+## AI Literacy & Responsible AI
+
+### BL-019: AI Literacy Tooltips & Contextual Education [P1]
+- [ ] Add `?` help tooltips throughout the UI that teach AI concepts in context
+- [ ] Key concepts to surface where relevant:
+  - **Human-in-the-loop**: On quiz review page — "AI generated this draft. Review and edit before sharing with students."
+  - **Verification**: On generated content — "Always check AI output for accuracy. AI can make mistakes."
+  - **Glass box / transparency**: On generation forms — explain what data feeds the AI (lessons, standards, settings)
+  - **Deterministic layers**: On cognitive framework selectors — "These levels are rule-based, not AI-chosen"
+  - **Cost awareness**: On provider selection — "Real providers charge per request. Mock mode is free but uses placeholder content."
+  - **Bias awareness**: On generated content — "AI-generated content may reflect biases. Review for fairness and inclusion."
+  - **Data privacy**: On lesson logging — "Your lesson content is sent to the AI provider. No student names or PII should be included."
+- [ ] Tooltips should cite sources (e.g., "Learn more: UNESCO AI Competency Framework")
+- [ ] All tooltip text stored in a central config for easy updates and localization
+- [ ] References:
+  - [U.S. Dept. of Education (2023). AI and the Future of Teaching and Learning](https://www.ed.gov/sites/ed/files/documents/ai-report/ai-report.pdf)
+  - [UNESCO (2024). AI Competency Framework for Teachers](https://www.unesco.org/en/articles/ai-competency-framework-teachers)
+  - [Digital Promise (2024). AI Literacy Framework](https://digitalpromise.org/2024/06/18/ai-literacy-a-framework-to-understand-evaluate-and-use-emerging-technology/)
+  - [ISTE (2024). Standards for Educators](https://iste.org/standards/educators)
+
+### BL-020: Help Page — AI Literacy Section [P1]
+- [ ] Dedicated "Understanding AI in QuizWeaver" section on the help page
+- [ ] Explain in plain language:
+  - What generative AI is and how it works (inputs → model → outputs)
+  - Why human review matters (hallucinations, bias, accuracy)
+  - What "glass box" means — QuizWeaver shows its work (which lessons, which standards, which framework)
+  - How deterministic layers (Bloom's, DOK, rubric criteria) constrain AI output
+  - Privacy: what data goes to the AI, what stays local
+  - Cost: how token-based pricing works, why mock mode exists
+- [ ] Include links to authoritative sources (UNESCO, US DOE, ISTE, Digital Promise)
+- [ ] Tone: empowering, not intimidating — "You don't need to be a tech expert to use AI responsibly"
+- [ ] References:
+  - [UNESCO (2024). AI Competency Framework for Teachers](https://www.unesco.org/en/articles/ai-competency-framework-teachers)
+  - [U.S. Dept. of Education (2023). AI and the Future of Teaching and Learning](https://www.ed.gov/sites/ed/files/documents/ai-report/ai-report.pdf)
+  - [Khosravi et al. (2022). Explainable AI in Education](https://www.sciencedirect.com/science/article/pii/S2666920X22000297)
+
+### BL-021: AI Confidence & Limitation Indicators [P1] `[~] partially done`
+- [x] Show indicators on AI-generated content that communicate uncertainty
+- [x] E.g., "This quiz was generated by AI. Please review all questions for accuracy before use."
+- [x] Banner on every generated quiz, study material, variant, and rubric
+- [x] Link to help page AI literacy section
+- [x] Privacy notice on lesson logging form (data sent to AI provider, no PII)
+- [ ] Make banners dismissable per-session (localStorage)
+- [ ] References: [Springer (2024). Trust, Credibility and Transparency in Human-AI Interaction](https://link.springer.com/article/10.1007/s40593-025-00486-6)
 
 ---
 
@@ -51,11 +106,11 @@
 
 ## Help & Onboarding
 
-### BL-005: Help Page — Clarify Mock Provider [P2]
-- [ ] Current help page makes mock provider sound like it generates real quizzes for free
-- [ ] Clarify that mock mode produces test/placeholder data only — not real AI-generated content
-- [ ] Explain when and why to use mock mode (development, demos, testing the UI)
-- [ ] Guide teachers to configure a real provider for actual quiz generation
+### BL-005: Help Page — Clarify Mock Provider [P2] `[x] done (Session 7)`
+- [x] Current help page makes mock provider sound like it generates real quizzes for free
+- [x] Clarify that mock mode produces test/placeholder data only — not real AI-generated content
+- [x] Explain when and why to use mock mode (development, demos, testing the UI)
+- [x] Guide teachers to configure a real provider for actual quiz generation
 
 ---
 
@@ -104,19 +159,12 @@
 
 ## Dashboard Redesign
 
-### BL-017: Redesign Dashboard as Tool-Oriented Landing Page [P1]
-- [ ] Current dashboard is not useful — stat cards (quizzes generated, LLM provider, etc.) are largely meaningless to teachers
-- [ ] "Live LLM Provider: mock" is confusing/useless since teachers will have granular provider control (BL-001/BL-002)
-- [ ] Classes are buried at the bottom requiring scroll — should be immediately accessible
-- [ ] **New design goals:**
-  - Orient teachers to the tools available (quiz generation, study materials, variants, rubrics, analytics)
-  - Quick-access cards or tiles for each major workflow
-  - Brief overview of what QuizWeaver does (especially for first-time users)
-  - Prominent class list / class switcher near the top for fast navigation
-  - Each tool card could show relevant context (e.g., "3 quizzes" for a class, recent activity)
-- [ ] Per-class analytics overview could appear as a widget within class cards, not as the main page focus
-- [ ] Follow dashboard UX best practices: action-oriented, not stat-heavy; guide users to their next task
-- [ ] Consider: recent activity feed, "getting started" checklist for new users, contextual shortcuts
+### BL-017: Redesign Dashboard as Tool-Oriented Landing Page [P1] `[x] done (Session 7)`
+- [x] Classes at top, tool cards grid, recent activity feed
+- [x] Removed stat cards and Chart.js chart
+- [x] Action-oriented layout guiding teachers to workflows
+- [x] Getting-started banner for new users
+- [x] Empty state when no classes exist
 
 ---
 
@@ -166,3 +214,4 @@
 ### Session 4: Scaffolded Variants + Rubric Generation [DONE]
 ### Session 5: Performance Analytics + Gap Analysis [DONE]
 ### Session 6: Auth, Dark Mode, Search, Docker [DONE]
+### Session 7: Dashboard Redesign, Provider Test Connection, Help Clarification [DONE]

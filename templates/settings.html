@@ -39,6 +39,7 @@
             <input type="text" id="model_name" name="model_name"
                    value="{{ llm_config.get('model_name', '') }}"
                    placeholder="e.g., gpt-4o, gemini-2.5-flash, llama3">
+            <small class="text-muted">The model identifier your provider uses (e.g., gemini-2.5-flash, gpt-4o, llama3)</small>
         </div>
     </div>
 
@@ -50,6 +51,8 @@
                    placeholder="{% if llm_config.get('api_key') %}(key set - leave blank to keep){% else %}Enter API key{% endif %}">
             {% if llm_config.get('api_key') %}
             <small class="text-muted">API key is configured. Leave blank to keep current key.</small>
+            {% else %}
+            <small class="text-muted">Your API key is stored locally and never shared</small>
             {% endif %}
         </div>
     </div>
@@ -60,7 +63,13 @@
             <input type="url" id="base_url" name="base_url"
                    value="{{ llm_config.get('base_url', '') }}"
                    placeholder="e.g., http://localhost:11434/v1">
+            <small class="text-muted">The API endpoint for your local or custom model server</small>
         </div>
+    </div>
+
+    <div class="test-connection-section">
+        <button type="button" class="btn btn-secondary" id="testConnectionBtn" onclick="testProviderConnection()">Test Connection</button>
+        <span id="testResult" class="test-result"></span>
     </div>
 
     <div class="form-actions">
@@ -82,7 +91,10 @@ function toggleProviderFields() {
     // Show fields based on provider
     if (val === 'mock') {
         // No extra fields needed
-    } else if (val === 'gemini' || val === 'gemini-3-pro' || val === 'vertex') {
+    } else if (val === 'gemini' || val === 'gemini-3-pro') {
+        document.getElementById('fields-model').style.display = 'block';
+        document.getElementById('fields-apikey').style.display = 'block';
+    } else if (val === 'vertex') {
         document.getElementById('fields-model').style.display = 'block';
     } else if (val === 'openai') {
         document.getElementById('fields-model').style.display = 'block';
@@ -98,6 +110,49 @@ function toggleProviderFields() {
         card.classList.remove('selected');
     });
     selected.closest('.provider-card').classList.add('selected');
+}
+
+function testProviderConnection() {
+    var btn = document.getElementById('testConnectionBtn');
+    var result = document.getElementById('testResult');
+    var selected = document.querySelector('input[name="provider"]:checked');
+    if (!selected) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Testing...';
+    result.textContent = '';
+    result.className = 'test-result';
+
+    var payload = {
+        provider: selected.value,
+        model_name: document.getElementById('model_name').value,
+        api_key: document.getElementById('api_key').value,
+        base_url: document.getElementById('base_url').value
+    };
+
+    fetch('/api/settings/test-provider', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            result.textContent = '[OK] ' + data.message;
+            result.className = 'test-result test-success';
+        } else {
+            result.textContent = '[FAIL] ' + data.message;
+            result.className = 'test-result test-failure';
+        }
+    })
+    .catch(function(err) {
+        result.textContent = '[FAIL] ' + err.message;
+        result.className = 'test-result test-failure';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.textContent = 'Test Connection';
+    });
 }
 
 // Run on page load to show correct fields

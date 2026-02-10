@@ -26,99 +26,110 @@ function dismissGettingStarted() {
 }
 </script>
 
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--secondary)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="stat-value">{{ total_classes }}</div>
-        <div class="stat-label">Classes</div>
+<div class="dashboard-classes">
+    <div class="section-header">
+        <h2>Your Classes</h2>
+        <a href="/classes/new" class="btn btn-primary btn-sm">New Class</a>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    {% if classes %}
+    <div class="class-list">
+        {% for cls in classes %}
+        <div class="class-card">
+            <h3><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></h3>
+            <p>
+                {% if cls.grade_level %}Grade: {{ cls.grade_level }}{% endif %}
+                {% if cls.subject %} | {{ cls.subject }}{% endif %}
+            </p>
+            <div class="class-stats">
+                <span>{{ cls.lesson_count }} lessons</span>
+                <span>{{ cls.quiz_count }} quizzes</span>
+            </div>
         </div>
-        <div class="stat-value">{{ total_lessons }}</div>
-        <div class="stat-label">Lessons Logged</div>
+        {% endfor %}
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <div class="stat-value">{{ total_quizzes }}</div>
-        <div class="stat-label">Quizzes Generated</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success)"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        </div>
-        <div class="stat-value">{{ provider }}</div>
-        <div class="stat-label">LLM Provider</div>
-    </div>
+    {% else %}
+    <p>No classes yet. <a href="/classes/new">Create your first class</a>.</p>
+    {% endif %}
 </div>
 
-<h2>Activity</h2>
-<div class="chart-container">
-    <canvas id="lessonsChart" width="400" height="200"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<script>
-fetch('/api/stats')
-    .then(r => r.json())
-    .then(data => {
-        const ctx = document.getElementById('lessonsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: data.lessons_by_date.map(d => d.date),
-                datasets: [{
-                    label: 'Lessons',
-                    data: data.lessons_by_date.map(d => d.count),
-                    backgroundColor: getCSSVar('--primary'),
-                    borderRadius: 6,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: false },
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, color: getCSSVar('--text-muted') },
-                        grid: { color: getCSSVar('--border-light') }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: getCSSVar('--text-muted') }
-                    }
-                }
-            }
-        });
-    });
-</script>
-
-<h2>Your Classes</h2>
 {% if classes %}
-<div class="class-list">
-    {% for cls in classes %}
-    <div class="class-card">
-        <h3><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></h3>
-        <p>
-            {% if cls.grade_level %}Grade: {{ cls.grade_level }}{% endif %}
-            {% if cls.subject %} | {{ cls.subject }}{% endif %}
-        </p>
-        <div class="class-stats">
-            <span>{{ cls.lesson_count }} lessons</span>
-            <span>{{ cls.quiz_count }} quizzes</span>
-        </div>
+<div class="dashboard-tools">
+    <h2>Tools</h2>
+    <div class="tool-cards-grid">
+        <a href="/classes/{{ classes[0].id }}/generate" class="tool-card">
+            <div class="tool-card-icon" style="color: var(--primary)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            </div>
+            <h3>Generate Quiz</h3>
+            <p>Create AI-powered assessments from your lessons</p>
+        </a>
+        <a href="/study/generate" class="tool-card">
+            <div class="tool-card-icon" style="color: var(--secondary)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            </div>
+            <h3>Study Materials</h3>
+            <p>Flashcards, study guides, and review sheets</p>
+        </a>
+        <a href="/quizzes" class="tool-card">
+            <div class="tool-card-icon" style="color: #7c3aed">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <h3>Variants &amp; Rubrics</h3>
+            <p>Scaffolded versions and scoring rubrics</p>
+        </a>
+        <a href="/classes/{{ classes[0].id }}/analytics" class="tool-card">
+            <div class="tool-card-icon" style="color: var(--success)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            </div>
+            <h3>Analytics</h3>
+            <p>Performance gaps and re-teach suggestions</p>
+        </a>
+        <a href="/classes/{{ classes[0].id }}/lessons/new" class="tool-card">
+            <div class="tool-card-icon" style="color: var(--accent)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <h3>Log a Lesson</h3>
+            <p>Record what you taught today</p>
+        </a>
+        <a href="/settings" class="tool-card">
+            <div class="tool-card-icon" style="color: var(--text-muted)">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <h3>Settings</h3>
+            <p>Configure LLM provider and preferences</p>
+        </a>
     </div>
-    {% endfor %}
 </div>
-{% else %}
-<p>No classes yet. <a href="/classes/new">Create your first class</a>.</p>
+{% endif %}
+
+{% if recent_lessons or recent_quizzes %}
+<div class="dashboard-activity">
+    <h2>Recent Activity</h2>
+    <div class="activity-feed">
+        {% for lesson in recent_lessons %}
+        <div class="activity-item">
+            <span class="activity-icon activity-icon-lesson">L</span>
+            <div class="activity-content">
+                <span>Lesson logged for <a href="/classes/{{ lesson.class_id }}">{{ lesson.class_name }}</a></span>
+                {% if lesson.topics %}
+                <span class="activity-preview">{{ lesson.topics | join(', ') }}</span>
+                {% elif lesson.preview %}
+                <span class="activity-preview">{{ lesson.preview }}</span>
+                {% endif %}
+            </div>
+            <span class="activity-date">{{ lesson.date }}</span>
+        </div>
+        {% endfor %}
+        {% for quiz in recent_quizzes %}
+        <div class="activity-item">
+            <span class="activity-icon activity-icon-quiz">Q</span>
+            <div class="activity-content">
+                <span><a href="/quizzes/{{ quiz.id }}">{{ quiz.title }}</a> for <a href="/classes/{{ quiz.class_id }}">{{ quiz.class_name }}</a></span>
+                <span class="activity-preview">Status: {{ quiz.status }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endif %}
 {% endblock %}
