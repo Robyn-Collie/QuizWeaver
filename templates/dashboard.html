@@ -75,7 +75,7 @@ fetch('/api/stats')
                 datasets: [{
                     label: 'Lessons',
                     data: data.lessons_by_date.map(d => d.count),
-                    backgroundColor: '#e76f51',
+                    backgroundColor: getCSSVar('--primary'),
                     borderRadius: 6,
                     borderSkipped: false,
                 }]
@@ -88,11 +88,12 @@ fetch('/api/stats')
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { stepSize: 1 },
-                        grid: { color: '#f0ebe4' }
+                        ticks: { stepSize: 1, color: getCSSVar('--text-muted') },
+                        grid: { color: getCSSVar('--border-light') }
                     },
                     x: {
-                        grid: { display: false }
+                        grid: { display: false },
+                        ticks: { color: getCSSVar('--text-muted') }
                     }
                 }
             }

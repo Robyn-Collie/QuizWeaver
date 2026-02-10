@@ -6,6 +6,27 @@
     <h1>Quizzes{% if class_obj is defined and class_obj %} - {{ class_obj.name }}{% endif %}</h1>
 </div>
 
+{% if class_obj is not defined or not class_obj %}
+<div class="filter-bar">
+    <form method="GET" action="/quizzes" class="filter-form">
+        <input type="text" name="q" value="{{ search_q|default('') }}" placeholder="Search quizzes..." class="filter-search">
+        <select name="status" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Statuses</option>
+            <option value="generated" {% if status_filter == 'generated' %}selected{% endif %}>Generated</option>
+            <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+        </select>
+        <select name="class_id" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Classes</option>
+            {% for cls in all_classes|default([]) %}
+            <option value="{{ cls.id }}" {% if class_id_filter == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline">Search</button>
+    </form>
+</div>
+{% endif %}
+
 {% if quizzes %}
 <table class="data-table">
     <thead>
@@ -31,7 +52,24 @@
         {% endfor %}
     </tbody>
 </table>
+
+{% if total_pages is defined and total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}&q={{ search_q|default('') }}&status={{ status_filter|default('') }}&class_id={{ class_id_filter|default('') }}">&larr; Prev</a>
+    {% else %}
+    <span class="disabled">&larr; Prev</span>
+    {% endif %}
+    <span class="pagination-info">Page {{ page }} of {{ total_pages }} ({{ total }} quizzes)</span>
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}&q={{ search_q|default('') }}&status={{ status_filter|default('') }}&class_id={{ class_id_filter|default('') }}">Next &rarr;</a>
+    {% else %}
+    <span class="disabled">Next &rarr;</span>
+    {% endif %}
+</div>
+{% endif %}
+
 {% else %}
-<p>No quizzes generated yet.</p>
+<p>No quizzes found.</p>
 {% endif %}
 {% endblock %}

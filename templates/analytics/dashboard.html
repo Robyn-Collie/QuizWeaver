@@ -182,15 +182,15 @@ fetch('/api/classes/{{ class_obj.id }}/analytics')
                         {
                             label: 'Expected %',
                             data: expected,
-                            backgroundColor: 'rgba(42, 157, 143, 0.3)',
-                            borderColor: 'rgba(42, 157, 143, 1)',
+                            backgroundColor: getCSSVar('--secondary') + '4d',
+                            borderColor: getCSSVar('--secondary'),
                             borderWidth: 2,
                         },
                         {
                             label: 'Actual %',
                             data: actual,
-                            backgroundColor: 'rgba(231, 111, 81, 0.3)',
-                            borderColor: 'rgba(231, 111, 81, 1)',
+                            backgroundColor: getCSSVar('--primary') + '4d',
+                            borderColor: getCSSVar('--primary'),
                             borderWidth: 2,
                         }
                     ]
@@ -198,9 +198,10 @@ fetch('/api/classes/{{ class_obj.id }}/analytics')
                 options: {
                     responsive: true,
                     scales: {
-                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %' } }
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %', color: getCSSVar('--text-muted') }, ticks: { color: getCSSVar('--text-muted') }, grid: { color: getCSSVar('--border-light') } },
+                        x: { ticks: { color: getCSSVar('--text-muted') }, grid: { color: getCSSVar('--border-light') } }
                     },
-                    plugins: { legend: { position: 'top' } }
+                    plugins: { legend: { position: 'top', labels: { color: getCSSVar('--text') } } }
                 }
             });
         }
@@ -217,7 +218,7 @@ fetch('/api/classes/{{ class_obj.id }}/analytics/trends')
                 topicMap[t.topic].push({x: t.date, y: (t.avg_score * 100).toFixed(0)});
             });
 
-            const colors = ['#e76f51','#2a9d8f','#e9c46a','#264653','#52b788','#7c4dff','#e63946'];
+            const colors = [getCSSVar('--primary'),getCSSVar('--secondary'),getCSSVar('--accent'),getCSSVar('--text'),getCSSVar('--success'),'#7c4dff',getCSSVar('--danger')];
             const datasets = Object.keys(topicMap).map((topic, i) => ({
                 label: topic,
                 data: topicMap[topic],
@@ -233,10 +234,10 @@ fetch('/api/classes/{{ class_obj.id }}/analytics/trends')
                 options: {
                     responsive: true,
                     scales: {
-                        x: { type: 'category', title: { display: true, text: 'Date' } },
-                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %' } }
+                        x: { type: 'category', title: { display: true, text: 'Date', color: getCSSVar('--text-muted') }, ticks: { color: getCSSVar('--text-muted') }, grid: { color: getCSSVar('--border-light') } },
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %', color: getCSSVar('--text-muted') }, ticks: { color: getCSSVar('--text-muted') }, grid: { color: getCSSVar('--border-light') } }
                     },
-                    plugins: { legend: { position: 'top' } }
+                    plugins: { legend: { position: 'top', labels: { color: getCSSVar('--text') } } }
                 }
             });
         }

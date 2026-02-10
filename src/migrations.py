@@ -95,9 +95,15 @@ def check_if_migration_needed(db_path):
             perf_columns = [row[1] for row in cursor.fetchall()]
             perf_source_exists = "source" in perf_columns
 
+        # Check if users table exists (migration 006)
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
+        )
+        users_exists = cursor.fetchone() is not None
+
         conn.close()
 
-        return not sort_order_exists or not study_sets_exists or not rubrics_exists or not perf_source_exists
+        return not sort_order_exists or not study_sets_exists or not rubrics_exists or not perf_source_exists or not users_exists
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True

@@ -323,6 +323,26 @@ class Rubric(Base):
     criteria = relationship("RubricCriterion", back_populates="rubric", cascade="all, delete-orphan")
 
 
+class User(Base):
+    """Represents an authenticated user (teacher or admin).
+
+    Attributes:
+        id: Primary key.
+        username: Unique login name.
+        password_hash: Werkzeug-generated password hash.
+        display_name: Friendly name shown in the UI.
+        role: User role (default "teacher", or "admin").
+        created_at: Timestamp when the user was created.
+    """
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    display_name = Column(String)
+    role = Column(String, default="teacher")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class RubricCriterion(Base):
     """Represents a single criterion row within a rubric.
 

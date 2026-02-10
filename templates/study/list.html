@@ -7,21 +7,23 @@
     <a href="/study/generate" class="btn btn-primary">+ Generate</a>
 </div>
 
-<div class="section-actions" style="margin-top:0">
-    <form method="GET" action="/study" style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
-        <select name="class_id" onchange="this.form.submit()" class="btn btn-outline" style="padding:0.35rem 0.75rem;">
+<div class="filter-bar">
+    <form method="GET" action="/study" class="filter-form">
+        <input type="text" name="q" value="{{ search_q|default('') }}" placeholder="Search study materials..." class="filter-search">
+        <select name="class_id" class="filter-select" onchange="this.form.submit()">
             <option value="">All Classes</option>
             {% for cls in classes %}
             <option value="{{ cls.id }}" {% if current_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
             {% endfor %}
         </select>
-        <select name="type" onchange="this.form.submit()" class="btn btn-outline" style="padding:0.35rem 0.75rem;">
+        <select name="type" class="filter-select" onchange="this.form.submit()">
             <option value="">All Types</option>
             <option value="flashcard" {% if current_type == 'flashcard' %}selected{% endif %}>Flashcards</option>
             <option value="study_guide" {% if current_type == 'study_guide' %}selected{% endif %}>Study Guide</option>
             <option value="vocabulary" {% if current_type == 'vocabulary' %}selected{% endif %}>Vocabulary</option>
             <option value="review_sheet" {% if current_type == 'review_sheet' %}selected{% endif %}>Review Sheet</option>
         </select>
+        <button type="submit" class="btn btn-sm btn-outline">Search</button>
     </form>
 </div>
 

@@ -621,13 +621,13 @@ class TestAuthentication:
     """Test basic authentication for the web UI."""
 
     def test_login_page_returns_200(self, anon_client):
-        """Login page loads."""
-        response = anon_client.get("/login")
+        """Login page loads (redirects to setup when no DB users)."""
+        response = anon_client.get("/login", follow_redirects=True)
         assert response.status_code == 200
 
     def test_login_page_has_form(self, anon_client):
-        """Login page has username and password fields."""
-        response = anon_client.get("/login")
+        """Login/setup page has username and password fields."""
+        response = anon_client.get("/login", follow_redirects=True)
         html = response.data.decode()
         assert 'name="username"' in html
         assert 'name="password"' in html

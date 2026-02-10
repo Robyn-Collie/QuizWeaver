@@ -46,6 +46,7 @@
 {% endif %}
 
 <div class="export-actions">
+    <button class="btn-print" onclick="window.print()">Print</button>
     <span class="export-label">Export:</span>
     <a href="/quizzes/{{ quiz.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
     <a href="/quizzes/{{ quiz.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>

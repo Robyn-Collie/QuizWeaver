@@ -53,9 +53,16 @@ from src.performance_analytics import (
     get_standards_mastery,
 )
 from src.reteach_generator import generate_reteach_suggestions
+from src.web.auth import (
+    create_user,
+    authenticate_user,
+    change_password,
+    get_user_count,
+    get_user_by_id,
+)
 
 
-# Default credentials for Phase 1.5 basic auth
+# Default credentials for backward-compatible config-based auth
 DEFAULT_USERNAME = "teacher"
 DEFAULT_PASSWORD = "quizweaver"
 
@@ -74,6 +81,12 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if not flask_session.get("logged_in"):
             return redirect(url_for("login", next=request.url), code=303)
+        # Populate g.current_user for templates
+        g.current_user = {
+            "id": flask_session.get("user_id"),
+            "username": flask_session.get("username"),
+            "display_name": flask_session.get("display_name"),
+        }
         return f(*args, **kwargs)
     return decorated_function
 
@@ -86,21 +99,44 @@ def register_routes(app):
     @app.route("/login", methods=["GET", "POST"])
     def login():
         """Handle user login via form POST or render login page on GET."""
+        # Redirect to setup if no users exist yet
+        session = _get_session()
+        user_count = get_user_count(session)
+        if user_count > 0 and request.method == "GET":
+            pass  # Normal login page
+        elif user_count == 0 and request.method == "GET":
+            return redirect(url_for("setup"), code=303)
+
         if request.method == "POST":
             username = request.form.get("username", "")
             password = request.form.get("password", "")
 
-            config = current_app.config["APP_CONFIG"]
-            valid_user = config.get("auth", {}).get("username", DEFAULT_USERNAME)
-            valid_pass = config.get("auth", {}).get("password", DEFAULT_PASSWORD)
-
-            if username == valid_user and password == valid_pass:
-                flask_session["logged_in"] = True
-                flask_session["username"] = username
-                next_url = request.args.get("next", url_for("dashboard"))
-                return redirect(next_url, code=303)
+            # Try DB-based auth first (if users exist)
+            if user_count > 0:
+                user = authenticate_user(session, username, password)
+                if user:
+                    flask_session["logged_in"] = True
+                    flask_session["user_id"] = user.id
+                    flask_session["username"] = user.username
+                    flask_session["display_name"] = user.display_name
+                    next_url = request.args.get("next", url_for("dashboard"))
+                    return redirect(next_url, code=303)
+                else:
+                    return render_template("login.html", error="Invalid username or password."), 401
             else:
-                return render_template("login.html", error="Invalid username or password."), 401
+                # Backward compatible: config-based credentials when no DB users
+                config = current_app.config["APP_CONFIG"]
+                valid_user = config.get("auth", {}).get("username", DEFAULT_USERNAME)
+                valid_pass = config.get("auth", {}).get("password", DEFAULT_PASSWORD)
+
+                if username == valid_user and password == valid_pass:
+                    flask_session["logged_in"] = True
+                    flask_session["username"] = username
+                    flask_session["display_name"] = username
+                    next_url = request.args.get("next", url_for("dashboard"))
+                    return redirect(next_url, code=303)
+                else:
+                    return render_template("login.html", error="Invalid username or password."), 401
 
         return render_template("login.html")
 
@@ -109,6 +145,78 @@ def register_routes(app):
         """Clear session and redirect to login page."""
         flask_session.clear()
         return redirect(url_for("login"), code=303)
+
+    # --- First-time Setup ---
+
+    @app.route("/setup", methods=["GET", "POST"])
+    def setup():
+        """First-time admin registration (only when no users in DB)."""
+        session = _get_session()
+        if get_user_count(session) > 0:
+            return redirect(url_for("login"), code=303)
+
+        if request.method == "POST":
+            username = request.form.get("username", "").strip()
+            password = request.form.get("password", "")
+            confirm = request.form.get("confirm_password", "")
+            display_name = request.form.get("display_name", "").strip() or None
+
+            if not username:
+                return render_template("setup.html", error="Username is required."), 400
+            if len(password) < 6:
+                return render_template("setup.html", error="Password must be at least 6 characters."), 400
+            if password != confirm:
+                return render_template("setup.html", error="Passwords do not match."), 400
+
+            user = create_user(session, username, password, display_name=display_name, role="admin")
+            if not user:
+                return render_template("setup.html", error="Could not create user."), 400
+
+            flask_session["logged_in"] = True
+            flask_session["user_id"] = user.id
+            flask_session["username"] = user.username
+            flask_session["display_name"] = user.display_name
+            flash("Account created successfully. Welcome to QuizWeaver!", "success")
+            return redirect(url_for("dashboard"), code=303)
+
+        return render_template("setup.html")
+
+    # --- Password Change ---
+
+    @app.route("/settings/password", methods=["GET", "POST"])
+    @login_required
+    def settings_password():
+        """Change password form."""
+        if request.method == "POST":
+            current_pw = request.form.get("current_password", "")
+            new_pw = request.form.get("new_password", "")
+            confirm_pw = request.form.get("confirm_password", "")
+
+            user_id = flask_session.get("user_id")
+            if not user_id:
+                flash("Password change is only available for database-authenticated users.", "error")
+                return redirect(url_for("settings"), code=303)
+
+            if len(new_pw) < 6:
+                return render_template("settings/password.html", error="New password must be at least 6 characters.")
+            if new_pw != confirm_pw:
+                return render_template("settings/password.html", error="New passwords do not match.")
+
+            session = _get_session()
+            if change_password(session, user_id, current_pw, new_pw):
+                flash("Password changed successfully.", "success")
+                return redirect(url_for("settings"), code=303)
+            else:
+                return render_template("settings/password.html", error="Current password is incorrect.")
+
+        return render_template("settings/password.html")
+
+    # --- Health Check (no auth) ---
+
+    @app.route("/health")
+    def health():
+        """Health check endpoint for monitoring and Docker."""
+        return jsonify({"status": "ok", "service": "quizweaver"})
 
     # --- Main Routes (protected) ---
 
@@ -366,19 +474,31 @@ def register_routes(app):
     @app.route("/quizzes")
     @login_required
     def quizzes_list():
-        """List all quizzes with class names and question counts."""
+        """List all quizzes with class names, question counts, search, and pagination."""
         session = _get_session()
         query = session.query(Quiz)
 
         # Apply optional filters
+        search_q = request.args.get("q", "").strip()
         status_filter = request.args.get("status")
         class_id_filter = request.args.get("class_id", type=int)
+
+        if search_q:
+            query = query.filter(Quiz.title.ilike(f"%{search_q}%"))
         if status_filter:
             query = query.filter(Quiz.status == status_filter)
         if class_id_filter:
             query = query.filter(Quiz.class_id == class_id_filter)
 
-        quizzes = query.order_by(Quiz.created_at.desc()).all()
+        # Pagination
+        page = max(1, request.args.get("page", 1, type=int))
+        per_page = 20
+        total = query.count()
+        total_pages = max(1, (total + per_page - 1) // per_page)
+        if page > total_pages:
+            page = total_pages
+
+        quizzes = query.order_by(Quiz.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
         quiz_data = []
         for q in quizzes:
             class_obj = get_class(session, q.class_id) if q.class_id else None
@@ -391,7 +511,20 @@ def register_routes(app):
                 "question_count": question_count,
                 "created_at": q.created_at,
             })
-        return render_template("quizzes/list.html", quizzes=quiz_data)
+
+        all_classes = list_classes(session)
+
+        return render_template(
+            "quizzes/list.html",
+            quizzes=quiz_data,
+            all_classes=all_classes,
+            search_q=search_q,
+            status_filter=status_filter,
+            class_id_filter=class_id_filter,
+            page=page,
+            total_pages=total_pages,
+            total=total,
+        )
 
     @app.route("/quizzes/<int:quiz_id>")
     @login_required
@@ -892,16 +1025,19 @@ def register_routes(app):
     @app.route("/study")
     @login_required
     def study_list():
-        """List study sets, optionally filtered by class or material type."""
+        """List study sets, optionally filtered by class, type, or search."""
         session = _get_session()
         query = session.query(StudySet)
 
         class_id_filter = request.args.get("class_id", type=int)
         type_filter = request.args.get("type")
+        search_q = request.args.get("q", "").strip()
         if class_id_filter:
             query = query.filter(StudySet.class_id == class_id_filter)
         if type_filter:
             query = query.filter(StudySet.material_type == type_filter)
+        if search_q:
+            query = query.filter(StudySet.title.ilike(f"%{search_q}%"))
 
         study_sets = query.order_by(StudySet.created_at.desc()).all()
 
@@ -926,6 +1062,7 @@ def register_routes(app):
             classes=classes,
             current_class_id=class_id_filter,
             current_type=type_filter,
+            search_q=search_q,
         )
 
     @app.route("/study/generate", methods=["GET", "POST"])

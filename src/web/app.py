@@ -6,6 +6,7 @@ import os
 from flask import Flask, g, send_from_directory
 
 from src.database import get_engine, init_db, get_session
+from src.migrations import run_migrations
 from src.web.routes import register_routes
 
 
@@ -38,8 +39,18 @@ def create_app(config=None):
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
     app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB upload limit
 
+    # Environment variable overrides
+    if os.environ.get("DATABASE_PATH"):
+        config.setdefault("paths", {})["database_file"] = os.environ["DATABASE_PATH"]
+    if os.environ.get("LLM_PROVIDER"):
+        config.setdefault("llm", {})["provider"] = os.environ["LLM_PROVIDER"]
+
     # Create a single engine for the app lifetime
     db_path = config["paths"]["database_file"]
+
+    # Run migrations before ORM init
+    run_migrations(db_path, verbose=False)
+
     engine = get_engine(db_path)
     init_db(engine)
     app.config["DB_ENGINE"] = engine
@@ -50,6 +61,11 @@ def create_app(config=None):
         session = g.pop("db_session", None)
         if session is not None:
             session.close()
+
+    @app.context_processor
+    def inject_user():
+        """Make current_user available in all templates."""
+        return {"current_user": getattr(g, "current_user", None)}
 
     register_routes(app)
 

@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  quizweaver:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - qw-data:/app/data
+      - qw-images:/app/generated_images
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - DATABASE_PATH=/app/data/quiz_warehouse.db
+      - LLM_PROVIDER=${LLM_PROVIDER:-mock}
+    restart: unless-stopped
+
+volumes:
+  qw-data:
+  qw-images:

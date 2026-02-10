@@ -10,3 +10,4 @@ pytest
 pyyaml
 flask
 openai
+gunicorn
