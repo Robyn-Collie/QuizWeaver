@@ -143,6 +143,9 @@ class PerformanceData(Base):
     topic = Column(String, nullable=False)
     avg_score = Column(Float)  # 0.0 to 1.0
     weak_areas = Column(JSON)  # Array of specific weak points
+    standard = Column(String)  # e.g., "SOL 7.1"
+    source = Column(String, default="manual_entry")  # csv_upload, manual_entry, quiz_score
+    sample_size = Column(Integer, default=0)  # number of students
     date = Column(Date, default=date.today, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Re-teach Suggestions - {{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Re-teach Suggestions</h1>
+    <a href="/classes/{{ class_obj.id }}/analytics" class="btn btn-secondary">Back to Analytics</a>
+</div>
+
+{% if gap_summary %}
+<div class="info-box">
+    <strong>Gap Summary:</strong>
+    {{ gap_summary.total_topics_assessed }} topics assessed,
+    {{ gap_summary.topics_at_risk }} at risk,
+    overall average {{ "%.0f"|format(gap_summary.overall_avg_score * 100) }}%.
+    {% if gap_summary.weakest_topic %}
+    Weakest: <strong>{{ gap_summary.weakest_topic }}</strong>.
+    {% endif %}
+</div>
+{% endif %}
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" class="form" style="margin-bottom: 2rem;">
+    <div class="form-group">
+        <label for="focus_topics">Focus Topics (optional, comma-separated)</label>
+        <input type="text" id="focus_topics" name="focus_topics"
+               placeholder="e.g., photosynthesis, cell division"
+               value="{{ request.form.get('focus_topics', '') }}">
+        <small class="text-muted">Leave blank to auto-detect from gap analysis.</small>
+    </div>
+
+    <div class="form-group">
+        <label for="max_suggestions">Maximum Suggestions</label>
+        <input type="number" id="max_suggestions" name="max_suggestions"
+               min="1" max="10" value="{{ request.form.get('max_suggestions', '5') }}">
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Generate Suggestions</button>
+    </div>
+</form>
+
+{% if suggestions %}
+<h2>Suggestions ({{ suggestions | length }})</h2>
+{% for s in suggestions %}
+<div class="suggestion-card">
+    <div class="suggestion-header">
+        <h3>{{ s.topic }}</h3>
+        <div class="suggestion-meta">
+            <span class="severity-badge severity-{{ s.gap_severity }}">{{ s.gap_severity }}</span>
+            <span class="severity-badge severity-priority-{{ s.priority }}">{{ s.priority }} priority</span>
+            <span>{{ "%.0f"|format(s.current_score * 100) }}% &rarr; {{ "%.0f"|format(s.target_score * 100) }}% target</span>
+        </div>
+    </div>
+
+    <div class="suggestion-body">
+        <h4>Lesson Plan</h4>
+        <p>{{ s.lesson_plan }}</p>
+
+        <h4>Activities</h4>
+        <ul>
+            {% for activity in s.activities %}
+            <li>{{ activity }}</li>
+            {% endfor %}
+        </ul>
+
+        <div class="suggestion-footer">
+            <div>
+                <strong>Duration:</strong> {{ s.estimated_duration }}
+            </div>
+            <div>
+                <strong>Resources:</strong>
+                <ul>
+                    {% for r in s.resources %}
+                    <li>{{ r }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <strong>Assessment:</strong> {{ s.assessment_suggestion }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% elif suggestions is not none and suggestions | length == 0 %}
+<div class="empty-state">
+    <p>No re-teach suggestions needed! All topics are performing at or above expectations.</p>
+</div>
+{% endif %}
+{% endblock %}

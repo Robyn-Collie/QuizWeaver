@@ -14,6 +14,7 @@
     <a href="/classes/{{ class_obj.id }}/lessons/new" class="btn btn-primary">Log Lesson</a>
     <a href="/classes/{{ class_obj.id }}/quizzes" class="btn btn-secondary">View Quizzes</a>
     <a href="/classes/{{ class_obj.id }}/generate" class="btn btn-primary">Generate Quiz</a>
+    <a href="/classes/{{ class_obj.id }}/analytics" class="btn btn-primary">Performance Analytics</a>
     <a href="/classes/{{ class_obj.id }}/edit" class="btn btn-secondary">Edit Class</a>
     <form method="POST" action="/classes/{{ class_obj.id }}/delete" class="inline-form" onsubmit="return confirm('Delete this class? This cannot be undone.')">
         <button type="submit" class="btn btn-danger">Delete Class</button>

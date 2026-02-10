@@ -83,9 +83,21 @@ def check_if_migration_needed(db_path):
         )
         rubrics_exists = cursor.fetchone() is not None
 
+        # Check if source column exists on performance_data (migration 005)
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='performance_data'"
+        )
+        perf_exists = cursor.fetchone() is not None
+
+        perf_source_exists = True
+        if perf_exists:
+            cursor.execute("PRAGMA table_info(performance_data)")
+            perf_columns = [row[1] for row in cursor.fetchall()]
+            perf_source_exists = "source" in perf_columns
+
         conn.close()
 
-        return not sort_order_exists or not study_sets_exists or not rubrics_exists
+        return not sort_order_exists or not study_sets_exists or not rubrics_exists or not perf_source_exists
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True

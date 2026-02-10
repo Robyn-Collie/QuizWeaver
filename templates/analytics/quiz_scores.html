@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Quiz Score Entry - {{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Enter Quiz Scores</h1>
+    <a href="/classes/{{ class_obj.id }}/analytics" class="btn btn-secondary">Back to Analytics</a>
+</div>
+
+<p class="info-box">
+    Enter per-question class averages for <strong>{{ class_obj.name }}</strong>.
+    Select a quiz, then enter the class average (0-100) for each question.
+</p>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" class="form" id="quiz-score-form">
+    <div class="form-group">
+        <label for="quiz_id">Select Quiz</label>
+        <select id="quiz_id" name="quiz_id" required onchange="loadQuestions()">
+            <option value="">— Select a quiz —</option>
+            {% for q in quizzes %}
+            <option value="{{ q.id }}">{{ q.title or "Quiz #" ~ q.id }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="sample_size">Number of Students</label>
+        <input type="number" id="sample_size" name="sample_size" min="0" value="0">
+    </div>
+
+    <div class="form-group">
+        <label for="date">Assessment Date</label>
+        <input type="date" id="date" name="date" value="{{ today }}">
+    </div>
+
+    <div id="questions-container" style="display:none;">
+        <h2>Question Scores</h2>
+        <div id="questions-list"></div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="submit-btn" disabled>Save Quiz Scores</button>
+        <a href="/classes/{{ class_obj.id }}/analytics" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadQuestions() {
+    const quizId = document.getElementById('quiz_id').value;
+    const container = document.getElementById('questions-container');
+    const list = document.getElementById('questions-list');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (!quizId) {
+        container.style.display = 'none';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    // Fetch quiz questions
+    fetch('/api/quizzes/' + quizId + '/questions')
+        .then(r => r.json())
+        .then(data => {
+            list.innerHTML = '';
+            if (data.questions && data.questions.length > 0) {
+                data.questions.forEach((q, i) => {
+                    const div = document.createElement('div');
+                    div.className = 'form-group';
+                    const text = q.text.length > 80 ? q.text.substring(0, 77) + '...' : q.text;
+                    div.innerHTML = `
+                        <label for="q_${q.id}">Q${i+1}: ${text}</label>
+                        <input type="number" id="q_${q.id}" name="q_${q.id}"
+                               min="0" max="100" step="0.1" placeholder="Class average (0-100)">
+                    `;
+                    list.appendChild(div);
+                });
+                container.style.display = 'block';
+                submitBtn.disabled = false;
+            } else {
+                list.innerHTML = '<p>No questions found for this quiz.</p>';
+                container.style.display = 'block';
+                submitBtn.disabled = true;
+            }
+        })
+        .catch(() => {
+            list.innerHTML = '<p class="alert alert-error">Failed to load questions.</p>';
+            container.style.display = 'block';
+        });
+}
+</script>
+{% endblock %}

@@ -419,6 +419,84 @@ def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
     return json.dumps(criteria, indent=2)
 
 
+def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
+                         max_suggestions: int = 5) -> str:
+    """Generate mock re-teach suggestion response.
+
+    Args:
+        gap_data: List of gap analysis dicts from compute_gap_analysis.
+        focus_topics: Optional list of topics to focus on.
+        max_suggestions: Maximum number of suggestions.
+
+    Returns:
+        JSON string with array of suggestion objects.
+    """
+    # Filter to focus topics if provided
+    items = gap_data or []
+    if focus_topics:
+        items = [g for g in items if g.get("topic") in focus_topics]
+    if not items:
+        items = gap_data[:max_suggestions] if gap_data else []
+
+    suggestions = []
+    activities_pool = [
+        ["Guided notes with visual organizers", "Think-pair-share discussion",
+         "Exit ticket quiz (3 questions)"],
+        ["Hands-on lab activity", "Jigsaw reading groups",
+         "Concept mapping exercise"],
+        ["Interactive simulation", "Gallery walk with peer feedback",
+         "Quick-write reflection"],
+        ["Station rotation with practice problems", "Vocabulary card sort",
+         "Diagram labeling activity"],
+        ["Video analysis with guided questions", "Role-play scenario",
+         "Graphic organizer completion"],
+    ]
+
+    resources_pool = [
+        ["Textbook Ch. 4, pp. 87-92", "Khan Academy video series",
+         "Teacher-created study guide"],
+        ["Interactive website simulation", "Printed graphic organizer template",
+         "Vocabulary flashcard set"],
+        ["Lab materials kit", "Supplemental reading passage",
+         "Practice worksheet (differentiated)"],
+    ]
+
+    for i, item in enumerate(items[:max_suggestions]):
+        topic = item.get("topic", "Unknown topic")
+        actual = item.get("actual_score", 0.5)
+        severity = item.get("gap_severity", "concerning")
+
+        target = min(actual + 0.20, 1.0)
+
+        priority_map = {"critical": "high", "concerning": "medium",
+                        "on_track": "low", "exceeding": "low"}
+
+        suggestion = {
+            "topic": topic,
+            "gap_severity": severity,
+            "current_score": round(actual, 2),
+            "target_score": round(target, 2),
+            "lesson_plan": (
+                f"Re-teach {topic} using a multi-modal approach. Begin with a brief "
+                f"diagnostic assessment to identify specific misconceptions. Follow with "
+                f"direct instruction using visual aids and real-world examples. "
+                f"Include guided practice with immediate feedback and close with an "
+                f"independent practice opportunity."
+            ),
+            "activities": activities_pool[i % len(activities_pool)],
+            "estimated_duration": f"{30 + (i % 3) * 15} minutes",
+            "resources": resources_pool[i % len(resources_pool)],
+            "assessment_suggestion": (
+                f"Administer a 5-question formative assessment on {topic} "
+                f"one week after re-teaching to measure improvement."
+            ),
+            "priority": priority_map.get(severity, "medium"),
+        }
+        suggestions.append(suggestion)
+
+    return json.dumps(suggestions, indent=2)
+
+
 def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,
                       agent_type: str = "generator") -> str:
     """

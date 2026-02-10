@@ -2101,6 +2101,179 @@ small.text-muted {
     color: var(--primary);
 }
 
+/* ===== Analytics ===== */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Heatmap cells */
+.heatmap-cell {
+    font-weight: 700;
+    text-align: center;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
+}
+
+.heatmap-critical {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.heatmap-concerning {
+    background: var(--warning-light);
+    color: #b37320;
+}
+
+.heatmap-on_track {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.heatmap-exceeding {
+    background: var(--secondary-light);
+    color: var(--secondary);
+}
+
+/* Severity badges */
+.severity-badge {
+    display: inline-block;
+    padding: 0.15rem 0.625rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.severity-critical {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.severity-concerning {
+    background: var(--warning-light);
+    color: #b37320;
+}
+
+.severity-on_track {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.severity-exceeding {
+    background: var(--secondary-light);
+    color: var(--secondary);
+}
+
+.severity-mastery-mastered {
+    background: var(--secondary-light);
+    color: var(--secondary);
+}
+
+.severity-mastery-proficient {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.severity-mastery-developing {
+    background: var(--warning-light);
+    color: #b37320;
+}
+
+.severity-mastery-beginning {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.severity-priority-high {
+    background: var(--danger-light);
+    color: var(--danger);
+}
+
+.severity-priority-medium {
+    background: var(--warning-light);
+    color: #b37320;
+}
+
+.severity-priority-low {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+/* Suggestion cards */
+.suggestion-card {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary);
+}
+
+.suggestion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.suggestion-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.suggestion-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.suggestion-body h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 1rem 0 0.5rem;
+    color: var(--text);
+}
+
+.suggestion-body p {
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+}
+
+.suggestion-body ul {
+    padding-left: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.suggestion-body ul li {
+    margin-bottom: 0.25rem;
+}
+
+.suggestion-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+    font-size: 0.9rem;
+}
+
+.suggestion-footer ul {
+    padding-left: 1.25rem;
+    margin: 0.25rem 0 0;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .navbar {

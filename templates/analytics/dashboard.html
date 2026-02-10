@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}Performance Analytics - {{ class_obj.name }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Performance Analytics: {{ class_obj.name }}</h1>
+    <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Back to Class</a>
+</div>
+
+<!-- Summary Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ summary.total_topics_assessed }}</div>
+        <div class="stat-label">Topics Assessed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ "%.0f"|format(summary.overall_avg_score * 100) }}%</div>
+        <div class="stat-label">Overall Average</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ summary.topics_at_risk }}</div>
+        <div class="stat-label">Topics at Risk</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ summary.topics_on_track }}</div>
+        <div class="stat-label">Topics on Track</div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="section-actions">
+    <a href="/classes/{{ class_obj.id }}/analytics/import" class="btn btn-primary">Upload CSV</a>
+    <a href="/classes/{{ class_obj.id }}/analytics/manual" class="btn btn-secondary">Manual Entry</a>
+    <a href="/classes/{{ class_obj.id }}/analytics/quiz-scores" class="btn btn-secondary">Quiz Scores</a>
+    <a href="/classes/{{ class_obj.id }}/analytics/reteach" class="btn btn-primary">Re-teach Suggestions</a>
+</div>
+
+{% if gap_data %}
+<!-- Gap Analysis Chart -->
+<h2>Gap Analysis: Expected vs. Actual</h2>
+<div class="chart-container">
+    <canvas id="gapChart" height="300"></canvas>
+</div>
+
+<!-- Topic Trends Chart -->
+<h2>Performance Trends</h2>
+<div class="chart-container">
+    <canvas id="trendChart" height="250"></canvas>
+</div>
+
+<!-- Gap Heatmap Table -->
+<h2>Topic Performance Heatmap</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Topic</th>
+            <th>Depth</th>
+            <th>Expected</th>
+            <th>Actual</th>
+            <th>Gap</th>
+            <th>Status</th>
+            <th>Data Points</th>
+            <th>Last Assessed</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in gap_data %}
+        <tr>
+            <td><strong>{{ item.topic }}</strong></td>
+            <td>{{ item.depth }}</td>
+            <td>{{ "%.0f"|format(item.expected_score * 100) }}%</td>
+            <td>{{ "%.0f"|format(item.actual_score * 100) }}%</td>
+            <td class="heatmap-cell heatmap-{{ item.gap_severity }}">
+                {{ "%+.0f"|format(item.gap * 100) }}%
+            </td>
+            <td>
+                <span class="severity-badge severity-{{ item.gap_severity }}">{{ item.gap_severity }}</span>
+            </td>
+            <td>{{ item.data_points }}</td>
+            <td>{{ item.last_assessed or "N/A" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if standards_mastery %}
+<!-- Standards Mastery -->
+<h2>Standards Mastery</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Standard</th>
+            <th>Average Score</th>
+            <th>Mastery Level</th>
+            <th>Topics</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for std in standards_mastery %}
+        <tr>
+            <td><strong>{{ std.standard }}</strong></td>
+            <td>{{ "%.0f"|format(std.avg_score * 100) }}%</td>
+            <td><span class="severity-badge severity-mastery-{{ std.mastery_level }}">{{ std.mastery_level }}</span></td>
+            <td>{{ std.topics | join(", ") }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<!-- Recent Performance Data -->
+<h2>Recent Data</h2>
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Topic</th>
+            <th>Score</th>
+            <th>Standard</th>
+            <th>Source</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for record in recent_data %}
+        <tr id="perf-row-{{ record.id }}">
+            <td>{{ record.date }}</td>
+            <td>{{ record.topic }}</td>
+            <td>{{ "%.0f"|format(record.avg_score * 100) }}%</td>
+            <td>{{ record.standard or "—" }}</td>
+            <td>{{ record.source or "manual_entry" }}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deletePerformance({{ record.id }})">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<div class="empty-state">
+    <p>No performance data yet. Import scores to see analytics.</p>
+    <a href="/classes/{{ class_obj.id }}/analytics/import" class="btn btn-primary">Upload CSV</a>
+    <a href="/classes/{{ class_obj.id }}/analytics/manual" class="btn btn-secondary">Enter Scores Manually</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+function deletePerformance(id) {
+    if (!confirm('Delete this performance record?')) return;
+    fetch('/api/performance/' + id, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                const row = document.getElementById('perf-row-' + id);
+                if (row) row.remove();
+            } else {
+                alert('Failed to delete: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(() => alert('Network error'));
+}
+
+{% if gap_data %}
+// Fetch chart data from API
+fetch('/api/classes/{{ class_obj.id }}/analytics')
+    .then(r => r.json())
+    .then(data => {
+        if (data.gap_data && data.gap_data.length > 0) {
+            const labels = data.gap_data.map(d => d.topic);
+            const expected = data.gap_data.map(d => (d.expected_score * 100).toFixed(0));
+            const actual = data.gap_data.map(d => (d.actual_score * 100).toFixed(0));
+
+            new Chart(document.getElementById('gapChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Expected %',
+                            data: expected,
+                            backgroundColor: 'rgba(42, 157, 143, 0.3)',
+                            borderColor: 'rgba(42, 157, 143, 1)',
+                            borderWidth: 2,
+                        },
+                        {
+                            label: 'Actual %',
+                            data: actual,
+                            backgroundColor: 'rgba(231, 111, 81, 0.3)',
+                            borderColor: 'rgba(231, 111, 81, 1)',
+                            borderWidth: 2,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %' } }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+    });
+
+fetch('/api/classes/{{ class_obj.id }}/analytics/trends')
+    .then(r => r.json())
+    .then(data => {
+        if (data.trends && data.trends.length > 0) {
+            // Group by topic
+            const topicMap = {};
+            data.trends.forEach(t => {
+                if (!topicMap[t.topic]) topicMap[t.topic] = [];
+                topicMap[t.topic].push({x: t.date, y: (t.avg_score * 100).toFixed(0)});
+            });
+
+            const colors = ['#e76f51','#2a9d8f','#e9c46a','#264653','#52b788','#7c4dff','#e63946'];
+            const datasets = Object.keys(topicMap).map((topic, i) => ({
+                label: topic,
+                data: topicMap[topic],
+                borderColor: colors[i % colors.length],
+                backgroundColor: colors[i % colors.length] + '22',
+                fill: false,
+                tension: 0.3,
+            }));
+
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: { type: 'category', title: { display: true, text: 'Date' } },
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: 'Score %' } }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+    });
+{% endif %}
+</script>
+{% endblock %}
