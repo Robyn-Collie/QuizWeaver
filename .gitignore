@@ -24,6 +24,12 @@ UAT_SYSTEM_OVERVIEW.md
 run_autonomous_uat.sh
 test_uat_setup.sh
 
+# --- Screenshots (dev/debug artifacts) ---
+*.png
+
+# --- Playwright MCP ---
+.playwright-mcp/
+
 # --- IDE & System Files ---
 .clinerules
 .bin/
