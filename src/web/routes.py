@@ -1086,6 +1086,8 @@ def register_routes(app):
             model_name = request.form.get("model_name", "").strip()
             api_key = request.form.get("api_key", "").strip()
             base_url = request.form.get("base_url", "").strip()
+            vertex_project_id = request.form.get("vertex_project_id", "").strip()
+            vertex_location = request.form.get("vertex_location", "").strip()
 
             # Update config in-memory
             if "llm" not in config:
@@ -1101,6 +1103,10 @@ def register_routes(app):
             elif provider not in ("openai-compatible",):
                 # Clear base_url if not needed
                 config["llm"].pop("base_url", None)
+            if vertex_project_id:
+                config["llm"]["vertex_project_id"] = vertex_project_id
+            if vertex_location:
+                config["llm"]["vertex_location"] = vertex_location
 
             # Persist to config.yaml
             save_config(config)
@@ -1143,6 +1149,8 @@ def register_routes(app):
         model_name = data.get("model_name", "").strip()
         api_key = data.get("api_key", "").strip()
         base_url = data.get("base_url", "").strip()
+        vertex_project_id = data.get("vertex_project_id", "").strip()
+        vertex_location = data.get("vertex_location", "").strip()
 
         # Mock provider: instant success
         if provider_name == "mock":
@@ -1165,6 +1173,10 @@ def register_routes(app):
             temp_config["llm"]["api_key"] = api_key
         if base_url:
             temp_config["llm"]["base_url"] = base_url
+        if vertex_project_id:
+            temp_config["llm"]["vertex_project_id"] = vertex_project_id
+        if vertex_location:
+            temp_config["llm"]["vertex_location"] = vertex_location
 
         # Temporarily set env var for providers that need it
         old_env = {}

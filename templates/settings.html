@@ -6,7 +6,8 @@
 
 <form method="POST" action="/settings" class="form settings-form">
     <h2>LLM Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></h2>
-    <p class="text-muted">Choose which AI model generates your quizzes. Use Mock for free development, or connect a real provider.</p>
+    <p class="text-muted">Choose which language model generates your quizzes. Use Mock for free development, or connect a real provider.
+        <a href="/settings/wizard">Use the setup wizard</a> for step-by-step guidance.</p>
 
     <div class="form-group">
         <label id="provider-label">Provider</label>
@@ -30,6 +31,25 @@
                 </div>
             </label>
             {% endfor %}
+        </div>
+    </div>
+
+    <div class="provider-fields" id="fields-vertex" style="display:none">
+        <div class="form-group">
+            <label for="vertex_project_id">Google Cloud Project ID</label>
+            <input type="text" id="vertex_project_id" name="vertex_project_id"
+                   value="{{ llm_config.get('vertex_project_id', '') }}"
+                   placeholder="e.g., quizweaver-8402"
+                   autocomplete="off">
+            <small class="text-muted">Your Google Cloud project ID (find it at <a href="https://console.cloud.google.com" target="_blank" rel="noopener">console.cloud.google.com</a>)</small>
+        </div>
+        <div class="form-group">
+            <label for="vertex_location">Region</label>
+            <input type="text" id="vertex_location" name="vertex_location"
+                   value="{{ llm_config.get('vertex_location', 'us-central1') }}"
+                   placeholder="e.g., us-central1"
+                   autocomplete="off">
+            <small class="text-muted">Google Cloud region for Vertex AI (us-central1 is recommended)</small>
         </div>
     </div>
 
@@ -87,6 +107,7 @@ function toggleProviderFields() {
     var val = selected.value;
 
     // Hide all conditional fields
+    document.getElementById('fields-vertex').style.display = 'none';
     document.getElementById('fields-model').style.display = 'none';
     document.getElementById('fields-apikey').style.display = 'none';
     document.getElementById('fields-baseurl').style.display = 'none';
@@ -98,6 +119,7 @@ function toggleProviderFields() {
         document.getElementById('fields-model').style.display = 'block';
         document.getElementById('fields-apikey').style.display = 'block';
     } else if (val === 'vertex') {
+        document.getElementById('fields-vertex').style.display = 'block';
         document.getElementById('fields-model').style.display = 'block';
     } else if (val === 'openai') {
         document.getElementById('fields-model').style.display = 'block';
@@ -134,7 +156,9 @@ function testProviderConnection() {
         provider: selected.value,
         model_name: document.getElementById('model_name').value,
         api_key: document.getElementById('api_key').value,
-        base_url: document.getElementById('base_url').value
+        base_url: document.getElementById('base_url').value,
+        vertex_project_id: document.getElementById('vertex_project_id').value,
+        vertex_location: document.getElementById('vertex_location').value
     };
 
     fetch('/api/settings/test-provider', {

@@ -2800,11 +2800,18 @@ small.text-muted {
     margin: 0.25rem 0 0;
 }
 
+/* ===== Nav Backdrop ===== */
+.nav-backdrop {
+    display: none;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
     .navbar {
         padding: 0 1rem;
         flex-wrap: wrap;
+        position: relative;
+        z-index: 1001;
     }
 
     .nav-toggle {
@@ -2817,11 +2824,21 @@ small.text-muted {
         flex-direction: column;
         gap: 0;
         margin-left: 0;
-        padding: 0.5rem 0;
+        padding: 0.5rem 1rem;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
     }
 
     .nav-links.open {
         display: flex;
+    }
+
+    .nav-backdrop.open {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 1000;
     }
 
     .nav-links li a {

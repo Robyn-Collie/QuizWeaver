@@ -2,7 +2,12 @@
 {% block title %}Log Lesson - {{ class_obj.name }} - QuizWeaver{% endblock %}
 
 {% block content %}
-<h1>Log Lesson - {{ class_obj.name }}</h1>
+<h1>Log Lesson</h1>
+<p class="text-muted" style="margin-top: -0.5rem; margin-bottom: 1rem;">
+    Recording for: <a href="/classes/{{ class_obj.id }}"><strong>{{ class_obj.name }}</strong></a>
+    {% if class_obj.grade_level %} ({{ class_obj.grade_level }}){% endif %}
+    &mdash; This lesson will only be associated with this class. To log for a different class, go to that class's page first.
+</p>
 
 <div class="ai-notice ai-notice-privacy" data-dismiss-key="lesson-privacy">
     <button class="ai-notice-dismiss" aria-label="Dismiss notice" title="Dismiss">&times;</button>

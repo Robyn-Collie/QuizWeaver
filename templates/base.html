@@ -36,7 +36,7 @@
         <div class="nav-brand">
             <a href="/dashboard">QuizWeaver</a>
         </div>
-        <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+        <button class="nav-toggle" aria-label="Toggle navigation" onclick="toggleMobileNav()">
             <span class="hamburger"></span>
         </button>
         <ul class="nav-links" role="menubar">
@@ -76,6 +76,7 @@
             <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
     </nav>
+    <div class="nav-backdrop" id="navBackdrop" onclick="toggleMobileNav()"></div>
 
     <main class="container" id="main-content" role="main" aria-label="Page content">
         {% block content %}{% endblock %}
@@ -84,11 +85,19 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <footer class="footer" role="contentinfo" aria-label="Site footer">
-        <p>QuizWeaver - AI-Powered Teaching Platform</p>
+        <p>QuizWeaver - Language-Model-Assisted Teaching Platform</p>
         <p class="shortcuts-hint" id="shortcutsHint">Press <kbd>?</kbd> for keyboard shortcuts</p>
     </footer>
 
     <script>
+    // --- Mobile Nav Toggle ---
+    function toggleMobileNav() {
+        var navLinks = document.querySelector('.nav-links');
+        var backdrop = document.getElementById('navBackdrop');
+        var isOpen = navLinks.classList.toggle('open');
+        backdrop.classList.toggle('open', isOpen);
+    }
+
     // --- Theme Toggle ---
     function toggleTheme() {
         var current = document.documentElement.getAttribute('data-theme');

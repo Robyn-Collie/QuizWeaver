@@ -53,6 +53,15 @@
                     <small>Estimated cost: ~$0.02-0.10 per quiz</small>
                 </div>
             </label>
+            <label class="wizard-provider-card" data-provider="vertex">
+                <input type="radio" name="wizard_provider" value="vertex">
+                <div class="wizard-card-body">
+                    <strong>Google Vertex AI</strong>
+                    <span class="wizard-badge" style="background: var(--primary-light); color: var(--primary);">Enterprise</span>
+                    <p>Enterprise-grade Gemini via Google Cloud. Requires a GCP project.</p>
+                    <small>Estimated cost: ~$0.01-0.05 per quiz</small>
+                </div>
+            </label>
             <label class="wizard-provider-card" data-provider="openai-compatible">
                 <input type="radio" name="wizard_provider" value="openai-compatible">
                 <div class="wizard-card-body">
@@ -100,6 +109,19 @@
             </div>
         </div>
 
+        <div id="instructions-vertex" class="wizard-instructions" style="display:none">
+            <h2>Set Up Google Vertex AI</h2>
+            <ol class="help-steps">
+                <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener">Google Cloud Console</a> and sign in.</li>
+                <li>Create or select a project (note the Project ID, e.g., <code>quizweaver-8402</code>).</li>
+                <li>Enable the <strong>Vertex AI API</strong> in your project.</li>
+                <li>Set up authentication: run <code>gcloud auth application-default login</code> on your machine.</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>When to use Vertex AI:</strong> Vertex AI is best for enterprise/school-district deployments where you need Google Cloud billing, IAM controls, and data residency. For personal use, regular Gemini is simpler and just as capable.
+            </div>
+        </div>
+
         <div id="instructions-openai-compatible" class="wizard-instructions" style="display:none">
             <h2>Set Up a Local Model with Ollama</h2>
             <ol class="help-steps">
@@ -114,7 +136,7 @@
 
         <div class="wizard-nav">
             <button class="btn btn-secondary" onclick="wizardBack(1)">Back</button>
-            <button class="btn btn-primary" onclick="wizardNext(3)">I have my key</button>
+            <button class="btn btn-primary" id="wizard-next-2" onclick="wizardNext(3)">I have my key</button>
         </div>
     </div>
 
@@ -131,6 +153,14 @@
             <div class="form-group" id="wizard-field-baseurl" style="display:none">
                 <label for="wizard_base_url">Base URL</label>
                 <input type="url" id="wizard_base_url" value="http://localhost:11434/v1" placeholder="http://localhost:11434/v1">
+            </div>
+            <div class="form-group" id="wizard-field-project-id" style="display:none">
+                <label for="wizard_project_id">Google Cloud Project ID</label>
+                <input type="text" id="wizard_project_id" placeholder="e.g., quizweaver-8402" autocomplete="off">
+            </div>
+            <div class="form-group" id="wizard-field-location" style="display:none">
+                <label for="wizard_location">Region</label>
+                <input type="text" id="wizard_location" value="us-central1" placeholder="e.g., us-central1" autocomplete="off">
             </div>
             <div class="form-group" id="wizard-field-model" style="display:none">
                 <label for="wizard_model">Model Name (optional)</label>
@@ -223,20 +253,28 @@
             var instructionId = 'instructions-' + selectedProvider;
             var el = document.getElementById(instructionId);
             if (el) el.style.display = 'block';
+            // Update button text based on provider
+            var nextBtn = document.getElementById('wizard-next-2');
+            if (nextBtn) {
+                nextBtn.textContent = (selectedProvider === 'vertex') ? "I'm ready" : "I have my key";
+            }
         }
 
         // Step 3: show/hide fields based on provider
         if (step === 3) {
-            var showApiKey = selectedProvider !== 'openai-compatible' || true;
-            var showBaseUrl = selectedProvider === 'openai-compatible';
-            var showModel = selectedProvider === 'openai-compatible';
+            var isVertex = selectedProvider === 'vertex';
+            var isOllama = selectedProvider === 'openai-compatible';
 
             document.getElementById('wizard-field-apikey').style.display =
-                (selectedProvider === 'openai-compatible') ? 'none' : 'block';
+                (isOllama || isVertex) ? 'none' : 'block';
             document.getElementById('wizard-field-baseurl').style.display =
-                showBaseUrl ? 'block' : 'none';
+                isOllama ? 'block' : 'none';
+            document.getElementById('wizard-field-project-id').style.display =
+                isVertex ? 'block' : 'none';
+            document.getElementById('wizard-field-location').style.display =
+                isVertex ? 'block' : 'none';
             document.getElementById('wizard-field-model').style.display =
-                showModel ? 'block' : 'none';
+                (isOllama || isVertex) ? 'block' : 'none';
 
             // Reset test state
             document.getElementById('wizard-test-result').textContent = '';
@@ -259,6 +297,8 @@
             api_key: document.getElementById('wizard_api_key').value,
             base_url: document.getElementById('wizard_base_url').value,
             model_name: document.getElementById('wizard_model').value,
+            vertex_project_id: document.getElementById('wizard_project_id').value,
+            vertex_location: document.getElementById('wizard_location').value,
         };
 
         fetch('/api/settings/test-provider', {
@@ -299,6 +339,8 @@
         formData.append('api_key', document.getElementById('wizard_api_key').value);
         formData.append('base_url', document.getElementById('wizard_base_url').value);
         formData.append('model_name', document.getElementById('wizard_model').value);
+        formData.append('vertex_project_id', document.getElementById('wizard_project_id').value);
+        formData.append('vertex_location', document.getElementById('wizard_location').value);
 
         fetch('/settings', {
             method: 'POST',
