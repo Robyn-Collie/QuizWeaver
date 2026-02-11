@@ -127,6 +127,12 @@ function toggleProviderFields() {
     } else if (val === 'vertex') {
         document.getElementById('fields-vertex').style.display = 'block';
         document.getElementById('fields-model').style.display = 'block';
+    } else if (val === 'anthropic') {
+        document.getElementById('fields-model').style.display = 'block';
+        document.getElementById('fields-apikey').style.display = 'block';
+    } else if (val === 'vertex-anthropic') {
+        document.getElementById('fields-vertex').style.display = 'block';
+        document.getElementById('fields-model').style.display = 'block';
     } else if (val === 'openai') {
         document.getElementById('fields-model').style.display = 'block';
         document.getElementById('fields-apikey').style.display = 'block';

@@ -1187,6 +1187,9 @@ def register_routes(app):
             elif provider_name == "openai" and api_key:
                 old_env["OPENAI_API_KEY"] = os.environ.get("OPENAI_API_KEY")
                 os.environ["OPENAI_API_KEY"] = api_key
+            elif provider_name == "anthropic" and api_key:
+                old_env["ANTHROPIC_API_KEY"] = os.environ.get("ANTHROPIC_API_KEY")
+                os.environ["ANTHROPIC_API_KEY"] = api_key
 
             start = time.time()
             provider = get_provider(temp_config, web_mode=True)

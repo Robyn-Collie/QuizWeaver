@@ -9,4 +9,5 @@ pytest
 pyyaml
 flask
 openai
+anthropic[vertex]
 gunicorn

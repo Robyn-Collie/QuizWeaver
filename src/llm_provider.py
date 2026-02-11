@@ -12,6 +12,12 @@ try:
 except ImportError:
     _GENAI_AVAILABLE = False
 
+try:
+    import anthropic as _anthropic_module
+    _ANTHROPIC_AVAILABLE = True
+except ImportError:
+    _ANTHROPIC_AVAILABLE = False
+
 
 class LLMProvider(ABC):
     """
@@ -347,6 +353,194 @@ class OpenAICompatibleProvider(LLMProvider):
         }
 
 
+class AnthropicProvider(LLMProvider):
+    """
+    LLM provider for Anthropic's Claude models via the direct API.
+    Requires an ANTHROPIC_API_KEY.
+    """
+
+    def __init__(self, api_key: str, model_name: str = "claude-sonnet-4-20250514"):
+        """
+        Initialize the Anthropic provider with API credentials.
+
+        Args:
+            api_key: Anthropic API key for authentication
+            model_name: Name of the Claude model to use
+        """
+        if not _ANTHROPIC_AVAILABLE:
+            raise ImportError("anthropic package not installed.")
+        import anthropic
+        self.client = anthropic.Anthropic(api_key=api_key)
+        self._model_name = model_name
+
+    def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using the Anthropic Messages API.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image dicts)
+            json_mode: If True, prepend a system prompt requesting JSON output
+
+        Returns:
+            Generated text response from the model, or empty JSON on error
+        """
+        try:
+            content_parts = []
+            for part in prompt_parts:
+                if isinstance(part, str):
+                    content_parts.append({"type": "text", "text": part})
+                elif isinstance(part, dict) and part.get("type") == "image":
+                    content_parts.append(part)
+                # Skip unknown types gracefully
+
+            kwargs = {
+                "model": self._model_name,
+                "messages": [{"role": "user", "content": content_parts}],
+                "max_tokens": 8192,
+            }
+            if json_mode:
+                kwargs["system"] = "Respond only with valid JSON."
+
+            response = self.client.messages.create(**kwargs)
+
+            # Log cost if usage data available
+            try:
+                from src.cost_tracking import log_api_call
+                usage = response.usage
+                if usage:
+                    log_api_call(
+                        "anthropic", self._model_name,
+                        getattr(usage, 'input_tokens', 0),
+                        getattr(usage, 'output_tokens', 0),
+                    )
+            except Exception:
+                pass
+
+            return response.content[0].text
+        except Exception as e:
+            print(f"An error occurred with the Anthropic provider: {e}")
+            return "[]"
+
+    def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Encode an image as base64 in Anthropic's vision format.
+
+        Args:
+            image_path: Path to the image file
+
+        Returns:
+            Dict in Anthropic image format with base64-encoded data
+        """
+        import base64
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type:
+            mime_type = "image/png"
+        with open(image_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        return {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": mime_type,
+                "data": b64,
+            }
+        }
+
+
+class VertexAnthropicProvider(LLMProvider):
+    """
+    LLM provider for Claude models via Google Cloud Vertex AI Model Garden.
+    Uses GCP application-default credentials (no API key needed).
+    """
+
+    def __init__(self, project_id: str, location: str, model_name: str = "claude-sonnet-4@20250514"):
+        """
+        Initialize the Vertex AI Claude provider with GCP credentials.
+
+        Args:
+            project_id: Google Cloud project ID
+            location: Google Cloud region (e.g., 'us-east5')
+            model_name: Name of the Claude model on Vertex AI
+        """
+        if not _ANTHROPIC_AVAILABLE:
+            raise ImportError("anthropic package not installed.")
+        from anthropic import AnthropicVertex
+        self.client = AnthropicVertex(project_id=project_id, region=location)
+        self._model_name = model_name
+
+    def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
+        """
+        Generate content using Claude via Vertex AI.
+
+        Args:
+            prompt_parts: List of prompt components (text strings and/or image dicts)
+            json_mode: If True, prepend a system prompt requesting JSON output
+
+        Returns:
+            Generated text response from the model, or empty JSON on error
+        """
+        try:
+            content_parts = []
+            for part in prompt_parts:
+                if isinstance(part, str):
+                    content_parts.append({"type": "text", "text": part})
+                elif isinstance(part, dict) and part.get("type") == "image":
+                    content_parts.append(part)
+
+            kwargs = {
+                "model": self._model_name,
+                "messages": [{"role": "user", "content": content_parts}],
+                "max_tokens": 8192,
+            }
+            if json_mode:
+                kwargs["system"] = "Respond only with valid JSON."
+
+            response = self.client.messages.create(**kwargs)
+
+            # Log cost if usage data available
+            try:
+                from src.cost_tracking import log_api_call
+                usage = response.usage
+                if usage:
+                    log_api_call(
+                        "vertex-anthropic", self._model_name,
+                        getattr(usage, 'input_tokens', 0),
+                        getattr(usage, 'output_tokens', 0),
+                    )
+            except Exception:
+                pass
+
+            return response.content[0].text
+        except Exception as e:
+            print(f"An error occurred with the Vertex AI (Claude) provider: {e}")
+            return "[]"
+
+    def prepare_image_context(self, image_path: str) -> Any:
+        """
+        Encode an image as base64 in Anthropic's vision format.
+
+        Args:
+            image_path: Path to the image file
+
+        Returns:
+            Dict in Anthropic image format with base64-encoded data
+        """
+        import base64
+        mime_type, _ = mimetypes.guess_type(image_path)
+        if not mime_type:
+            mime_type = "image/png"
+        with open(image_path, "rb") as f:
+            b64 = base64.b64encode(f.read()).decode()
+        return {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": mime_type,
+                "data": b64,
+            }
+        }
+
+
 # --- Provider Registry ---
 # Metadata about available providers for UI display and configuration.
 # default_model: the model used when user hasn't set llm.model_name.
@@ -378,6 +572,20 @@ PROVIDER_REGISTRY = {
         "category": "built-in",
         "requires_config": ["vertex_project_id", "vertex_location"],
         "default_model": "gemini-2.5-flash",
+    },
+    "anthropic": {
+        "label": "Anthropic Claude",
+        "description": "Claude Sonnet via Anthropic API",
+        "category": "built-in",
+        "env_var": "ANTHROPIC_API_KEY",
+        "default_model": "claude-sonnet-4-20250514",
+    },
+    "vertex-anthropic": {
+        "label": "Vertex AI (Claude)",
+        "description": "Claude via Google Cloud Vertex AI",
+        "category": "built-in",
+        "requires_config": ["vertex_project_id", "vertex_location"],
+        "default_model": "claude-sonnet-4@20250514",
     },
     "openai": {
         "label": "OpenAI",
@@ -450,6 +658,16 @@ def get_provider_info(config):
                         info["available"] = False
                         info["reason"] = f"Missing config: {cfg_key}"
                         break
+        elif key == "vertex-anthropic":
+            if not _ANTHROPIC_AVAILABLE:
+                info["available"] = False
+                info["reason"] = "anthropic package not installed"
+            else:
+                for cfg_key in meta.get("requires_config", []):
+                    if not llm_config.get(cfg_key):
+                        info["available"] = False
+                        info["reason"] = f"Missing config: {cfg_key}"
+                        break
         elif key == "openai-compatible":
             # Available if user has configured base_url and api_key
             if not llm_config.get("base_url") or not llm_config.get("api_key"):
@@ -501,7 +719,7 @@ def get_provider(config, web_mode=False):
     model_name = llm_config.get("model_name") or default_model
 
     # Check if using real provider and warn user
-    real_providers = ["gemini", "gemini-pro", "vertex", "openai", "openai-compatible"]
+    real_providers = ["gemini", "gemini-pro", "vertex", "anthropic", "vertex-anthropic", "openai", "openai-compatible"]
     if provider_name in real_providers:
         mode = llm_config.get("mode", "development")
         if mode == "development" and not web_mode:
@@ -544,6 +762,32 @@ def get_provider(config, web_mode=False):
                 "Vertex AI project_id and location must be specified in config.yaml for Vertex provider."
             )
         return VertexAIProvider(
+            project_id=project_id,
+            location=location,
+            model_name=model_name,
+        )
+    elif provider_name == "anthropic":
+        api_key = os.getenv("ANTHROPIC_API_KEY") or llm_config.get("api_key", "")
+        if not api_key:
+            raise ValueError(
+                "ANTHROPIC_API_KEY not set and no api_key in config."
+            )
+        return AnthropicProvider(
+            api_key=api_key,
+            model_name=model_name,
+        )
+    elif provider_name == "vertex-anthropic":
+        if not _ANTHROPIC_AVAILABLE:
+            raise ImportError(
+                "anthropic package not installed."
+            )
+        project_id = llm_config.get("vertex_project_id")
+        location = llm_config.get("vertex_location")
+        if not project_id or not location:
+            raise ValueError(
+                "vertex_project_id and vertex_location required for Vertex AI (Claude) provider."
+            )
+        return VertexAnthropicProvider(
             project_id=project_id,
             location=location,
             model_name=model_name,

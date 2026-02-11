@@ -53,12 +53,29 @@
                     <small>Estimated cost: ~$0.02-0.10 per quiz</small>
                 </div>
             </label>
+            <label class="wizard-provider-card" data-provider="anthropic">
+                <input type="radio" name="wizard_provider" value="anthropic">
+                <div class="wizard-card-body">
+                    <strong>Anthropic Claude</strong>
+                    <p>Claude Sonnet — strong reasoning and long context. Requires paid account.</p>
+                    <small>Estimated cost: ~$0.01-0.05 per quiz</small>
+                </div>
+            </label>
             <label class="wizard-provider-card" data-provider="vertex">
                 <input type="radio" name="wizard_provider" value="vertex">
                 <div class="wizard-card-body">
                     <strong>Google Vertex AI</strong>
                     <span class="wizard-badge" style="background: var(--primary-light); color: var(--primary);">Enterprise</span>
                     <p>Enterprise-grade Gemini via Google Cloud. Requires a GCP project.</p>
+                    <small>Estimated cost: ~$0.01-0.05 per quiz</small>
+                </div>
+            </label>
+            <label class="wizard-provider-card" data-provider="vertex-anthropic">
+                <input type="radio" name="wizard_provider" value="vertex-anthropic">
+                <div class="wizard-card-body">
+                    <strong>Vertex AI (Claude)</strong>
+                    <span class="wizard-badge" style="background: var(--primary-light); color: var(--primary);">Enterprise</span>
+                    <p>Enterprise Claude via Google Cloud. Requires GCP project with Claude enabled.</p>
                     <small>Estimated cost: ~$0.01-0.05 per quiz</small>
                 </div>
             </label>
@@ -106,6 +123,32 @@
             </ol>
             <div class="info-box" style="margin-top: 1rem;">
                 <strong>Cost info:</strong> OpenAI requires a funded account. Typical quiz generation costs $0.02-0.10 per quiz depending on the model. QuizWeaver tracks every API call on the <a href="/costs">Costs page</a>.
+            </div>
+        </div>
+
+        <div id="instructions-anthropic" class="wizard-instructions" style="display:none">
+            <h2>Get an Anthropic API Key</h2>
+            <ol class="help-steps">
+                <li>Go to <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> and create an account or sign in.</li>
+                <li>Navigate to "API Keys" and click "Create Key".</li>
+                <li>Copy the key and come back here to paste it in the next step.</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>Cost info:</strong> Anthropic requires a funded account. Typical quiz generation costs $0.01-0.05 per quiz with Claude Sonnet. QuizWeaver tracks every API call on the <a href="/costs">Costs page</a>.
+            </div>
+        </div>
+
+        <div id="instructions-vertex-anthropic" class="wizard-instructions" style="display:none">
+            <h2>Set Up Claude on Vertex AI</h2>
+            <ol class="help-steps">
+                <li>Go to <a href="https://console.cloud.google.com" target="_blank" rel="noopener">Google Cloud Console</a> and sign in.</li>
+                <li>Create or select a project (note the Project ID, e.g., <code>quizweaver-8402</code>).</li>
+                <li>Enable the <strong>Vertex AI API</strong> in your project.</li>
+                <li>Go to <strong>Model Garden</strong> and enable <strong>Claude</strong> models.</li>
+                <li>Set up authentication: run <code>gcloud auth application-default login</code> on your machine.</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>When to use Vertex AI (Claude):</strong> Use this if your school or district already has a Google Cloud account and you want to use Claude without a separate Anthropic account. Billing goes through Google Cloud.
             </div>
         </div>
 
@@ -262,13 +305,13 @@
             // Update button text based on provider
             var nextBtn = document.getElementById('wizard-next-2');
             if (nextBtn) {
-                nextBtn.textContent = (selectedProvider === 'vertex') ? "I'm ready" : "I have my key";
+                nextBtn.textContent = (selectedProvider === 'vertex' || selectedProvider === 'vertex-anthropic') ? "I'm ready" : "I have my key";
             }
         }
 
         // Step 3: show/hide fields based on provider
         if (step === 3) {
-            var isVertex = selectedProvider === 'vertex';
+            var isVertex = selectedProvider === 'vertex' || selectedProvider === 'vertex-anthropic';
             var isOllama = selectedProvider === 'openai-compatible';
 
             document.getElementById('wizard-field-apikey').style.display =
