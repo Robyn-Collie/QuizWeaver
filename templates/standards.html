@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Standards Browser - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Standards Browser</h1>
+
+<div class="info-box">
+    <p>Standards are deterministic, rule-based data -- not AI-generated. They serve as the source of truth for alignment in quizzes, rubrics, and analytics.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_count }}</div>
+        <div class="stat-label">Total Standards</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ subjects | length }}</div>
+        <div class="stat-label">Subjects</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ grade_bands | length }}</div>
+        <div class="stat-label">Grade Bands</div>
+    </div>
+</div>
+
+<form method="GET" action="{{ url_for('standards_page') }}" class="filter-form" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: end;">
+        <div class="form-group" style="flex: 2; min-width: 200px;">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" value="{{ q }}" placeholder="Search by code, description, or keyword..." class="form-control">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" class="form-control">
+                <option value="">All Subjects</option>
+                {% for s in subjects %}
+                <option value="{{ s }}" {% if subject == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 120px;">
+            <label for="grade_band">Grade Band</label>
+            <select id="grade_band" name="grade_band" class="form-control">
+                <option value="">All Grades</option>
+                {% for gb in grade_bands %}
+                <option value="{{ gb }}" {% if grade_band == gb %}selected{% endif %}>{{ gb }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <button type="submit" class="btn btn-primary">Filter</button>
+            {% if q or subject or grade_band %}
+            <a href="{{ url_for('standards_page') }}" class="btn btn-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+{% if standards %}
+<p class="text-muted">Showing {{ standards | length }} standard{{ 's' if standards | length != 1 else '' }}{% if q %} matching "{{ q }}"{% endif %}</p>
+
+<table class="data-table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Subject</th>
+            <th>Grade Band</th>
+            <th>Strand</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for std in standards %}
+        <tr>
+            <td><strong>{{ std.code }}</strong></td>
+            <td title="{{ std.full_text or '' }}">{{ std.description }}</td>
+            <td>{{ std.subject }}</td>
+            <td>{{ std.grade_band or '-' }}</td>
+            <td>{{ std.strand or '-' }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif q or subject or grade_band %}
+<div class="info-box">
+    <p>No standards found matching your filters. Try broadening your search.</p>
+</div>
+{% else %}
+<div class="info-box">
+    <p>No standards loaded yet. Standards are loaded automatically from <code>data/sol_standards.json</code> on first run.</p>
+</div>
+{% endif %}
+{% endblock %}

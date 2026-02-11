@@ -46,6 +46,8 @@
         <input type="text" id="title" name="title" placeholder="e.g., Chapter 5 Flashcards">
     </div>
 
+    {% include "partials/provider_select.html" %}
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary" id="generate-btn">Generate</button>
         <a href="/study" class="btn btn-secondary">Cancel</a>

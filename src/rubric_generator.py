@@ -5,6 +5,7 @@ Generates scoring rubrics aligned to a quiz's questions, cognitive levels,
 and standards. Uses MockLLMProvider by default for zero-cost development.
 """
 
+import copy
 import json
 import logging
 from typing import Optional
@@ -92,6 +93,7 @@ def generate_rubric(
     quiz_id: int,
     config: dict,
     title: Optional[str] = None,
+    provider_name: Optional[str] = None,
 ) -> Optional[Rubric]:
     """Generate a scoring rubric aligned to a quiz's questions and standards.
 
@@ -104,6 +106,11 @@ def generate_rubric(
     Returns:
         Rubric ORM object with criteria, or None on failure.
     """
+    # Apply provider override if specified
+    if provider_name:
+        config = copy.deepcopy(config)
+        config.setdefault("llm", {})["provider"] = provider_name
+
     quiz, style_profile, q_data_list = _load_quiz_context(session, quiz_id)
     if quiz is None:
         logger.warning("generate_rubric: quiz_id=%s not found", quiz_id)

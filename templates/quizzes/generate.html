@@ -18,11 +18,16 @@
         <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}" placeholder="e.g., 7th Grade">
     </div>
     <div class="form-group">
-        <label for="sol_standards">Standards (optional) <span class="help-tip" data-tip="Comma-separated list of standards to target in quiz questions. Pre-filled from class settings if available.">?</span></label>
-        <input type="text" id="sol_standards" name="sol_standards" value="{{ class_obj.standards|join(', ') if class_obj.standards else '' }}" placeholder="e.g., SOL 7.1, SOL 7.2">
+        <label for="sol_standards_search">Standards (optional) <span class="help-tip" data-tip="Search for SOL standards by code or keyword. Pre-filled from class settings if available.">?</span></label>
+        <div class="standards-picker">
+            <input type="text" id="sol_standards_search" class="picker-input" placeholder="Type to search (e.g., SOL 7.1, fractions, reading)..." autocomplete="off">
+            <input type="hidden" id="sol_standards_val" name="sol_standards" value="{{ class_obj.standards|join(', ') if class_obj.standards else '' }}">
+            <div class="picker-hint">Search the standards database or type a custom code and press Enter.</div>
+        </div>
+        <div class="standards-chips" id="sol_standards_chips"></div>
     </div>
     <div class="form-group">
-        <label>Cognitive Framework</label>
+        <label>Cognitive Framework <span class="help-tip" data-tip="{{ ai_tips.cognitive_framework }}">?</span></label>
         <div class="radio-group">
             <label><input type="radio" name="cognitive_framework_radio" value="" checked> None</label>
             <label><input type="radio" name="cognitive_framework_radio" value="blooms"> Bloom's Taxonomy</label>
@@ -61,7 +66,7 @@
 
     {% if providers is defined and providers %}
     <div class="form-group">
-        <label for="provider">AI Provider <span class="help-tip" data-tip="Choose which AI model generates this quiz. Default uses your global setting from Settings page.">?</span></label>
+        <label for="provider">AI Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></label>
         <select id="provider" name="provider">
             <option value="">Use default ({{ current_provider|default('mock') }})</option>
             {% for p in providers %}
@@ -258,5 +263,19 @@
         });
     });
 })();
+</script>
+{% endblock %}
+
+{% block scripts %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/standards_picker.css') }}">
+<script src="{{ url_for('static', filename='js/standards_picker.js') }}"></script>
+<script>
+initStandardsPicker({
+    inputId: 'sol_standards_search',
+    hiddenInputId: 'sol_standards_val',
+    chipsContainerId: 'sol_standards_chips',
+    apiUrl: '/api/standards/search',
+    initialValues: {{ (class_obj.standards if class_obj.standards else [])|tojson }}
+});
 </script>
 {% endblock %}

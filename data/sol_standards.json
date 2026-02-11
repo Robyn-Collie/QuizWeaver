@@ -1,0 +1,702 @@
+{
+  "source": "Virginia SOL",
+  "version": "2023",
+  "standards": [
+    {
+      "code": "SOL 3.1",
+      "description": "Read and write six-digit numerals",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will read, write, and identify the place and value of each digit in a six-digit numeral, with and without models."
+    },
+    {
+      "code": "SOL 3.2",
+      "description": "Compare and order whole numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will compare and order whole numbers, each 9,999 or less."
+    },
+    {
+      "code": "SOL 3.3",
+      "description": "Represent fractions and mixed numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will name and write fractions and mixed numbers represented by a model."
+    },
+    {
+      "code": "SOL 3.4",
+      "description": "Estimate and determine sums and differences",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will estimate solutions to and solve single-step and multistep problems involving the sum or difference of two whole numbers, each 9,999 or less, with or without regrouping."
+    },
+    {
+      "code": "SOL 4.1",
+      "description": "Read, write, and identify place value to millions",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will read, write, and identify the place and value of each digit in a nine-digit whole number."
+    },
+    {
+      "code": "SOL 4.2",
+      "description": "Compare and order whole numbers to millions",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will compare and order whole numbers expressed through millions."
+    },
+    {
+      "code": "SOL 4.3",
+      "description": "Read, write, represent, and identify decimals",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will read, write, represent, and identify decimals expressed through thousandths."
+    },
+    {
+      "code": "SOL 4.4",
+      "description": "Compare and order fractions and mixed numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will compare and order fractions and mixed numbers, with and without models."
+    },
+    {
+      "code": "SOL 4.5",
+      "description": "Estimate and solve problems with whole numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will estimate and solve single-step and multistep addition, subtraction, and multiplication problems with whole numbers."
+    },
+    {
+      "code": "SOL 5.1",
+      "description": "Determine prime and composite numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will determine whether a whole number from 2 to 100 is prime or composite."
+    },
+    {
+      "code": "SOL 5.2",
+      "description": "Represent and identify equivalencies among fractions",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will represent and identify equivalencies among fractions and decimals, with and without models."
+    },
+    {
+      "code": "SOL 6.1",
+      "description": "Represent relationships between quantities using ratios",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will represent relationships between quantities using ratios, and will use appropriate notations, such as a/b, a to b, and a:b."
+    },
+    {
+      "code": "SOL 6.2",
+      "description": "Represent and determine equivalencies among fractions, mixed numbers, decimals, and percents",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will represent and determine equivalencies among fractions, mixed numbers, decimals, and percents."
+    },
+    {
+      "code": "SOL 6.3",
+      "description": "Identify and represent integers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will identify and represent integers; order and compare integers; and identify and describe absolute value of integers."
+    },
+    {
+      "code": "SOL 6.4",
+      "description": "Recognize and represent patterns with whole number exponents and perfect squares",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will recognize and represent patterns with whole number exponents and perfect squares."
+    },
+    {
+      "code": "SOL 6.5",
+      "description": "Investigate and describe the concept of positive exponents and perfect squares",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will investigate and describe the concept of positive exponents and perfect squares."
+    },
+    {
+      "code": "SOL 6.6",
+      "description": "Add, subtract, multiply, and divide integers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will add, subtract, multiply, and divide integers."
+    },
+    {
+      "code": "SOL 7.1",
+      "description": "Investigate and describe the concept of negative exponents for powers of ten",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will investigate and describe the concept of negative exponents for powers of ten; compare and order numbers greater than zero written in scientific notation."
+    },
+    {
+      "code": "SOL 7.2",
+      "description": "Solve practical problems involving operations with rational numbers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will solve practical problems involving operations with rational numbers."
+    },
+    {
+      "code": "SOL 7.3",
+      "description": "Solve single-step and multistep problems using proportional reasoning",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will solve single-step and multistep practical problems, using proportional reasoning."
+    },
+    {
+      "code": "SOL 7.4",
+      "description": "Solve problems involving percent increase and decrease",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will solve single-step and multistep practical problems, using proportional reasoning: problems involving tips, tax, and percent increase and decrease."
+    },
+    {
+      "code": "SOL 8.1",
+      "description": "Compare and order real numbers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will compare and order real numbers."
+    },
+    {
+      "code": "SOL 8.2",
+      "description": "Describe the relationships between the subsets of the real number system",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will describe the relationships between the subsets of the real number system."
+    },
+    {
+      "code": "SOL 8.3",
+      "description": "Estimate and determine the two consecutive integers between which a square root lies",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Number Sense",
+      "full_text": "The student will estimate and determine the two consecutive integers between which a square root lies."
+    },
+    {
+      "code": "SOL 8.4",
+      "description": "Solve practical problems involving consumer applications",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Computation and Estimation",
+      "full_text": "The student will solve practical problems involving consumer applications."
+    },
+    {
+      "code": "SOL 8.14",
+      "description": "Evaluate algebraic expressions",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Patterns, Functions, and Algebra",
+      "full_text": "The student will evaluate an algebraic expression for given replacement values of the variables."
+    },
+    {
+      "code": "SOL 8.15",
+      "description": "Solve multistep linear equations in one variable",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Patterns, Functions, and Algebra",
+      "full_text": "The student will solve multistep linear equations in one variable with the variable on one or both sides of the equation."
+    },
+    {
+      "code": "SOL 8.16",
+      "description": "Solve multistep linear inequalities in one variable",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Patterns, Functions, and Algebra",
+      "full_text": "The student will solve multistep linear inequalities in one variable with the variable on one or both sides of the inequality."
+    },
+    {
+      "code": "SOL 3.1E",
+      "description": "Develop an understanding of scientific investigation",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
+    },
+    {
+      "code": "SOL 3.4E",
+      "description": "Investigate and understand simple machines",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student will investigate and understand that objects can be described by their physical properties. Key concepts include simple machines and their uses."
+    },
+    {
+      "code": "SOL 3.6E",
+      "description": "Investigate and understand the water cycle",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth/Space Systems",
+      "full_text": "The student will investigate and understand that ecosystems support a diversity of plants and animals that share limited resources. The water cycle is a key process."
+    },
+    {
+      "code": "SOL 4.1E",
+      "description": "Demonstrate understanding of scientific investigation",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
+    },
+    {
+      "code": "SOL 4.3E",
+      "description": "Investigate and understand electricity",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student will investigate and understand the characteristics of electricity and its application in circuits."
+    },
+    {
+      "code": "SOL 4.5E",
+      "description": "Investigate and understand the organization of the solar system",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth/Space Systems",
+      "full_text": "The student will investigate and understand the organization of the solar system, including the sun, moon, Earth, and other planets."
+    },
+    {
+      "code": "SOL 5.1E",
+      "description": "Plan and conduct investigations",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
+    },
+    {
+      "code": "SOL 5.4E",
+      "description": "Investigate and understand matter and its properties",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Matter",
+      "full_text": "The student will investigate and understand that matter is anything that has mass and takes up space. Key concepts include atoms and elements."
+    },
+    {
+      "code": "SOL 5.7E",
+      "description": "Investigate and understand Earth's surface",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth/Space Systems",
+      "full_text": "The student will investigate and understand how Earth's surface is constantly changing. Key concepts include weathering, erosion, and deposition."
+    },
+    {
+      "code": "SOL 6.1E",
+      "description": "Demonstrate understanding of scientific reasoning",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
+    },
+    {
+      "code": "SOL 6.2E",
+      "description": "Investigate and understand basic sources of energy",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student will investigate and understand basic sources of energy, their origins, transformations, and uses."
+    },
+    {
+      "code": "SOL 6.5E",
+      "description": "Investigate and understand the unique properties of water",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Matter",
+      "full_text": "The student will investigate and understand the unique properties and characteristics of water and its roles in the natural and human-made environment."
+    },
+    {
+      "code": "SOL 6.7E",
+      "description": "Investigate and understand the natural processes and human interactions that affect watershed systems",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth/Space Systems",
+      "full_text": "The student will investigate and understand the natural processes and human interactions that affect watershed systems."
+    },
+    {
+      "code": "SOL 7.1E",
+      "description": "Plan and conduct investigations",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations in which data are collected and recorded."
+    },
+    {
+      "code": "SOL 7.2E",
+      "description": "Investigate and understand cellular organization",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Processes",
+      "full_text": "The student will investigate and understand that all living things are composed of cells. Key concepts include cell structure and organelles."
+    },
+    {
+      "code": "SOL 7.3E",
+      "description": "Investigate and understand the relationships among organisms in biological communities",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Living Systems",
+      "full_text": "The student will investigate and understand the relationships among organisms in biological communities. Key concepts include producer, consumer, decomposer, predator, prey."
+    },
+    {
+      "code": "SOL 7.5E",
+      "description": "Investigate and understand the Earth's history and geologic processes",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth/Space Systems",
+      "full_text": "The student will investigate and understand that the Earth's crust undergoes change as a result of geologic processes."
+    },
+    {
+      "code": "SOL 8.1E",
+      "description": "Plan and conduct investigations using the scientific method",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations using experimental design."
+    },
+    {
+      "code": "SOL 8.2E",
+      "description": "Investigate and understand force, motion, and energy relationships",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student will investigate and understand the relationships among force, motion, and energy. Key concepts include speed, velocity, and acceleration."
+    },
+    {
+      "code": "SOL 8.4E",
+      "description": "Investigate and understand atoms and the periodic table",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Matter",
+      "full_text": "The student will investigate and understand the organization of the periodic table. Key concepts include atomic structure, elements, and compounds."
+    },
+    {
+      "code": "SOL 8.5E",
+      "description": "Investigate and understand the law of conservation of matter and energy",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Matter",
+      "full_text": "The student will investigate and understand that the law of conservation of matter and energy applies to all transformations of matter and energy."
+    },
+    {
+      "code": "SOL 3.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry."
+    },
+    {
+      "code": "SOL 3.6R",
+      "description": "Read and demonstrate comprehension of nonfiction texts",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of nonfiction texts."
+    },
+    {
+      "code": "SOL 3.9W",
+      "description": "Write for a variety of purposes",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "The student will write for a variety of purposes, including to describe, to inform, to entertain, and to explain."
+    },
+    {
+      "code": "SOL 4.4R",
+      "description": "Expand vocabulary when reading",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will expand vocabulary when reading, using context clues, knowledge of roots, affixes, synonyms, and antonyms."
+    },
+    {
+      "code": "SOL 4.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying the author's purpose, making inferences, and drawing conclusions."
+    },
+    {
+      "code": "SOL 4.7W",
+      "description": "Write effectively in a variety of forms",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "The student will write effectively in a variety of forms, including narrative, descriptive, opinion, and expository."
+    },
+    {
+      "code": "SOL 5.4R",
+      "description": "Expand vocabulary when reading",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will expand vocabulary when reading, using knowledge of roots, affixes, synonyms, antonyms, and homophones."
+    },
+    {
+      "code": "SOL 5.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying theme, point of view, and figurative language."
+    },
+    {
+      "code": "SOL 5.7W",
+      "description": "Write for a variety of purposes",
+      "subject": "English",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "The student will write for a variety of purposes: to describe, to inform, to entertain, to explain, and to persuade."
+    },
+    {
+      "code": "SOL 6.4R",
+      "description": "Read and learn meanings of unfamiliar words",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read and learn the meanings of unfamiliar words and phrases by using context clues, analyzing word structure, and consulting reference materials."
+    },
+    {
+      "code": "SOL 6.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, describing how the choice of language, setting, characters, and point of view contributes to the author's style."
+    },
+    {
+      "code": "SOL 6.6R",
+      "description": "Read and demonstrate comprehension of nonfiction texts",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of a variety of nonfiction texts, identifying main idea, supporting details, and organizational patterns."
+    },
+    {
+      "code": "SOL 6.7W",
+      "description": "Write in a variety of forms",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective, with an emphasis on narrative and reflective writing."
+    },
+    {
+      "code": "SOL 7.4R",
+      "description": "Read and learn meanings of unfamiliar words",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read to determine the meanings and pronunciations of unfamiliar words and phrases within authentic texts."
+    },
+    {
+      "code": "SOL 7.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, comparing and contrasting various forms and genres."
+    },
+    {
+      "code": "SOL 7.7W",
+      "description": "Write in a variety of forms",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "The student will write in a variety of forms with an emphasis on exposition, persuasion, and narration."
+    },
+    {
+      "code": "SOL 8.4R",
+      "description": "Apply knowledge of word origins and derivations",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts."
+    },
+    {
+      "code": "SOL 8.5R",
+      "description": "Read and demonstrate comprehension of fictional texts",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Reading",
+      "full_text": "The student will read and analyze a variety of fictional texts, narrative nonfiction, and poetry, making inferences and drawing conclusions based on explicit and implied information."
+    },
+    {
+      "code": "SOL 8.7W",
+      "description": "Write in a variety of forms",
+      "subject": "English",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective."
+    },
+    {
+      "code": "SOL A.1",
+      "description": "Represent verbal quantitative situations algebraically",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Expressions and Operations",
+      "full_text": "The student will represent verbal quantitative situations algebraically and evaluate these expressions for given replacement values of the variables."
+    },
+    {
+      "code": "SOL A.2",
+      "description": "Perform operations on polynomials",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Expressions and Operations",
+      "full_text": "The student will perform operations on polynomials, including adding, subtracting, multiplying, dividing, and factoring."
+    },
+    {
+      "code": "SOL A.4",
+      "description": "Solve multistep linear and quadratic equations",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Equations and Inequalities",
+      "full_text": "The student will solve multistep linear and quadratic equations in two variables."
+    },
+    {
+      "code": "SOL A.6",
+      "description": "Graph linear equations and linear inequalities in two variables",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Equations and Inequalities",
+      "full_text": "The student will graph linear equations and linear inequalities in two variables."
+    },
+    {
+      "code": "SOL A.7",
+      "description": "Investigate and analyze linear and quadratic function families",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Functions",
+      "full_text": "The student will investigate and analyze linear and quadratic function families and their characteristics."
+    },
+    {
+      "code": "SOL G.1",
+      "description": "Use deductive reasoning to construct and judge validity of a logical argument",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Reasoning, Lines, and Transformations",
+      "full_text": "The student will construct and judge the validity of a logical argument consisting of a set of premises and a conclusion, using deductive reasoning."
+    },
+    {
+      "code": "SOL G.3",
+      "description": "Solve problems involving symmetry and transformation",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Reasoning, Lines, and Transformations",
+      "full_text": "The student will solve problems involving symmetry and transformation, including translation, reflection, rotation, and dilation."
+    },
+    {
+      "code": "SOL G.5",
+      "description": "Prove triangles congruent",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Triangles",
+      "full_text": "The student, given information concerning the lengths of sides and/or measures of angles in triangles, will solve problems, including practical problems, and prove two triangles are congruent."
+    },
+    {
+      "code": "SOL BIO.1",
+      "description": "Plan and conduct investigations using the scientific method",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Scientific Investigation",
+      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
+    },
+    {
+      "code": "SOL BIO.2",
+      "description": "Investigate and understand the chemical and biochemical principles essential for life",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Molecular Level",
+      "full_text": "The student will investigate and understand the chemical and biochemical principles essential for life, including water chemistry, organic molecules, and the role of enzymes."
+    },
+    {
+      "code": "SOL BIO.3",
+      "description": "Investigate and understand the relationships between cell structure and function",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Cellular Level",
+      "full_text": "The student will investigate and understand relationships between cell structure and function, including organelle function and cell division."
+    },
+    {
+      "code": "SOL BIO.5",
+      "description": "Investigate and understand the mechanisms of heredity",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Molecular Level",
+      "full_text": "The student will investigate and understand the role of nucleic acids, DNA, and RNA, in the mechanisms of heredity, including the genetic code and protein synthesis."
+    },
+    {
+      "code": "SOL BIO.7",
+      "description": "Investigate and understand the theory of biological evolution",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Molecular Level",
+      "full_text": "The student will investigate and understand bases for the modern classification of organisms, including evidence of evolution through comparative studies."
+    },
+    {
+      "code": "SOL BIO.8",
+      "description": "Investigate and understand dynamic equilibria within populations, communities, and ecosystems",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Interrelationships in Earth's Systems",
+      "full_text": "The student will investigate and understand dynamic equilibria within populations, communities, and ecosystems, including nutrient cycling, succession, and biodiversity."
+    },
+    {
+      "code": "SOL 9.3R",
+      "description": "Apply knowledge of word origins, derivations, and figurative language",
+      "subject": "English",
+      "grade_band": "9-12",
+      "strand": "Reading",
+      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts."
+    },
+    {
+      "code": "SOL 9.4R",
+      "description": "Read, comprehend, and analyze literary texts of different cultures and eras",
+      "subject": "English",
+      "grade_band": "9-12",
+      "strand": "Reading",
+      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, analyzing the development of themes across texts."
+    },
+    {
+      "code": "SOL 10.4R",
+      "description": "Read, comprehend, and analyze literary texts",
+      "subject": "English",
+      "grade_band": "9-12",
+      "strand": "Reading",
+      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, comparing and contrasting literary elements across texts."
+    },
+    {
+      "code": "SOL 11.3R",
+      "description": "Read and analyze American literature",
+      "subject": "English",
+      "grade_band": "9-12",
+      "strand": "Reading",
+      "full_text": "The student will read and analyze relationships among American literature, history, and culture."
+    },
+    {
+      "code": "SOL 11.6W",
+      "description": "Write, revise, and edit in a variety of forms",
+      "subject": "English",
+      "grade_band": "9-12",
+      "strand": "Writing",
+      "full_text": "The student will write, revise, and edit personal, professional, and informational compositions, synthesizing information from multiple sources."
+    }
+  ]
+}

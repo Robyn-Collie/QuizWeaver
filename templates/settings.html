@@ -5,7 +5,7 @@
 <h1>Settings</h1>
 
 <form method="POST" action="/settings" class="form settings-form">
-    <h2>LLM Provider</h2>
+    <h2>LLM Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></h2>
     <p class="text-muted">Choose which AI model generates your quizzes. Use Mock for free development, or connect a real provider.</p>
 
     <div class="form-group">
@@ -45,7 +45,7 @@
 
     <div class="provider-fields" id="fields-apikey" style="display:none">
         <div class="form-group">
-            <label for="api_key">API Key</label>
+            <label for="api_key">API Key <span class="help-tip" data-tip="{{ ai_tips.api_key_privacy }}">?</span></label>
             <input type="password" id="api_key" name="api_key"
                    value=""
                    placeholder="{% if llm_config.get('api_key') %}(key set - leave blank to keep){% else %}Enter API key{% endif %}">
@@ -118,10 +118,14 @@ function testProviderConnection() {
     var selected = document.querySelector('input[name="provider"]:checked');
     if (!selected) return;
 
-    btn.disabled = true;
-    btn.textContent = 'Testing...';
     result.textContent = '';
     result.className = 'test-result';
+    if (window.QWLoading) {
+        window.QWLoading.setBtnLoading(btn, 'Testing...');
+    } else {
+        btn.disabled = true;
+        btn.textContent = 'Testing...';
+    }
 
     var payload = {
         provider: selected.value,
@@ -150,8 +154,12 @@ function testProviderConnection() {
         result.className = 'test-result test-failure';
     })
     .finally(function() {
-        btn.disabled = false;
-        btn.textContent = 'Test Connection';
+        if (window.QWLoading) {
+            window.QWLoading.resetBtn(btn);
+        } else {
+            btn.disabled = false;
+            btn.textContent = 'Test Connection';
+        }
     });
 }
 

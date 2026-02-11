@@ -25,7 +25,7 @@ from flask import (
 from src.database import LessonLog, Quiz, Question, StudySet, StudyCard, Rubric, RubricCriterion, PerformanceData, get_session
 from src.classroom import create_class, get_class, list_classes, update_class, delete_class
 from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
-from src.cost_tracking import get_cost_summary
+from src.cost_tracking import get_cost_summary, check_budget, get_monthly_total
 from src.quiz_generator import generate_quiz
 from src.llm_provider import get_provider_info, get_provider, PROVIDER_REGISTRY
 from src.web.config_utils import save_config
@@ -53,6 +53,20 @@ from src.performance_analytics import (
     get_standards_mastery,
 )
 from src.reteach_generator import generate_reteach_suggestions
+from src.standards import (
+    list_standards,
+    search_standards,
+    get_subjects,
+    get_grade_bands,
+    standards_count,
+    load_standards_from_json,
+)
+from src.topic_generator import (
+    generate_from_topics,
+    get_class_topics,
+    search_topics,
+    VALID_OUTPUT_TYPES,
+)
 from src.web.auth import (
     create_user,
     authenticate_user,
@@ -232,6 +246,10 @@ def register_routes(app):
         """Render dashboard with classes, tools, and recent activity."""
         session = _get_session()
         classes = list_classes(session)
+
+        # Redirect first-time users to onboarding if they have no classes
+        if len(classes) == 0 and request.args.get("skip_onboarding") != "1":
+            return redirect(url_for("onboarding"))
         total_lessons = session.query(LessonLog).count()
 
         # Recent activity: 5 most recent lessons and quizzes
@@ -307,6 +325,29 @@ def register_routes(app):
             "lessons_by_date": lessons_by_date,
             "quizzes_by_class": quizzes_by_class,
         })
+
+    # --- Onboarding ---
+
+    @app.route("/onboarding", methods=["GET", "POST"])
+    @login_required
+    def onboarding():
+        """First-time onboarding wizard for new teachers."""
+        if request.method == "POST":
+            session = _get_session()
+            name = request.form.get("class_name", "").strip()
+            grade = request.form.get("grade_level", "").strip()
+            subject = request.form.get("subject", "").strip()
+
+            if name and grade and subject:
+                from src.classroom import create_class as cc
+                cc(session, name, grade, subject)
+                flash("Welcome to QuizWeaver! Your first class has been created.", "success")
+            else:
+                flash("Welcome to QuizWeaver!", "success")
+
+            return redirect(url_for("dashboard", skip_onboarding="1"))
+
+        return render_template("onboarding.html")
 
     # --- Classes ---
 
@@ -584,6 +625,7 @@ def register_routes(app):
                 "text": q.text,
                 "points": q.points,
                 "data": data,
+                "saved_to_bank": bool(getattr(q, "saved_to_bank", 0)),
             })
 
         # Parse style_profile for template use
@@ -998,14 +1040,34 @@ def register_routes(app):
 
     # --- Costs ---
 
-    @app.route("/costs")
+    @app.route("/costs", methods=["GET", "POST"])
     @login_required
     def costs():
-        """Show API cost tracking dashboard with provider info."""
+        """Show API cost tracking dashboard with provider info and budget."""
         config = current_app.config["APP_CONFIG"]
+
+        if request.method == "POST":
+            budget_raw = request.form.get("monthly_budget", "").strip()
+            try:
+                budget_val = float(budget_raw) if budget_raw else 0
+            except ValueError:
+                budget_val = 0
+            config.setdefault("llm", {})["monthly_budget"] = budget_val
+            save_config(config)
+            flash("Monthly budget updated.", "success")
+            return redirect(url_for("costs"), code=303)
+
         provider = config.get("llm", {}).get("provider", "unknown")
         stats = get_cost_summary()
-        return render_template("costs.html", stats=stats, provider=provider)
+        budget = check_budget(config)
+        monthly = get_monthly_total()
+        return render_template(
+            "costs.html",
+            stats=stats,
+            provider=provider,
+            budget=budget,
+            monthly=monthly,
+        )
 
     # --- Settings ---
 
@@ -1053,6 +1115,14 @@ def register_routes(app):
             current_provider=current_provider,
             llm_config=llm_config,
         )
+
+    # --- Provider Setup Wizard ---
+
+    @app.route("/settings/wizard")
+    @login_required
+    def provider_wizard():
+        """Guided step-by-step provider setup wizard."""
+        return render_template("provider_wizard.html")
 
     # --- Test Provider API ---
 
@@ -1176,6 +1246,8 @@ def register_routes(app):
         session = _get_session()
         config = current_app.config["APP_CONFIG"]
         classes = list_classes(session)
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
 
         if request.method == "POST":
             class_id = request.form.get("class_id", type=int)
@@ -1183,11 +1255,14 @@ def register_routes(app):
             quiz_id = request.form.get("quiz_id", type=int) or None
             topic = request.form.get("topic", "").strip() or None
             title = request.form.get("title", "").strip() or None
+            provider_override = request.form.get("provider", "").strip() or None
 
             if not class_id:
                 return render_template(
                     "study/generate.html",
                     classes=classes,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Please select a class.",
                 ), 400
 
@@ -1199,6 +1274,7 @@ def register_routes(app):
                 quiz_id=quiz_id,
                 topic=topic,
                 title=title,
+                provider_name=provider_override,
             )
 
             if study_set:
@@ -1208,10 +1284,17 @@ def register_routes(app):
                 return render_template(
                     "study/generate.html",
                     classes=classes,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Generation failed. Please try again.",
                 ), 500
 
-        return render_template("study/generate.html", classes=classes)
+        return render_template(
+            "study/generate.html",
+            classes=classes,
+            providers=providers,
+            current_provider=current_provider,
+        )
 
     @app.route("/study/<int:study_set_id>")
     @login_required
@@ -1329,6 +1412,66 @@ def register_routes(app):
         session.commit()
         return jsonify({"ok": True})
 
+    @app.route("/api/study-cards/<int:card_id>", methods=["PUT"])
+    @login_required
+    def api_study_card_update(card_id):
+        """Update a study card's front, back, or data fields."""
+        session = _get_session()
+        card = session.query(StudyCard).filter_by(id=card_id).first()
+        if not card:
+            return jsonify({"ok": False, "error": "Card not found"}), 404
+
+        payload = request.get_json(silent=True) or {}
+        if "front" in payload:
+            card.front = payload["front"]
+        if "back" in payload:
+            card.back = payload["back"]
+        if "data" in payload:
+            card.data = json.dumps(payload["data"]) if isinstance(payload["data"], dict) else payload["data"]
+        session.commit()
+        return jsonify({"ok": True, "card": {
+            "id": card.id,
+            "front": card.front,
+            "back": card.back,
+        }})
+
+    @app.route("/api/study-cards/<int:card_id>", methods=["DELETE"])
+    @login_required
+    def api_study_card_delete(card_id):
+        """Delete a single study card."""
+        session = _get_session()
+        card = session.query(StudyCard).filter_by(id=card_id).first()
+        if not card:
+            return jsonify({"ok": False, "error": "Card not found"}), 404
+        session.delete(card)
+        session.commit()
+        return jsonify({"ok": True})
+
+    @app.route("/api/study-sets/<int:study_set_id>/reorder", methods=["POST"])
+    @login_required
+    def api_study_set_reorder(study_set_id):
+        """Reorder cards within a study set."""
+        session = _get_session()
+        study_set = session.query(StudySet).filter_by(id=study_set_id).first()
+        if not study_set:
+            return jsonify({"ok": False, "error": "Study set not found"}), 404
+
+        payload = request.get_json(silent=True) or {}
+        card_ids = payload.get("card_ids", [])
+        if not card_ids:
+            return jsonify({"ok": False, "error": "No card_ids provided"}), 400
+
+        cards = session.query(StudyCard).filter(
+            StudyCard.study_set_id == study_set_id,
+            StudyCard.id.in_(card_ids),
+        ).all()
+        card_map = {c.id: c for c in cards}
+        for i, cid in enumerate(card_ids):
+            if cid in card_map:
+                card_map[cid].sort_order = i
+        session.commit()
+        return jsonify({"ok": True})
+
     @app.route("/api/classes/<int:class_id>/quizzes")
     @login_required
     def api_class_quizzes(class_id):
@@ -1340,10 +1483,113 @@ def register_routes(app):
             .order_by(Quiz.created_at.desc())
             .all()
         )
-        return jsonify([
-            {"id": q.id, "title": q.title or f"Quiz #{q.id}"}
-            for q in quizzes
-        ])
+        result = []
+        for q in quizzes:
+            q_count = len(q.questions) if q.questions else 0
+            date_str = q.created_at.strftime("%b %d") if q.created_at else ""
+            # Extract standards from style_profile if available
+            standards = []
+            if q.style_profile:
+                sp = q.style_profile if isinstance(q.style_profile, dict) else {}
+                if isinstance(q.style_profile, str):
+                    try:
+                        sp = json.loads(q.style_profile)
+                    except (json.JSONDecodeError, TypeError):
+                        sp = {}
+                standards = sp.get("sol_standards", []) or []
+            result.append({
+                "id": q.id,
+                "title": q.title or f"Quiz #{q.id}",
+                "question_count": q_count,
+                "date": date_str,
+                "standards": standards[:3],
+                "reading_level": q.reading_level or "",
+            })
+        return jsonify(result)
+
+    # --- Question Bank ---
+
+    @app.route("/question-bank")
+    @login_required
+    def question_bank():
+        """Show saved questions from the question bank."""
+        session = _get_session()
+        query = session.query(Question).filter(Question.saved_to_bank == 1)
+
+        # Filters
+        q_type = request.args.get("type", "")
+        search = request.args.get("search", "")
+
+        if q_type:
+            query = query.filter(Question.question_type == q_type)
+        if search:
+            query = query.filter(Question.text.ilike(f"%{search}%"))
+
+        questions = query.order_by(Question.id.desc()).all()
+
+        parsed = []
+        for q in questions:
+            data = q.data
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except (json.JSONDecodeError, ValueError):
+                    data = {}
+            if not isinstance(data, dict):
+                data = {}
+            quiz = session.query(Quiz).filter_by(id=q.quiz_id).first() if q.quiz_id else None
+            parsed.append({
+                "id": q.id,
+                "type": q.question_type,
+                "text": q.text,
+                "points": q.points,
+                "data": data,
+                "quiz_title": quiz.title if quiz else "N/A",
+                "quiz_id": q.quiz_id,
+            })
+
+        return render_template(
+            "question_bank.html",
+            questions=parsed,
+            search=search,
+            q_type=q_type,
+        )
+
+    @app.route("/api/question-bank/add", methods=["POST"])
+    @login_required
+    def api_question_bank_add():
+        """Save a question to the question bank."""
+        payload = request.get_json(silent=True) or {}
+        question_id = payload.get("question_id")
+        if not question_id:
+            return jsonify({"ok": False, "error": "question_id required"}), 400
+
+        session = _get_session()
+        q = session.query(Question).filter_by(id=question_id).first()
+        if not q:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+
+        q.saved_to_bank = 1
+        session.commit()
+        return jsonify({"ok": True})
+
+    @app.route("/api/question-bank/remove", methods=["POST"])
+    @login_required
+    def api_question_bank_remove():
+        """Remove a question from the question bank."""
+        payload = request.get_json(silent=True) or {}
+        question_id = payload.get("question_id")
+        if not question_id:
+            return jsonify({"ok": False, "error": "question_id required"}), 400
+
+        session = _get_session()
+        q = session.query(Question).filter_by(id=question_id).first()
+        if not q:
+            return jsonify({"ok": False, "error": "Question not found"}), 404
+
+        q.saved_to_bank = 0
+        session.commit()
+        return jsonify({"ok": True})
 
     # --- Variants ---
 
@@ -1357,16 +1603,21 @@ def register_routes(app):
             abort(404)
 
         config = current_app.config["APP_CONFIG"]
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
 
         if request.method == "POST":
             reading_level = request.form.get("reading_level", "").strip()
             title = request.form.get("title", "").strip() or None
+            provider_override = request.form.get("provider", "").strip() or None
 
             if reading_level not in READING_LEVELS:
                 return render_template(
                     "quizzes/generate_variant.html",
                     quiz=quiz,
                     reading_levels=READING_LEVELS,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Please select a valid reading level.",
                 ), 400
 
@@ -1376,6 +1627,7 @@ def register_routes(app):
                 reading_level=reading_level,
                 config=config,
                 title=title,
+                provider_name=provider_override,
             )
             if variant:
                 flash("Variant generated successfully.", "success")
@@ -1385,6 +1637,8 @@ def register_routes(app):
                     "quizzes/generate_variant.html",
                     quiz=quiz,
                     reading_levels=READING_LEVELS,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Variant generation failed. Please try again.",
                 ), 500
 
@@ -1392,6 +1646,8 @@ def register_routes(app):
             "quizzes/generate_variant.html",
             quiz=quiz,
             reading_levels=READING_LEVELS,
+            providers=providers,
+            current_provider=current_provider,
         )
 
     @app.route("/quizzes/<int:quiz_id>/variants")
@@ -1439,15 +1695,19 @@ def register_routes(app):
             abort(404)
 
         config = current_app.config["APP_CONFIG"]
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
 
         if request.method == "POST":
             title = request.form.get("title", "").strip() or None
+            provider_override = request.form.get("provider", "").strip() or None
 
             rubric = generate_rubric(
                 session,
                 quiz_id=quiz_id,
                 config=config,
                 title=title,
+                provider_name=provider_override,
             )
             if rubric:
                 flash("Rubric generated successfully.", "success")
@@ -1456,10 +1716,17 @@ def register_routes(app):
                 return render_template(
                     "quizzes/generate_rubric.html",
                     quiz=quiz,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Rubric generation failed. Please try again.",
                 ), 500
 
-        return render_template("quizzes/generate_rubric.html", quiz=quiz)
+        return render_template(
+            "quizzes/generate_rubric.html",
+            quiz=quiz,
+            providers=providers,
+            current_provider=current_provider,
+        )
 
     @app.route("/rubrics/<int:rubric_id>")
     @login_required
@@ -1858,6 +2125,8 @@ def register_routes(app):
             abort(404)
 
         config = current_app.config["APP_CONFIG"]
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
         gap_summary = get_class_summary(session, class_id)
         suggestions = None
 
@@ -1869,17 +2138,21 @@ def register_routes(app):
                 else None
             )
             max_suggestions = int(request.form.get("max_suggestions", 5))
+            provider_override = request.form.get("provider", "").strip() or None
 
             suggestions = generate_reteach_suggestions(
                 session, class_id, config,
                 focus_topics=focus_topics,
                 max_suggestions=max_suggestions,
+                provider_name=provider_override,
             )
             if suggestions is None:
                 return render_template(
                     "analytics/reteach.html",
                     class_obj=class_obj,
                     gap_summary=gap_summary,
+                    providers=providers,
+                    current_provider=current_provider,
                     error="Failed to generate suggestions. Please try again.",
                 ), 500
 
@@ -1888,6 +2161,8 @@ def register_routes(app):
             class_obj=class_obj,
             gap_summary=gap_summary,
             suggestions=suggestions,
+            providers=providers,
+            current_provider=current_provider,
         )
 
     @app.route("/api/classes/<int:class_id>/analytics")
@@ -1948,6 +2223,198 @@ def register_routes(app):
             download_name="performance_data_template.csv",
             mimetype="text/csv",
         )
+
+    # --- Topic-Based Generation ---
+
+    @app.route("/generate/topics", methods=["GET", "POST"])
+    @login_required
+    def generate_from_topics_page():
+        """Generate quizzes or study materials from topics."""
+        session = _get_session()
+        config = current_app.config["APP_CONFIG"]
+        classes_list = list_classes(session)
+
+        if not classes_list:
+            flash("Create a class before generating content.", "warning")
+            return redirect(url_for("classes_new"), code=303)
+
+        selected_class_id = request.args.get("class_id", type=int) or classes_list[0]["id"]
+
+        if request.method == "POST":
+            class_id = request.form.get("class_id", type=int)
+            topics_raw = request.form.get("topics", "").strip()
+            output_type = request.form.get("output_type", "quiz")
+            title = request.form.get("title", "").strip() or None
+
+            if not topics_raw:
+                return render_template(
+                    "generate_topics.html",
+                    classes=classes_list,
+                    selected_class_id=class_id,
+                    error="Please enter at least one topic.",
+                )
+
+            topics = [t.strip() for t in topics_raw.split(",") if t.strip()]
+
+            if output_type == "quiz":
+                num_questions = request.form.get("num_questions", 20, type=int)
+                sol_raw = request.form.get("sol_standards", "")
+                sol_standards = [s.strip() for s in sol_raw.split(",") if s.strip()] if sol_raw else None
+                difficulty = request.form.get("difficulty", 3, type=int)
+
+                result = generate_from_topics(
+                    session=session,
+                    class_id=class_id,
+                    topics=topics,
+                    output_type="quiz",
+                    config=config,
+                    num_questions=num_questions,
+                    sol_standards=sol_standards,
+                    difficulty=difficulty,
+                    title=title,
+                )
+                if result:
+                    flash("Quiz generated from topics!", "success")
+                    return redirect(url_for("quiz_detail", quiz_id=result.id), code=303)
+                else:
+                    return render_template(
+                        "generate_topics.html",
+                        classes=classes_list,
+                        selected_class_id=class_id,
+                        error="Quiz generation failed. Please try again.",
+                    )
+            else:
+                result = generate_from_topics(
+                    session=session,
+                    class_id=class_id,
+                    topics=topics,
+                    output_type=output_type,
+                    config=config,
+                    title=title,
+                )
+                if result:
+                    flash(f"{output_type.replace('_', ' ').title()} generated from topics!", "success")
+                    return redirect(url_for("study_detail", study_id=result.id), code=303)
+                else:
+                    return render_template(
+                        "generate_topics.html",
+                        classes=classes_list,
+                        selected_class_id=class_id,
+                        error="Generation failed. Please try again.",
+                    )
+
+        return render_template(
+            "generate_topics.html",
+            classes=classes_list,
+            selected_class_id=selected_class_id,
+        )
+
+    @app.route("/api/topics/search")
+    @login_required
+    def api_topics_search():
+        """JSON API for topic autocomplete from lesson history."""
+        session = _get_session()
+        class_id = request.args.get("class_id", type=int)
+        q = request.args.get("q", "").strip()
+
+        if not class_id:
+            return jsonify({"topics": []})
+
+        topics = search_topics(session, class_id, q)
+        return jsonify({"topics": topics[:20]})
+
+    # --- Standards ---
+
+    @app.route("/standards")
+    @login_required
+    def standards_page():
+        """Browse and search educational standards."""
+        session = _get_session()
+
+        # Auto-load standards if table is empty
+        total = standards_count(session)
+        if total == 0:
+            json_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "data",
+                "sol_standards.json",
+            )
+            if os.path.exists(json_path):
+                load_standards_from_json(session, json_path)
+                total = standards_count(session)
+
+        q = request.args.get("q", "").strip()
+        subject = request.args.get("subject", "").strip()
+        grade_band = request.args.get("grade_band", "").strip()
+
+        if q:
+            results = search_standards(
+                session,
+                q,
+                subject=subject or None,
+                grade_band=grade_band or None,
+            )
+        else:
+            results = list_standards(
+                session,
+                subject=subject or None,
+                grade_band=grade_band or None,
+            )
+
+        return render_template(
+            "standards.html",
+            standards=results,
+            total_count=total,
+            subjects=get_subjects(session),
+            grade_bands=get_grade_bands(session),
+            q=q,
+            subject=subject,
+            grade_band=grade_band,
+        )
+
+    @app.route("/api/standards/search")
+    @login_required
+    def api_standards_search():
+        """JSON API for standards autocomplete search."""
+        session = _get_session()
+
+        # Auto-load standards if table is empty
+        total = standards_count(session)
+        if total == 0:
+            json_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+                "data",
+                "sol_standards.json",
+            )
+            if os.path.exists(json_path):
+                load_standards_from_json(session, json_path)
+
+        q = request.args.get("q", "").strip()
+        subject = request.args.get("subject", "").strip()
+        grade_band = request.args.get("grade_band", "").strip()
+
+        if not q:
+            return jsonify({"results": []})
+
+        results = search_standards(
+            session,
+            q,
+            subject=subject or None,
+            grade_band=grade_band or None,
+        )
+        return jsonify({
+            "results": [
+                {
+                    "id": std.id,
+                    "code": std.code,
+                    "description": std.description,
+                    "subject": std.subject,
+                    "grade_band": std.grade_band,
+                    "strand": std.strand,
+                }
+                for std in results[:20]  # Limit autocomplete results
+            ]
+        })
 
     # --- Help ---
 

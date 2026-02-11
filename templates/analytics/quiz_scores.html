@@ -20,9 +20,9 @@
     <div class="form-group">
         <label for="quiz_id">Select Quiz</label>
         <select id="quiz_id" name="quiz_id" required onchange="loadQuestions()">
-            <option value="">— Select a quiz —</option>
+            <option value="">-- Select a quiz --</option>
             {% for q in quizzes %}
-            <option value="{{ q.id }}">{{ q.title or "Quiz #" ~ q.id }}</option>
+            <option value="{{ q.id }}">{{ q.title or "Quiz #" ~ q.id }} ({{ q.questions|length }} Qs{% if q.created_at %} | {{ q.created_at.strftime('%b %d') }}{% endif %})</option>
             {% endfor %}
         </select>
     </div>

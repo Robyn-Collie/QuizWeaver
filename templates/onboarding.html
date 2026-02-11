@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Welcome - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="onboarding-container">
+    <div class="onboarding-wizard" id="onboarding-wizard">
+
+        {# Step 1: Welcome #}
+        <div class="onboarding-step active" data-step="1">
+            <h1>Welcome to QuizWeaver</h1>
+            <p class="onboarding-subtitle">Your AI-powered teaching assistant for creating quizzes, study materials, rubrics, and more.</p>
+
+            <div class="onboarding-features">
+                <div class="onboarding-feature">
+                    <strong>Track Lessons</strong>
+                    <p>Log what you teach so AI can build relevant assessments.</p>
+                </div>
+                <div class="onboarding-feature">
+                    <strong>Generate Quizzes</strong>
+                    <p>Create standards-aligned quizzes at different cognitive levels.</p>
+                </div>
+                <div class="onboarding-feature">
+                    <strong>Study Materials</strong>
+                    <p>Generate flashcards, study guides, vocabulary lists, and review sheets.</p>
+                </div>
+                <div class="onboarding-feature">
+                    <strong>Track Performance</strong>
+                    <p>Import scores, analyze gaps, and get re-teach suggestions.</p>
+                </div>
+            </div>
+
+            <p class="text-muted">All AI-generated content is a draft for your review. You are always in control.</p>
+
+            <div class="onboarding-actions">
+                <button class="btn btn-primary onboarding-next" data-next="2">Get Started</button>
+                <a href="/dashboard?skip_onboarding=1" class="btn btn-outline">Skip Setup</a>
+            </div>
+        </div>
+
+        {# Step 2: Create First Class #}
+        <div class="onboarding-step" data-step="2" style="display: none;">
+            <h2>Create Your First Class</h2>
+            <p>Classes help QuizWeaver organize content by subject and grade level.</p>
+
+            <form method="POST" id="onboarding-form">
+                <div class="form-group">
+                    <label for="class_name">Class Name</label>
+                    <input type="text" id="class_name" name="class_name" placeholder="e.g., Period 3 Science" required>
+                </div>
+                <div class="form-group">
+                    <label for="grade_level">Grade Level</label>
+                    <select id="grade_level" name="grade_level" required>
+                        <option value="">Select grade...</option>
+                        <option value="3rd Grade">3rd Grade</option>
+                        <option value="4th Grade">4th Grade</option>
+                        <option value="5th Grade">5th Grade</option>
+                        <option value="6th Grade">6th Grade</option>
+                        <option value="7th Grade">7th Grade</option>
+                        <option value="8th Grade">8th Grade</option>
+                        <option value="9th Grade">9th Grade</option>
+                        <option value="10th Grade">10th Grade</option>
+                        <option value="11th Grade">11th Grade</option>
+                        <option value="12th Grade">12th Grade</option>
+                        <option value="College">College</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subject">Subject</label>
+                    <input type="text" id="subject" name="subject" placeholder="e.g., Life Science, US History" required>
+                </div>
+
+                <div class="onboarding-actions">
+                    <button type="submit" class="btn btn-primary">Create Class & Start</button>
+                    <button type="button" class="btn btn-outline onboarding-back" data-back="1">Back</button>
+                    <a href="/dashboard?skip_onboarding=1" class="btn btn-outline">Skip</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    'use strict';
+    var wizard = document.getElementById('onboarding-wizard');
+    if (!wizard) return;
+
+    wizard.addEventListener('click', function(e) {
+        var nextBtn = e.target.closest('.onboarding-next');
+        if (nextBtn) {
+            var nextStep = nextBtn.getAttribute('data-next');
+            showStep(nextStep);
+            return;
+        }
+        var backBtn = e.target.closest('.onboarding-back');
+        if (backBtn) {
+            var backStep = backBtn.getAttribute('data-back');
+            showStep(backStep);
+            return;
+        }
+    });
+
+    function showStep(stepNum) {
+        wizard.querySelectorAll('.onboarding-step').forEach(function(el) {
+            el.style.display = 'none';
+            el.classList.remove('active');
+        });
+        var target = wizard.querySelector('[data-step="' + stepNum + '"]');
+        if (target) {
+            target.style.display = 'block';
+            target.classList.add('active');
+        }
+    }
+})();
+</script>
+{% endblock %}

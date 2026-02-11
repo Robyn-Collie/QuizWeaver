@@ -229,20 +229,26 @@ class TestDashboardEmptyState:
         c.post("/login", data={"username": "teacher", "password": "quizweaver"})
         return c
 
+    def test_empty_state_redirects_to_onboarding(self, empty_client):
+        """Redirects to onboarding when no classes exist."""
+        response = empty_client.get("/dashboard")
+        assert response.status_code == 302
+        assert "/onboarding" in response.headers["Location"]
+
     def test_empty_state_no_tool_cards(self, empty_client):
         """Tool cards are hidden when no classes exist."""
-        response = empty_client.get("/dashboard")
+        response = empty_client.get("/dashboard?skip_onboarding=1")
         html = response.data.decode()
         assert "tool-card" not in html
 
     def test_empty_state_create_prompt(self, empty_client):
         """Shows prompt to create first class when none exist."""
-        response = empty_client.get("/dashboard")
+        response = empty_client.get("/dashboard?skip_onboarding=1")
         html = response.data.decode()
         assert "Create your first class" in html
 
     def test_empty_state_no_activity(self, empty_client):
         """No activity feed when no data exists."""
-        response = empty_client.get("/dashboard")
+        response = empty_client.get("/dashboard?skip_onboarding=1")
         html = response.data.decode()
         assert "Recent Activity" not in html

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Question Bank - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Question Bank</h1>
+
+<p class="text-muted">Save your best questions from any quiz for easy reuse. Use the "Bank" button on any quiz detail page to save questions here.</p>
+
+<form method="GET" class="form search-form">
+    <div class="form-group form-group-inline">
+        <input type="text" name="search" value="{{ search }}" placeholder="Search questions..." style="max-width: 300px;">
+        <select name="type">
+            <option value="">All Types</option>
+            <option value="mc" {% if q_type == 'mc' %}selected{% endif %}>Multiple Choice</option>
+            <option value="tf" {% if q_type == 'tf' %}selected{% endif %}>True/False</option>
+            <option value="ma" {% if q_type == 'ma' %}selected{% endif %}>Multiple Answer</option>
+            <option value="fill_in_blank" {% if q_type == 'fill_in_blank' %}selected{% endif %}>Fill in Blank</option>
+            <option value="short_answer" {% if q_type == 'short_answer' %}selected{% endif %}>Short Answer</option>
+            <option value="matching" {% if q_type == 'matching' %}selected{% endif %}>Matching</option>
+            <option value="essay" {% if q_type == 'essay' %}selected{% endif %}>Essay</option>
+        </select>
+        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        {% if search or q_type %}
+        <a href="/question-bank" class="btn btn-sm btn-outline">Clear</a>
+        {% endif %}
+    </div>
+</form>
+
+<p class="text-muted">{{ questions|length }} question{{ 's' if questions|length != 1 }} saved</p>
+
+{% if questions %}
+{% for q in questions %}
+<div class="question-card bank-question" data-question-id="{{ q.id }}">
+    <div class="question-header">
+        <span class="question-type">{{ q.type or 'unknown' }}</span>
+        <span class="question-points">{{ q.points or 0 }} pts</span>
+        {% if q.data and q.data.cognitive_level is defined and q.data.cognitive_level %}
+        <span class="cognitive-badge cognitive-badge-{{ q.data.cognitive_level_number|default(0) }}">
+            {{ q.data.cognitive_level }}
+        </span>
+        {% endif %}
+        <span class="bank-source">
+            from <a href="/quizzes/{{ q.quiz_id }}">{{ q.quiz_title }}</a>
+        </span>
+        <span class="question-actions">
+            <button class="btn btn-sm btn-outline btn-bank-remove" data-question-id="{{ q.id }}" title="Remove from bank">Remove</button>
+        </span>
+    </div>
+
+    <p class="question-text">{{ q.text }}</p>
+
+    {% if q.type == 'tf' %}
+    <div class="tf-answer">
+        <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
+        <span class="tf-option {% if q.data.correct_answer == 'False' or q.data.answer == 'False' %}correct{% endif %}">False</span>
+    </div>
+    {% elif q.data and q.data.options is defined %}
+    <ul class="question-options">
+        {% for option in q.data.options %}
+        {% if option is mapping %}
+        <li{% if q.data.correct_answers is defined and option.id in q.data.correct_answers %} class="correct"{% endif %}>
+            <strong>{{ option.id }}.</strong> {{ option.text }}
+        </li>
+        {% else %}
+        <li{% if q.data.correct_answer is defined and option == q.data.correct_answer %} class="correct"{% elif q.data.correct_index is defined and loop.index0 == q.data.correct_index %} class="correct"{% endif %}>
+            {{ option }}
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if q.data %}
+    {% set answer = q.data.correct_answer or q.data.answer or none %}
+    {% if answer and q.type != 'tf' %}
+    <div class="question-answer">
+        <strong>Answer:</strong> {{ answer }}
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endfor %}
+
+{% else %}
+<div class="info-box">
+    <p>No questions saved to the bank yet.</p>
+    <p>Open any quiz and click the "Bank" button next to questions you want to save for reuse.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function() {
+    'use strict';
+    document.querySelectorAll('.btn-bank-remove').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var qId = this.getAttribute('data-question-id');
+            var card = this.closest('.bank-question');
+            fetch('/api/question-bank/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question_id: parseInt(qId, 10) }),
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.ok && card) {
+                    card.style.transition = 'opacity 0.3s';
+                    card.style.opacity = '0';
+                    setTimeout(function() { card.remove(); }, 300);
+                }
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

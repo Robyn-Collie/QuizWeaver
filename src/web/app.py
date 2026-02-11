@@ -67,6 +67,12 @@ def create_app(config=None):
         """Make current_user available in all templates."""
         return {"current_user": getattr(g, "current_user", None)}
 
+    @app.context_processor
+    def inject_ai_tooltips():
+        """Make AI literacy tooltips available in all templates."""
+        from src.web.tooltip_data import AI_TOOLTIPS
+        return {"ai_tips": AI_TOOLTIPS}
+
     register_routes(app)
 
     # Serve generated quiz images

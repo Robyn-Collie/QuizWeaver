@@ -5,6 +5,7 @@ Generates flashcards, study guides, vocabulary lists, and review sheets
 using the LLM pipeline. Uses MockLLMProvider by default for zero-cost development.
 """
 
+import copy
 import json
 import logging
 from typing import Optional
@@ -118,6 +119,7 @@ def generate_study_material(
     quiz_id: Optional[int] = None,
     topic: Optional[str] = None,
     title: Optional[str] = None,
+    provider_name: Optional[str] = None,
 ) -> Optional[StudySet]:
     """Generate a StudySet with StudyCards using the LLM pipeline.
 
@@ -133,6 +135,11 @@ def generate_study_material(
     Returns:
         StudySet ORM object with cards attached, or None on failure.
     """
+    # Apply provider override if specified
+    if provider_name:
+        config = copy.deepcopy(config)
+        config.setdefault("llm", {})["provider"] = provider_name
+
     if material_type not in VALID_MATERIAL_TYPES:
         logger.warning("generate_study_material: invalid material_type=%s", material_type)
         return None

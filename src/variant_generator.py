@@ -6,6 +6,7 @@ at a target reading level (ELL, Below Grade, On Grade, Advanced).
 Uses MockLLMProvider by default for zero-cost development.
 """
 
+import copy
 import json
 import logging
 from typing import Optional
@@ -90,6 +91,7 @@ def generate_variant(
     reading_level: str,
     config: dict,
     title: Optional[str] = None,
+    provider_name: Optional[str] = None,
 ) -> Optional[Quiz]:
     """Generate a reading-level variant of an existing quiz.
 
@@ -103,6 +105,11 @@ def generate_variant(
     Returns:
         New Quiz ORM object with questions, or None on failure.
     """
+    # Apply provider override if specified
+    if provider_name:
+        config = copy.deepcopy(config)
+        config.setdefault("llm", {})["provider"] = provider_name
+
     if reading_level not in READING_LEVELS:
         logger.warning("generate_variant: invalid reading_level=%s", reading_level)
         return None

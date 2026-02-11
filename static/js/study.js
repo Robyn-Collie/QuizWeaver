@@ -23,7 +23,15 @@
                     quizzes.forEach(function(q) {
                         var opt = document.createElement('option');
                         opt.value = q.id;
-                        opt.textContent = q.title;
+                        // Build rich label: "Title (#ID) - 20 Qs - Jan 15"
+                        var label = q.title;
+                        var details = [];
+                        if (q.question_count) details.push(q.question_count + ' Qs');
+                        if (q.standards && q.standards.length > 0) details.push(q.standards.join(', '));
+                        if (q.reading_level) details.push(q.reading_level.replace(/_/g, ' '));
+                        if (q.date) details.push(q.date);
+                        if (details.length > 0) label += ' (' + details.join(' | ') + ')';
+                        opt.textContent = label;
                         quizSelect.appendChild(opt);
                     });
                 })

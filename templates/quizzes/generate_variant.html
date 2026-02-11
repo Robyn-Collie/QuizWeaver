@@ -9,7 +9,11 @@
 <div class="alert alert-error">{{ error }}</div>
 {% endif %}
 
-<form method="POST" class="form" id="variant-form">
+<form method="POST" class="form" id="variant-form"
+      data-loading-form
+      data-loading-title="Generating Variant..."
+      data-loading-message="Adapting questions to the selected reading level. This may take 10-30 seconds."
+      data-loading-btn-text="Generating...">
     <div class="form-group">
         <label>Reading Level</label>
         <div class="reading-level-options">
@@ -30,17 +34,12 @@
         <input type="text" name="title" placeholder="Auto-generated if left blank">
     </div>
 
+    {% include "partials/provider_select.html" %}
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary" id="generate-btn">Generate Variant</button>
         <a href="/quizzes/{{ quiz.id }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 
-<script>
-document.getElementById('variant-form').addEventListener('submit', function() {
-    var btn = document.getElementById('generate-btn');
-    btn.textContent = 'Generating...';
-    btn.disabled = true;
-});
-</script>
 {% endblock %}

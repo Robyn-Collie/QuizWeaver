@@ -269,13 +269,21 @@
     // Submit regen
     if (btn.classList.contains("btn-regen-submit")) {
       var notes = card.querySelector(".regen-notes").value.trim();
-      btn.disabled = true;
-      btn.textContent = "Regenerating...";
+      if (window.QWLoading) {
+        window.QWLoading.setBtnLoading(btn, "Regenerating...");
+      } else {
+        btn.disabled = true;
+        btn.textContent = "Regenerating...";
+      }
       jsonPost("/api/questions/" + questionId + "/regenerate", {
         teacher_notes: notes,
       }).then(function (res) {
-        btn.disabled = false;
-        btn.textContent = "Regenerate";
+        if (window.QWLoading) {
+          window.QWLoading.resetBtn(btn);
+        } else {
+          btn.disabled = false;
+          btn.textContent = "Regenerate";
+        }
         if (res.data.ok) {
           window.location.reload();
         } else {
@@ -367,5 +375,42 @@
       optSec.style.display = "none";
       tfSec.style.display = "none";
     }
+  });
+
+  // --- Question Bank Toggle ---
+
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".btn-bank-toggle");
+    if (!btn) return;
+
+    var card = btn.closest("[data-question-id]");
+    if (!card) return;
+    var qId = card.getAttribute("data-question-id");
+    var isSaved = btn.getAttribute("data-saved") === "true";
+    var endpoint = isSaved
+      ? "/api/question-bank/remove"
+      : "/api/question-bank/add";
+
+    btn.disabled = true;
+    jsonPost(endpoint, { question_id: parseInt(qId, 10) }).then(function (res) {
+      btn.disabled = false;
+      if (res.data.ok) {
+        if (isSaved) {
+          btn.setAttribute("data-saved", "false");
+          btn.textContent = "Bank";
+          btn.classList.remove("btn-secondary");
+          btn.classList.add("btn-outline");
+          btn.title = "Save to Bank";
+        } else {
+          btn.setAttribute("data-saved", "true");
+          btn.textContent = "Banked";
+          btn.classList.remove("btn-outline");
+          btn.classList.add("btn-secondary");
+          btn.title = "Remove from Bank";
+        }
+      } else {
+        alert("Error: " + (res.data.error || "Unknown"));
+      }
+    });
   });
 })();

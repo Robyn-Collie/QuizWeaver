@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}QuizWeaver{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
     <script>
     // Apply saved theme immediately to prevent flash
     (function() {
@@ -29,6 +30,7 @@
             <li><a href="/dashboard">Dashboard</a></li>
             <li><a href="/classes">Classes</a></li>
             <li><a href="/quizzes">Quizzes</a></li>
+            <li><a href="/question-bank">Bank</a></li>
             <li><a href="/study">Study</a></li>
             <li><a href="/costs">Costs</a></li>
             <li><a href="/settings">Settings</a></li>
@@ -106,8 +108,25 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
+
+        // --- AI Notice Dismiss (sessionStorage) ---
+        document.querySelectorAll('.ai-notice[data-dismiss-key]').forEach(function(notice) {
+            var key = 'qw_dismissed_' + notice.getAttribute('data-dismiss-key');
+            if (sessionStorage.getItem(key) === 'true') {
+                notice.style.display = 'none';
+            }
+            var btn = notice.querySelector('.ai-notice-dismiss');
+            if (btn) {
+                btn.addEventListener('click', function() {
+                    sessionStorage.setItem(key, 'true');
+                    notice.style.display = 'none';
+                });
+            }
+        });
     });
     </script>
+    <script src="{{ url_for('static', filename='js/loading.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/shortcuts.js') }}"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>

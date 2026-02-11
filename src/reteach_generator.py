@@ -5,6 +5,7 @@ Generates AI-powered re-teaching suggestions based on gap analysis data.
 Uses MockLLMProvider by default for zero-cost development.
 """
 
+import copy
 import json
 import logging
 from typing import Dict, List, Optional
@@ -46,6 +47,7 @@ def generate_reteach_suggestions(
     config: dict,
     focus_topics: Optional[List[str]] = None,
     max_suggestions: int = 5,
+    provider_name: Optional[str] = None,
 ) -> Optional[List[Dict]]:
     """Generate re-teach suggestions based on gap analysis.
 
@@ -59,6 +61,11 @@ def generate_reteach_suggestions(
     Returns:
         List of suggestion dicts, or None on failure.
     """
+    # Apply provider override if specified
+    if provider_name:
+        config = copy.deepcopy(config)
+        config.setdefault("llm", {})["provider"] = provider_name
+
     # Verify class exists
     class_obj = session.query(Class).filter_by(id=class_id).first()
     if not class_obj:

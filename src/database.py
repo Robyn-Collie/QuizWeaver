@@ -215,6 +215,7 @@ class Question(Base):
     text = Column(Text)
     points = Column(Float)
     sort_order = Column(Integer, default=0)
+    saved_to_bank = Column(Integer, default=0)  # 0=not saved, 1=saved to question bank
     data = Column(JSON)  # For options, correct_index, is_true, image_ref, etc.
     quiz = relationship("Quiz", back_populates="questions")
 
@@ -340,6 +341,38 @@ class User(Base):
     password_hash = Column(String, nullable=False)
     display_name = Column(String)
     role = Column(String, default="teacher")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Standard(Base):
+    """Represents an educational standard (e.g., Virginia SOL).
+
+    Standards are DETERMINISTIC data -- rule-based, not AI-generated.
+    They serve as the source of truth for alignment in quizzes, rubrics,
+    and analytics.
+
+    Attributes:
+        id: Primary key.
+        code: Unique standard code (e.g., "SOL 8.3").
+        description: Short description of the standard.
+        subject: Subject area (e.g., "Mathematics", "English", "Science").
+        grade_band: Grade range (e.g., "6-8", "9-12", "K-2").
+        strand: Curriculum strand or category.
+        full_text: Full official text of the standard.
+        source: Origin framework (e.g., "Virginia SOL", "Common Core").
+        version: Version/year of the standard set.
+        created_at: Timestamp when the record was created.
+    """
+    __tablename__ = "standards"
+    id = Column(Integer, primary_key=True)
+    code = Column(String, unique=True, nullable=False)
+    description = Column(Text, nullable=False)
+    subject = Column(String, nullable=False)
+    grade_band = Column(String)
+    strand = Column(String)
+    full_text = Column(Text)
+    source = Column(String, default="Virginia SOL")
+    version = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

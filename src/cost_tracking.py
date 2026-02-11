@@ -279,6 +279,97 @@ def estimate_pipeline_cost(
     }
 
 
+def get_monthly_total(
+    log_file: str = DEFAULT_LOG_FILE,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Get cost totals for a specific month.
+
+    Args:
+        log_file: Path to log file
+        year: Year (defaults to current year)
+        month: Month 1-12 (defaults to current month)
+
+    Returns:
+        Dict with calls, cost, input_tokens, output_tokens for the month
+    """
+    today = date.today()
+    if year is None:
+        year = today.year
+    if month is None:
+        month = today.month
+
+    prefix = f"{year}-{month:02d}"
+    result = {"calls": 0, "cost": 0.0, "input_tokens": 0, "output_tokens": 0}
+
+    if not os.path.exists(log_file):
+        return result
+
+    try:
+        with open(log_file, "r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = [p.strip() for p in line.split("|")]
+                if len(parts) < 6:
+                    continue
+                if not parts[0].startswith(prefix):
+                    continue
+                result["calls"] += 1
+                result["input_tokens"] += int(parts[3])
+                result["output_tokens"] += int(parts[4])
+                result["cost"] += float(parts[5].replace("$", ""))
+    except Exception:
+        pass
+
+    return result
+
+
+def check_budget(
+    config: dict, log_file: str = DEFAULT_LOG_FILE
+) -> Dict[str, Any]:
+    """
+    Check monthly budget status.
+
+    Args:
+        config: Application config dict (reads llm.monthly_budget)
+        log_file: Path to cost log file
+
+    Returns:
+        Dict with: budget, spent, remaining, percent_used, exceeded, warning
+    """
+    budget = float(config.get("llm", {}).get("monthly_budget", 0))
+    monthly = get_monthly_total(log_file)
+    spent = monthly["cost"]
+
+    if budget <= 0:
+        return {
+            "budget": 0,
+            "spent": spent,
+            "remaining": 0,
+            "percent_used": 0,
+            "exceeded": False,
+            "warning": False,
+            "enabled": False,
+        }
+
+    remaining = max(0.0, budget - spent)
+    percent_used = min(100, (spent / budget) * 100) if budget > 0 else 0
+
+    return {
+        "budget": budget,
+        "spent": spent,
+        "remaining": remaining,
+        "percent_used": percent_used,
+        "exceeded": spent >= budget,
+        "warning": percent_used >= 80,
+        "enabled": True,
+    }
+
+
 def format_cost_report(stats: Dict[str, Any]) -> str:
     """
     Format cost summary stats for CLI display.

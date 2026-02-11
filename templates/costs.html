@@ -4,6 +4,16 @@
 {% block content %}
 <h1>Cost Tracking</h1>
 
+{% if budget.enabled and budget.exceeded %}
+<div class="alert alert-error">
+    <strong>Budget Exceeded:</strong> You have spent ${{ "%.4f"|format(budget.spent) }} of your ${{ "%.2f"|format(budget.budget) }} monthly budget. Real AI generation will fall back to mock provider until next month or until you increase your budget.
+</div>
+{% elif budget.enabled and budget.warning %}
+<div class="alert alert-warning">
+    <strong>Budget Warning:</strong> You have used {{ "%.0f"|format(budget.percent_used) }}% of your monthly budget (${{ "%.4f"|format(budget.spent) }} of ${{ "%.2f"|format(budget.budget) }}).
+</div>
+{% endif %}
+
 <div class="stats-grid">
     <div class="stat-card">
         <div class="stat-value">{{ provider }}</div>
@@ -29,6 +39,52 @@
 </div>
 {% endif %}
 
+{# Monthly Budget Section #}
+<h2>Monthly Budget</h2>
+<div class="budget-section">
+    {% if budget.enabled %}
+    <div class="budget-progress">
+        <div class="budget-bar-container">
+            <div class="budget-bar" style="width: {{ budget.percent_used }}%; background: {% if budget.exceeded %}var(--danger){% elif budget.warning %}var(--warning){% else %}var(--success){% endif %};"></div>
+        </div>
+        <div class="budget-labels">
+            <span>${{ "%.4f"|format(budget.spent) }} spent</span>
+            <span>${{ "%.2f"|format(budget.budget) }} budget</span>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-muted">No monthly budget set. Set one below to track spending.</p>
+    {% endif %}
+
+    <form method="POST" class="form budget-form">
+        <div class="form-group form-group-inline">
+            <label for="monthly_budget">Monthly Limit ($)</label>
+            <input type="number" id="monthly_budget" name="monthly_budget"
+                   step="0.50" min="0" value="{{ budget.budget if budget.enabled else '' }}"
+                   placeholder="e.g., 5.00" style="max-width: 120px;">
+            <button type="submit" class="btn btn-sm btn-primary">Set Budget</button>
+            <small class="text-muted">Set to 0 to disable budget tracking.</small>
+        </div>
+    </form>
+</div>
+
+{# This Month Summary #}
+<h2>This Month</h2>
+<div class="stats-grid stats-grid-sm">
+    <div class="stat-card stat-card-sm">
+        <div class="stat-value">{{ monthly.calls }}</div>
+        <div class="stat-label">Calls</div>
+    </div>
+    <div class="stat-card stat-card-sm">
+        <div class="stat-value">${{ "%.4f"|format(monthly.cost) }}</div>
+        <div class="stat-label">Cost</div>
+    </div>
+    <div class="stat-card stat-card-sm">
+        <div class="stat-value">{{ "{:,}".format(monthly.input_tokens + monthly.output_tokens) }}</div>
+        <div class="stat-label">Tokens</div>
+    </div>
+</div>
+
 {% if stats.by_provider %}
 <h2>By Provider</h2>
 <table class="data-table">
@@ -37,6 +93,7 @@
             <th>Provider</th>
             <th>Calls</th>
             <th>Cost</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -45,6 +102,13 @@
             <td>{{ name }}</td>
             <td>{{ data.calls }}</td>
             <td>${{ "%.4f" | format(data.cost) }}</td>
+            <td>
+                {% if stats.total_cost > 0 %}
+                <div class="cost-bar-mini">
+                    <div class="cost-bar-fill" style="width: {{ (data.cost / stats.total_cost * 100)|int }}%;"></div>
+                </div>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -53,23 +117,17 @@
 
 {% if stats.by_day %}
 <h2>By Day</h2>
-<table class="data-table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Calls</th>
-            <th>Cost</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for day, data in stats.by_day.items() | sort %}
-        <tr>
-            <td>{{ day }}</td>
-            <td>{{ data.calls }}</td>
-            <td>${{ "%.4f" | format(data.cost) }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="cost-chart">
+    {% set max_cost = stats.by_day.values()|map(attribute='cost')|max %}
+    {% for day, data in stats.by_day.items() | sort | reverse %}
+    <div class="cost-chart-row">
+        <span class="cost-chart-label">{{ day }}</span>
+        <div class="cost-chart-bar-container">
+            <div class="cost-chart-bar" style="width: {% if max_cost > 0 %}{{ (data.cost / max_cost * 100)|int }}%{% else %}0%{% endif %};"></div>
+        </div>
+        <span class="cost-chart-value">${{ "%.4f"|format(data.cost) }} ({{ data.calls }})</span>
+    </div>
+    {% endfor %}
+</div>
 {% endif %}
 {% endblock %}

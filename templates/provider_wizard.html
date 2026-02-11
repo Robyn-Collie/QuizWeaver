@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}Provider Setup Wizard - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-header">
+        <h1>Connect an AI Provider</h1>
+        <p class="text-muted">Follow these steps to set up real AI-powered quiz generation. You can always change your provider later in <a href="/settings">Settings</a>.</p>
+    </div>
+
+    <div class="wizard-progress">
+        <div class="wizard-step-indicator active" data-step="1">
+            <span class="wizard-step-number">1</span>
+            <span class="wizard-step-label">Choose Provider</span>
+        </div>
+        <div class="wizard-step-connector"></div>
+        <div class="wizard-step-indicator" data-step="2">
+            <span class="wizard-step-number">2</span>
+            <span class="wizard-step-label">Get API Key</span>
+        </div>
+        <div class="wizard-step-connector"></div>
+        <div class="wizard-step-indicator" data-step="3">
+            <span class="wizard-step-number">3</span>
+            <span class="wizard-step-label">Connect</span>
+        </div>
+        <div class="wizard-step-connector"></div>
+        <div class="wizard-step-indicator" data-step="4">
+            <span class="wizard-step-number">4</span>
+            <span class="wizard-step-label">Done</span>
+        </div>
+    </div>
+
+    <!-- Step 1: Choose Provider -->
+    <div class="wizard-panel" id="wizard-step-1">
+        <h2>Which AI provider would you like to use?</h2>
+        <p>Each provider has different capabilities and pricing. You can always switch later.</p>
+
+        <div class="wizard-provider-cards">
+            <label class="wizard-provider-card" data-provider="gemini">
+                <input type="radio" name="wizard_provider" value="gemini">
+                <div class="wizard-card-body">
+                    <strong>Google Gemini</strong>
+                    <span class="wizard-badge wizard-badge-recommended">Recommended</span>
+                    <p>Free tier available. Fast, capable, and easy to set up.</p>
+                    <small>Estimated cost: ~$0.01-0.05 per quiz</small>
+                </div>
+            </label>
+            <label class="wizard-provider-card" data-provider="openai">
+                <input type="radio" name="wizard_provider" value="openai">
+                <div class="wizard-card-body">
+                    <strong>OpenAI (GPT-4o)</strong>
+                    <p>Industry-standard AI models. Requires paid account.</p>
+                    <small>Estimated cost: ~$0.02-0.10 per quiz</small>
+                </div>
+            </label>
+            <label class="wizard-provider-card" data-provider="openai-compatible">
+                <input type="radio" name="wizard_provider" value="openai-compatible">
+                <div class="wizard-card-body">
+                    <strong>Local Model (Ollama)</strong>
+                    <span class="wizard-badge wizard-badge-privacy">Most Private</span>
+                    <p>Run AI on your own computer. Free, but requires setup.</p>
+                    <small>Cost: Free (uses your hardware)</small>
+                </div>
+            </label>
+        </div>
+
+        <div class="info-box" style="margin-top: 1rem;">
+            <strong>What is an API key?</strong> An API key is like a password that lets QuizWeaver talk to an AI service. It is stored only on your computer and never shared with anyone. <a href="/help#understanding-ai">Learn more</a>
+        </div>
+
+        <div class="wizard-nav">
+            <a href="/settings" class="btn btn-secondary">Cancel</a>
+            <button class="btn btn-primary" id="wizard-next-1" disabled onclick="wizardNext(2)">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Instructions -->
+    <div class="wizard-panel" id="wizard-step-2" style="display:none">
+        <div id="instructions-gemini" class="wizard-instructions" style="display:none">
+            <h2>Get a Google Gemini API Key</h2>
+            <ol class="help-steps">
+                <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a> and sign in with your Google account.</li>
+                <li>Click "Create API Key" and copy the key that appears.</li>
+                <li>Come back here and paste the key in the next step.</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>Cost info:</strong> Gemini has a generous free tier. Most teachers stay within the free limit. If you exceed it, typical costs are around $0.01-0.05 per quiz (20 questions). You can monitor costs on the <a href="/costs">Costs page</a>.
+            </div>
+        </div>
+
+        <div id="instructions-openai" class="wizard-instructions" style="display:none">
+            <h2>Get an OpenAI API Key</h2>
+            <ol class="help-steps">
+                <li>Go to <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com</a> and create an account or sign in.</li>
+                <li>Navigate to "API Keys" and click "Create new secret key".</li>
+                <li>Copy the key (you will not be able to see it again).</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>Cost info:</strong> OpenAI requires a funded account. Typical quiz generation costs $0.02-0.10 per quiz depending on the model. QuizWeaver tracks every API call on the <a href="/costs">Costs page</a>.
+            </div>
+        </div>
+
+        <div id="instructions-openai-compatible" class="wizard-instructions" style="display:none">
+            <h2>Set Up a Local Model with Ollama</h2>
+            <ol class="help-steps">
+                <li>Install <a href="https://ollama.com" target="_blank" rel="noopener">Ollama</a> on your computer.</li>
+                <li>Open a terminal and run: <code>ollama pull llama3</code></li>
+                <li>Start Ollama if it is not already running.</li>
+            </ol>
+            <div class="info-box" style="margin-top: 1rem;">
+                <strong>Privacy advantage:</strong> Local models process everything on your computer. No lesson content is ever sent to an external service. This is the most private option.
+            </div>
+        </div>
+
+        <div class="wizard-nav">
+            <button class="btn btn-secondary" onclick="wizardBack(1)">Back</button>
+            <button class="btn btn-primary" onclick="wizardNext(3)">I have my key</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Connect & Test -->
+    <div class="wizard-panel" id="wizard-step-3" style="display:none">
+        <h2>Connect and Test</h2>
+        <p>Enter your credentials below and test the connection.</p>
+
+        <div class="form" id="wizard-connect-form">
+            <div class="form-group" id="wizard-field-apikey">
+                <label for="wizard_api_key">API Key</label>
+                <input type="password" id="wizard_api_key" placeholder="Paste your API key here">
+            </div>
+            <div class="form-group" id="wizard-field-baseurl" style="display:none">
+                <label for="wizard_base_url">Base URL</label>
+                <input type="url" id="wizard_base_url" value="http://localhost:11434/v1" placeholder="http://localhost:11434/v1">
+            </div>
+            <div class="form-group" id="wizard-field-model" style="display:none">
+                <label for="wizard_model">Model Name (optional)</label>
+                <input type="text" id="wizard_model" placeholder="Leave blank for default">
+            </div>
+        </div>
+
+        <div class="test-connection-section">
+            <button type="button" class="btn btn-primary" id="wizard-test-btn" onclick="wizardTestConnection()">Test Connection</button>
+            <span id="wizard-test-result" class="test-result"></span>
+        </div>
+
+        <div class="info-box" style="margin-top: 1rem;">
+            <strong>What happens during the test?</strong> QuizWeaver sends a tiny request to verify the connection works. No lesson data is sent. The test costs less than $0.001.
+        </div>
+
+        <div class="wizard-nav">
+            <button class="btn btn-secondary" onclick="wizardBack(2)">Back</button>
+            <button class="btn btn-primary" id="wizard-save-btn" onclick="wizardSave()" disabled>Save &amp; Finish</button>
+        </div>
+    </div>
+
+    <!-- Step 4: Success -->
+    <div class="wizard-panel" id="wizard-step-4" style="display:none">
+        <div style="text-align: center; padding: 2rem 0;">
+            <div style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h2>Provider Connected</h2>
+            <p id="wizard-success-msg">Your AI provider is ready. Quizzes will now be generated using real AI, customized to your lesson content.</p>
+            <div class="info-box" style="text-align: left; margin-top: 1.5rem;">
+                <strong>Remember:</strong> AI-generated content is always a draft. Review every quiz, study material, and rubric for accuracy before sharing with students.
+            </div>
+            <div class="wizard-nav" style="justify-content: center; margin-top: 1.5rem;">
+                <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                <a href="/settings" class="btn btn-secondary">View Settings</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var currentStep = 1;
+    var selectedProvider = null;
+
+    // Provider card selection
+    document.querySelectorAll('.wizard-provider-card input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            selectedProvider = this.value;
+            document.querySelectorAll('.wizard-provider-card').forEach(function(c) {
+                c.classList.remove('selected');
+            });
+            this.closest('.wizard-provider-card').classList.add('selected');
+            document.getElementById('wizard-next-1').disabled = false;
+        });
+    });
+
+    window.wizardNext = function(step) {
+        showStep(step);
+    };
+
+    window.wizardBack = function(step) {
+        showStep(step);
+    };
+
+    function showStep(step) {
+        // Hide all panels
+        document.querySelectorAll('.wizard-panel').forEach(function(p) {
+            p.style.display = 'none';
+        });
+        // Show target
+        document.getElementById('wizard-step-' + step).style.display = 'block';
+
+        // Update progress indicators
+        document.querySelectorAll('.wizard-step-indicator').forEach(function(ind) {
+            var s = parseInt(ind.getAttribute('data-step'));
+            ind.classList.remove('active', 'completed');
+            if (s < step) ind.classList.add('completed');
+            else if (s === step) ind.classList.add('active');
+        });
+
+        currentStep = step;
+
+        // Step 2: show instructions for selected provider
+        if (step === 2) {
+            document.querySelectorAll('.wizard-instructions').forEach(function(el) {
+                el.style.display = 'none';
+            });
+            var instructionId = 'instructions-' + selectedProvider;
+            var el = document.getElementById(instructionId);
+            if (el) el.style.display = 'block';
+        }
+
+        // Step 3: show/hide fields based on provider
+        if (step === 3) {
+            var showApiKey = selectedProvider !== 'openai-compatible' || true;
+            var showBaseUrl = selectedProvider === 'openai-compatible';
+            var showModel = selectedProvider === 'openai-compatible';
+
+            document.getElementById('wizard-field-apikey').style.display =
+                (selectedProvider === 'openai-compatible') ? 'none' : 'block';
+            document.getElementById('wizard-field-baseurl').style.display =
+                showBaseUrl ? 'block' : 'none';
+            document.getElementById('wizard-field-model').style.display =
+                showModel ? 'block' : 'none';
+
+            // Reset test state
+            document.getElementById('wizard-test-result').textContent = '';
+            document.getElementById('wizard-save-btn').disabled = true;
+        }
+    }
+
+    window.wizardTestConnection = function() {
+        var btn = document.getElementById('wizard-test-btn');
+        var result = document.getElementById('wizard-test-result');
+        var saveBtn = document.getElementById('wizard-save-btn');
+
+        result.textContent = '';
+        result.className = 'test-result';
+        btn.disabled = true;
+        btn.textContent = 'Testing...';
+
+        var payload = {
+            provider: selectedProvider,
+            api_key: document.getElementById('wizard_api_key').value,
+            base_url: document.getElementById('wizard_base_url').value,
+            model_name: document.getElementById('wizard_model').value,
+        };
+
+        fetch('/api/settings/test-provider', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                result.textContent = '[OK] ' + data.message;
+                result.className = 'test-result test-success';
+                saveBtn.disabled = false;
+            } else {
+                result.textContent = '[FAIL] ' + data.message;
+                result.className = 'test-result test-failure';
+                saveBtn.disabled = true;
+            }
+        })
+        .catch(function(err) {
+            result.textContent = '[FAIL] ' + err.message;
+            result.className = 'test-result test-failure';
+            saveBtn.disabled = true;
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Test Connection';
+        });
+    };
+
+    window.wizardSave = function() {
+        var saveBtn = document.getElementById('wizard-save-btn');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        var formData = new FormData();
+        formData.append('provider', selectedProvider);
+        formData.append('api_key', document.getElementById('wizard_api_key').value);
+        formData.append('base_url', document.getElementById('wizard_base_url').value);
+        formData.append('model_name', document.getElementById('wizard_model').value);
+
+        fetch('/settings', {
+            method: 'POST',
+            body: formData,
+            redirect: 'manual',
+        })
+        .then(function(response) {
+            // Success - show step 4
+            showStep(4);
+        })
+        .catch(function(err) {
+            document.getElementById('wizard-test-result').textContent = '[FAIL] Could not save: ' + err.message;
+            document.getElementById('wizard-test-result').className = 'test-result test-failure';
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save & Finish';
+        });
+    };
+})();
+</script>
+{% endblock %}
