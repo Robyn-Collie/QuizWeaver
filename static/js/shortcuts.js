@@ -104,6 +104,9 @@
         if (!modal) createHelpModal();
         if (modal.style.display === 'none') {
             modal.style.display = 'flex';
+            localStorage.setItem('qw-shortcuts-seen', 'true');
+            var hint = document.getElementById('shortcutsHint');
+            if (hint) hint.classList.add('seen');
         } else {
             modal.style.display = 'none';
         }

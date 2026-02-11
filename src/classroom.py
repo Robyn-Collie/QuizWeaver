@@ -1,5 +1,5 @@
 """
-Multi-class management module for QuizWeaver.
+Class sections and organization module for QuizWeaver.
 
 Provides CRUD operations for teacher classes/blocks and active class switching.
 """

@@ -449,7 +449,7 @@ Popular quiz game platform for classroom engagement with live quizzing and AI-po
 - Open-source (free, no subscription fatigue)
 - Privacy-first (local SQLite, anonymization)
 - Teacher-controlled AI (approval gates, mock mode)
-- Multi-class management
+- Class sections & organization
 - Lesson tracking and assumed knowledge
 - Cost tracking and limits
 - QTI export (Canvas-compatible)
@@ -670,6 +670,248 @@ Popular quiz game platform for classroom engagement with live quizzing and AI-po
 
 ---
 
+## 11. 2026 Update: Emerging Features & Trends
+
+**Research Date**: February 11, 2026
+
+### 11.1 New Entrants & Major Platform Updates
+
+#### OpenAI ChatGPT for Teachers (Free)
+OpenAI launched a free version of ChatGPT specifically for verified K-12 educators in the US, available through June 2027. Features include unlimited messages with GPT-5.1 Auto, search, file uploads, connectors, and image generation. Teachers can integrate with Google Drive and Microsoft 365, create shared custom GPTs for their school, and co-plan lessons in shared projects. Data is not used for model training by default.
+
+- **Threat to QuizWeaver**: Medium. ChatGPT is general-purpose, not assessment-specialized. It lacks structured quiz output, QTI/GIFT export, rubric frameworks, or cognitive taxonomy alignment. However, the "free" price point and brand recognition lower the barrier for teachers to try AI-generated quizzes casually.
+- **QuizWeaver Advantage**: Structured pipeline (Generator + Critic), standards alignment, export formats, local-first privacy, cost transparency.
+
+*Source: [OpenAI ChatGPT for Teachers](https://openai.com/index/chatgpt-for-teachers/)*
+
+#### Microsoft Copilot Teach Module (BETT 2026)
+Microsoft announced the Teach module at BETT 2026 — a single interface for lesson planning, resource creation, differentiation, and assessment. Teachers can generate standards-aligned plans from 35+ countries, adjust reading levels, create rubrics tied to objectives, and build quizzes via Forms. Included free for all Microsoft 365 Education users. Microsoft reports 30-50% reduction in assignment writing time and 50-70% reduction in study guide preparation.
+
+- **Threat to QuizWeaver**: High for schools already in the Microsoft ecosystem. Tight integration with Teams, Forms, and OneNote makes it a natural choice.
+- **QuizWeaver Advantage**: Open-source (no vendor lock-in), works with any LLM provider, stronger quiz-specific features (cognitive frameworks, agentic pipeline, question bank).
+
+*Sources: [BETT 2026 Microsoft Education Updates](https://www.edtechinnovationhub.com/news/bett-2026-microsoft-outlines-major-ai-copilot-and-classroom-updates-across-education-stack), [Microsoft Copilot for Education Guide](https://www.educatorstechnology.com/2026/02/microsoft-copilot-for-education.html)*
+
+#### McGraw Hill Teacher Assistant
+McGraw Hill launched Teacher Assistant, a curriculum-embedded GenAI chatbot for lesson planning support. Teachers can plan units, summarize lessons, adjust pacing, identify standards/skills per lesson, and surface differentiation resources. Currently available in California Reveal Math, with broader K-12 rollout planned. Also launched Writing Assistant for student writing feedback.
+
+- **Threat to QuizWeaver**: Low. Locked to McGraw Hill curriculum products. Not open or exportable.
+- **QuizWeaver Opportunity**: Lesson plan generation is a feature gap worth filling, especially with standards alignment.
+
+*Source: [McGraw Hill GenAI Assistants](https://www.mheducation.com/about-us/news-insights/press-releases/new-genai-assistants-add-personalized-experiences-and-support-to-mcgraw-hill-k-12-programs.html)*
+
+#### Flint AI
+Flint has grown to 300,000+ users as a personalized learning AI platform. Uses Claude 4 Sonnet with real-time speech support in 50+ languages. Teachers can observe student AI interactions in real time. FERPA-aligned and GDPR-compliant. Focuses on 1:1 AI tutoring rather than assessment generation.
+
+- **Threat to QuizWeaver**: Low (different niche — tutoring vs. assessment).
+- **QuizWeaver Opportunity**: The real-time observation model is interesting for future student-facing features.
+
+*Source: [Flint Reviews 2026](https://edtechimpact.com/products/flint/)*
+
+### 11.2 Wayground (formerly Quizizz) Rebrand Updates
+
+The Quizizz-to-Wayground rebrand brought several notable new features:
+
+- **Curriculum Alignment**: Resources mapped to standards and curricula, with quick-search capability.
+- **Lesson Bundles**: Combine standalone activities into cohesive lesson packages.
+- **Flexible AI Generation Hub**: Transform a single file into multiple interactive formats (quiz, flashcards, slides, etc.).
+- **Expanded Accommodations**: Language and accessibility supports across video, slides, and assessments — including dyslexia font, read-aloud, and translation.
+- **VoyageMath**: New middle school math program with individualized instruction and feedback.
+
+*Sources: [Quizizz Becomes Wayground Press Release](https://www.prnewswire.com/news-releases/quizizz-becomes-wayground-announces-new-ai-and-curriculum-supports-302489367.html), [Wayground Rebrand Overview](https://www.edtechinnovationhub.com/news/quiziz-rebrands-to-wayground)*
+
+### 11.3 MagicSchool.ai 2026 Updates
+
+Key updates since the initial analysis:
+
+- **Knowledge Feature (Enterprise)**: Districts upload curriculum documents, rubrics, and policies once; guidance applies across all MagicSchool tools.
+- **Learning Outcomes Module**: MagicQuizzes and Class Writing Feedback tools focused on formative assessment.
+- **Real-time Web Search**: Research Assistant tool pulls current, educationally appropriate information.
+- **Math/Science Visualizations**: Generate diagrams and visualizations directly in chat.
+- **Studio Mode Enhancement**: Document-based editing with image generation and export, preserving context across edits.
+
+*Sources: [MagicSchool 2026 Updates](https://www.magicschool.ai/blog-posts/ai-teaching-tools-updates-2026), [MagicSchool Review 2026](https://www.educatorstechnology.com/2026/02/magicschool-ai-review.html)*
+
+### 11.4 AI-Assisted Grading: State of the Art
+
+AI grading has matured significantly but remains a human-in-the-loop domain:
+
+**What Works Well**:
+- AI cuts average grading time by 31% per response and 33% per answer sheet.
+- Fine-tuned LLMs can match or exceed human inter-rater reliability for structured rubrics.
+- Answer grouping (Gradescope) clusters similar responses for batch grading.
+- Rubric-based grading (CoGrader, EssayGrader) provides consistent feedback at scale.
+- EssayGrader offers 500+ standards-aligned rubrics (Common Core, IB, state exams).
+
+**What Does Not Work Yet**:
+- AI grades more leniently on low-performing work and more harshly on high-performing work.
+- Creative, original, and nuanced writing remains poorly evaluated by AI.
+- Consistent bias in AI scoring is still documented.
+- AI struggles with real-world feasibility assessment and critical thinking evaluation.
+
+**Teacher Consensus**:
+- Narrative feedback valued over numeric scores.
+- AI should generate draft feedback for teacher review, not final grades.
+- Teacher mediation remains essential for grade discrepancies.
+- Not every part of assessment should be automated.
+
+**Feasibility for QuizWeaver**: Medium. QuizWeaver could offer AI-assisted grading suggestions for constructed response questions (short answer, essay) by generating rubric-aligned feedback drafts that teachers review and modify. This aligns with the human-in-the-loop principle. Standalone grading would be out of scope and against QuizWeaver's principles.
+
+*Sources: [AI Answer Sheet Checking](https://www.eklavvya.com/blog/ai-answer-sheet-checking/), [AI and Auto-Grading in Higher Ed](https://ascode.osu.edu/news/ai-and-auto-grading-higher-education-capabilities-ethics-and-evolving-role-educators), [AI-Powered Grading Review (Springer)](https://link.springer.com/article/10.1007/s44163-025-00517-0), [Top AI Graders 2026](https://www.theschoolhouse.org/post/top-ai-graders-teachers), [CoGrader](https://cograder.com/), [EssayGrader](https://www.essaygrader.ai)*
+
+### 11.5 Lesson Plan Generation Landscape
+
+The lesson plan generator market is now crowded with strong offerings:
+
+| Tool | Standards Support | Key Differentiator | Pricing |
+|------|------------------|---------------------|---------|
+| MagicSchool | Common Core, NGSS, state | Part of 80+ tool suite | Free tier / $8.33/mo |
+| SchoolAI | Standards-aligned | AI handles framework + objectives | Free tier available |
+| Flint | CCSS, NGSS, TEKS | Built-in AI tutoring | School pricing |
+| PlanSpark | K-12 standards | Engagement prediction + assessment | Freemium |
+| Colleague AI | Common Core, NGSS, state, district | Differentiation built-in | Subscription |
+| MS Copilot Teach | 35+ countries | Free for M365 Education | Free |
+
+**Common Features Across Tools**:
+- Standards alignment from a searchable database.
+- Multi-level differentiation (below grade, on grade, advanced) in a single request.
+- Assessment generation linked to lesson objectives.
+- Export to common formats (PDF, DOCX).
+
+**Feasibility for QuizWeaver**: High. QuizWeaver already has lesson tracking, standards database, and class context. Adding lesson plan generation would connect the existing pipeline: lessons logged -> lesson plan generated -> quiz aligned to plan. This creates a tighter teach-assess loop that most competitors handle as separate disconnected tools.
+
+*Sources: [SchoolAI Lesson Plan Generator](https://schoolai.com/blog/ai-lesson-plan-generator-standards-aligned), [Flint AI Lesson Plans](https://flintk12.com/tools/ai-lesson-plan-generator), [PlanSpark](https://planspark.net/), [10 Best AI Lesson Planners 2026](https://www.edcafe.ai/blog/ai-lesson-planners)*
+
+### 11.6 Accessibility Features in EdTech
+
+Accessibility is increasingly table-stakes, not premium. Key features competitors are shipping:
+
+**Dyslexia Support**:
+- OpenDyslexic font toggle (Wayground ships this as an accommodation).
+- Increased letter/word/line spacing options (WCAG SC 1.4.12).
+- High-contrast themes and adjustable backgrounds (cream, pale yellow).
+- Reading guides/rulers to track lines.
+
+**Text-to-Speech (TTS)**:
+- ReadSpeaker integration in assessment platforms (Televic assessmentQ, Pearson).
+- TTS reads assessment items aloud for students with visual impairments or reading difficulties.
+- Consistent delivery (unlike human readers) for test fairness.
+- Texas STAAR assessments use TTS as a standard accommodation (2025-2026).
+
+**Color Blindness**:
+- WCAG AA contrast ratio (4.5:1 minimum for normal text).
+- Avoid conveying information through color alone.
+- Patterns/textures in addition to colors for charts/graphs.
+- Color-blind-safe palettes (e.g., Wong palette, viridis).
+
+**Screen Reader Optimization**:
+- Proper ARIA labels on interactive elements.
+- Semantic HTML structure (headings, lists, form labels).
+- Alt text for all images including generated quiz images.
+- Skip navigation links.
+
+**Feasibility for QuizWeaver**: High for most features. Font toggle (OpenDyslexic), high-contrast mode, and TTS are implementable without external dependencies. WCAG compliance improvements are incremental. TTS for exported quizzes could use browser-native Web Speech API or server-side TTS libraries. This is a strong differentiator for an open-source tool — commercial tools often gate accessibility behind premium tiers.
+
+*Sources: [Wayground Accessibility Statement](https://support.wayground.com/hc/en-us/articles/360055566272), [WCAG and Dyslexia](https://wcagready.com/en/digital-accessibility-and-dyslexia/), [Best Fonts for Dyslexia](https://www.inclusiveweb.co/accessibility-resources/best-font-styles-for-dyslexia), [TTS in Education (MDPI)](https://www.mdpi.com/2673-4591/112/1/4), [Texas STAAR TTS Accommodations](https://tea.texas.gov/student-assessment/test-administration/staar-accommodation-educator-guide.pdf)*
+
+### 11.7 Community & Sharing Features
+
+**How Competitors Handle Sharing**:
+- **Wayground**: Public quiz library with millions of user-created quizzes. Teachers search, clone, and customize. Privacy is per-quiz (public/private toggle).
+- **Kahoot**: Template library with pre-built kahoots. Teachers share within school/district or publish publicly.
+- **MagicSchool**: Custom GPTs shared within a school or district (Enterprise feature). Knowledge base shared across tools.
+- **Gimkit**: Teachers create "kits" and borrow from others. Import from Quizlet.
+
+**Privacy-Preserving Sharing Models**:
+- Export quiz structure without student performance data.
+- Template-based sharing (quiz skeleton without class-specific context).
+- School/district-scoped sharing (not fully public).
+- Anonymous contribution (no teacher identity attached to shared content).
+
+**Feasibility for QuizWeaver**: Medium. A local quiz template library (export/import JSON) is straightforward. School-wide sharing requires multi-user infrastructure (BL-015). A public community library requires hosting and moderation infrastructure beyond the current scope. Start with local export/import templates, then expand.
+
+### 11.8 Differentiated Instruction & Accommodation Support
+
+**IEP/504 AI Usage (2026)**:
+- 57% of special education teachers use AI for IEP or 504 plan support (up from 39% in 2023-24).
+- 30% use AI to summarize IEP/504 content, 28% to choose accommodations, 21% for narrative sections.
+- Significant legal and ethical concerns: AI in legally mandated processes could compromise privacy, reinforce bias, and weaken personalization.
+
+**How Competitors Handle Differentiation**:
+- **Wayground**: Expanded Accommodations — language supports, dyslexia font, read-aloud, translation across all content types.
+- **MagicSchool**: IEP Generator tool, scaffolded versions for multilingual learners.
+- **Microsoft Copilot Teach**: Reading level adjustment, tone/difficulty modification, grade-level adaptation.
+- **Flint**: 50+ language speech support, real-time tutoring adapted to individual pace.
+
+**What QuizWeaver Already Has**:
+- Reading-level variants (ELL, below grade, on grade, advanced) via `src/variant_generator.py`.
+- Cognitive framework alignment (Bloom's, DOK) for difficulty targeting.
+- Standards-aligned content generation.
+
+**Gaps**:
+- No accommodation profile system (store per-student accommodations like font preference, TTS need, extended time).
+- No IEP/504 plan support (and should not auto-generate these due to legal/ethical concerns).
+- No language translation for generated content.
+- No read-aloud/TTS feature for generated quizzes.
+
+**Feasibility for QuizWeaver**: Medium. Accommodation profiles (font, TTS, extended time flags) are feasible as metadata on exported quizzes. Language translation could leverage the LLM provider. IEP/504 generation is explicitly out of scope due to legal requirements for human judgment.
+
+*Sources: [AI in Special Education (GovTech)](https://www.govtech.com/education/k-12/ai-gains-ground-in-special-ed-raises-legal-and-ethical-concerns), [Teachers Using AI for IEPs (EdWeek)](https://www.edweek.org/teaching-learning/teachers-are-using-ai-to-help-write-ieps-advocates-have-concerns/2025/10), [Differentiated Instruction for SPED (HMH)](https://www.hmhco.com/blog/differentiated-instruction-for-special-education-students)*
+
+### 11.9 Assessment Innovation
+
+**Interactive Question Types Emerging in 2026**:
+- Drag-and-drop ordering and matching (Eduphoria, Canvas New Quizzes, Wayground).
+- Hotspot/image-click questions (Canvas New Quizzes).
+- Slider/numeric range questions (Kahoot).
+- Audio-response questions (Gimkit Pro).
+- Adaptive questioning that adjusts difficulty based on responses (New Jersey NJSLA-Adaptive).
+
+**Portfolio Assessment**:
+- Digital student portfolios compiling work samples, self-reflections, and case studies.
+- Unrulr and similar tools provide structured portfolio frameworks.
+- Portfolios are gaining traction as an alternative/complement to traditional assessment.
+
+**Adaptive Assessment**:
+- State-level adoption: NJ launched NJSLA-Adaptive and NJGPA-Adaptive for 2025-2026.
+- Adaptive quizzes use item response theory to select next questions based on performance.
+- Requires large calibrated question banks — feasible with QuizWeaver's question bank feature.
+
+**Feasibility for QuizWeaver**:
+- Drag-and-drop/ordering: Medium (requires JavaScript-heavy UI, but JSON structure can represent the question type for export).
+- Adaptive questioning: Medium-High (question bank + difficulty metadata already exist; algorithm needed for adaptive selection).
+- Portfolio tools: Low (different product category).
+- Audio questions: Medium (browser TTS is free; audio recording requires more infrastructure).
+
+*Sources: [Interactive Assessment Solutions](https://medium.com/@acadecraftharsh/how-are-interactive-assessment-solutions-the-future-of-education-14f942062c64), [Adaptive Quiz Builder Guide](https://estha.ai/blog/personalized-learning-quiz-builder-for-edtech-a-complete-guide-to-creating-adaptive-assessments/), [Student Portfolios Guide](https://www.unrulr.com/post/the-ultimate-guide-to-student-portfolios), [NJ Adaptive Assessments](https://www.nj.gov/education/broadcasts/2025/aug/13/20252026StatewideAssessmentScheduleandAnnouncementoftheNewStatewideAssessments.pdf)*
+
+### 11.10 Open Source Landscape
+
+The open-source EdTech AI space remains sparse for assessment-specific tools:
+
+- **AI4ED** (GitHub): LLM-powered assignment feedback and adaptive quizzes. Research-oriented.
+- **QuizNote** (GitHub): Gemini-powered quiz generation from notes. Simple, single-purpose.
+- **Quiz.AI** (GitHub): NLP-based automatic MCQ generation. Older approach (pre-LLM).
+- **Neuropilot**: Transforms study materials into quizzes, flashcards, notes, and podcasts. Open-source.
+
+**QuizWeaver's Competitive Position**: QuizWeaver is significantly more mature than any open-source alternative. No other open-source tool combines agentic pipeline generation, cognitive frameworks, standards alignment, reading-level variants, rubric generation, performance analytics, and multi-format export. This is a strong position to maintain.
+
+*Sources: [AI4ED GitHub](https://github.com/nikbearbrown/AI4ED), [QuizNote GitHub](https://github.com/Evavic44/quiznote), [Quiz Generator Topics on GitHub](https://github.com/topics/quiz-generator?o=asc&s=stars)*
+
+### 11.11 Key Industry Trends (February 2026)
+
+1. **AI usage in classrooms increased 6x since 2023**. 68% of educators report 5+ hours/week saved.
+2. **"Instructional superproducts"** are emerging — platforms that combine curriculum, assessment, intervention, and PD in one place.
+3. **Purpose-built, responsible AI** is what districts want — not generic chatbots, but tools with guardrails that identify skill gaps, personalize support, and streamline planning.
+4. **Accessibility is becoming non-negotiable** — platforms that lack TTS, dyslexia fonts, and screen reader support are being filtered out by procurement.
+5. **Standards alignment is table-stakes** — every new tool ships with searchable standards databases. QuizWeaver's 85 Virginia SOL standards are a start but need expansion (BL-022).
+6. **The teach-assess-reteach loop** is the holy grail — tools that connect lesson planning to assessment to gap analysis to reteaching are winning. QuizWeaver has the pieces but needs lesson plan generation to complete the loop.
+7. **Multi-state/multi-country standards** support is expected — Microsoft Copilot Teach supports 35+ countries.
+
+*Sources: [2026 EdTech Predictions (eSchool News)](https://www.eschoolnews.com/innovative-teaching/2026/01/01/draft-2026-predictions/), [K-12 EdTech Trends 2026 (EdSurge)](https://www.edsurge.com/news/2026-01-27-k-12-edtech-in-2026-five-trends-shaping-the-year-ahead), [AI Tools for Teachers (EdTech Magazine)](https://edtechmagazine.com/k12/article/2026/01/ai-tools-teachers-drive-efficiencies-perfcon)*
+
+---
+
 ## Sources
 
 ### Canvas LMS
@@ -726,3 +968,68 @@ Popular quiz game platform for classroom engagement with live quizzing and AI-po
 - [Top 12 Canvas LMS Alternatives & Competitors 2026](https://www.educate-me.co/blog/canvas-lms-alternatives)
 - [Open Source LMS Comparison 2026 | Moodle Vs OpenEdX Vs Canvas LMS](https://selleo.com/blog/open-source-lms-comparison)
 - [Top Free Open-Source LMS Platforms for E-Learning in 2026 | Best Picks](https://www.paradisosolutions.com/blog/top-free-open-source-lms-platforms-for-elearning/)
+
+### 2026 Update Sources (Section 11)
+
+#### New Entrants & Platform Updates
+- [OpenAI ChatGPT for Teachers](https://openai.com/index/chatgpt-for-teachers/)
+- [ChatGPT for Teachers Help Center](https://help.openai.com/en/articles/12844995-chatgpt-for-teachers)
+- [BETT 2026 Microsoft Education Updates](https://www.edtechinnovationhub.com/news/bett-2026-microsoft-outlines-major-ai-copilot-and-classroom-updates-across-education-stack)
+- [Microsoft Copilot for Education Guide](https://www.educatorstechnology.com/2026/02/microsoft-copilot-for-education.html)
+- [Microsoft Education Innovations Jan 2026](https://news.microsoft.com/source/2026/01/15/microsoft-expands-its-commitment-to-education-with-elevate-for-educators-program-and-new-ai-powered-tools/)
+- [McGraw Hill GenAI Assistants](https://www.mheducation.com/about-us/news-insights/press-releases/new-genai-assistants-add-personalized-experiences-and-support-to-mcgraw-hill-k-12-programs.html)
+- [McGraw Hill AI Tools (THE Journal)](https://thejournal.com/articles/2025/12/02/mcgraw-hill-expands-gen-ai-tools-for-teaching-and-learning.aspx)
+- [Flint Reviews 2026](https://edtechimpact.com/products/flint/)
+
+#### Wayground Rebrand
+- [Quizizz Becomes Wayground (PR Newswire)](https://www.prnewswire.com/news-releases/quizizz-becomes-wayground-announces-new-ai-and-curriculum-supports-302489367.html)
+- [Wayground Rebrand Overview](https://www.edtechinnovationhub.com/news/quiziz-rebrands-to-wayground)
+- [What is Wayground (Tech & Learning)](https://www.techlearning.com/how-to/what-is-wayground-and-how-can-it-be-used-for-teaching)
+
+#### AI-Assisted Grading
+- [AI Answer Sheet Checking (Eklavvya)](https://www.eklavvya.com/blog/ai-answer-sheet-checking/)
+- [AI and Auto-Grading in Higher Ed (OSU)](https://ascode.osu.edu/news/ai-and-auto-grading-higher-education-capabilities-ethics-and-evolving-role-educators)
+- [AI-Powered Grading Review (Springer)](https://link.springer.com/article/10.1007/s44163-025-00517-0)
+- [Automated Grading of Open-Ended Questions (Springer)](https://link.springer.com/article/10.1007/s40593-025-00517-2)
+- [Top AI Graders 2026](https://www.theschoolhouse.org/post/top-ai-graders-teachers)
+- [CoGrader](https://cograder.com/)
+- [EssayGrader](https://www.essaygrader.ai)
+
+#### Lesson Plan Generation
+- [SchoolAI Lesson Plan Generator](https://schoolai.com/blog/ai-lesson-plan-generator-standards-aligned)
+- [Flint AI Lesson Plans](https://flintk12.com/tools/ai-lesson-plan-generator)
+- [PlanSpark](https://planspark.net/)
+- [10 Best AI Lesson Planners 2026 (Edcafe)](https://www.edcafe.ai/blog/ai-lesson-planners)
+- [5 AI Lesson Plan Generators 2026](https://blaze.today/blog/ai-lesson-plan-generators/)
+
+#### Accessibility
+- [Wayground Accessibility Statement](https://support.wayground.com/hc/en-us/articles/360055566272)
+- [WCAG and Dyslexia (WCAGReady)](https://wcagready.com/en/digital-accessibility-and-dyslexia/)
+- [Best Fonts for Dyslexia (Inclusive Web)](https://www.inclusiveweb.co/accessibility-resources/best-font-styles-for-dyslexia)
+- [TTS in Education (MDPI)](https://www.mdpi.com/2673-4591/112/1/4)
+- [ReadSpeaker for Assessments](https://www.readspeaker.com/sectors/education/assessments/)
+- [Harvard Digital Accessibility: Dyslexia](https://accessibility.huit.harvard.edu/disabilities/dyslexia)
+- [Texas STAAR TTS Accommodations 2025-2026](https://tea.texas.gov/student-assessment/test-administration/staar-accommodation-educator-guide.pdf)
+
+#### Differentiation & Accommodation
+- [AI in Special Education (GovTech)](https://www.govtech.com/education/k-12/ai-gains-ground-in-special-ed-raises-legal-and-ethical-concerns)
+- [Teachers Using AI for IEPs (EdWeek)](https://www.edweek.org/teaching-learning/teachers-are-using-ai-to-help-write-ieps-advocates-have-concerns/2025/10)
+- [Differentiated Instruction for SPED (HMH)](https://www.hmhco.com/blog/differentiated-instruction-for-special-education-students)
+
+#### Assessment Innovation
+- [Interactive Assessment Solutions](https://medium.com/@acadecraftharsh/how-are-interactive-assessment-solutions-the-future-of-education-14f942062c64)
+- [Adaptive Quiz Builder Guide (Estha)](https://estha.ai/blog/personalized-learning-quiz-builder-for-edtech-a-complete-guide-to-creating-adaptive-assessments/)
+- [Student Portfolios Guide (Unrulr)](https://www.unrulr.com/post/the-ultimate-guide-to-student-portfolios)
+
+#### Open Source EdTech
+- [AI4ED GitHub](https://github.com/nikbearbrown/AI4ED)
+- [QuizNote GitHub](https://github.com/Evavic44/quiznote)
+- [Quiz Generator Topics on GitHub](https://github.com/topics/quiz-generator?o=asc&s=stars)
+
+#### Industry Trends
+- [2026 EdTech Predictions (eSchool News)](https://www.eschoolnews.com/innovative-teaching/2026/01/01/draft-2026-predictions/)
+- [K-12 EdTech Trends 2026 (EdSurge)](https://www.edsurge.com/news/2026-01-27-k-12-edtech-in-2026-five-trends-shaping-the-year-ahead)
+- [AI Tools for Teachers (EdTech Magazine)](https://edtechmagazine.com/k12/article/2026/01/ai-tools-teachers-drive-efficiencies-perfcon)
+- [OECD Digital Education Outlook 2026](https://www.oecd.org/en/publications/oecd-digital-education-outlook-2026_062a7394-en.html)
+- [2026 AI/EdTech Predictions (THE Journal)](https://thejournal.com/articles/2026/01/29/2026-predictions-for-ai-and-ed-tech-in-k12-education-what-industry-leaders-are-saying.aspx)
+- [Best AI Platforms for Teachers 2026](https://teachbetter.ai/best-ai-platforms-for-teachers-in-2026/)

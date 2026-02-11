@@ -52,6 +52,12 @@ AI_TOOLTIPS = {
         "Never include student names or personally identifiable information."
     ),
 
+    # Lesson logging value
+    "lesson_logging_value": (
+        "Logging lessons creates context for AI generation. The more lessons you log, "
+        "the better QuizWeaver can align quizzes and study materials to what you've actually taught."
+    ),
+
     # Rubric detail
     "rubric_review": (
         "Rubric criteria are structured by fixed proficiency levels, but descriptions "

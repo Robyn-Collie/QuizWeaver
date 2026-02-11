@@ -1,5 +1,5 @@
 """
-Comprehensive tests for the multi-class management module (src/classroom.py).
+Comprehensive tests for the class sections and organization module (src/classroom.py).
 
 Tests cover:
   - Creating classes with all fields

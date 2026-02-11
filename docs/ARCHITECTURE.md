@@ -13,7 +13,7 @@ QuizWeaver is a local-first, AI-powered teaching platform built on Python + SQLi
               +-----------+         +-----------+
               |                                 |
     +---------v---------+            +----------v----------+
-    | Multi-Class Mgmt  |            | Lesson Tracking     |
+    | Class Sections    |            | Lesson Tracking     |
     | (classroom.py)    |            | (lesson_tracker.py) |
     +---------+---------+            +----------+----------+
               |                                 |
@@ -52,7 +52,7 @@ QuizWeaver is a local-first, AI-powered teaching platform built on Python + SQLi
 - Resolves active class context (--class flag or config)
 - Manages database session lifecycle
 
-### Multi-Class Management (src/classroom.py)
+### Class Sections & Organization (src/classroom.py)
 - CRUD operations for teacher classes/blocks
 - Active class switching (writes to config.yaml)
 - Class listing with lesson/quiz count aggregation

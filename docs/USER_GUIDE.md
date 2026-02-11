@@ -273,7 +273,7 @@ python main.py log-lesson --text "Covered the stages of mitosis: prophase, metap
 python main.py generate --count 20 --sol "SOL 7.3" "SOL 7.4"
 ```
 
-### Multi-Class Management
+### Class Sections & Organization
 
 ```bash
 # Log the same lesson to different classes (if taught differently)

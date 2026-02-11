@@ -985,6 +985,67 @@ a:hover {
     margin-top: 3rem;
 }
 
+.shortcuts-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.7;
+    margin-top: 0.25rem;
+}
+.shortcuts-hint kbd {
+    background: var(--border-light);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    font-family: inherit;
+    font-size: 0.8rem;
+}
+.shortcuts-hint.seen {
+    opacity: 0.4;
+}
+
+/* ===== Nav Dropdowns ===== */
+.nav-dropdown {
+    position: relative;
+}
+.nav-dropdown-toggle {
+    cursor: pointer;
+}
+.dropdown-arrow {
+    font-size: 0.65em;
+    margin-left: 2px;
+}
+.nav-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    list-style: none;
+    min-width: 180px;
+    padding: 0.5rem 0;
+    z-index: 200;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown.open .nav-dropdown-menu {
+    display: block;
+}
+.nav-dropdown-menu li a {
+    display: block;
+    padding: 0.5rem 1rem;
+    white-space: nowrap;
+}
+
+/* ===== Nav User Section ===== */
+.nav-user-section {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+}
+
 /* ===== Nav Toggle (hamburger) ===== */
 .nav-toggle {
     display: none;
@@ -2768,6 +2829,24 @@ small.text-muted {
         padding: 0.6rem 0;
     }
 
+    .nav-dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        padding-left: 1rem;
+    }
+    .nav-dropdown-menu li a {
+        padding: 0.4rem 0;
+    }
+
+    .nav-user-section {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.5rem 0;
+        border-top: 1px solid var(--border);
+        margin-top: 0.25rem;
+    }
+
     .container {
         padding: 0 1rem;
         margin-top: 1.5rem;
@@ -2850,6 +2929,12 @@ small.text-muted {
     color: #1a1e24;
 }
 
+:root[data-theme="dark"] .help-tip::after {
+    background: #1a1e24;
+    color: #f0ebe4;
+    border: 1px solid #353b45;
+}
+
 /* ===== Theme Toggle Button ===== */
 .theme-toggle {
     background: none;
@@ -2895,16 +2980,21 @@ html {
 }
 
 /* ===== Nav User Info ===== */
-.nav-user-info {
-    display: flex;
-    align-items: center;
+
+.nav-user-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
 }
 
 .nav-user-name {
     color: var(--text-muted);
     font-weight: 600;
     font-size: 0.85rem;
-    padding: 0.4rem 0.75rem;
+    padding: 0.4rem 0.25rem;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* ===== Toast Notifications ===== */

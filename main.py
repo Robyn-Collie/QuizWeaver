@@ -311,7 +311,7 @@ def handle_generate(config, args):
     print("\n[OK] Generation complete!")
 
 
-# --- Multi-Class Management Handlers ---
+# --- Class Section Handlers ---
 
 
 def handle_new_class(config, args):

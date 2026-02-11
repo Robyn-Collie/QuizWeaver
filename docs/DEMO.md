@@ -11,7 +11,7 @@ QuizWeaver is an AI-powered teaching assistant platform that helps educators man
 - 51+ commits of iterative, test-driven development
 - 8 CLI commands + full web interface
 - $0 development cost using MockLLMProvider
-- Multi-class management with lesson tracking
+- Class sections & organization with lesson tracking
 - Cost tracking and rate limiting
 - Three-agent quiz generation pipeline
 
@@ -134,7 +134,7 @@ Open your browser to [http://localhost:5000](http://localhost:5000)
 Open `demo_data/demo_script.md` for a step-by-step walkthrough of the platform's features:
 
 1. Dashboard overview
-2. Multi-class management
+2. Class sections & organization
 3. Lesson tracking
 4. Quiz generation
 5. Cost tracking and analytics

@@ -24,6 +24,7 @@ QuizWeaver is built on research-backed principles for responsible AI use in educ
 5. **Privacy by Design** — Student data is anonymized. Local-first architecture (SQLite) means no cloud dependency. No student PII in AI prompts. *(UNESCO AI Competency Framework, 2024)*
 6. **Cost Transparency** — Teachers see exactly what AI calls cost and can control spending. Mock mode enables full exploration at zero cost. *(Digital Promise, 2024)*
 7. **Equity & Access** — Support for multiple LLM providers (including free/local models via Ollama) ensures the tool works regardless of school budget. Reading-level variants and scaffolded content support diverse learners. *(ISTE Standards, 2024; UNESCO, 2024)*
+8. **Student Data Protection** — QuizWeaver is a teacher-facing tool. Student work (essays, answers, writing samples) must NEVER be sent to cloud AI providers. No feature should create a path — even an accidental one — for student work to reach third-party APIs. This protects teachers from FERPA violations, career harm, and loss of trust. If a feature requires processing student content, it must be constrained to local-only execution (deterministic scripts, local NLP, or local LLM providers) and must refuse to run with cloud providers. *(FERPA, 20 U.S.C. § 1232g; UNESCO, 2024)*
 
 ### Sources
 - UNESCO (2024). *AI Competency Framework for Teachers.* https://www.unesco.org/en/articles/ai-competency-framework-teachers
@@ -71,7 +72,7 @@ QuizWeaver is built on research-backed principles for responsible AI use in educ
 
 - **Test-Driven Development**: Write tests before implementation
 - **Backward Compatibility**: Existing quiz generation must continue working
-- **Multi-Class Isolation**: Thoroughly test that classes don't leak data
+- **Class Section Isolation**: Thoroughly test that classes don't leak data
 - **Idempotent Migrations**: Database migrations must be safe to run multiple times
 - **Privacy-First**: All student data is anonymized
 - **Teacher-in-Control**: All AI-generated content requires teacher approval
@@ -135,7 +136,7 @@ QuizWeaver/
 │
 ├── src/                    # Source code
 │   ├── agents.py           # Agentic pipeline (Analyst, Generator, Critic)
-│   ├── classroom.py        # Multi-class management (Phase 1, Section 3)
+│   ├── classroom.py        # Class sections CRUD (create, list, update, delete)
 │   ├── lesson_tracker.py   # Lesson logging & assumed knowledge (Phase 1, Section 4)
 │   ├── database.py         # SQLAlchemy ORM models
 │   ├── migrations.py       # Database migration runner
@@ -196,7 +197,7 @@ All agents use the LLM provider abstraction (MockLLMProvider during development)
 SQLAlchemy ORM models:
 - `Lesson`: Ingested lesson content
 - `Asset`: Extracted images from lessons
-- `Class`: Teacher's class/block (multi-class support)
+- `Class`: Teacher's class/block (class section organization)
 - `LessonLog`: Tracks lessons taught to each class
 - `Quiz`: Generated quizzes
 - `Question`: Individual quiz questions
@@ -263,18 +264,18 @@ openspec status --change teaching-platform-expansion
   - All tests passing
 
 - ✅ **Section 2: Database Schema Extension** (4/4 tasks)
-  - Multi-class support (Classes, LessonLogs tables)
+  - Class sections support (Classes, LessonLogs tables)
   - Idempotent migrations
   - SQLAlchemy ORM models
   - All tests passing
 
 ### Next Section
 
-- ⏳ **Section 3: Multi-Class Management Module** (0/6 tasks)
+- ⏳ **Section 3: Class Sections Module** (0/6 tasks)
   - Create `src/classroom.py` module
   - Add CLI commands (new-class, list-classes, set-class)
-  - Implement class management handlers
-  - Test multi-class functionality
+  - Implement class section handlers
+  - Test class section functionality
 
 ## Common Tasks
 
@@ -336,7 +337,7 @@ openspec status --change teaching-platform-expansion
 ## Git Workflow
 
 - **Branch strategy**: Work on `main` (small project)
-- **Commit messages**: Descriptive, imperative mood (e.g., "Add multi-class management CLI")
+- **Commit messages**: Descriptive, imperative mood (e.g., "Add class section CLI commands")
 - **Co-authoring**: Add `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
 - **Commit frequency**: After each section or major feature
 - **Push regularly**: Share progress with team/workshop
