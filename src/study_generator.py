@@ -243,6 +243,11 @@ def generate_study_material(
             back = item.get("back", "")
             extras = {}
 
+        # Preserve image_url if present in the LLM/mock response
+        image_url = item.get("image_url", "")
+        if image_url:
+            extras["image_url"] = image_url
+
         card = StudyCard(
             study_set_id=study_set.id,
             card_type=card_type,

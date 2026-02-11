@@ -1,0 +1,205 @@
+{
+  "source": "Texas Essential Knowledge and Skills",
+  "version": "2024",
+  "standard_set": "teks",
+  "standards": [
+    {
+      "code": "TEKS.MATH.6.2A",
+      "description": "Classify whole numbers, integers, and rational numbers using a visual representation",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Operations",
+      "full_text": "The student is expected to classify whole numbers, integers, and rational numbers using a visual representation such as a Venn diagram to describe relationships between sets of numbers.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.6.3D",
+      "description": "Add, subtract, multiply, and divide integers fluently",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Operations",
+      "full_text": "The student is expected to add, subtract, multiply, and divide integers fluently.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.6.4B",
+      "description": "Apply qualitative and quantitative reasoning to solve prediction and comparison of real-world problems involving ratios and rates",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Proportionality",
+      "full_text": "The student is expected to apply qualitative and quantitative reasoning to solve prediction and comparison of real-world problems involving ratios and rates.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.6.6A",
+      "description": "Identify independent and dependent quantities from tables and graphs",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions, Equations, and Relationships",
+      "full_text": "The student is expected to identify independent and dependent quantities from tables and graphs.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.6.8A",
+      "description": "Extend previous knowledge of triangles and their properties to include the sum of angles of a triangle",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions, Equations, and Relationships",
+      "full_text": "The student is expected to extend previous knowledge of triangles and their properties to include the sum of angles of a triangle, the relationship between the lengths of sides and measures of angles in a triangle.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.7.1A",
+      "description": "Apply mathematics to problems arising in everyday life, society, and the workplace",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Mathematical Process Standards",
+      "full_text": "The student is expected to apply mathematics to problems arising in everyday life, society, and the workplace.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.7.3A",
+      "description": "Add, subtract, multiply, and divide rational numbers fluently",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Operations",
+      "full_text": "The student is expected to add, subtract, multiply, and divide rational numbers fluently.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.7.4A",
+      "description": "Represent constant rates of change in mathematical and real-world problems",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Proportionality",
+      "full_text": "The student is expected to represent constant rates of change in mathematical and real-world problems given pictorial, tabular, verbal, numeric, graphical, and algebraic representations.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.8.2A",
+      "description": "Extend previous knowledge of sets and subsets using a visual representation",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Number and Operations",
+      "full_text": "The student is expected to extend previous knowledge of sets and subsets using a visual representation to describe relationships between sets of real numbers.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.8.5A",
+      "description": "Represent linear proportional situations with tables, graphs, and equations",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Proportionality",
+      "full_text": "The student is expected to represent linear proportional situations with tables, graphs, and equations in the form y = kx.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.MATH.8.8A",
+      "description": "Write one-variable equations or inequalities with variables on both sides",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions, Equations, and Relationships",
+      "full_text": "The student is expected to write one-variable equations or inequalities with variables on both sides that represent problems using rational number coefficients and constants.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.6.2A",
+      "description": "Plan and implement comparative and descriptive investigations",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Scientific and Engineering Practices",
+      "full_text": "The student is expected to plan and implement comparative and descriptive investigations by making observations, asking well defined questions, and using appropriate equipment and technology.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.6.6A",
+      "description": "Compare metals, nonmetals, and metalloids using physical properties",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Matter and Energy",
+      "full_text": "The student is expected to compare metals, nonmetals, and metalloids using physical properties such as luster, conductivity, or malleability.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.6.8A",
+      "description": "Compare and contrast potential and kinetic energy",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student is expected to compare and contrast potential and kinetic energy.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.6.10A",
+      "description": "Recognize that the Sun provides the energy that drives convection within the atmosphere and oceans",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space",
+      "full_text": "The student is expected to recognize that the Sun provides the energy that drives convection within the atmosphere and oceans, producing winds and ocean currents.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.7.2A",
+      "description": "Plan and implement comparative and descriptive investigations",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Scientific and Engineering Practices",
+      "full_text": "The student is expected to plan and implement comparative and descriptive investigations by making observations, asking well defined questions, and using appropriate equipment and technology.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.7.10A",
+      "description": "Observe and describe how different environments support different varieties of organisms",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Organisms and Environments",
+      "full_text": "The student is expected to observe and describe how different environments, including microhabitats in schoolyards and biomes, support different varieties of organisms.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.7.12A",
+      "description": "Recognize that inherited traits of individuals are governed in the genetic material found in the genes within chromosomes",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Organisms and Environments",
+      "full_text": "The student is expected to recognize that inherited traits of individuals are governed in the genetic material found in the genes within chromosomes in the nucleus.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.8.5A",
+      "description": "Describe the structure of atoms including the masses, electrical charges, and locations of protons and neutrons in the nucleus and electrons in the electron cloud",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Matter and Energy",
+      "full_text": "The student is expected to describe the structure of atoms, including the masses, electrical charges, and locations, of protons and neutrons in the nucleus and electrons in the electron cloud.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.8.6A",
+      "description": "Demonstrate and calculate how unbalanced forces change the speed or direction of an object's motion",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Force, Motion, and Energy",
+      "full_text": "The student is expected to demonstrate and calculate how unbalanced forces change the speed or direction of an object's motion.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.8.9A",
+      "description": "Describe components of the universe including stars, nebulae, and galaxies",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space",
+      "full_text": "The student is expected to describe components of the universe, including stars, nebulae, and galaxies, and use models such as the Hertzsprung-Russell diagram for classification.",
+      "standard_set": "teks"
+    },
+    {
+      "code": "TEKS.SCI.8.11A",
+      "description": "Describe the interactions that occur among systems in the human organism",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Organisms and Environments",
+      "full_text": "The student is expected to describe the interactions that occur among systems that perform the functions of regulation, nutrient absorption, reproduction, and defense from injury or illness in animals.",
+      "standard_set": "teks"
+    }
+  ]
+}

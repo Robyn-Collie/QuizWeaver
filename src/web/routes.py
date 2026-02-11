@@ -60,6 +60,10 @@ from src.standards import (
     get_grade_bands,
     standards_count,
     load_standards_from_json,
+    get_available_standard_sets,
+    get_standard_sets_in_db,
+    ensure_standard_set_loaded,
+    STANDARD_SETS,
 )
 from src.topic_generator import (
     generate_from_topics,
@@ -1114,6 +1118,8 @@ def register_routes(app):
             providers=providers,
             current_provider=current_provider,
             llm_config=llm_config,
+            standard_sets=get_available_standard_sets(),
+            current_standard_set=config.get("standard_set", "sol"),
         )
 
     # --- Provider Setup Wizard ---
@@ -2331,21 +2337,23 @@ def register_routes(app):
         """Browse and search educational standards."""
         session = _get_session()
 
-        # Auto-load standards if table is empty
+        # Auto-load the configured standard set if table is empty
         total = standards_count(session)
         if total == 0:
-            json_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-                "data",
-                "sol_standards.json",
-            )
-            if os.path.exists(json_path):
-                load_standards_from_json(session, json_path)
-                total = standards_count(session)
+            configured_set = config.get("standard_set", "sol")
+            ensure_standard_set_loaded(session, configured_set)
+            total = standards_count(session)
 
         q = request.args.get("q", "").strip()
         subject = request.args.get("subject", "").strip()
         grade_band = request.args.get("grade_band", "").strip()
+        standard_set = request.args.get("standard_set", "").strip()
+
+        # Resolve label for the selected set
+        standard_set_label = ""
+        if standard_set:
+            ss_info = STANDARD_SETS.get(standard_set)
+            standard_set_label = ss_info["label"] if ss_info else standard_set
 
         if q:
             results = search_standards(
@@ -2353,23 +2361,31 @@ def register_routes(app):
                 q,
                 subject=subject or None,
                 grade_band=grade_band or None,
+                standard_set=standard_set or None,
             )
         else:
             results = list_standards(
                 session,
                 subject=subject or None,
                 grade_band=grade_band or None,
+                standard_set=standard_set or None,
             )
+
+        loaded_sets = get_standard_sets_in_db(session)
 
         return render_template(
             "standards.html",
             standards=results,
             total_count=total,
-            subjects=get_subjects(session),
-            grade_bands=get_grade_bands(session),
+            subjects=get_subjects(session, standard_set=standard_set or None),
+            grade_bands=get_grade_bands(session, standard_set=standard_set or None),
+            available_sets=get_available_standard_sets(),
+            loaded_sets=loaded_sets,
             q=q,
             subject=subject,
             grade_band=grade_band,
+            standard_set=standard_set,
+            standard_set_label=standard_set_label,
         )
 
     @app.route("/api/standards/search")
@@ -2378,20 +2394,16 @@ def register_routes(app):
         """JSON API for standards autocomplete search."""
         session = _get_session()
 
-        # Auto-load standards if table is empty
+        # Auto-load the configured standard set if table is empty
         total = standards_count(session)
         if total == 0:
-            json_path = os.path.join(
-                os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-                "data",
-                "sol_standards.json",
-            )
-            if os.path.exists(json_path):
-                load_standards_from_json(session, json_path)
+            configured_set = config.get("standard_set", "sol")
+            ensure_standard_set_loaded(session, configured_set)
 
         q = request.args.get("q", "").strip()
         subject = request.args.get("subject", "").strip()
         grade_band = request.args.get("grade_band", "").strip()
+        standard_set = request.args.get("standard_set", "").strip()
 
         if not q:
             return jsonify({"results": []})
@@ -2401,6 +2413,7 @@ def register_routes(app):
             q,
             subject=subject or None,
             grade_band=grade_band or None,
+            standard_set=standard_set or None,
         )
         return jsonify({
             "results": [
@@ -2411,10 +2424,429 @@ def register_routes(app):
                     "subject": std.subject,
                     "grade_band": std.grade_band,
                     "strand": std.strand,
+                    "standard_set": std.standard_set or "sol",
                 }
                 for std in results[:20]  # Limit autocomplete results
             ]
         })
+
+    @app.route("/settings/standards", methods=["POST"])
+    @login_required
+    def settings_standards():
+        """Save the selected standard set and auto-load it."""
+        selected_set = request.form.get("standard_set", "sol")
+        config["standard_set"] = selected_set
+        save_config(config)
+
+        # Auto-load the selected set
+        session = _get_session()
+        loaded = ensure_standard_set_loaded(session, selected_set)
+        set_label = STANDARD_SETS.get(selected_set, {}).get("label", selected_set)
+
+        if loaded > 0:
+            flash(f"Loaded {loaded} standards from {set_label}.", "success")
+        else:
+            flash(f"Standards set updated to {set_label}.", "success")
+
+        return redirect(url_for("settings"))
+
+    # --- Lesson Plan Routes ---
+
+    @app.route("/lesson-plans")
+    @login_required
+    def lesson_plan_list():
+        """List lesson plans, optionally filtered by class or search."""
+        session = _get_session()
+        from src.database import LessonPlan
+        query = session.query(LessonPlan)
+
+        class_id_filter = request.args.get("class_id", type=int)
+        search_q = request.args.get("q", "").strip()
+        if class_id_filter:
+            query = query.filter(LessonPlan.class_id == class_id_filter)
+        if search_q:
+            query = query.filter(LessonPlan.title.ilike(f"%{search_q}%"))
+
+        plans = query.order_by(LessonPlan.created_at.desc()).all()
+
+        plan_data = []
+        for lp in plans:
+            class_obj = get_class(session, lp.class_id) if lp.class_id else None
+            topics_list = []
+            if lp.topics:
+                try:
+                    topics_list = json.loads(lp.topics) if isinstance(lp.topics, str) else lp.topics
+                except (json.JSONDecodeError, ValueError):
+                    topics_list = []
+            plan_data.append({
+                "id": lp.id,
+                "title": lp.title,
+                "status": lp.status,
+                "class_name": class_obj.name if class_obj else "N/A",
+                "topics": ", ".join(topics_list) if topics_list else "",
+                "duration_minutes": lp.duration_minutes,
+                "created_at": lp.created_at,
+            })
+
+        classes = list_classes(session)
+        return render_template(
+            "lesson_plans/list.html",
+            lesson_plans=plan_data,
+            classes=classes,
+            current_class_id=class_id_filter,
+            search_q=search_q,
+        )
+
+    @app.route("/lesson-plans/generate", methods=["GET", "POST"])
+    @login_required
+    def lesson_plan_generate():
+        """Generate a lesson plan via form POST or render form on GET."""
+        session = _get_session()
+        config = current_app.config["APP_CONFIG"]
+        classes = list_classes(session)
+        providers = get_provider_info(config)
+        current_provider = config.get("llm", {}).get("provider", "mock")
+
+        # Pre-fill from query params (e.g., from quiz or lesson context)
+        prefill_topics = request.args.get("topics", "")
+        prefill_standards = request.args.get("standards", "")
+        selected_class_id = request.args.get("class_id", type=int)
+
+        if request.method == "POST":
+            class_id = request.form.get("class_id", type=int)
+            topics_str = request.form.get("topics", "").strip()
+            standards_str = request.form.get("standards", "").strip()
+            duration = request.form.get("duration_minutes", type=int) or 50
+            grade_level = request.form.get("grade_level", "").strip() or None
+            provider_override = request.form.get("provider", "").strip() or None
+
+            if not class_id:
+                return render_template(
+                    "lesson_plans/generate.html",
+                    classes=classes,
+                    providers=providers,
+                    current_provider=current_provider,
+                    prefill_topics=topics_str,
+                    prefill_standards=standards_str,
+                    error="Please select a class.",
+                ), 400
+
+            topics = [t.strip() for t in topics_str.split(",") if t.strip()] if topics_str else None
+            standards = [s.strip() for s in standards_str.split(",") if s.strip()] if standards_str else None
+
+            from src.lesson_plan_generator import generate_lesson_plan
+            plan = generate_lesson_plan(
+                session,
+                class_id=class_id,
+                config=config,
+                topics=topics,
+                standards=standards,
+                duration_minutes=duration,
+                grade_level=grade_level,
+                provider_name=provider_override,
+            )
+
+            if plan:
+                flash("Lesson plan generated successfully.", "success")
+                return redirect(url_for("lesson_plan_detail", plan_id=plan.id), code=303)
+            else:
+                return render_template(
+                    "lesson_plans/generate.html",
+                    classes=classes,
+                    providers=providers,
+                    current_provider=current_provider,
+                    prefill_topics=topics_str,
+                    prefill_standards=standards_str,
+                    error="Generation failed. Please try again.",
+                ), 500
+
+        return render_template(
+            "lesson_plans/generate.html",
+            classes=classes,
+            providers=providers,
+            current_provider=current_provider,
+            prefill_topics=prefill_topics,
+            prefill_standards=prefill_standards,
+            selected_class_id=selected_class_id,
+        )
+
+    @app.route("/lesson-plans/<int:plan_id>")
+    @login_required
+    def lesson_plan_detail(plan_id):
+        """Show lesson plan detail with all sections."""
+        session = _get_session()
+        from src.database import LessonPlan
+        plan = session.query(LessonPlan).filter_by(id=plan_id).first()
+        if not plan:
+            abort(404)
+
+        class_obj = get_class(session, plan.class_id) if plan.class_id else None
+
+        # Parse plan data
+        plan_data = {}
+        if plan.plan_data:
+            try:
+                plan_data = json.loads(plan.plan_data) if isinstance(plan.plan_data, str) else plan.plan_data
+            except (json.JSONDecodeError, ValueError):
+                plan_data = {}
+
+        # Parse topics and standards
+        topics = []
+        if plan.topics:
+            try:
+                topics = json.loads(plan.topics) if isinstance(plan.topics, str) else plan.topics
+            except (json.JSONDecodeError, ValueError):
+                topics = []
+
+        standards = []
+        if plan.standards:
+            try:
+                standards = json.loads(plan.standards) if isinstance(plan.standards, str) else plan.standards
+            except (json.JSONDecodeError, ValueError):
+                standards = []
+
+        from src.lesson_plan_generator import SECTION_LABELS
+
+        success_msg = request.args.get("saved")
+
+        return render_template(
+            "lesson_plans/detail.html",
+            lesson_plan=plan,
+            plan_data=plan_data,
+            class_obj=class_obj,
+            topics=topics,
+            standards=standards,
+            section_labels=SECTION_LABELS,
+            success_msg="Section saved successfully." if success_msg else None,
+        )
+
+    @app.route("/lesson-plans/<int:plan_id>/edit", methods=["POST"])
+    @login_required
+    def lesson_plan_edit(plan_id):
+        """Save edits to a single plan section."""
+        session = _get_session()
+        from src.database import LessonPlan
+        plan = session.query(LessonPlan).filter_by(id=plan_id).first()
+        if not plan:
+            abort(404)
+
+        section_key = request.form.get("section_key", "").strip()
+        section_content = request.form.get("section_content", "").strip()
+
+        if not section_key:
+            flash("Invalid section.", "error")
+            return redirect(url_for("lesson_plan_detail", plan_id=plan_id), code=303)
+
+        # Update the plan data
+        plan_data = {}
+        if plan.plan_data:
+            try:
+                plan_data = json.loads(plan.plan_data) if isinstance(plan.plan_data, str) else plan.plan_data
+            except (json.JSONDecodeError, ValueError):
+                plan_data = {}
+
+        plan_data[section_key] = section_content
+        plan.plan_data = json.dumps(plan_data)
+        session.commit()
+
+        return redirect(url_for("lesson_plan_detail", plan_id=plan_id, saved="1"), code=303)
+
+    @app.route("/lesson-plans/<int:plan_id>/export/<format_name>")
+    @login_required
+    def lesson_plan_export(plan_id, format_name):
+        """Export a lesson plan as PDF or DOCX."""
+        session = _get_session()
+        from src.database import LessonPlan
+        plan = session.query(LessonPlan).filter_by(id=plan_id).first()
+        if not plan:
+            abort(404)
+
+        import re
+        safe_title = re.sub(r"[^\w\s\-]", "", plan.title or "lesson_plan")
+        safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "lesson_plan"
+
+        if format_name == "pdf":
+            from src.lesson_plan_export import export_lesson_plan_pdf
+            buf = export_lesson_plan_pdf(plan)
+            return send_file(
+                buf,
+                mimetype="application/pdf",
+                as_attachment=True,
+                download_name=f"{safe_title}.pdf",
+            )
+        elif format_name == "docx":
+            from src.lesson_plan_export import export_lesson_plan_docx
+            buf = export_lesson_plan_docx(plan)
+            return send_file(
+                buf,
+                mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                as_attachment=True,
+                download_name=f"{safe_title}.docx",
+            )
+        else:
+            abort(400)
+
+    @app.route("/lesson-plans/<int:plan_id>/delete", methods=["POST"])
+    @login_required
+    def lesson_plan_delete(plan_id):
+        """Delete a lesson plan."""
+        session = _get_session()
+        from src.database import LessonPlan
+        plan = session.query(LessonPlan).filter_by(id=plan_id).first()
+        if not plan:
+            abort(404)
+
+        session.delete(plan)
+        session.commit()
+        flash("Lesson plan deleted.", "success")
+        return redirect(url_for("lesson_plan_list"), code=303)
+
+    @app.route("/lesson-plans/<int:plan_id>/generate-quiz")
+    @login_required
+    def lesson_plan_generate_quiz(plan_id):
+        """Redirect to quiz generation with pre-filled topics/standards from plan."""
+        session = _get_session()
+        from src.database import LessonPlan
+        plan = session.query(LessonPlan).filter_by(id=plan_id).first()
+        if not plan:
+            abort(404)
+
+        topics = []
+        if plan.topics:
+            try:
+                topics = json.loads(plan.topics) if isinstance(plan.topics, str) else plan.topics
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        standards = []
+        if plan.standards:
+            try:
+                standards = json.loads(plan.standards) if isinstance(plan.standards, str) else plan.standards
+            except (json.JSONDecodeError, ValueError):
+                pass
+
+        return redirect(url_for(
+            "generate_quiz",
+            class_id=plan.class_id,
+            topics=",".join(topics) if topics else "",
+            standards=",".join(standards) if standards else "",
+            lesson_plan_id=plan.id,
+        ), code=303)
+
+    # --- Quiz Template Routes ---
+
+    @app.route("/quiz-templates")
+    @login_required
+    def quiz_template_list():
+        """Browse imported quiz templates."""
+        session = _get_session()
+        imported_quizzes = (
+            session.query(Quiz)
+            .filter_by(status="imported")
+            .order_by(Quiz.created_at.desc())
+            .all()
+        )
+
+        templates = []
+        for q in imported_quizzes:
+            question_count = session.query(Question).filter_by(quiz_id=q.id).count()
+            class_name = ""
+            if q.class_id:
+                class_obj = get_class(session, q.class_id)
+                if class_obj:
+                    class_name = class_obj.name
+            templates.append({
+                "id": q.id,
+                "title": q.title,
+                "status": q.status,
+                "class_name": class_name,
+                "question_count": question_count,
+                "created_at": q.created_at,
+            })
+
+        return render_template("quiz_templates/list.html", templates=templates)
+
+    @app.route("/quizzes/<int:quiz_id>/export-template")
+    @login_required
+    def quiz_export_template(quiz_id):
+        """Export a quiz as a shareable JSON template (triggers download)."""
+        from src.template_manager import export_quiz_template
+
+        session = _get_session()
+        template_data = export_quiz_template(session, quiz_id)
+        if template_data is None:
+            abort(404)
+
+        # Sanitize filename
+        safe_title = re.sub(r"[^\w\s\-]", "", template_data.get("title", "template"))
+        safe_title = re.sub(r"\s+", "_", safe_title.strip())[:60] or "template"
+
+        json_bytes = json.dumps(template_data, indent=2).encode("utf-8")
+        buf = BytesIO(json_bytes)
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=f"{safe_title}_template.json",
+            mimetype="application/json",
+        )
+
+    @app.route("/quiz-templates/import", methods=["GET", "POST"])
+    @login_required
+    def quiz_template_import():
+        """Upload and import a JSON quiz template."""
+        session = _get_session()
+        classes = list_classes(session)
+
+        if request.method == "GET":
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        # POST: handle file upload
+        file = request.files.get("template_file")
+        if not file or not file.filename:
+            flash("Please select a template file to upload.", "error")
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        class_id = request.form.get("class_id", type=int)
+        if not class_id:
+            flash("Please select a class.", "error")
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        title_override = request.form.get("title", "").strip() or None
+
+        try:
+            raw = file.read().decode("utf-8")
+            template_data = json.loads(raw)
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            flash(f"Invalid JSON file: {e}", "error")
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        from src.template_manager import import_quiz_template, validate_template
+
+        is_valid, errors = validate_template(template_data)
+        if not is_valid:
+            flash(f"Template validation failed: {'; '.join(errors)}", "error")
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        quiz = import_quiz_template(session, template_data, class_id, title=title_override)
+        if quiz is None:
+            flash("Failed to import template.", "error")
+            return render_template("quiz_templates/import.html", classes=classes)
+
+        flash(f"Template imported successfully as '{quiz.title}'.", "success")
+        return redirect(url_for("quiz_detail", quiz_id=quiz.id), code=303)
+
+    @app.route("/api/quiz-templates/validate", methods=["POST"])
+    @login_required
+    def quiz_template_validate():
+        """Validate an uploaded template JSON (AJAX)."""
+        from src.template_manager import validate_template
+
+        data = request.get_json(silent=True)
+        if data is None:
+            return jsonify({"valid": False, "errors": ["No JSON data provided"]}), 400
+
+        is_valid, errors = validate_template(data)
+        return jsonify({"valid": is_valid, "errors": errors})
 
     # --- Help ---
 

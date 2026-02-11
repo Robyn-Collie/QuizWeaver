@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Import Quiz Template - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Import Quiz Template</h1>
+
+<div class="ai-notice" data-dismiss-key="template-import">
+    <button class="ai-notice-dismiss" aria-label="Dismiss notice" title="Dismiss">&times;</button>
+    <strong>About Templates:</strong> Templates contain question content shared by other teachers. Always review imported questions for accuracy, bias, and appropriateness before sharing with students.
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="/quiz-templates/import" class="form-card">
+    <div class="form-group">
+        <label for="template_file">Template File (JSON)</label>
+        <input type="file" id="template_file" name="template_file" accept=".json" required>
+        <small>Upload a .json template file exported from QuizWeaver.</small>
+    </div>
+
+    <div class="form-group">
+        <label for="class_id">Import into Class</label>
+        <select id="class_id" name="class_id" required>
+            {% for c in classes %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="title">Quiz Title (optional override)</label>
+        <input type="text" id="title" name="title" placeholder="Leave blank to use template title" autocomplete="off">
+    </div>
+
+    <div id="templatePreview" style="display:none;">
+        <h3>Template Preview</h3>
+        <div id="previewContent"></div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Import Template</button>
+        <a href="/quiz-templates" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var fileInput = document.getElementById('template_file');
+    var preview = document.getElementById('templatePreview');
+    var previewContent = document.getElementById('previewContent');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file) { preview.style.display = 'none'; return; }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var data = JSON.parse(e.target.result);
+                    var html = '<p><strong>Title:</strong> ' + (data.title || 'Untitled') + '</p>';
+                    html += '<p><strong>Questions:</strong> ' + (data.question_count || (data.questions ? data.questions.length : 0)) + '</p>';
+                    if (data.subject) html += '<p><strong>Subject:</strong> ' + data.subject + '</p>';
+                    if (data.grade_level) html += '<p><strong>Grade Level:</strong> ' + data.grade_level + '</p>';
+                    if (data.standards && data.standards.length) html += '<p><strong>Standards:</strong> ' + data.standards.join(', ') + '</p>';
+                    if (data.cognitive_framework) html += '<p><strong>Framework:</strong> ' + data.cognitive_framework + '</p>';
+
+                    if (data.questions && data.questions.length > 0) {
+                        html += '<h4>Question Types:</h4><ul>';
+                        var types = {};
+                        data.questions.forEach(function(q) {
+                            var t = q.question_type || 'unknown';
+                            types[t] = (types[t] || 0) + 1;
+                        });
+                        for (var t in types) {
+                            html += '<li>' + t + ': ' + types[t] + '</li>';
+                        }
+                        html += '</ul>';
+                    }
+
+                    previewContent.innerHTML = html;
+                    preview.style.display = '';
+                } catch(err) {
+                    previewContent.innerHTML = '<p style="color:var(--danger-color)">Invalid JSON file: ' + err.message + '</p>';
+                    preview.style.display = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+});
+</script>
+{% endblock %}

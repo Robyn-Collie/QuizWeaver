@@ -116,15 +116,18 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
         cognitive_framework = "dok"
         cognitive_levels = DOK_LEVEL_NAMES
 
-    # Generate 3-5 mock questions
-    num_questions = random.randint(3, 5)
+    # Generate 5-7 mock questions (mix of types)
+    num_questions = random.randint(5, 7)
     questions = []
 
     for i in range(num_questions):
         topic = context_keywords[i % len(context_keywords)]
 
-        # Randomly choose question type
-        q_type = random.choice(["multiple_choice", "true_false"])
+        # Randomly choose question type including new types
+        q_type = random.choice([
+            "multiple_choice", "multiple_choice", "true_false",
+            "ordering", "short_answer",
+        ])
 
         if q_type == "multiple_choice":
             question = {
@@ -141,7 +144,7 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "correct_index": random.randint(0, 3),
                 "image_ref": None if random.random() > 0.3 else f"image_{i+1}.png"
             }
-        else:  # true_false
+        elif q_type == "true_false":
             question = {
                 "type": "true_false",
                 "title": f"Question {i+1}",
@@ -150,6 +153,40 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "options": ["True", "False"],
                 "correct_index": random.randint(0, 1),
                 "image_ref": None
+            }
+        elif q_type == "ordering":
+            steps = [
+                f"First, identify the {topic} components",
+                f"Next, observe the {topic} process beginning",
+                f"Then, measure the {topic} output",
+                f"Finally, record the {topic} results",
+            ]
+            question = {
+                "type": "ordering",
+                "question_type": "ordering",
+                "title": f"Question {i+1}",
+                "text": f"Arrange the steps of the {topic} experiment in the correct order.",
+                "points": 5,
+                "items": steps,
+                "correct_order": [0, 1, 2, 3],
+                "instructions": "Arrange the following steps in the correct order.",
+                "image_ref": None,
+            }
+        else:  # short_answer
+            question = {
+                "type": "short_answer",
+                "question_type": "short_answer",
+                "title": f"Question {i+1}",
+                "text": f"What is the primary function of {topic} in living organisms?",
+                "points": 5,
+                "expected_answer": f"{topic}",
+                "acceptable_answers": [
+                    topic,
+                    f"the process of {topic}",
+                    f"{topic} in cells",
+                ],
+                "rubric_hint": f"Student should mention the role of {topic} in biological systems.",
+                "image_ref": None,
             }
 
         # Add cognitive tags if framework detected
@@ -495,6 +532,100 @@ def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
         suggestions.append(suggestion)
 
     return json.dumps(suggestions, indent=2)
+
+
+def get_lesson_plan_response(topics: List[str] = None, standards: List[str] = None,
+                              duration_minutes: int = 50,
+                              context_keywords: List[str] = None) -> str:
+    """Generate mock lesson plan response with all required sections.
+
+    Args:
+        topics: List of topics to cover.
+        standards: List of standards to align to.
+        duration_minutes: Lesson duration in minutes.
+        context_keywords: Optional topic keywords from prompt context.
+
+    Returns:
+        JSON string with a lesson plan object containing all sections.
+    """
+    if not context_keywords:
+        context_keywords = random.sample(SCIENCE_TOPICS, k=3)
+
+    topic1 = context_keywords[0] if len(context_keywords) > 0 else "science"
+    topic2 = context_keywords[1] if len(context_keywords) > 1 else "biology"
+    topic3 = context_keywords[2] if len(context_keywords) > 2 else "chemistry"
+
+    topic_label = ", ".join(topics) if topics else topic1.capitalize()
+    standards_label = ", ".join(standards) if standards else "SOL 7.1, SOL 7.2"
+
+    plan = {
+        "title": f"Exploring {topic_label}",
+        "learning_objectives": (
+            f"Students will be able to: (1) Define {topic1} and explain its role in living organisms. "
+            f"(2) Identify the key stages of {topic1}. "
+            f"(3) Compare and contrast {topic1} with {topic2}. "
+            f"(4) Apply knowledge of {topic1} to real-world scenarios."
+        ),
+        "materials_needed": (
+            f"Textbook (Chapter 5), whiteboard and markers, {topic1} diagram handout, "
+            f"colored pencils, exit ticket slips, laptop/projector for presentation, "
+            f"lab materials for {topic1} demonstration (if available)."
+        ),
+        "warm_up": (
+            f"Display a photograph related to {topic1} on the projector. "
+            f"Ask students to write 3 observations and 1 question about what they see. "
+            f"After 3 minutes, have 2-3 students share their observations with the class. "
+            f"Use student responses to bridge into the day's topic."
+        ),
+        "direct_instruction": (
+            f"Present a mini-lecture on {topic1} using slides. Cover the definition, "
+            f"the key stages, and how it connects to {topic2}. Use the diagram handout "
+            f"to illustrate the process step by step. Pause after each stage to check "
+            f"understanding with quick thumbs-up/thumbs-down. Emphasize vocabulary terms: "
+            f"{topic1}, {topic2}, {topic3}."
+        ),
+        "guided_practice": (
+            f"Students work in pairs to complete the {topic1} diagram labeling activity. "
+            f"Teacher circulates the room to provide support and answer questions. "
+            f"After 10 minutes, review the diagram as a class. Students correct their "
+            f"work using a different colored pencil. Discuss common misconceptions."
+        ),
+        "independent_practice": (
+            f"Students independently answer 5 short-response questions about {topic1} "
+            f"in their notebooks. Questions progress from recall to application. "
+            f"Early finishers may begin the extension activity: writing a paragraph "
+            f"explaining how {topic1} connects to {topic3} in everyday life."
+        ),
+        "assessment": (
+            f"Exit ticket: Students answer 2 questions on a slip of paper. "
+            f"(1) Explain the main purpose of {topic1} in one sentence. "
+            f"(2) Name two factors that affect the rate of {topic1}. "
+            f"Collect exit tickets as formative assessment data."
+        ),
+        "closure": (
+            f"Review the learning objectives. Ask students to rate their confidence "
+            f"on a scale of 1-5 with a hand signal. Preview tomorrow's lesson: "
+            f"we will explore {topic2} in more depth and conduct a hands-on lab. "
+            f"Remind students to review their notes for homework."
+        ),
+        "differentiation": (
+            f"Below Grade Level: Provide a pre-filled diagram with word bank for the "
+            f"labeling activity. Pair with a stronger partner. Simplify exit ticket to "
+            f"multiple choice. "
+            f"On Grade Level: Complete standard activities as described. "
+            f"Advanced: Add a critical thinking question to the exit ticket asking "
+            f"students to predict what would happen if {topic1} were disrupted. "
+            f"Encourage independent research on {topic3} applications."
+        ),
+        "standards_alignment": (
+            f"This lesson addresses {standards_label}. "
+            f"The warm-up activates prior knowledge ({standards_label.split(',')[0].strip()}). "
+            f"Direct instruction and guided practice build conceptual understanding. "
+            f"Independent practice and assessment check for mastery of key objectives."
+        ),
+    }
+
+    return json.dumps(plan, indent=2)
 
 
 def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,

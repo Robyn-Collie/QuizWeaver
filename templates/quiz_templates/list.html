@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Quiz Templates - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Quiz Templates</h1>
+
+<p>Templates are shareable quiz formats that can be imported into any class. They contain questions, answers, and cognitive levels but no class-specific data.</p>
+
+<div class="section-actions">
+    <a href="/quiz-templates/import" class="btn btn-primary">Import Template</a>
+</div>
+
+{% if templates %}
+<div class="search-filter-row">
+    <input type="text" id="templateSearch" placeholder="Search templates..." class="search-input" autocomplete="off">
+</div>
+
+<div class="template-list">
+    {% for t in templates %}
+    <div class="template-card" data-title="{{ t.title|lower }}">
+        <div class="template-card-header">
+            <h3><a href="/quizzes/{{ t.id }}">{{ t.title }}</a></h3>
+            <span class="status status-{{ t.status }}">{{ t.status }}</span>
+        </div>
+        <div class="template-card-meta">
+            {% if t.class_name %}<span>Class: {{ t.class_name }}</span>{% endif %}
+            <span>Questions: {{ t.question_count }}</span>
+            <span>Imported: {{ t.created_at.strftime('%Y-%m-%d') if t.created_at else 'N/A' }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No imported templates yet. Use the "Import Template" button above or export a quiz as a template from any quiz detail page.</p>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var search = document.getElementById('templateSearch');
+    if (search) {
+        search.addEventListener('input', function() {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('.template-card').forEach(function(card) {
+                var title = card.getAttribute('data-title') || '';
+                card.style.display = title.indexOf(q) !== -1 ? '' : 'none';
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ lesson_plan.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ lesson_plan.title }}</h1>
+
+<div class="ai-draft-banner">
+    This lesson plan is an AI-generated draft. Review and edit all sections before using in your classroom.
+</div>
+
+<div class="quiz-info">
+    <p><strong>Class:</strong> {{ class_obj.name if class_obj else 'N/A' }}</p>
+    {% if lesson_plan.grade_level %}
+    <p><strong>Grade Level:</strong> {{ lesson_plan.grade_level }}</p>
+    {% endif %}
+    <p><strong>Duration:</strong> {{ lesson_plan.duration_minutes }} minutes</p>
+    {% if topics %}
+    <p><strong>Topics:</strong> {{ topics|join(', ') }}</p>
+    {% endif %}
+    {% if standards %}
+    <p><strong>Standards:</strong> {{ standards|join(', ') }}</p>
+    {% endif %}
+    <p><strong>Status:</strong> <span class="status status-{{ lesson_plan.status }}">{{ lesson_plan.status }}</span></p>
+    {% if lesson_plan.created_at %}
+    <p><strong>Created:</strong> {{ lesson_plan.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    {% endif %}
+</div>
+
+<div class="export-actions">
+    <span class="export-label">Export:</span>
+    <a href="/lesson-plans/{{ lesson_plan.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
+    <a href="/lesson-plans/{{ lesson_plan.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
+</div>
+
+{% if success_msg %}
+<div class="alert alert-success">{{ success_msg }}</div>
+{% endif %}
+
+<div class="lesson-plan-sections">
+    {% for section_key, section_label in section_labels.items() %}
+    {% set content = plan_data.get(section_key, '') %}
+    <div class="lesson-plan-section" id="section-{{ section_key }}">
+        <div class="section-header">
+            <h2>{{ section_label }}</h2>
+            <button class="btn btn-xs btn-outline section-edit-btn" data-section="{{ section_key }}">Edit</button>
+        </div>
+        <div class="section-view-mode">
+            <p>{{ content if content else '(No content)' }}</p>
+        </div>
+        <div class="section-edit-mode" style="display: none;">
+            <form method="POST" action="/lesson-plans/{{ lesson_plan.id }}/edit">
+                <input type="hidden" name="section_key" value="{{ section_key }}">
+                <textarea name="section_content" rows="5" class="form-control">{{ content }}</textarea>
+                <div class="edit-actions" style="margin-top: 0.5rem;">
+                    <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                    <button type="button" class="btn btn-sm btn-secondary section-cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="section-actions" style="margin-top: 2rem;">
+    <a href="/generate?lesson_plan_id={{ lesson_plan.id }}" class="btn btn-primary">Generate Quiz from This Plan</a>
+    <a href="/lesson-plans" class="btn btn-secondary">Back to Lesson Plans</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle edit mode for sections
+    document.querySelectorAll('.section-edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var section = btn.closest('.lesson-plan-section');
+            section.querySelector('.section-view-mode').style.display = 'none';
+            section.querySelector('.section-edit-mode').style.display = 'block';
+            btn.style.display = 'none';
+        });
+    });
+    document.querySelectorAll('.section-cancel-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var section = btn.closest('.lesson-plan-section');
+            section.querySelector('.section-view-mode').style.display = '';
+            section.querySelector('.section-edit-mode').style.display = 'none';
+            section.querySelector('.section-edit-btn').style.display = '';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -44,7 +44,8 @@ def _sanitize_filename(title: str) -> str:
 def export_flashcards_tsv(study_set, cards) -> str:
     """Export flashcards to Anki-compatible TSV format.
 
-    Anki format: front<TAB>back<TAB>tags (no header row).
+    Anki format: front<TAB>back<TAB>tags<TAB>image (no header row).
+    If a card has an image_url, an <img> tag is appended for Anki compatibility.
 
     Args:
         study_set: StudySet ORM object.
@@ -60,7 +61,9 @@ def export_flashcards_tsv(study_set, cards) -> str:
         data = _parse_card_data(card)
         tags = data.get("tags", [])
         tags_str = " ".join(str(t).replace(" ", "_") for t in tags) if tags else ""
-        lines.append(f"{front}\t{back}\t{tags_str}")
+        image_url = data.get("image_url", "")
+        image_col = f'<img src="{image_url}">' if image_url else ""
+        lines.append(f"{front}\t{back}\t{tags_str}\t{image_col}")
     return "\n".join(lines)
 
 
@@ -84,21 +87,21 @@ def export_flashcards_csv(study_set, cards) -> str:
     material_type = study_set.material_type
 
     if material_type == "flashcard":
-        writer.writerow(["#", "Front", "Back", "Tags"])
+        writer.writerow(["#", "Front", "Back", "Tags", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             tags = ", ".join(data.get("tags", []))
-            writer.writerow([i + 1, card.front or "", card.back or "", tags])
+            writer.writerow([i + 1, card.front or "", card.back or "", tags, data.get("image_url", "")])
 
     elif material_type == "study_guide":
-        writer.writerow(["#", "Heading", "Content", "Key Points"])
+        writer.writerow(["#", "Heading", "Content", "Key Points", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             key_points = "; ".join(data.get("key_points", []))
-            writer.writerow([i + 1, card.front or "", card.back or "", key_points])
+            writer.writerow([i + 1, card.front or "", card.back or "", key_points, data.get("image_url", "")])
 
     elif material_type == "vocabulary":
-        writer.writerow(["#", "Term", "Definition", "Example", "Part of Speech"])
+        writer.writerow(["#", "Term", "Definition", "Example", "Part of Speech", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             writer.writerow([
@@ -107,10 +110,11 @@ def export_flashcards_csv(study_set, cards) -> str:
                 card.back or "",
                 data.get("example", ""),
                 data.get("part_of_speech", ""),
+                data.get("image_url", ""),
             ])
 
     elif material_type == "review_sheet":
-        writer.writerow(["#", "Heading", "Content", "Type"])
+        writer.writerow(["#", "Heading", "Content", "Type", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             writer.writerow([
@@ -118,11 +122,13 @@ def export_flashcards_csv(study_set, cards) -> str:
                 card.front or "",
                 card.back or "",
                 data.get("type", ""),
+                data.get("image_url", ""),
             ])
     else:
-        writer.writerow(["#", "Front", "Back"])
+        writer.writerow(["#", "Front", "Back", "Image URL"])
         for i, card in enumerate(cards):
-            writer.writerow([i + 1, card.front or "", card.back or ""])
+            data = _parse_card_data(card)
+            writer.writerow([i + 1, card.front or "", card.back or "", data.get("image_url", "")])
 
     return output.getvalue()
 
@@ -196,6 +202,11 @@ def _pdf_draw_flashcard(c, card, data, index, y, width, height):
     if tags:
         c.setFont("Helvetica-Oblique", 8)
         c.drawString(70, y_back - 14, f"Tags: {', '.join(str(t) for t in tags)}")
+    image_url = data.get("image_url", "")
+    if image_url:
+        c.setFont("Helvetica-Oblique", 7)
+        tag_offset = 14 if tags else 0
+        c.drawString(70, y_back - 14 - tag_offset, f"Image: {image_url}")
 
 
 def _pdf_draw_study_guide_section(c, card, data, y, width, height):
@@ -334,18 +345,22 @@ def export_study_docx(study_set, cards) -> io.BytesIO:
 
 def _docx_flashcards(doc, cards):
     """Add flashcards as a table to the Word document."""
-    table = doc.add_table(rows=1, cols=3)
+    table = doc.add_table(rows=1, cols=4)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
     hdr[0].text = "#"
     hdr[1].text = "Front"
     hdr[2].text = "Back"
+    hdr[3].text = "Image"
 
     for i, card in enumerate(cards):
+        data = _parse_card_data(card)
         row = table.add_row().cells
         row[0].text = str(i + 1)
         row[1].text = card.front or ""
         row[2].text = card.back or ""
+        image_url = data.get("image_url", "")
+        row[3].text = image_url if image_url else ""
 
 
 def _docx_study_guide(doc, cards):
@@ -354,6 +369,13 @@ def _docx_study_guide(doc, cards):
         data = _parse_card_data(card)
         doc.add_heading(card.front or "Section", level=2)
         doc.add_paragraph(card.back or "")
+
+        image_url = data.get("image_url", "")
+        if image_url:
+            p = doc.add_paragraph()
+            run = p.add_run(f"Image: {image_url}")
+            run.italic = True
+            run.font.size = Pt(8)
 
         key_points = data.get("key_points", [])
         if key_points:
@@ -367,13 +389,14 @@ def _docx_study_guide(doc, cards):
 
 def _docx_vocabulary(doc, cards):
     """Add vocabulary as a table to the Word document."""
-    table = doc.add_table(rows=1, cols=4)
+    table = doc.add_table(rows=1, cols=5)
     table.style = "Table Grid"
     hdr = table.rows[0].cells
     hdr[0].text = "Term"
     hdr[1].text = "Definition"
     hdr[2].text = "Example"
     hdr[3].text = "Part of Speech"
+    hdr[4].text = "Image"
 
     for card in cards:
         data = _parse_card_data(card)
@@ -382,6 +405,8 @@ def _docx_vocabulary(doc, cards):
         row[1].text = card.back or ""
         row[2].text = data.get("example", "")
         row[3].text = data.get("part_of_speech", "")
+        image_url = data.get("image_url", "")
+        row[4].text = image_url if image_url else ""
 
 
 def _docx_review_sheet(doc, cards):
@@ -397,3 +422,10 @@ def _docx_review_sheet(doc, cards):
         run.font.size = Pt(11)
 
         doc.add_paragraph(card.back or "")
+
+        image_url = data.get("image_url", "")
+        if image_url:
+            p = doc.add_paragraph()
+            run = p.add_run(f"Image: {image_url}")
+            run.italic = True
+            run.font.size = Pt(8)

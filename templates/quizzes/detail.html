@@ -59,6 +59,7 @@
     <a href="/quizzes/{{ quiz.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
     <a href="/quizzes/{{ quiz.id }}/export/gift" class="btn btn-sm btn-outline">GIFT (Moodle)</a>
     <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
+    <a href="/quizzes/{{ quiz.id }}/export-template" class="btn btn-sm btn-outline">Export as Template</a>
 </div>
 
 <div class="section-actions">
@@ -79,6 +80,34 @@
 </div>
 {% endif %}
 
+<!-- TTS Panel (BL-032) -->
+<div class="tts-panel collapsed" id="ttsPanel">
+    <div class="tts-panel-header">
+        <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Read Aloud
+        </h3>
+        <button class="tts-toggle-btn" aria-label="Toggle TTS panel" aria-expanded="false">+</button>
+    </div>
+    <div class="tts-controls">
+        <button class="tts-btn" id="ttsPlayBtn" aria-label="Play speech">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Play All
+        </button>
+        <button class="tts-btn" id="ttsStopBtn" aria-label="Stop speech">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/></svg>
+            Stop
+        </button>
+        <label for="ttsSpeedSlider">Speed:</label>
+        <input type="range" id="ttsSpeedSlider" min="0.5" max="2" step="0.1" value="1.0" aria-label="Speech speed">
+        <span class="tts-speed-value" id="ttsSpeedValue">1.0x</span>
+        <label for="ttsVoiceSelect">Voice:</label>
+        <select id="ttsVoiceSelect" aria-label="Select voice">
+            <option value="">Default</option>
+        </select>
+    </div>
+</div>
+
 <h2>Questions <span class="help-tip" data-tip="{{ ai_tips.review_reminder }}">?</span></h2>
 {% for q in questions %}
 <div class="question-card" data-question-id="{{ q.id }}" data-quiz-id="{{ quiz.id }}">
@@ -91,18 +120,21 @@
             {{ q.data.cognitive_level }}
         </span>
         {% endif %}
+        <button class="tts-read-btn" title="Read aloud" aria-label="Read this question aloud">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </button>
         <span class="question-actions">
-            <button class="btn btn-sm btn-outline btn-edit-question" title="Edit">Edit</button>
-            <button class="btn btn-sm btn-outline btn-move-up" title="Move up">Up</button>
-            <button class="btn btn-sm btn-outline btn-move-down" title="Move down">Down</button>
-            <button class="btn btn-sm btn-outline btn-regen-question" title="Regenerate">Regen</button>
-            <button class="btn btn-sm btn-outline btn-upload-image" title="Upload image">Image</button>
+            <button class="btn btn-sm btn-outline btn-edit-question" title="Edit" aria-label="Edit question">Edit</button>
+            <button class="btn btn-sm btn-outline btn-move-up" title="Move up" aria-label="Move question up">Up</button>
+            <button class="btn btn-sm btn-outline btn-move-down" title="Move down" aria-label="Move question down">Down</button>
+            <button class="btn btn-sm btn-outline btn-regen-question" title="Regenerate" aria-label="Regenerate question">Regen</button>
+            <button class="btn btn-sm btn-outline btn-upload-image" title="Upload image" aria-label="Upload image">Image</button>
             <button class="btn btn-sm {% if q.saved_to_bank %}btn-secondary{% else %}btn-outline{% endif %} btn-bank-toggle"
                     title="{% if q.saved_to_bank %}Remove from Bank{% else %}Save to Bank{% endif %}"
                     data-saved="{{ 'true' if q.saved_to_bank else 'false' }}">
                 {% if q.saved_to_bank %}Banked{% else %}Bank{% endif %}
             </button>
-            <button class="btn btn-sm btn-danger btn-delete-question" title="Delete">Delete</button>
+            <button class="btn btn-sm btn-danger btn-delete-question" title="Delete" aria-label="Delete question">Delete</button>
             <input type="file" class="image-file-input" accept=".png,.jpg,.jpeg,.gif,.webp" style="display:none;">
         </span>
     </div>
@@ -128,7 +160,39 @@
         </div>
         {% endif %}
 
-        {% if q.type == 'tf' or q.question_type == 'tf' %}
+        {% if q.data and q.data.question_type is defined and q.data.question_type == 'ordering' %}
+        {# --- Ordering question display --- #}
+        {% if q.data.instructions is defined and q.data.instructions %}
+        <p class="ordering-instructions"><em>{{ q.data.instructions }}</em></p>
+        {% endif %}
+        <ol class="ordering-items">
+            {% for item in q.data.items %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ol>
+        <div class="question-answer">
+            <strong>Correct Order:</strong>
+            {% if q.data.correct_order is defined %}
+            {% for idx in q.data.correct_order %}{% if idx < q.data.items|length %}{% if not loop.first %} &rarr; {% endif %}{{ q.data.items[idx] }}{% endif %}{% endfor %}
+            {% endif %}
+        </div>
+
+        {% elif q.data and q.data.question_type is defined and q.data.question_type == 'short_answer' %}
+        {# --- Short answer question display --- #}
+        <div class="short-answer-blank">
+            <p>________________________________________</p>
+        </div>
+        <div class="question-answer">
+            <strong>Expected Answer:</strong> {{ q.data.expected_answer or '' }}
+            {% if q.data.acceptable_answers is defined and q.data.acceptable_answers %}
+            <br><strong>Also accepted:</strong> {{ q.data.acceptable_answers|join(', ') }}
+            {% endif %}
+            {% if q.data.rubric_hint is defined and q.data.rubric_hint %}
+            <br><em>Rubric hint: {{ q.data.rubric_hint }}</em>
+            {% endif %}
+        </div>
+
+        {% elif q.type == 'tf' or q.question_type == 'tf' %}
         <div class="tf-answer">
             <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
             <span class="tf-option {% if q.data.correct_answer == 'False' or q.data.answer == 'False' %}correct{% endif %}">False</span>
@@ -151,7 +215,7 @@
 
         {% if q.data %}
         {% set answer = q.data.correct_answer or q.data.answer or none %}
-        {% if answer and q.type != 'tf' and q.question_type != 'tf' %}
+        {% if answer and q.type != 'tf' and q.question_type != 'tf' and (q.data.question_type is not defined or q.data.question_type not in ['ordering', 'short_answer']) %}
         <div class="question-answer">
             <strong>Answer:</strong> {{ answer }}
         </div>
@@ -178,6 +242,7 @@
                     <option value="ma" {% if q.type == 'ma' %}selected{% endif %}>Multiple Answer</option>
                     <option value="fill_in_blank" {% if q.type == 'fill_in_blank' %}selected{% endif %}>Fill in Blank</option>
                     <option value="short_answer" {% if q.type == 'short_answer' %}selected{% endif %}>Short Answer</option>
+                    <option value="ordering" {% if q.type == 'ordering' %}selected{% endif %}>Ordering</option>
                     <option value="matching" {% if q.type == 'matching' %}selected{% endif %}>Matching</option>
                     <option value="essay" {% if q.type == 'essay' %}selected{% endif %}>Essay</option>
                 </select>
@@ -238,4 +303,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/quiz_edit.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tts.js') }}"></script>
 {% endblock %}

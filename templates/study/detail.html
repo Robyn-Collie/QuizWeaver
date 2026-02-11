@@ -39,6 +39,15 @@
 </div>
 {% endmacro %}
 
+{# Reusable image display macro #}
+{% macro card_image(card) %}
+{% if card.data.get('image_url') %}
+<div class="card-image-container">
+    <img src="{{ card.data.image_url }}" alt="Study material image" class="study-card-image" loading="lazy">
+</div>
+{% endif %}
+{% endmacro %}
+
 {# Reusable edit form macro #}
 {% macro edit_form(card) %}
 <div class="card-edit-mode" style="display: none;">
@@ -50,6 +59,13 @@
         <label>Back / Definition / Content</label>
         <textarea class="edit-back" rows="3">{{ card.back }}</textarea>
     </div>
+    <div class="form-group image-url-group">
+        <label>Image URL (optional)</label>
+        <input type="url" class="edit-image-url" placeholder="https://example.com/image.png" value="{{ card.data.get('image_url', '') }}">
+        {% if card.data.get('image_url') %}
+        <button class="btn btn-xs btn-outline btn-remove-image-url" type="button">Remove Image</button>
+        {% endif %}
+    </div>
     <div class="edit-actions">
         <button class="btn btn-sm btn-primary edit-save-btn">Save</button>
         <button class="btn btn-sm btn-secondary edit-cancel-btn">Cancel</button>
@@ -57,6 +73,34 @@
     </div>
 </div>
 {% endmacro %}
+
+<!-- TTS Panel (BL-032) -->
+<div class="tts-panel collapsed" id="ttsPanel">
+    <div class="tts-panel-header">
+        <h3>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Read Aloud
+        </h3>
+        <button class="tts-toggle-btn" aria-label="Toggle TTS panel" aria-expanded="false">+</button>
+    </div>
+    <div class="tts-controls">
+        <button class="tts-btn" id="ttsPlayBtn" aria-label="Play speech">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Play All
+        </button>
+        <button class="tts-btn" id="ttsStopBtn" aria-label="Stop speech">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/></svg>
+            Stop
+        </button>
+        <label for="ttsSpeedSlider">Speed:</label>
+        <input type="range" id="ttsSpeedSlider" min="0.5" max="2" step="0.1" value="1.0" aria-label="Speech speed">
+        <span class="tts-speed-value" id="ttsSpeedValue">1.0x</span>
+        <label for="ttsVoiceSelect">Voice:</label>
+        <select id="ttsVoiceSelect" aria-label="Select voice">
+            <option value="">Default</option>
+        </select>
+    </div>
+</div>
 
 {% if study_set.material_type == 'flashcard' %}
 <!-- Flashcard Grid -->
@@ -72,6 +116,7 @@
                 </div>
                 <div class="flip-card-back">
                     <p class="card-back-text">{{ card.back }}</p>
+                    {{ card_image(card) }}
                     {% if card.data.tags %}
                     <div class="flip-card-tags">
                         {% for tag in card.data.tags %}
@@ -81,6 +126,9 @@
                     {% endif %}
                 </div>
             </div>
+            <button class="tts-read-btn" title="Read aloud" aria-label="Read this card aloud">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            </button>
             {{ card_actions(card, loop) }}
         </div>
         {{ edit_form(card) }}
@@ -99,6 +147,7 @@
             <h2 class="card-front-text">{{ card.front }}</h2>
         </div>
         <p class="card-back-text">{{ card.back }}</p>
+        {{ card_image(card) }}
         {% if card.data.key_points %}
         <div class="key-points">
             <strong>Key Points:</strong>
@@ -119,7 +168,8 @@
 {% elif study_set.material_type == 'vocabulary' %}
 <!-- Vocabulary Table -->
 <div class="card-container">
-<table class="data-table" id="vocab-table">
+<div class="table-responsive">
+<table class="data-table responsive-table" id="vocab-table">
     <thead>
         <tr>
             <th>#</th>
@@ -133,20 +183,21 @@
     <tbody>
         {% for card in cards %}
         <tr data-card-id="{{ card.id }}">
-            <td class="card-number">{{ loop.index }}</td>
-            <td>
+            <td class="card-number" data-label="#">{{ loop.index }}</td>
+            <td data-label="Term">
                 <div class="card-view-mode">
                     <strong class="card-front-text">{{ card.front }}</strong>
                 </div>
+                {{ card_image(card) }}
             </td>
-            <td>
+            <td data-label="Definition">
                 <div class="card-view-mode">
                     <span class="card-back-text">{{ card.back }}</span>
                 </div>
             </td>
-            <td><em>{{ card.data.get('example', '') }}</em></td>
-            <td>{{ card.data.get('part_of_speech', '') }}</td>
-            <td>
+            <td data-label="Example"><em>{{ card.data.get('example', '') }}</em></td>
+            <td data-label="Part of Speech">{{ card.data.get('part_of_speech', '') }}</td>
+            <td data-label="Actions">
                 <div class="card-actions card-actions-inline">
                     <button class="btn btn-xs btn-outline card-edit-btn" title="Edit">Edit</button>
                     <button class="btn btn-xs btn-outline card-delete-btn" title="Delete">Del</button>
@@ -177,6 +228,7 @@
     </tbody>
 </table>
 </div>
+</div>
 
 {% elif study_set.material_type == 'review_sheet' %}
 <!-- Review Sheet -->
@@ -192,6 +244,7 @@
             {% endif %}
         </div>
         <p class="card-back-text">{{ card.back }}</p>
+        {{ card_image(card) }}
         {{ card_actions(card, loop) }}
     </div>
     {{ edit_form(card) }}
@@ -226,4 +279,5 @@
 {% block scripts %}
 <script src="/static/js/study.js"></script>
 <script src="/static/js/study_edit.js"></script>
+<script src="{{ url_for('static', filename='js/tts.js') }}"></script>
 {% endblock %}

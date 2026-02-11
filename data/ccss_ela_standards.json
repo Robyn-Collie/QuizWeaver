@@ -1,0 +1,232 @@
+{
+  "source": "Common Core State Standards",
+  "version": "2010",
+  "standard_set": "ccss_ela",
+  "standards": [
+    {
+      "code": "CCSS.ELA-LITERACY.RL.6.1",
+      "description": "Cite textual evidence to support analysis of what the text says",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Cite textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.6.2",
+      "description": "Determine a theme or central idea of a text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine a theme or central idea of a text and how it is conveyed through particular details; provide a summary of the text distinct from personal opinions or judgments.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.6.3",
+      "description": "Describe how a story's or drama's plot unfolds",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Describe how a particular story's or drama's plot unfolds in a series of episodes as well as how the characters respond or change as the plot moves toward a resolution.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RI.6.1",
+      "description": "Cite textual evidence to support analysis of informational text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Cite textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RI.6.7",
+      "description": "Integrate information presented in different media or formats",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Integrate information presented in different media or formats (e.g., visually, quantitatively) as well as in words to develop a coherent understanding of a topic or issue.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.6.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.6.2",
+      "description": "Write informative/explanatory texts to examine a topic",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write informative/explanatory texts to examine a topic and convey ideas, concepts, and information through the selection, organization, and analysis of relevant content.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.L.6.1",
+      "description": "Demonstrate command of the conventions of standard English grammar",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Language",
+      "full_text": "Demonstrate command of the conventions of standard English grammar and usage when writing or speaking.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.7.1",
+      "description": "Cite several pieces of textual evidence to support analysis",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Cite several pieces of textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.7.2",
+      "description": "Determine a theme or central idea and analyze its development",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine a theme or central idea of a text and analyze its development over the course of the text; provide an objective summary of the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RI.7.1",
+      "description": "Cite several pieces of textual evidence for informational text analysis",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Cite several pieces of textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.7.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence, introducing claim(s), acknowledging alternate or opposing claims, and organizing the reasons and evidence logically.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.L.7.4",
+      "description": "Determine or clarify the meaning of unknown and multiple-meaning words",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Language",
+      "full_text": "Determine or clarify the meaning of unknown and multiple-meaning words and phrases based on grade 7 reading and content, choosing flexibly from a range of strategies.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.8.1",
+      "description": "Cite the textual evidence that most strongly supports an analysis",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Cite the textual evidence that most strongly supports an analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.8.2",
+      "description": "Determine a theme or central idea and analyze its development including its relationship to characters, setting, and plot",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine a theme or central idea of a text and analyze its development over the course of the text, including its relationship to the characters, setting, and plot; provide an objective summary of the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RL.8.4",
+      "description": "Determine the meaning of words and phrases as used in a text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine the meaning of words and phrases as they are used in a text, including figurative and connotative meanings; analyze the impact of specific word choices on meaning and tone, including analogies or allusions to other texts.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RI.8.1",
+      "description": "Cite the textual evidence that most strongly supports an analysis of informational text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Cite the textual evidence that most strongly supports an analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.RI.8.5",
+      "description": "Analyze in detail the structure of a specific paragraph in a text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Analyze in detail the structure of a specific paragraph in a text, including the role of particular sentences in developing and refining a key concept.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.8.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence. Introduce claim(s), acknowledge and distinguish the claim(s) from alternate or opposing claims, and organize the reasons and evidence logically.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.8.2",
+      "description": "Write informative/explanatory texts to examine a topic and convey ideas",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write informative/explanatory texts to examine a topic and convey ideas, concepts, and information through the selection, organization, and analysis of relevant content.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.L.8.1",
+      "description": "Demonstrate command of the conventions of standard English grammar when writing or speaking",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Language",
+      "full_text": "Demonstrate command of the conventions of standard English grammar and usage when writing or speaking.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.L.8.4",
+      "description": "Determine or clarify the meaning of unknown and multiple-meaning words and phrases",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Language",
+      "full_text": "Determine or clarify the meaning of unknown and multiple-meaning words and phrases based on grade 8 reading and content, choosing flexibly from a range of strategies.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.SL.7.1",
+      "description": "Engage effectively in collaborative discussions",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Speaking and Listening",
+      "full_text": "Engage effectively in a range of collaborative discussions (one-on-one, in groups, and teacher-led) with diverse partners on grade 7 topics, texts, and issues, building on others' ideas and expressing their own clearly.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.SL.8.4",
+      "description": "Present claims and findings emphasizing salient points",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Speaking and Listening",
+      "full_text": "Present claims and findings, emphasizing salient points in a focused, coherent manner with relevant evidence, sound valid reasoning, and well-chosen details; use appropriate eye contact, adequate volume, and clear pronunciation.",
+      "standard_set": "ccss_ela"
+    },
+    {
+      "code": "CCSS.ELA-LITERACY.W.6.3",
+      "description": "Write narratives to develop real or imagined experiences",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write narratives to develop real or imagined experiences or events using effective technique, relevant descriptive details, and well-structured event sequences.",
+      "standard_set": "ccss_ela"
+    }
+  ]
+}

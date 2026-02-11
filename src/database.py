@@ -345,7 +345,7 @@ class User(Base):
 
 
 class Standard(Base):
-    """Represents an educational standard (e.g., Virginia SOL).
+    """Represents an educational standard (e.g., Virginia SOL, CCSS, NGSS, TEKS).
 
     Standards are DETERMINISTIC data -- rule-based, not AI-generated.
     They serve as the source of truth for alignment in quizzes, rubrics,
@@ -361,6 +361,7 @@ class Standard(Base):
         full_text: Full official text of the standard.
         source: Origin framework (e.g., "Virginia SOL", "Common Core").
         version: Version/year of the standard set.
+        standard_set: Key identifying the standard set (e.g., "sol", "ccss_ela", "ngss").
         created_at: Timestamp when the record was created.
     """
     __tablename__ = "standards"
@@ -373,7 +374,39 @@ class Standard(Base):
     full_text = Column(Text)
     source = Column(String, default="Virginia SOL")
     version = Column(String)
+    standard_set = Column(String, default="sol")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LessonPlan(Base):
+    """Represents an AI-generated lesson plan.
+
+    Attributes:
+        id: Primary key.
+        class_id: Foreign key to the Class this plan is for.
+        title: Title of the lesson plan.
+        topics: JSON array of topics covered.
+        standards: JSON array of standards aligned to.
+        grade_level: Grade level for the lesson.
+        duration_minutes: Planned lesson duration in minutes.
+        plan_data: JSON object containing all plan sections.
+        status: Plan status (draft, finalized, generating, failed).
+        created_at: Timestamp when the plan was created.
+    """
+    __tablename__ = "lesson_plans"
+    id = Column(Integer, primary_key=True)
+    class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
+    title = Column(Text, nullable=False)
+    topics = Column(Text)  # JSON
+    standards = Column(Text)  # JSON
+    grade_level = Column(Text)
+    duration_minutes = Column(Integer, default=50)
+    plan_data = Column(Text, nullable=False)  # JSON — full plan content
+    status = Column(Text, default="draft")  # draft, finalized, generating, failed
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    class_obj = relationship("Class", backref="lesson_plans")
 
 
 class RubricCriterion(Base):

@@ -6,6 +6,7 @@
     <title>{% block title %}QuizWeaver{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/accessibility.css') }}">
     <script>
     // Apply saved theme immediately to prevent flash
     (function() {
@@ -15,41 +16,53 @@
         } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
+        // Apply saved accessibility preferences immediately to prevent flash
+        var a11y = localStorage.getItem('qw-a11y');
+        if (a11y) {
+            try {
+                var prefs = JSON.parse(a11y);
+                // We apply classes to body once it exists (see DOMContentLoaded below)
+                // Store for later use
+                window.__qwA11y = prefs;
+            } catch(e) {}
+        }
     })();
     </script>
 </head>
 <body>
-    <nav class="navbar">
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-brand">
             <a href="/dashboard">QuizWeaver</a>
         </div>
         <button class="nav-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.nav-links').classList.toggle('open')">
             <span class="hamburger"></span>
         </button>
-        <ul class="nav-links">
-            <li><a href="/dashboard">Dashboard</a></li>
-            <li><a href="/classes">Classes</a></li>
-            <li class="nav-dropdown">
-                <a href="#" class="nav-dropdown-toggle">Generate <span class="dropdown-arrow">&#9662;</span></a>
-                <ul class="nav-dropdown-menu">
-                    <li><a href="/generate">Quiz</a></li>
-                    <li><a href="/study/generate">Study Materials</a></li>
-                    <li><a href="/generate/topics">From Topics</a></li>
+        <ul class="nav-links" role="menubar">
+            <li role="none"><a href="/dashboard" role="menuitem">Dashboard</a></li>
+            <li role="none"><a href="/classes" role="menuitem">Classes</a></li>
+            <li class="nav-dropdown" role="none">
+                <a href="#" class="nav-dropdown-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">Generate <span class="dropdown-arrow">&#9662;</span></a>
+                <ul class="nav-dropdown-menu" role="menu">
+                    <li role="none"><a href="/generate" role="menuitem">Quiz</a></li>
+                    <li role="none"><a href="/study/generate" role="menuitem">Study Materials</a></li>
+                    <li role="none"><a href="/generate/topics" role="menuitem">From Topics</a></li>
                 </ul>
             </li>
-            <li><a href="/quizzes">Quizzes</a></li>
-            <li class="nav-dropdown">
-                <a href="#" class="nav-dropdown-toggle">Tools <span class="dropdown-arrow">&#9662;</span></a>
-                <ul class="nav-dropdown-menu">
-                    <li><a href="/question-bank">Question Bank</a></li>
-                    <li><a href="/study">Study Materials</a></li>
-                    <li><a href="/standards">Standards</a></li>
-                    <li><a href="/analytics">Analytics</a></li>
-                    <li><a href="/costs">Costs</a></li>
+            <li role="none"><a href="/quizzes" role="menuitem">Quizzes</a></li>
+            <li class="nav-dropdown" role="none">
+                <a href="#" class="nav-dropdown-toggle" role="menuitem" aria-haspopup="true" aria-expanded="false">Tools <span class="dropdown-arrow">&#9662;</span></a>
+                <ul class="nav-dropdown-menu" role="menu">
+                    <li role="none"><a href="/question-bank" role="menuitem">Question Bank</a></li>
+                    <li role="none"><a href="/study" role="menuitem">Study Materials</a></li>
+                    <li role="none"><a href="/standards" role="menuitem">Standards</a></li>
+                    <li role="none"><a href="/analytics" role="menuitem">Analytics</a></li>
+                    <li role="none"><a href="/costs" role="menuitem">Costs</a></li>
                 </ul>
             </li>
-            <li><a href="/settings">Settings</a></li>
-            <li><a href="/help">Help</a></li>
+            <li role="none"><a href="/settings" role="menuitem">Settings</a></li>
+            <li role="none"><a href="/help" role="menuitem">Help</a></li>
         </ul>
         <div class="nav-user-section">
             {% if current_user and current_user.display_name %}
@@ -64,13 +77,13 @@
         </button>
     </nav>
 
-    <main class="container">
+    <main class="container" id="main-content" role="main" aria-label="Page content">
         {% block content %}{% endblock %}
     </main>
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <footer class="footer">
+    <footer class="footer" role="contentinfo" aria-label="Site footer">
         <p>QuizWeaver - AI-Powered Teaching Platform</p>
         <p class="shortcuts-hint" id="shortcutsHint">Press <kbd>?</kbd> for keyboard shortcuts</p>
     </footer>
@@ -134,11 +147,25 @@
             hint.classList.add('seen');
         }
 
+        // --- Apply accessibility preferences from localStorage ---
+        var a11yRaw = localStorage.getItem('qw-a11y');
+        if (a11yRaw) {
+            try {
+                var a11yPrefs = JSON.parse(a11yRaw);
+                if (a11yPrefs.dyslexiaFont) document.body.classList.add('dyslexia-font');
+                if (a11yPrefs.dyslexiaSpacing) document.body.classList.add('dyslexia-spacing');
+                if (a11yPrefs.colorBlind) document.body.classList.add('color-blind-mode');
+            } catch(e) {}
+        }
+
         // --- Nav dropdown toggle (for mobile/touch) ---
         document.querySelectorAll('.nav-dropdown-toggle').forEach(function(toggle) {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
-                this.parentElement.classList.toggle('open');
+                var parent = this.parentElement;
+                parent.classList.toggle('open');
+                var expanded = parent.classList.contains('open');
+                this.setAttribute('aria-expanded', expanded);
             });
         });
 

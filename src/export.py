@@ -30,6 +30,7 @@ TYPE_MAP = {
     "fill_in": "fill_in",
     "fill_in_the_blank": "fill_in",
     "matching": "matching",
+    "ordering": "ordering",
     "essay": "essay",
 }
 
@@ -79,6 +80,20 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
     # Resolve matching pairs
     matches = _resolve_matches(data)
 
+    # Resolve ordering fields
+    ordering_items = data.get("items", [])
+    ordering_correct_order = data.get("correct_order", [])
+    ordering_instructions = data.get("instructions", "")
+
+    # Resolve short answer fields
+    expected_answer = data.get("expected_answer", "")
+    acceptable_answers = data.get("acceptable_answers", [])
+    rubric_hint = data.get("rubric_hint", "")
+
+    # For short_answer, use expected_answer as correct_answer if not already set
+    if q_type == "short_answer" and not correct_answer and expected_answer:
+        correct_answer = expected_answer
+
     return {
         "number": index + 1,
         "type": q_type,
@@ -86,6 +101,12 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "options": options,
         "correct_answer": correct_answer,
         "matches": matches,
+        "ordering_items": ordering_items,
+        "ordering_correct_order": ordering_correct_order,
+        "ordering_instructions": ordering_instructions,
+        "expected_answer": expected_answer,
+        "acceptable_answers": acceptable_answers,
+        "rubric_hint": rubric_hint,
         "points": question_obj.points or data.get("points", 0),
         "cognitive_level": data.get("cognitive_level"),
         "cognitive_framework": data.get("cognitive_framework"),
@@ -214,6 +235,13 @@ def _format_options_csv(nq: dict) -> str:
         return " | ".join(
             f"{m['term']} -> {m['definition']}" for m in nq["matches"]
         )
+    if nq["type"] == "ordering" and nq.get("ordering_items"):
+        return ", ".join(nq["ordering_items"])
+    if nq["type"] == "short_answer":
+        answers = nq.get("acceptable_answers", [])
+        if answers:
+            return " | ".join(answers)
+        return nq.get("expected_answer", "")
     if nq["type"] == "tf":
         return "True | False"
     if nq["options"]:
@@ -334,9 +362,16 @@ def _add_docx_question(doc, nq: dict):
         _add_docx_tf_options(doc, nq)
     elif nq["type"] in ("fill_in",):
         doc.add_paragraph("Answer: ____________________")
-    elif nq["type"] in ("short_answer",):
+    elif nq["type"] == "short_answer":
+        if nq.get("rubric_hint"):
+            p = doc.add_paragraph()
+            run = p.add_run(f"(Hint: {nq['rubric_hint']})")
+            run.italic = True
+            run.font.size = Pt(9)
         doc.add_paragraph("_" * 60)
         doc.add_paragraph("_" * 60)
+    elif nq["type"] == "ordering" and nq.get("ordering_items"):
+        _add_docx_ordering(doc, nq)
     elif nq["type"] == "essay":
         for _ in range(4):
             doc.add_paragraph("_" * 60)
@@ -381,6 +416,26 @@ def _add_docx_matching(doc, nq: dict):
         row[1].text = m["definition"]
 
 
+def _add_docx_ordering(doc, nq: dict):
+    """Add an ordering question with numbered blanks for student response."""
+    if nq.get("ordering_instructions"):
+        p = doc.add_paragraph()
+        run = p.add_run(nq["ordering_instructions"])
+        run.italic = True
+        run.font.size = Pt(9)
+
+    # Show items in a scrambled display order (reverse of correct)
+    items = nq.get("ordering_items", [])
+    import random as _rng
+    display_order = list(range(len(items)))
+    # Use a deterministic shuffle based on question number
+    _rng.Random(nq["number"]).shuffle(display_order)
+
+    for rank, idx in enumerate(display_order):
+        p = doc.add_paragraph(style="List Bullet")
+        p.add_run(f"___  {items[idx]}")
+
+
 def _add_docx_answer_key(doc, normalized: list):
     """Add answer key section listing all correct answers."""
     for nq in normalized:
@@ -388,6 +443,20 @@ def _add_docx_answer_key(doc, normalized: list):
             answer_text = "; ".join(
                 f"{m['term']} -> {m['definition']}" for m in nq["matches"]
             )
+        elif nq["type"] == "ordering" and nq.get("ordering_items"):
+            correct_order = nq.get("ordering_correct_order", [])
+            items = nq.get("ordering_items", [])
+            ordered = []
+            for idx in correct_order:
+                if 0 <= idx < len(items):
+                    ordered.append(items[idx])
+            answer_text = " -> ".join(ordered) if ordered else "(see items)"
+        elif nq["type"] == "short_answer":
+            parts = [nq.get("expected_answer", "")]
+            alts = nq.get("acceptable_answers", [])
+            if alts:
+                parts.append(f"(also: {', '.join(alts)})")
+            answer_text = " ".join(parts)
         else:
             answer_text = nq["correct_answer"]
 
@@ -436,10 +505,14 @@ def _format_gift_question(nq: dict) -> str:
         return _gift_mc(title, escaped_text, nq)
     elif nq["type"] == "tf":
         return _gift_tf(title, escaped_text, nq)
-    elif nq["type"] in ("fill_in", "short_answer"):
+    elif nq["type"] == "short_answer":
+        return _gift_short_answer(title, escaped_text, nq)
+    elif nq["type"] == "fill_in":
         return _gift_short(title, escaped_text, nq)
     elif nq["type"] == "matching":
         return _gift_matching(title, escaped_text, nq)
+    elif nq["type"] == "ordering":
+        return _gift_ordering(title, escaped_text, nq)
     elif nq["type"] == "essay":
         return _gift_essay(title, escaped_text)
     else:
@@ -481,6 +554,46 @@ def _gift_matching(title: str, text: str, nq: dict) -> str:
         term = _escape_gift(m["term"])
         defn = _escape_gift(m["definition"])
         parts.append(f"  ={term} -> {defn}")
+    parts.append("}")
+    return "\n".join(parts)
+
+
+def _gift_short_answer(title: str, text: str, nq: dict) -> str:
+    """Format short answer question in GIFT with multiple acceptable answers."""
+    answers = []
+    expected = nq.get("expected_answer", "")
+    if expected:
+        answers.append(expected)
+    for alt in nq.get("acceptable_answers", []):
+        if alt and alt not in answers:
+            answers.append(alt)
+    if not answers and nq.get("correct_answer"):
+        answers.append(nq["correct_answer"])
+
+    if answers:
+        answer_parts = " ".join(f"={_escape_gift(a)}" for a in answers)
+        return f"::{title}:: {text} {{{answer_parts}}}"
+    return f"::{title}:: {text} {{}}"
+
+
+def _gift_ordering(title: str, text: str, nq: dict) -> str:
+    """Format ordering question in GIFT.
+
+    Moodle ordering format: each item gets a numbered position.
+    Uses matching-style format where items map to their position number.
+    """
+    items = nq.get("ordering_items", [])
+    correct_order = nq.get("ordering_correct_order", [])
+
+    if not items:
+        return f"::{title}:: {text} {{}}"
+
+    # Build matching-style pairs: item -> position number
+    parts = [f"::{title}:: {text} {{"]
+    for pos, idx in enumerate(correct_order):
+        if 0 <= idx < len(items):
+            item = _escape_gift(items[idx])
+            parts.append(f"  ={item} -> {pos + 1}")
     parts.append("}")
     return "\n".join(parts)
 
@@ -644,11 +757,32 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
     elif nq["type"] in ("fill_in",):
         c.drawString(70, y, "Answer: ____________________")
         y -= 14
-    elif nq["type"] in ("short_answer",):
+    elif nq["type"] == "short_answer":
+        if nq.get("rubric_hint"):
+            c.setFont("Helvetica-Oblique", 9)
+            c.drawString(70, y, f"(Hint: {nq['rubric_hint']})")
+            y -= 14
+            c.setFont("Helvetica", 10)
         c.drawString(70, y, "_" * 60)
         y -= 14
         c.drawString(70, y, "_" * 60)
         y -= 14
+    elif nq["type"] == "ordering" and nq.get("ordering_items"):
+        if nq.get("ordering_instructions"):
+            c.setFont("Helvetica-Oblique", 9)
+            c.drawString(70, y, nq["ordering_instructions"])
+            y -= 14
+            c.setFont("Helvetica", 10)
+        items = nq["ordering_items"]
+        import random as _rng
+        display_order = list(range(len(items)))
+        _rng.Random(nq["number"]).shuffle(display_order)
+        for rank, idx in enumerate(display_order):
+            if y < 60:
+                c.showPage()
+                y = page_height - 50
+            c.drawString(70, y, f"___  {items[idx]}")
+            y -= 14
     elif nq["type"] == "essay":
         for _ in range(4):
             if y < 60:
@@ -698,6 +832,17 @@ def _pdf_answer_text(nq: dict) -> str:
     """Get answer text for the answer key."""
     if nq["type"] == "matching" and nq["matches"]:
         return "; ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
+    if nq["type"] == "ordering" and nq.get("ordering_items"):
+        correct_order = nq.get("ordering_correct_order", [])
+        items = nq.get("ordering_items", [])
+        ordered = [items[idx] for idx in correct_order if 0 <= idx < len(items)]
+        return " -> ".join(ordered) if ordered else "(see items)"
+    if nq["type"] == "short_answer":
+        parts = [nq.get("expected_answer", nq.get("correct_answer", ""))]
+        alts = nq.get("acceptable_answers", [])
+        if alts:
+            parts.append(f"(also: {', '.join(alts)})")
+        return " ".join(p for p in parts if p)
     return nq["correct_answer"] or "(see rubric)"
 
 

@@ -107,10 +107,12 @@ class TestTSVExport:
     def test_tsv_tab_separated(self):
         study_set, cards = _flashcard_set()
         result = export_flashcards_tsv(study_set, cards)
-        lines = result.strip().split("\n")
+        lines = result.split("\n")
         for line in lines:
+            if not line:
+                continue
             parts = line.split("\t")
-            assert len(parts) == 3  # front, back, tags
+            assert len(parts) == 4  # front, back, tags, image
 
     def test_tsv_tags_joined(self):
         study_set, cards = _flashcard_set()

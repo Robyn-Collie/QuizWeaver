@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Generate Lesson Plan - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Generate Lesson Plan</h1>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="/lesson-plans/generate" class="form" id="lesson-plan-generate-form">
+    <div class="form-group">
+        <label for="class_id">Class <span class="help-tip" data-tip="Select the class this lesson plan is for.">?</span></label>
+        <select id="class_id" name="class_id" required autocomplete="off">
+            <option value="">-- Select a class --</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}" {% if selected_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="topics">Topics <span class="help-tip" data-tip="Comma-separated list of topics to cover in the lesson.">?</span></label>
+        <input type="text" id="topics" name="topics" placeholder="e.g., Photosynthesis, Cell Division" value="{{ prefill_topics|default('') }}" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label for="standards">Standards <span class="help-tip" data-tip="Comma-separated standards to align the plan to (e.g., SOL 7.1, SOL 7.2).">?</span></label>
+        <input type="text" id="standards" name="standards" placeholder="e.g., SOL 7.1, SOL 7.2" value="{{ prefill_standards|default('') }}" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label for="duration_minutes">Duration (minutes) <span class="help-tip" data-tip="Total lesson duration. Common values: 45, 50, 60, 90 minutes.">?</span></label>
+        <input type="number" id="duration_minutes" name="duration_minutes" value="50" min="15" max="180" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label for="grade_level">Grade Level (optional) <span class="help-tip" data-tip="Override the class grade level for this plan.">?</span></label>
+        <input type="text" id="grade_level" name="grade_level" placeholder="e.g., 7th Grade" autocomplete="off">
+    </div>
+
+    {% include "partials/provider_select.html" %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="generate-btn">Generate Lesson Plan</button>
+        <a href="/lesson-plans" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<div id="lesson-plan-generate-progress" class="generate-progress" style="display:none">
+    <div class="progress-card">
+        <h2>Generating Lesson Plan...</h2>
+        <p class="progress-subtitle">Building your standards-aligned lesson plan</p>
+        <ul class="progress-checklist">
+            <li class="step-active">
+                <span class="step-icon step-active"></span>
+                <span class="step-label">Preparing context</span>
+                <span class="step-desc">Loading class info, topics, and standards</span>
+            </li>
+            <li>
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Generating plan</span>
+                <span class="step-desc">AI is creating your lesson plan sections</span>
+            </li>
+            <li>
+                <span class="step-icon step-pending"></span>
+                <span class="step-label">Saving results</span>
+                <span class="step-desc">Storing the plan for review</span>
+            </li>
+        </ul>
+        <p class="progress-hint">This usually takes 5-30 seconds.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('lesson-plan-generate-form');
+    var progress = document.getElementById('lesson-plan-generate-progress');
+    if (form && progress) {
+        form.addEventListener('submit', function() {
+            form.style.display = 'none';
+            progress.style.display = 'block';
+        });
+    }
+});
+</script>
+{% endblock %}

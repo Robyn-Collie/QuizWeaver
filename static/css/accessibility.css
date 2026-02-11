@@ -1,0 +1,399 @@
+/* QuizWeaver - Accessibility Features
+ * BL-031: Dyslexia-Friendly Font (OpenDyslexic)
+ * BL-033: Color Blind Safe Theme (Wong palette)
+ * BL-034: Screen Reader / Skip Nav
+ */
+
+/* ===== OpenDyslexic Font Face ===== */
+/* Local files preferred; CDN fallback */
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('../fonts/OpenDyslexic-Regular.woff2') format('woff2'),
+         url('../fonts/OpenDyslexic-Regular.woff') format('woff'),
+         url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('../fonts/OpenDyslexic-Bold.woff2') format('woff2'),
+         url('../fonts/OpenDyslexic-Bold.woff') format('woff'),
+         url('https://cdn.jsdelivr.net/npm/open-dyslexic@1.0.3/woff/OpenDyslexic-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ===== BL-031: Dyslexia-Friendly Mode ===== */
+body.dyslexia-font {
+    font-family: 'OpenDyslexic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+body.dyslexia-font h1,
+body.dyslexia-font h2,
+body.dyslexia-font h3,
+body.dyslexia-font h4,
+body.dyslexia-font h5,
+body.dyslexia-font h6,
+body.dyslexia-font p,
+body.dyslexia-font li,
+body.dyslexia-font td,
+body.dyslexia-font th,
+body.dyslexia-font label,
+body.dyslexia-font input,
+body.dyslexia-font textarea,
+body.dyslexia-font select,
+body.dyslexia-font button,
+body.dyslexia-font .question-text,
+body.dyslexia-font .question-options,
+body.dyslexia-font .card-front-text,
+body.dyslexia-font .card-back-text,
+body.dyslexia-font .flip-card-front,
+body.dyslexia-font .flip-card-back {
+    font-family: 'OpenDyslexic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Enhanced spacing mode for dyslexia */
+body.dyslexia-spacing {
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+}
+
+body.dyslexia-spacing p,
+body.dyslexia-spacing li,
+body.dyslexia-spacing td,
+body.dyslexia-spacing .question-text,
+body.dyslexia-spacing .card-front-text,
+body.dyslexia-spacing .card-back-text {
+    line-height: 1.8;
+}
+
+
+/* ===== BL-033: Color Blind Safe Theme (Wong Palette) ===== */
+body.color-blind-mode {
+    --primary: #0072B2;        /* blue */
+    --primary-dark: #005a8e;
+    --primary-light: #e8f4fa;
+    --secondary: #009E73;      /* green */
+    --secondary-dark: #007a59;
+    --secondary-light: #e6f5f0;
+    --accent: #E69F00;         /* orange */
+    --accent-light: #fdf3e0;
+    --success: #009E73;        /* green */
+    --success-light: #e6f5f0;
+    --warning: #E69F00;        /* orange */
+    --warning-light: #fdf3e0;
+    --danger: #D55E00;         /* vermilion */
+    --danger-light: #fdf0e8;
+}
+
+/* Dark mode + color blind combined */
+:root[data-theme="dark"] body.color-blind-mode {
+    --primary: #56B4E9;        /* sky blue */
+    --primary-dark: #0072B2;
+    --primary-light: #1a2a35;
+    --secondary: #009E73;
+    --secondary-dark: #007a59;
+    --secondary-light: #1a2a25;
+    --accent: #F0E442;         /* yellow */
+    --accent-light: #2a2a1a;
+    --success: #009E73;
+    --success-light: #1a2a25;
+    --warning: #E69F00;
+    --warning-light: #2a2510;
+    --danger: #D55E00;
+    --danger-light: #2a1a10;
+}
+
+/* Status indicators: add text/pattern alongside color */
+body.color-blind-mode .status::before {
+    font-weight: bold;
+    margin-right: 0.25em;
+}
+body.color-blind-mode .status-generated::before {
+    content: "[OK] ";
+}
+body.color-blind-mode .status-failed::before {
+    content: "[FAIL] ";
+}
+body.color-blind-mode .status-pending::before {
+    content: "[...] ";
+}
+body.color-blind-mode .status-generating::before {
+    content: "[RUN] ";
+}
+
+/* Correct answer indicator: add checkmark pattern */
+body.color-blind-mode .correct::after {
+    content: " \2713";
+    font-weight: bold;
+}
+
+/* Badge text patterns for color blind */
+body.color-blind-mode .badge-available::before {
+    content: "\2713 ";
+}
+body.color-blind-mode .badge-unavailable::before {
+    content: "\2717 ";
+}
+
+/* Cognitive badge patterns */
+body.color-blind-mode .cognitive-badge {
+    border: 2px solid currentColor;
+    text-decoration: none;
+}
+
+/* Reading level badges: add text pattern */
+body.color-blind-mode .reading-level-ell::before { content: "ELL: "; }
+body.color-blind-mode .reading-level-below_grade::before { content: "Below: "; }
+body.color-blind-mode .reading-level-on_grade::before { content: "On: "; }
+body.color-blind-mode .reading-level-advanced::before { content: "Adv: "; }
+
+/* Chart colors - Wong palette for any inline chart styles */
+body.color-blind-mode .chart-color-1 { color: #000000; }
+body.color-blind-mode .chart-color-2 { color: #E69F00; }
+body.color-blind-mode .chart-color-3 { color: #56B4E9; }
+body.color-blind-mode .chart-color-4 { color: #009E73; }
+body.color-blind-mode .chart-color-5 { color: #F0E442; }
+body.color-blind-mode .chart-color-6 { color: #0072B2; }
+body.color-blind-mode .chart-color-7 { color: #D55E00; }
+body.color-blind-mode .chart-color-8 { color: #CC79A7; }
+
+/* Test result patterns */
+body.color-blind-mode .test-success {
+    border-left: 4px solid var(--success);
+}
+body.color-blind-mode .test-failure {
+    border-left: 4px solid var(--danger);
+}
+
+
+/* ===== BL-034: Skip Navigation Link ===== */
+.skip-nav {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: var(--primary);
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    z-index: 1000;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 0 0 var(--radius-sm) 0;
+    transition: top 0.2s ease;
+}
+
+.skip-nav:focus {
+    top: 0;
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+}
+
+
+/* ===== BL-032: Text-to-Speech Panel ===== */
+.tts-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.tts-panel.collapsed .tts-controls {
+    display: none;
+}
+
+.tts-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.tts-panel-header h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tts-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: var(--text-muted);
+    padding: 0.25rem;
+}
+
+.tts-controls {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.tts-controls label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.tts-controls select,
+.tts-controls input[type="range"] {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+}
+
+.tts-speed-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-width: 2.5em;
+    text-align: center;
+}
+
+.tts-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background var(--transition), border-color var(--transition);
+}
+
+.tts-btn:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+}
+
+.tts-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.tts-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Per-question/card read-aloud button */
+.tts-read-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0.5rem;
+    transition: background var(--transition), color var(--transition);
+}
+
+.tts-read-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.tts-read-btn.speaking {
+    background: var(--primary);
+    color: #fff;
+}
+
+.tts-read-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+
+/* ===== Accessibility Settings Section ===== */
+.a11y-settings-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--border-light);
+}
+
+.a11y-settings-section h2 {
+    margin-bottom: 0.5rem;
+}
+
+.a11y-toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.a11y-toggle-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.a11y-toggle-item label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.a11y-toggle-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.a11y-toggle-item .a11y-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Preview area for dyslexia font */
+.a11y-preview {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    display: none;
+}
+
+.a11y-preview.visible {
+    display: block;
+}
+
+.a11y-preview.dyslexia-font {
+    font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+.a11y-preview.dyslexia-spacing {
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 1.8;
+}

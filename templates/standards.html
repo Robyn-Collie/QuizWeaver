@@ -21,6 +21,10 @@
         <div class="stat-value">{{ grade_bands | length }}</div>
         <div class="stat-label">Grade Bands</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ loaded_sets | length }}</div>
+        <div class="stat-label">Standard Sets Loaded</div>
+    </div>
 </div>
 
 <form method="GET" action="{{ url_for('standards_page') }}" class="filter-form" style="margin-bottom: 1.5rem;">
@@ -28,6 +32,15 @@
         <div class="form-group" style="flex: 2; min-width: 200px;">
             <label for="q">Search</label>
             <input type="text" id="q" name="q" value="{{ q }}" placeholder="Search by code, description, or keyword..." class="form-control">
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 150px;">
+            <label for="standard_set">Standard Set</label>
+            <select id="standard_set" name="standard_set" class="form-control">
+                <option value="">All Standard Sets</option>
+                {% for ss in available_sets %}
+                <option value="{{ ss.key }}" {% if standard_set == ss.key %}selected{% endif %}>{{ ss.label }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="form-group" style="flex: 1; min-width: 150px;">
             <label for="subject">Subject</label>
@@ -49,7 +62,7 @@
         </div>
         <div>
             <button type="submit" class="btn btn-primary">Filter</button>
-            {% if q or subject or grade_band %}
+            {% if q or subject or grade_band or standard_set %}
             <a href="{{ url_for('standards_page') }}" class="btn btn-secondary">Clear</a>
             {% endif %}
         </div>
@@ -57,7 +70,7 @@
 </form>
 
 {% if standards %}
-<p class="text-muted">Showing {{ standards | length }} standard{{ 's' if standards | length != 1 else '' }}{% if q %} matching "{{ q }}"{% endif %}</p>
+<p class="text-muted">Showing {{ standards | length }} standard{{ 's' if standards | length != 1 else '' }}{% if q %} matching "{{ q }}"{% endif %}{% if standard_set %} in {{ standard_set_label }}{% endif %}</p>
 
 <table class="data-table">
     <thead>
@@ -67,6 +80,7 @@
             <th>Subject</th>
             <th>Grade Band</th>
             <th>Strand</th>
+            <th>Set</th>
         </tr>
     </thead>
     <tbody>
@@ -77,17 +91,30 @@
             <td>{{ std.subject }}</td>
             <td>{{ std.grade_band or '-' }}</td>
             <td>{{ std.strand or '-' }}</td>
+            <td><span class="badge badge-set">{{ std.standard_set or 'sol' }}</span></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-{% elif q or subject or grade_band %}
+{% elif q or subject or grade_band or standard_set %}
 <div class="info-box">
     <p>No standards found matching your filters. Try broadening your search.</p>
 </div>
 {% else %}
 <div class="info-box">
-    <p>No standards loaded yet. Standards are loaded automatically from <code>data/sol_standards.json</code> on first run.</p>
+    <p>No standards loaded yet. Select a standard set in <a href="{{ url_for('settings_page') }}">Settings</a> to load standards automatically.</p>
+</div>
+{% endif %}
+
+{% if loaded_sets %}
+<h2 style="margin-top: 2rem;">Loaded Standard Sets</h2>
+<div class="stats-grid">
+    {% for ls in loaded_sets %}
+    <div class="stat-card">
+        <div class="stat-value">{{ ls.count }}</div>
+        <div class="stat-label">{{ ls.label }}</div>
+    </div>
+    {% endfor %}
 </div>
 {% endif %}
 {% endblock %}

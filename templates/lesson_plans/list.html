@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Lesson Plans - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Lesson Plans</h1>
+    <a href="/lesson-plans/generate" class="btn btn-primary">+ Generate</a>
+</div>
+
+<div class="filter-bar">
+    <form method="GET" action="/lesson-plans" class="filter-form">
+        <input type="text" name="q" value="{{ search_q|default('') }}" placeholder="Search lesson plans..." class="filter-search">
+        <select name="class_id" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Classes</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}" {% if current_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-sm btn-outline">Search</button>
+    </form>
+</div>
+
+{% if lesson_plans %}
+<div class="study-grid">
+    {% for lp in lesson_plans %}
+    <div class="study-card" data-id="{{ lp.id }}">
+        <div class="study-card-header">
+            <span class="status status-{{ lp.status }}">{{ lp.status }}</span>
+            {% if lp.duration_minutes %}
+            <span class="study-type-badge">{{ lp.duration_minutes }} min</span>
+            {% endif %}
+        </div>
+        <h3><a href="/lesson-plans/{{ lp.id }}">{{ lp.title }}</a></h3>
+        <p class="study-card-meta">
+            {{ lp.class_name }}
+            {% if lp.topics %} &middot; {{ lp.topics }}{% endif %}
+        </p>
+        <div class="study-card-footer">
+            <span class="study-card-date">{{ lp.created_at.strftime('%b %d, %Y') if lp.created_at else '' }}</span>
+            <div class="study-card-actions">
+                <div class="export-dropdown">
+                    <button class="btn btn-sm btn-outline export-dropdown-toggle">Export</button>
+                    <div class="export-dropdown-menu">
+                        <a href="/lesson-plans/{{ lp.id }}/export/pdf">PDF</a>
+                        <a href="/lesson-plans/{{ lp.id }}/export/docx">Word</a>
+                    </div>
+                </div>
+                <form method="POST" action="/lesson-plans/{{ lp.id }}/delete" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this lesson plan?')">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No lesson plans yet.</p>
+    <a href="/lesson-plans/generate" class="btn btn-primary">Generate Your First Lesson Plan</a>
+</div>
+{% endif %}
+{% endblock %}

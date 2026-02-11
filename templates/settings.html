@@ -9,8 +9,8 @@
     <p class="text-muted">Choose which AI model generates your quizzes. Use Mock for free development, or connect a real provider.</p>
 
     <div class="form-group">
-        <label>Provider</label>
-        <div class="provider-cards">
+        <label id="provider-label">Provider</label>
+        <div class="provider-cards" role="radiogroup" aria-labelledby="provider-label">
             {% for p in providers %}
             <label class="provider-card {% if p.key == current_provider %}selected{% endif %} {% if not p.available %}unavailable{% endif %}">
                 <input type="radio" name="provider" value="{{ p.key }}"
@@ -168,5 +168,138 @@ function testProviderConnection() {
 
 // Run on page load to show correct fields
 toggleProviderFields();
+</script>
+
+<!-- Standards Set Selection (BL-022) -->
+<form method="POST" action="/settings/standards" class="form settings-form" style="margin-top: 2rem;">
+    <h2>Standards Set</h2>
+    <p class="text-muted">Select which educational standards framework to use for alignment. Standards are rule-based data, not AI-generated.</p>
+
+    <div class="form-group">
+        <label for="standard_set">Primary Standard Set</label>
+        <select id="standard_set" name="standard_set" class="form-control">
+            {% for ss in standard_sets %}
+            <option value="{{ ss.key }}" {% if ss.key == current_standard_set %}selected{% endif %}>{{ ss.label }}</option>
+            {% endfor %}
+        </select>
+        <small class="text-muted">Standards are loaded automatically when selected. You can browse all loaded standards on the <a href="/standards">Standards page</a>.</small>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Standards Set</button>
+    </div>
+</form>
+
+<!-- Accessibility Settings Section (BL-031, BL-033) -->
+<div class="a11y-settings-section" id="accessibility-settings">
+    <h2>Accessibility</h2>
+    <p class="text-muted">Customize display settings for improved readability and accessibility. These preferences are saved in your browser.</p>
+
+    <div class="a11y-toggle-group">
+        <div class="a11y-toggle-item">
+            <div>
+                <label for="a11y-dyslexia-font">
+                    <input type="checkbox" id="a11y-dyslexia-font">
+                    Dyslexia-Friendly Font (OpenDyslexic)
+                </label>
+                <p class="a11y-description">Uses OpenDyslexic, a typeface designed to increase readability for readers with dyslexia. Applies to all text including quiz questions and study materials.</p>
+                <div class="a11y-preview" id="a11y-preview-font">
+                    The quick brown fox jumps over the lazy dog. This is how quiz questions and study material text will appear.
+                </div>
+            </div>
+        </div>
+
+        <div class="a11y-toggle-item">
+            <div>
+                <label for="a11y-dyslexia-spacing">
+                    <input type="checkbox" id="a11y-dyslexia-spacing">
+                    Enhanced Spacing
+                </label>
+                <p class="a11y-description">Increases letter spacing (0.12em), word spacing (0.16em), and line height (1.8) for improved readability.</p>
+                <div class="a11y-preview" id="a11y-preview-spacing">
+                    The quick brown fox jumps over the lazy dog. This preview shows how enhanced spacing affects readability.
+                </div>
+            </div>
+        </div>
+
+        <div class="a11y-toggle-item">
+            <div>
+                <label for="a11y-color-blind">
+                    <input type="checkbox" id="a11y-color-blind">
+                    Color Blind Safe Mode
+                </label>
+                <p class="a11y-description">Replaces the default color palette with the Wong palette, optimized for all types of color vision deficiency. Adds text-based indicators alongside color cues.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- Accessibility Preference Management ---
+(function() {
+    var STORAGE_KEY = 'qw-a11y';
+
+    function loadPrefs() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+        } catch(e) { return {}; }
+    }
+
+    function savePrefs(prefs) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    }
+
+    function applyPrefs(prefs) {
+        document.body.classList.toggle('dyslexia-font', !!prefs.dyslexiaFont);
+        document.body.classList.toggle('dyslexia-spacing', !!prefs.dyslexiaSpacing);
+        document.body.classList.toggle('color-blind-mode', !!prefs.colorBlind);
+    }
+
+    function updatePreviews(prefs) {
+        var fontPreview = document.getElementById('a11y-preview-font');
+        var spacingPreview = document.getElementById('a11y-preview-spacing');
+        if (fontPreview) {
+            fontPreview.classList.toggle('visible', !!prefs.dyslexiaFont);
+            fontPreview.classList.toggle('dyslexia-font', !!prefs.dyslexiaFont);
+        }
+        if (spacingPreview) {
+            spacingPreview.classList.toggle('visible', !!prefs.dyslexiaSpacing);
+            spacingPreview.classList.toggle('dyslexia-spacing', !!prefs.dyslexiaSpacing);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var prefs = loadPrefs();
+        var fontCb = document.getElementById('a11y-dyslexia-font');
+        var spacingCb = document.getElementById('a11y-dyslexia-spacing');
+        var colorCb = document.getElementById('a11y-color-blind');
+
+        // Initialize checkboxes from saved prefs
+        if (fontCb) fontCb.checked = !!prefs.dyslexiaFont;
+        if (spacingCb) spacingCb.checked = !!prefs.dyslexiaSpacing;
+        if (colorCb) colorCb.checked = !!prefs.colorBlind;
+
+        updatePreviews(prefs);
+
+        // Bind change handlers
+        if (fontCb) fontCb.addEventListener('change', function() {
+            prefs.dyslexiaFont = this.checked;
+            savePrefs(prefs);
+            applyPrefs(prefs);
+            updatePreviews(prefs);
+        });
+        if (spacingCb) spacingCb.addEventListener('change', function() {
+            prefs.dyslexiaSpacing = this.checked;
+            savePrefs(prefs);
+            applyPrefs(prefs);
+            updatePreviews(prefs);
+        });
+        if (colorCb) colorCb.addEventListener('change', function() {
+            prefs.colorBlind = this.checked;
+            savePrefs(prefs);
+            applyPrefs(prefs);
+        });
+    });
+})();
 </script>
 {% endblock %}

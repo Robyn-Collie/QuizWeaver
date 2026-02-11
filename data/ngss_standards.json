@@ -1,0 +1,232 @@
+{
+  "source": "Next Generation Science Standards",
+  "version": "2013",
+  "standard_set": "ngss",
+  "standards": [
+    {
+      "code": "MS-LS1-1",
+      "description": "Conduct an investigation to provide evidence that living things are made of cells",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "From Molecules to Organisms: Structures and Processes",
+      "full_text": "Conduct an investigation to provide evidence that living things are made of cells; either one cell or many different numbers and types of cells.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS1-2",
+      "description": "Develop and use a model to describe the function of a cell",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "From Molecules to Organisms: Structures and Processes",
+      "full_text": "Develop and use a model to describe the function of a cell as a whole and ways parts of cells contribute to the function.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS1-3",
+      "description": "Use argument supported by evidence for how the body is a system of interacting subsystems",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "From Molecules to Organisms: Structures and Processes",
+      "full_text": "Use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS1-5",
+      "description": "Construct a scientific explanation based on evidence for how environmental and genetic factors influence the growth of organisms",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "From Molecules to Organisms: Structures and Processes",
+      "full_text": "Construct a scientific explanation based on evidence for how environmental and genetic factors influence the growth of organisms.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS2-1",
+      "description": "Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "Ecosystems: Interactions, Energy, and Dynamics",
+      "full_text": "Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS2-2",
+      "description": "Construct an explanation that predicts patterns of interactions among organisms",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "Ecosystems: Interactions, Energy, and Dynamics",
+      "full_text": "Construct an explanation that predicts patterns of interactions among organisms across multiple ecosystems.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS3-1",
+      "description": "Develop and use a model to describe why structural changes to genes may affect proteins",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "Heredity: Inheritance and Variation of Traits",
+      "full_text": "Develop and use a model to describe why structural changes to genes (mutations) located on chromosomes may affect proteins and may result in harmful, beneficial, or neutral effects to the structure and function of the organism.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-LS4-1",
+      "description": "Analyze and interpret data for patterns in the fossil record",
+      "subject": "Life Science",
+      "grade_band": "6-8",
+      "strand": "Biological Evolution: Unity and Diversity",
+      "full_text": "Analyze and interpret data for patterns in the fossil record that document the existence, diversity, extinction, and change of life forms throughout the history of life on Earth.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS1-1",
+      "description": "Develop models to describe the atomic composition of simple molecules and extended structures",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Matter and Its Interactions",
+      "full_text": "Develop models to describe the atomic composition of simple molecules and extended structures.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS1-2",
+      "description": "Analyze and interpret data on the properties of substances before and after an interaction",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Matter and Its Interactions",
+      "full_text": "Analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS1-4",
+      "description": "Develop a model that predicts and describes changes in particle motion, temperature, and state",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Matter and Its Interactions",
+      "full_text": "Develop a model that predicts and describes changes in particle motion, temperature, and state of a pure substance when thermal energy is added or removed.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS2-1",
+      "description": "Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Motion and Stability: Forces and Interactions",
+      "full_text": "Apply Newton's Third Law to design a solution to a problem involving the motion of two colliding objects.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS2-2",
+      "description": "Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces acting on the object",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Motion and Stability: Forces and Interactions",
+      "full_text": "Plan an investigation to provide evidence that the change in an object's motion depends on the sum of the forces acting on the object and the mass of the object.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS3-1",
+      "description": "Construct and interpret graphical displays of data to describe the relationships of kinetic energy",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Energy",
+      "full_text": "Construct and interpret graphical displays of data to describe the relationships of kinetic energy to the mass of an object and to the speed of an object.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS3-3",
+      "description": "Apply scientific principles to design, construct, and test a device that minimizes or maximizes thermal energy transfer",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Energy",
+      "full_text": "Apply scientific principles to design, construct, and test a device that either minimizes or maximizes thermal energy transfer.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-PS4-1",
+      "description": "Use mathematical representations to describe a simple model for waves",
+      "subject": "Physical Science",
+      "grade_band": "6-8",
+      "strand": "Waves and Their Applications",
+      "full_text": "Use mathematical representations to describe a simple model for waves that includes how the amplitude of a wave is related to the energy in a wave.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS1-1",
+      "description": "Develop and use a model of the Earth-sun-moon system to describe cyclic patterns",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth's Place in the Universe",
+      "full_text": "Develop and use a model of the Earth-sun-moon system to describe the cyclic patterns of lunar phases, eclipses of the sun and moon, and seasons.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS1-4",
+      "description": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's history",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth's Place in the Universe",
+      "full_text": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's 4.6-billion-year-old history.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS2-1",
+      "description": "Develop a model to describe the cycling of Earth's materials and the flow of energy",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth's Systems",
+      "full_text": "Develop a model to describe the cycling of Earth's materials and the flow of energy that drives this process.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS2-2",
+      "description": "Construct an explanation based on evidence for how geoscience processes have changed Earth's surface",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth's Systems",
+      "full_text": "Construct an explanation based on evidence for how geoscience processes have changed Earth's surface at varying time and spatial scales.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS2-4",
+      "description": "Develop a model to describe the cycling of water through Earth's systems driven by energy from the sun",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth's Systems",
+      "full_text": "Develop a model to describe the cycling of water through Earth's systems driven by energy from the sun and the force of gravity.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS3-1",
+      "description": "Construct a scientific explanation based on evidence for how the uneven distributions of Earth's mineral, energy, and groundwater resources are the result of past and current geoscience processes",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Human Activity",
+      "full_text": "Construct a scientific explanation based on evidence for how the uneven distributions of Earth's mineral, energy, and groundwater resources are the result of past and current geoscience processes.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS3-3",
+      "description": "Apply scientific principles to design a method for monitoring and minimizing a human impact on the environment",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Human Activity",
+      "full_text": "Apply scientific principles to design a method for monitoring and minimizing a human impact on the environment.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ESS3-5",
+      "description": "Ask questions to clarify evidence of the factors that have caused the rise in global temperatures over the past century",
+      "subject": "Earth and Space Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Human Activity",
+      "full_text": "Ask questions to clarify evidence of the factors that have caused the rise in global temperatures over the past century.",
+      "standard_set": "ngss"
+    },
+    {
+      "code": "MS-ETS1-1",
+      "description": "Define the criteria and constraints of a design problem",
+      "subject": "Engineering",
+      "grade_band": "6-8",
+      "strand": "Engineering Design",
+      "full_text": "Define the criteria and constraints of a design problem with sufficient precision to ensure a successful solution, taking into account relevant scientific principles and potential impacts on people and the natural environment.",
+      "standard_set": "ngss"
+    }
+  ]
+}

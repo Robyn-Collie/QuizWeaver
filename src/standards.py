@@ -5,15 +5,108 @@ Provides CRUD operations and search functionality for educational standards.
 Standards are DETERMINISTIC data -- rule-based, not AI-generated.
 This is a core AI literacy principle: standards alignment uses rule-based
 systems, not LLM inference.
+
+Supports multiple standard sets:
+- Virginia SOL (sol)
+- Common Core ELA (ccss_ela)
+- Common Core Math (ccss_math)
+- Next Generation Science Standards (ngss)
+- Texas Essential Knowledge and Skills (teks)
+- Custom teacher-imported sets
 """
 
 import json
 import os
-from typing import Optional, List
+from typing import Optional, List, Dict
+
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 
 from src.database import Standard
+
+
+# Registry of available standard sets with metadata
+STANDARD_SETS = {
+    "sol": {"label": "Virginia SOL", "file": "sol_standards.json"},
+    "ccss_ela": {"label": "Common Core ELA", "file": "ccss_ela_standards.json"},
+    "ccss_math": {"label": "Common Core Math", "file": "ccss_math_standards.json"},
+    "ngss": {"label": "Next Generation Science Standards", "file": "ngss_standards.json"},
+    "teks": {"label": "Texas TEKS", "file": "teks_standards.json"},
+}
+
+
+def get_available_standard_sets() -> List[Dict]:
+    """Return list of available standard sets with metadata.
+
+    Returns:
+        List of dicts with 'key', 'label', and 'file' for each set.
+    """
+    result = []
+    for key, info in STANDARD_SETS.items():
+        result.append({
+            "key": key,
+            "label": info["label"],
+            "file": info["file"],
+        })
+    return result
+
+
+def get_data_dir() -> str:
+    """Return the path to the data directory."""
+    return os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data",
+    )
+
+
+def load_standard_set(session: Session, standard_set: str = "sol") -> int:
+    """Load a specific standard set into the database from its JSON file.
+
+    Args:
+        session: SQLAlchemy session
+        standard_set: Key from STANDARD_SETS (e.g., 'sol', 'ccss_ela')
+
+    Returns:
+        Number of standards imported
+
+    Raises:
+        ValueError: If standard_set is not recognized
+        FileNotFoundError: If the data file does not exist
+    """
+    if standard_set not in STANDARD_SETS:
+        raise ValueError(
+            f"Unknown standard set '{standard_set}'. "
+            f"Available: {list(STANDARD_SETS.keys())}"
+        )
+
+    info = STANDARD_SETS[standard_set]
+    json_path = os.path.join(get_data_dir(), info["file"])
+
+    if not os.path.exists(json_path):
+        raise FileNotFoundError(
+            f"Standards data file not found: {json_path}"
+        )
+
+    return load_standards_from_json(session, json_path)
+
+
+def ensure_standard_set_loaded(session: Session, standard_set: str) -> int:
+    """Load a standard set only if it has no records in the database.
+
+    Args:
+        session: SQLAlchemy session
+        standard_set: Key from STANDARD_SETS
+
+    Returns:
+        Number of standards imported (0 if already loaded)
+    """
+    existing = session.query(Standard).filter_by(standard_set=standard_set).count()
+    if existing > 0:
+        return 0
+    try:
+        return load_standard_set(session, standard_set)
+    except (ValueError, FileNotFoundError):
+        return 0
 
 
 def create_standard(
@@ -26,6 +119,7 @@ def create_standard(
     full_text: Optional[str] = None,
     source: str = "Virginia SOL",
     version: Optional[str] = None,
+    standard_set: str = "sol",
 ) -> Standard:
     """
     Create a new Standard record.
@@ -40,6 +134,7 @@ def create_standard(
         full_text: Full official text of the standard
         source: Origin framework (default "Virginia SOL")
         version: Version/year of the standard set
+        standard_set: Standard set key (default "sol")
 
     Returns:
         The created Standard object
@@ -53,6 +148,7 @@ def create_standard(
         full_text=full_text,
         source=source,
         version=version,
+        standard_set=standard_set,
     )
     session.add(standard)
     session.commit()
@@ -92,6 +188,7 @@ def list_standards(
     subject: Optional[str] = None,
     grade_band: Optional[str] = None,
     source: Optional[str] = None,
+    standard_set: Optional[str] = None,
 ) -> List[Standard]:
     """
     List standards with optional filtering.
@@ -101,6 +198,7 @@ def list_standards(
         subject: Filter by subject (e.g., "Mathematics")
         grade_band: Filter by grade band (e.g., "6-8")
         source: Filter by source (e.g., "Virginia SOL")
+        standard_set: Filter by standard set key (e.g., "sol", "ccss_ela")
 
     Returns:
         List of Standard objects matching the filters
@@ -112,6 +210,8 @@ def list_standards(
         query = query.filter(Standard.grade_band == grade_band)
     if source:
         query = query.filter(Standard.source == source)
+    if standard_set:
+        query = query.filter(Standard.standard_set == standard_set)
     return query.order_by(Standard.code).all()
 
 
@@ -120,6 +220,7 @@ def search_standards(
     query_text: str,
     subject: Optional[str] = None,
     grade_band: Optional[str] = None,
+    standard_set: Optional[str] = None,
 ) -> List[Standard]:
     """
     Search standards by code, description, or full text.
@@ -129,6 +230,7 @@ def search_standards(
         query_text: Search term to match against code, description, or full_text
         subject: Optional subject filter
         grade_band: Optional grade band filter
+        standard_set: Optional standard set filter
 
     Returns:
         List of Standard objects matching the search
@@ -146,6 +248,8 @@ def search_standards(
         q = q.filter(Standard.subject == subject)
     if grade_band:
         q = q.filter(Standard.grade_band == grade_band)
+    if standard_set:
+        q = q.filter(Standard.standard_set == standard_set)
     return q.order_by(Standard.code).all()
 
 
@@ -194,6 +298,7 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
             full_text=item.get("full_text"),
             source=item.get("source", "Virginia SOL"),
             version=item.get("version"),
+            standard_set=item.get("standard_set", "sol"),
         )
         session.add(standard)
         imported += 1
@@ -223,6 +328,7 @@ def load_standards_from_json(session: Session, json_path: str) -> int:
 
     standards_list = data.get("standards", [])
     version = data.get("version")
+    file_standard_set = data.get("standard_set")
 
     # Apply file-level version to each standard if not set
     if version:
@@ -237,44 +343,88 @@ def load_standards_from_json(session: Session, json_path: str) -> int:
             if not item.get("source"):
                 item["source"] = source
 
+    # Apply file-level standard_set to each standard if not set
+    if file_standard_set:
+        for item in standards_list:
+            if not item.get("standard_set"):
+                item["standard_set"] = file_standard_set
+
     return bulk_import_standards(session, standards_list)
 
 
-def get_subjects(session: Session) -> List[str]:
+def import_custom_standards(
+    session: Session,
+    json_data: list,
+    set_name: str,
+    set_label: str,
+) -> int:
+    """
+    Allow teachers to import their own standards from a list of dicts.
+
+    Each dict should have at minimum 'code', 'description', and 'subject'.
+    The set_name and set_label are used to tag all imported standards.
+
+    Args:
+        session: SQLAlchemy session
+        json_data: List of dicts with standard fields
+        set_name: Internal key for the custom set (e.g., 'my_school')
+        set_label: Display label for the custom set (e.g., 'My School Standards')
+
+    Returns:
+        Number of standards imported
+    """
+    for item in json_data:
+        item["standard_set"] = set_name
+        if not item.get("source"):
+            item["source"] = set_label
+
+    return bulk_import_standards(session, json_data)
+
+
+def get_subjects(session: Session, standard_set: Optional[str] = None) -> List[str]:
     """
     Get distinct subjects from standards.
 
     Args:
         session: SQLAlchemy session
+        standard_set: Optional filter by standard set
 
     Returns:
         Sorted list of unique subject names
     """
-    results = session.query(Standard.subject).distinct().all()
+    q = session.query(Standard.subject).distinct()
+    if standard_set:
+        q = q.filter(Standard.standard_set == standard_set)
+    results = q.all()
     return sorted([r[0] for r in results if r[0]])
 
 
-def get_grade_bands(session: Session) -> List[str]:
+def get_grade_bands(session: Session, standard_set: Optional[str] = None) -> List[str]:
     """
     Get distinct grade bands from standards.
 
     Args:
         session: SQLAlchemy session
+        standard_set: Optional filter by standard set
 
     Returns:
         Sorted list of unique grade bands
     """
-    results = session.query(Standard.grade_band).distinct().all()
+    q = session.query(Standard.grade_band).distinct()
+    if standard_set:
+        q = q.filter(Standard.standard_set == standard_set)
+    results = q.all()
     return sorted([r[0] for r in results if r[0]])
 
 
-def get_strands(session: Session, subject: Optional[str] = None) -> List[str]:
+def get_strands(session: Session, subject: Optional[str] = None, standard_set: Optional[str] = None) -> List[str]:
     """
     Get distinct strands, optionally filtered by subject.
 
     Args:
         session: SQLAlchemy session
         subject: Optional subject filter
+        standard_set: Optional standard set filter
 
     Returns:
         Sorted list of unique strand names
@@ -282,18 +432,50 @@ def get_strands(session: Session, subject: Optional[str] = None) -> List[str]:
     q = session.query(Standard.strand).distinct()
     if subject:
         q = q.filter(Standard.subject == subject)
+    if standard_set:
+        q = q.filter(Standard.standard_set == standard_set)
     results = q.all()
     return sorted([r[0] for r in results if r[0]])
 
 
-def standards_count(session: Session) -> int:
+def standards_count(session: Session, standard_set: Optional[str] = None) -> int:
     """
     Get the total number of standards in the database.
 
     Args:
         session: SQLAlchemy session
+        standard_set: Optional filter by standard set
 
     Returns:
         Total count of standards
     """
-    return session.query(Standard).count()
+    q = session.query(Standard)
+    if standard_set:
+        q = q.filter(Standard.standard_set == standard_set)
+    return q.count()
+
+
+def get_standard_sets_in_db(session: Session) -> List[Dict]:
+    """
+    Get list of standard sets that have been loaded into the database,
+    with counts.
+
+    Args:
+        session: SQLAlchemy session
+
+    Returns:
+        List of dicts with 'key', 'label', 'count'
+    """
+    from sqlalchemy import func
+    results = (
+        session.query(Standard.standard_set, func.count(Standard.id))
+        .group_by(Standard.standard_set)
+        .all()
+    )
+    sets = []
+    for set_key, count in results:
+        if not set_key:
+            set_key = "sol"
+        label = STANDARD_SETS.get(set_key, {}).get("label", set_key)
+        sets.append({"key": set_key, "label": label, "count": count})
+    return sorted(sets, key=lambda x: x["label"])
