@@ -146,9 +146,15 @@
         <p>Enter your credentials below and test the connection.</p>
 
         <div class="form" id="wizard-connect-form">
+            <!-- Hidden dummy fields to absorb browser autofill -->
+            <input type="text" style="display:none" tabindex="-1" aria-hidden="true">
+            <input type="password" style="display:none" tabindex="-1" aria-hidden="true">
             <div class="form-group" id="wizard-field-apikey">
                 <label for="wizard_api_key">API Key</label>
-                <input type="password" id="wizard_api_key" placeholder="Paste your API key here" autocomplete="new-password">
+                <input type="text" id="wizard_api_key" placeholder="Paste your API key here"
+                       autocomplete="off" data-lpignore="true" data-1p-ignore="true"
+                       readonly onfocus="this.removeAttribute('readonly')"
+                       style="-webkit-text-security: disc;">
             </div>
             <div class="form-group" id="wizard-field-baseurl" style="display:none">
                 <label for="wizard_base_url">Base URL</label>

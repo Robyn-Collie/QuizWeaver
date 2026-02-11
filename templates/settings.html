@@ -56,10 +56,14 @@
     <div class="provider-fields" id="fields-model" style="display:none">
         <div class="form-group">
             <label for="model_name">Model Name</label>
+            <!-- Hidden dummy fields to absorb browser autofill -->
+            <input type="text" style="display:none" tabindex="-1" aria-hidden="true">
+            <input type="password" style="display:none" tabindex="-1" aria-hidden="true">
             <input type="text" id="model_name" name="model_name"
                    value="{{ llm_config.get('model_name', '') }}"
                    placeholder="e.g., gpt-4o, gemini-2.5-flash, llama3"
-                   autocomplete="off">
+                   autocomplete="off" data-lpignore="true" data-1p-ignore="true"
+                   readonly onfocus="this.removeAttribute('readonly')">
             <small class="text-muted">The model identifier your provider uses (e.g., gemini-2.5-flash, gpt-4o, llama3)</small>
         </div>
     </div>
@@ -67,10 +71,12 @@
     <div class="provider-fields" id="fields-apikey" style="display:none">
         <div class="form-group">
             <label for="api_key">API Key <span class="help-tip" data-tip="{{ ai_tips.api_key_privacy }}">?</span></label>
-            <input type="password" id="api_key" name="api_key"
+            <input type="text" id="api_key" name="api_key"
                    value=""
                    placeholder="{% if llm_config.get('api_key') %}(key set - leave blank to keep){% else %}Enter API key{% endif %}"
-                   autocomplete="new-password">
+                   autocomplete="off" data-lpignore="true" data-1p-ignore="true"
+                   readonly onfocus="this.removeAttribute('readonly')"
+                   style="-webkit-text-security: disc;">
             {% if llm_config.get('api_key') %}
             <small class="text-muted">API key is configured. Leave blank to keep current key.</small>
             {% else %}

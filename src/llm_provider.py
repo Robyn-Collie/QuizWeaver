@@ -417,6 +417,7 @@ def get_provider_info(config):
         List of dicts with keys: key, label, description, available, reason
     """
     llm_config = config.get("llm", {})
+    current_provider = _resolve_provider_name(llm_config.get("provider", "mock"))
     result = []
     for key, meta in PROVIDER_REGISTRY.items():
         info = {
@@ -431,7 +432,11 @@ def get_provider_info(config):
             # Always available
             pass
         elif meta.get("env_var"):
-            env_val = os.getenv(meta["env_var"]) or llm_config.get("api_key", "")
+            # Check provider-specific env var first
+            env_val = os.getenv(meta["env_var"]) or ""
+            # Only fall back to shared api_key if this IS the currently selected provider
+            if not env_val and key == current_provider:
+                env_val = llm_config.get("api_key", "")
             if not env_val:
                 info["available"] = False
                 info["reason"] = f"Set {meta['env_var']} or enter API key in settings"
