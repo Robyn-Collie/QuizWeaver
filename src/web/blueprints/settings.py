@@ -196,17 +196,13 @@ def test_provider():
         elif "403" in error_msg or "forbidden" in lower_msg:
             error_msg += " -- Your API key may not have permission for this model. Check your account settings."
         elif "404" in error_msg or "not found" in lower_msg:
-            error_msg += (
-                " -- The model name may be incorrect. Check the model name in your provider's documentation."
-            )
+            error_msg += " -- The model name may be incorrect. Check the model name in your provider's documentation."
         elif "429" in error_msg or "rate" in lower_msg or "quota" in lower_msg:
             error_msg += " -- You've hit a rate limit or quota. Wait a moment and try again, or check your billing."
         elif "timeout" in lower_msg or "timed out" in lower_msg:
             error_msg += " -- The provider took too long to respond. Check your internet connection."
         elif "connection" in lower_msg or "refused" in lower_msg:
-            error_msg += (
-                " -- Could not reach the provider. Check your internet connection and the API endpoint URL."
-            )
+            error_msg += " -- Could not reach the provider. Check your internet connection and the API endpoint URL."
         return jsonify(
             {
                 "success": False,

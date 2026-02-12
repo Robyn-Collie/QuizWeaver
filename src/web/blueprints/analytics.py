@@ -286,11 +286,7 @@ def api_quiz_questions(quiz_id):
     session = _get_session()
     questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
     return jsonify(
-        {
-            "questions": [
-                {"id": q.id, "text": q.text or f"Question #{q.id}", "type": q.question_type} for q in questions
-            ]
-        }
+        {"questions": [{"id": q.id, "text": q.text or f"Question #{q.id}", "type": q.question_type} for q in questions]}
     )
 
 

@@ -137,15 +137,29 @@ QuizWeaver/
 ├── src/                    # Source code
 │   ├── agents.py           # Agentic pipeline (Analyst, Generator, Critic)
 │   ├── classroom.py        # Class sections CRUD (create, list, update, delete)
-│   ├── lesson_tracker.py   # Lesson logging & assumed knowledge (Phase 1, Section 4)
+│   ├── lesson_tracker.py   # Lesson logging & assumed knowledge
 │   ├── database.py         # SQLAlchemy ORM models
 │   ├── migrations.py       # Database migration runner
 │   ├── llm_provider.py     # LLM provider abstraction (includes MockLLMProvider)
-│   ├── mock_responses.py   # Fabricated LLM responses for development
-│   ├── ingestion.py        # Content ingestion (PDF, DOCX, multimodal)
-│   ├── image_gen.py        # Image generation (Vertex Imagen)
-│   ├── output.py           # PDF and QTI export
-│   └── review.py           # Human-in-the-loop review interface
+│   ├── export_utils.py     # Shared export helpers (sanitize_filename, pdf_wrap_text)
+│   ├── web/
+│   │   ├── app.py          # Flask application factory
+│   │   ├── routes.py       # Thin shim — delegates to blueprints
+│   │   ├── auth.py         # User auth helpers (create, authenticate, change_password)
+│   │   ├── config_utils.py # save_config (avoids circular import)
+│   │   └── blueprints/     # Flask blueprints (69 routes across 8 modules)
+│   │       ├── __init__.py  # register_blueprints(app)
+│   │       ├── helpers.py   # _get_session, login_required, constants
+│   │       ├── auth.py      # login, logout, setup, password (5 routes)
+│   │       ├── main.py      # dashboard, stats, onboarding, help (5 routes)
+│   │       ├── classes.py   # class CRUD, lessons (8 routes)
+│   │       ├── quizzes.py   # quiz list/detail/export/edit/generate, costs (13 routes)
+│   │       ├── study.py     # study materials, card API (8+ routes)
+│   │       ├── analytics.py # performance analytics, import, reteach (10 routes)
+│   │       ├── settings.py  # settings, provider wizard, standards (8 routes)
+│   │       └── content.py   # variants, rubrics, topics, lesson plans, templates (12 routes)
+│   ├── cli/                # CLI command modules (thin main.py wiring)
+│   └── ...                 # Other modules (export, study, rubric, etc.)
 │
 ├── tests/                  # Unit and integration tests
 │   ├── test_mock_provider_simple.py
@@ -279,6 +293,15 @@ openspec status --change teaching-platform-expansion
 
 ## Common Tasks
 
+### Adding a New Web Route
+
+1. Choose the appropriate blueprint in `src/web/blueprints/` (auth, main, classes, quizzes, study, analytics, settings, or content)
+2. Add the route function with `@<blueprint>.route(...)` and `@login_required` decorators
+3. Use `_get_session()` from `helpers.py` for database access
+4. Use `url_for("blueprint.endpoint")` for cross-blueprint links
+5. When patching in tests, use `patch("src.web.blueprints.<module>.<function>")` — NOT `src.web.routes`
+6. Add a test in the appropriate `tests/test_web_*.py` file
+
 ### Adding a New CLI Command
 
 1. Add subparser in `main.py` under `# --- <Command> Command ---`
@@ -350,8 +373,13 @@ Rules to prevent organizational debt. Established in Session 12 based on a full 
 
 - Shared utility functions go in `src/export_utils.py` (or appropriate `src/utils_*.py`) -- NEVER duplicate functions across modules. Before writing a helper, check if it already exists
 - CLI commands go in `src/cli/<area>_commands.py` modules -- `main.py` stays thin (just wiring)
-- Flask routes: when any route file exceeds ~500 lines, split into Flask blueprints
+- Flask routes live in `src/web/blueprints/` as 8 Blueprint modules (no url_prefix, all URLs unchanged)
+- `src/web/routes.py` is a thin shim — NEVER add routes there; add to the appropriate blueprint
+- Shared route helpers (`_get_session`, `login_required`, constants) live in `src/web/blueprints/helpers.py`
+- Cross-blueprint `url_for` uses `"blueprint.endpoint"` format (e.g., `url_for("quizzes.quiz_detail", quiz_id=1)`)
+- Same-blueprint `url_for` can use dot prefix (e.g., `url_for(".settings")`) but full form is preferred for clarity
 - Keep route handlers thin -- business logic belongs in `src/` modules, not in route handlers
+- When adding a new route, put it in the most relevant blueprint; if no fit, consider a new blueprint
 
 ### Config & Paths
 

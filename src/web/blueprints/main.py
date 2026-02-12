@@ -39,9 +39,7 @@ def dashboard():
     total_lessons = session.query(LessonLog).count()
 
     # Recent activity: 5 most recent lessons and quizzes
-    recent_lesson_rows = (
-        session.query(LessonLog).order_by(LessonLog.date.desc(), LessonLog.id.desc()).limit(5).all()
-    )
+    recent_lesson_rows = session.query(LessonLog).order_by(LessonLog.date.desc(), LessonLog.id.desc()).limit(5).all()
     recent_lessons = []
     for lesson_row in recent_lesson_rows:
         cls = get_class(session, lesson_row.class_id)

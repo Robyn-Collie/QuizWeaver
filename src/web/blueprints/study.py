@@ -150,10 +150,7 @@ def study_detail(study_set_id):
         abort(404)
 
     cards = (
-        session.query(StudyCard)
-        .filter_by(study_set_id=study_set_id)
-        .order_by(StudyCard.sort_order, StudyCard.id)
-        .all()
+        session.query(StudyCard).filter_by(study_set_id=study_set_id).order_by(StudyCard.sort_order, StudyCard.id).all()
     )
     class_obj = get_class(session, study_set.class_id) if study_set.class_id else None
 
@@ -200,10 +197,7 @@ def study_export(study_set_id, format_name):
         abort(404)
 
     cards = (
-        session.query(StudyCard)
-        .filter_by(study_set_id=study_set_id)
-        .order_by(StudyCard.sort_order, StudyCard.id)
-        .all()
+        session.query(StudyCard).filter_by(study_set_id=study_set_id).order_by(StudyCard.sort_order, StudyCard.id).all()
     )
 
     # Sanitize title for filename
