@@ -53,9 +53,10 @@ class TestProviderRegistryDefaults:
         # Mock doesn't use a model name
         assert "default_model" not in PROVIDER_REGISTRY["mock"]
 
-    def test_gemini_3_pro_not_in_registry(self):
-        """Old gemini-3-pro key should NOT be in registry (replaced by gemini-pro)."""
-        assert "gemini-3-pro" not in PROVIDER_REGISTRY
+    def test_gemini_3_pro_in_registry(self):
+        """gemini-3-pro has its own registry entry (added Session 12)."""
+        assert "gemini-3-pro" in PROVIDER_REGISTRY
+        assert PROVIDER_REGISTRY["gemini-3-pro"]["default_model"] == "gemini-3-pro-preview"
 
     def test_all_non_mock_have_default_model(self):
         """Every provider except mock should have a default_model."""
@@ -68,12 +69,13 @@ class TestProviderRegistryDefaults:
 class TestProviderAliases:
     """Test backward-compatible provider name aliases."""
 
-    def test_gemini_3_pro_alias_exists(self):
-        assert "gemini-3-pro" in _PROVIDER_ALIASES
-        assert _PROVIDER_ALIASES["gemini-3-pro"] == "gemini-pro"
+    def test_gemini_3_pro_not_aliased(self):
+        """gemini-3-pro has its own registry entry, no alias needed."""
+        assert "gemini-3-pro" not in _PROVIDER_ALIASES
 
-    def test_resolve_alias(self):
-        assert _resolve_provider_name("gemini-3-pro") == "gemini-pro"
+    def test_resolve_no_alias(self):
+        """gemini-3-pro resolves to itself (direct registry entry)."""
+        assert _resolve_provider_name("gemini-3-pro") == "gemini-3-pro"
 
     def test_resolve_passthrough(self):
         assert _resolve_provider_name("gemini") == "gemini"
@@ -239,14 +241,14 @@ class TestGetProviderReadsRegistry:
             provider = get_provider(config, web_mode=True)
             assert provider._model_name == "gemini-1.5-flash"
 
-    def test_gemini_3_pro_alias_works(self):
-        """Old gemini-3-pro config still works via alias."""
+    def test_gemini_3_pro_uses_own_registry(self):
+        """gemini-3-pro uses its own registry entry (not alias to gemini-pro)."""
         config = {"llm": {"provider": "gemini-3-pro", "mode": "production"}}
         with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), patch("google.genai.Client"):
             provider = get_provider(config, web_mode=True)
             assert isinstance(provider, GeminiProvider)
-            # Should use gemini-pro's default model
-            assert provider._model_name == "gemini-2.5-pro"
+            # Should use gemini-3-pro's own default model
+            assert provider._model_name == "gemini-3-pro-preview"
 
     def test_gemini_accepts_api_key_from_config(self):
         """Gemini provider accepts api_key from llm config (not just env var)."""
@@ -277,11 +279,11 @@ class TestGetProviderInfo:
         keys = [p["key"] for p in info]
         assert "gemini-pro" in keys
 
-    def test_does_not_include_gemini_3_pro(self):
-        """Provider info list should NOT include old gemini-3-pro."""
+    def test_includes_gemini_3_pro(self):
+        """Provider info list includes gemini-3-pro (added Session 12)."""
         info = get_provider_info({"llm": {}})
         keys = [p["key"] for p in info]
-        assert "gemini-3-pro" not in keys
+        assert "gemini-3-pro" in keys
 
     def test_gemini_pro_label(self):
         """Gemini Pro has correct label."""

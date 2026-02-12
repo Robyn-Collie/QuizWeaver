@@ -271,17 +271,17 @@ def register_routes(app):
             session.query(LessonLog).order_by(LessonLog.date.desc(), LessonLog.id.desc()).limit(5).all()
         )
         recent_lessons = []
-        for l in recent_lesson_rows:
-            cls = get_class(session, l.class_id)
-            topics = json.loads(l.topics) if l.topics else []
+        for lesson_row in recent_lesson_rows:
+            cls = get_class(session, lesson_row.class_id)
+            topics = json.loads(lesson_row.topics) if lesson_row.topics else []
             recent_lessons.append(
                 {
-                    "id": l.id,
-                    "date": str(l.date),
-                    "class_id": l.class_id,
+                    "id": lesson_row.id,
+                    "date": str(lesson_row.date),
+                    "class_id": lesson_row.class_id,
                     "class_name": cls.name if cls else "Unknown",
                     "topics": topics,
-                    "preview": (l.content or "")[:80],
+                    "preview": (lesson_row.content or "")[:80],
                 }
             )
 
@@ -1266,7 +1266,7 @@ def register_routes(app):
 
             start = time.time()
             provider = get_provider(temp_config, web_mode=True)
-            response = provider.generate(["Say hello in one sentence."])
+            provider.generate(["Say hello in one sentence."])
             elapsed_ms = int((time.time() - start) * 1000)
 
             return jsonify(
@@ -2560,6 +2560,7 @@ def register_routes(app):
     @login_required
     def settings_standards():
         """Save the selected standard set and auto-load it."""
+        config = current_app.config["APP_CONFIG"]
         selected_set = request.form.get("standard_set", "sol")
         config["standard_set"] = selected_set
         save_config(config)

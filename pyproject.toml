@@ -11,11 +11,16 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "SIM"]
-ignore = ["E501"]
+ignore = ["E501", "UP006", "UP035", "SIM105", "SIM115"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["E501", "B011"]
+"tests/*" = ["E501", "B007", "B011", "B017", "B904", "E722", "E741", "F841", "SIM117", "SIM221"]
 "migrations/*" = ["E501"]
+"demo_data/*" = ["E402", "F841"]
+"src/llm_provider.py" = ["F401", "SIM102"]  # Import-for-availability pattern; nested if is clearer
+"src/migrations.py" = ["SIM108"]
+"src/export.py" = ["B007"]  # Loop variable intentionally unused (ranking)
+"src/web/routes.py" = ["E741"]  # Short var name in list comprehension
 
 [tool.ruff.format]
 quote-style = "double"

@@ -4,8 +4,6 @@ CLI command modules for QuizWeaver.
 Provides shared helpers and imports for all CLI command modules.
 """
 
-import json
-
 from src.database import get_engine, get_session, init_db
 
 

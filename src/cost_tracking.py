@@ -111,7 +111,7 @@ def get_cost_summary(log_file: str = DEFAULT_LOG_FILE) -> Dict[str, Any]:
 
                 timestamp_str = parts[0]
                 provider = parts[1]
-                model = parts[2]
+                _model = parts[2]  # noqa: F841
                 input_tokens = int(parts[3])
                 output_tokens = int(parts[4])
                 cost = float(parts[5].replace("$", ""))
