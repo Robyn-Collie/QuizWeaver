@@ -52,7 +52,7 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 ### Assessment Generation
 - **Quiz Generation** -- Multi-agent LLM pipeline (Generator + Critic) produces draft questions aligned to your taught content
 - **Cognitive Frameworks** -- Bloom's Taxonomy and Webb's DOK with configurable distribution across cognitive levels
-- **Standards Alignment** -- Searchable standards database (Virginia SOL) with autocomplete picker
+- **Standards Alignment** -- Multi-state standards (SOL, CCSS ELA, CCSS Math, NGSS, TEKS) with searchable picker
 - **Topic-Based Generation** -- Generate quizzes from specific topics without a source quiz
 - **Question Bank** -- Save and reuse favorite questions across quizzes
 
@@ -80,12 +80,24 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 - **GIFT** -- Moodle-compatible quiz import format
 - **TSV** -- Anki-compatible flashcard export
 
+### Lesson Planning
+- **Lesson Plan Generator** -- 10-section plans with differentiation, teach-assess loop, and formative checkpoints
+- **Export** -- PDF and DOCX export for lesson plans
+
 ### Teacher Tools
 - **Class Sections & Organization** -- Separate lesson histories, quizzes, and analytics per class/block
 - **Lesson Tracking** -- Log lessons with automatic topic extraction and knowledge depth tracking
+- **Template Export/Import** -- Save and share quiz templates as JSON files
 - **Cost Tracking** -- Per-action and per-provider cost breakdowns with budget thresholds
 - **Dark Mode** -- Full dark theme with WCAG AA compliant contrast
 - **Keyboard Shortcuts** -- Chord-based navigation (press `?` for help)
+
+### Accessibility
+- **Dyslexia-Friendly Font** -- OpenDyslexic toggle with enhanced spacing options
+- **Color Blind Safe Mode** -- Wong palette with text-based indicators alongside color cues
+- **Screen Reader Support** -- Skip navigation, ARIA landmarks, and semantic markup
+- **Text-to-Speech** -- Client-side Web Speech API for quiz question read-aloud
+- **Mobile Responsive** -- Touch-friendly (44px targets), 4 breakpoints, responsive tables
 
 ### AI Literacy & Transparency
 - **Contextual Tooltips** -- Inline explanations of language model concepts throughout the UI
@@ -97,22 +109,26 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 
 ## Quick Start
 
-### Installation
+### The Easy Way (Recommended)
+
+1. Install [Python 3.9+](https://www.python.org/downloads/) (check "Add Python to PATH" on Windows)
+2. Download and extract QuizWeaver
+3. **Windows:** Double-click `run.bat`
+4. **macOS / Linux:** Open a terminal and run `chmod +x run.sh && ./run.sh`
+
+The launcher installs dependencies, creates the database, and opens your browser automatically. See [INSTALLATION.md](INSTALLATION.md) for detailed step-by-step instructions.
+
+### Manual Setup
 
 ```bash
 pip install -r requirements.txt
-```
-
-### Run the Web Interface
-
-```bash
 python -c "
 import yaml
 with open('config.yaml') as f:
     config = yaml.safe_load(f)
 from src.web.app import create_app
 app = create_app(config)
-app.run(debug=True)
+app.run(host='127.0.0.1', port=5000)
 "
 ```
 
@@ -121,13 +137,13 @@ Open http://localhost:5000 -- the onboarding wizard will guide you through creat
 ### Run Tests
 
 ```bash
-python -m pytest       # 1078 tests, all passing
+python -m pytest       # 1381 tests, all passing
 ```
 
 ### Docker
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 ---
@@ -140,8 +156,10 @@ QuizWeaver is LLM-agnostic. Choose the provider that fits your needs and budget:
 |----------|------|---------|-------|
 | **Mock** (default) | Free | No data sent anywhere | None -- works out of the box |
 | **Ollama** (local) | Free | Data stays on your machine | Install [Ollama](https://ollama.com), pull a model |
-| **Google Gemini** | Pay-per-use | Data sent to Google | [Get API key](https://aistudio.google.com) |
+| **Google Gemini** | Pay-per-use (free tier) | Data sent to Google | [Get API key](https://aistudio.google.com) |
+| **Anthropic Claude** | Pay-per-use | Data sent to Anthropic | [Get API key](https://console.anthropic.com) |
 | **OpenAI** | Pay-per-use | Data sent to OpenAI | [Get API key](https://platform.openai.com) |
+| **Google Vertex AI** | Pay-per-use | Data stays in GCP | GCP project + `gcloud auth` |
 | **Any OpenAI-compatible API** | Varies | Varies | Configure base URL + key |
 
 The built-in **Provider Setup Wizard** (Settings > Setup Wizard) walks you through configuration step by step, including cost implications and privacy considerations.
@@ -174,7 +192,7 @@ Classroom  Lesson    Standards
          |
     Agentic Pipeline (Generator + Critic)
          |
-    LLM Provider (Mock | Gemini | OpenAI | Ollama | Vertex AI)
+    LLM Provider (Mock | Gemini | Anthropic | OpenAI | Ollama | Vertex AI)
          |
     Cost Tracking
          |
@@ -189,9 +207,13 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system diagram.
 
 ```
 QuizWeaver/
+├── run.bat                    # Windows launcher (double-click to start)
+├── run.sh                     # macOS/Linux launcher
+├── INSTALLATION.md            # Step-by-step setup guide for teachers
 ├── main.py                    # CLI entry point
 ├── config.yaml                # Application configuration
 ├── requirements.txt           # Python dependencies
+├── .env.example               # Environment variable template
 │
 ├── src/
 │   ├── classroom.py           # Class sections CRUD (create, list, update, delete)
@@ -214,7 +236,7 @@ QuizWeaver/
 │   ├── rubric_export.py       # Rubric CSV, DOCX, PDF
 │   ├── database.py            # SQLAlchemy ORM models
 │   ├── migrations.py          # Idempotent database migration runner
-│   ├── llm_provider.py        # LLM abstraction (Mock, Gemini, OpenAI, Vertex, Ollama)
+│   ├── llm_provider.py        # LLM abstraction (Mock, Gemini, Anthropic, OpenAI, Vertex)
 │   ├── mock_responses.py      # Fabricated LLM responses for development
 │   └── web/
 │       ├── app.py             # Flask application factory
@@ -223,10 +245,10 @@ QuizWeaver/
 │       ├── config_utils.py    # Configuration save helper
 │       └── tooltip_data.py    # LLM literacy tooltip content
 │
-├── tests/                     # 1078 tests (pytest)
+├── tests/                     # 1381 tests (pytest)
 ├── templates/                 # Jinja2 HTML templates
 ├── static/                    # CSS, JavaScript, static assets
-├── migrations/                # SQL migration scripts (001-008)
+├── migrations/                # SQL migration scripts (001-009)
 ├── data/                      # Standards database (sol_standards.json)
 ├── prompts/                   # Agent system prompts
 └── docs/
@@ -274,7 +296,7 @@ QuizWeaver/
 
 ### Database
 
-8 migration scripts, idempotent (safe to run multiple times):
+9 migration scripts, idempotent (safe to run multiple times):
 
 | Table | Purpose |
 |-------|---------|
@@ -302,7 +324,7 @@ Key contribution guidelines:
 - All LLM-generated content must be labeled as drafts requiring teacher review
 - No feature may send student work to cloud language model providers
 - New LLM features must work with MockLLMProvider at zero cost
-- Test coverage is required (1078+ tests currently passing)
+- Test coverage is required (1381 tests currently passing)
 
 ---
 
