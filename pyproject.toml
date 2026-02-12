@@ -30,3 +30,13 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["src/migrations.py", "src/image_gen.py", "src/ingestion.py", "src/review.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 0

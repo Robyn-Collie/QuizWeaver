@@ -42,6 +42,11 @@ test_uat_setup.sh
 # --- Screenshots (dev/debug artifacts) ---
 *.png
 
+# --- Test Coverage ---
+htmlcov/
+.coverage
+coverage.xml
+
 # --- Playwright MCP ---
 .playwright-mcp/
 

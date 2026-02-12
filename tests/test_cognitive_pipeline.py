@@ -8,7 +8,6 @@ Run with: python -m pytest tests/test_cognitive_pipeline.py -v
 import json
 import os
 import sys
-import tempfile
 
 import pytest
 
@@ -24,16 +23,7 @@ from src.quiz_generator import generate_quiz
 # ---------------------------------------------------------------------------
 
 
-@pytest.fixture
-def db_path():
-    """Create a temporary database file."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-    tmp.close()
-    yield tmp.name
-    try:
-        os.remove(tmp.name)
-    except OSError:
-        pass
+# db_path fixture is provided by tests/conftest.py
 
 
 @pytest.fixture

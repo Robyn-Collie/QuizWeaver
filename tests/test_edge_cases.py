@@ -20,35 +20,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.agents import get_qa_guidelines, load_prompt
 from src.classroom import create_class
-from src.database import Quiz, get_engine, get_session, init_db
+from src.database import Quiz
 from src.lesson_tracker import KNOWN_TOPICS, extract_topics
 from src.llm_provider import MockLLMProvider, get_provider
-from src.migrations import run_migrations
 from src.mock_responses import SCIENCE_TOPICS, fill_template_context
 from src.quiz_generator import generate_quiz
 
 # ---------------------------------------------------------------------------
-# Fixtures
+# Fixtures — db_session is provided by tests/conftest.py
 # ---------------------------------------------------------------------------
-
-
-@pytest.fixture
-def db_session():
-    """Provide a fully-initialised SQLAlchemy session bound to a temp DB."""
-    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-    tmp.close()
-    db_path = tmp.name
-    run_migrations(db_path, verbose=False)
-    engine = get_engine(db_path)
-    init_db(engine)
-    session = get_session(engine)
-    yield session, db_path
-    session.close()
-    engine.dispose()
-    try:
-        os.remove(db_path)
-    except OSError:
-        pass
 
 
 # ---------------------------------------------------------------------------
