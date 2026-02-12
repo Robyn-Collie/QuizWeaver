@@ -116,7 +116,7 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 3. **Windows:** Double-click `run.bat`
 4. **macOS / Linux:** Open a terminal and run `chmod +x run.sh && ./run.sh`
 
-The launcher installs dependencies, creates the database, and opens your browser automatically. See [INSTALLATION.md](INSTALLATION.md) for detailed step-by-step instructions.
+The launcher installs dependencies, creates the database, and opens your browser automatically. See [docs/INSTALLATION.md](docs/INSTALLATION.md) for detailed step-by-step instructions.
 
 ### Manual Setup
 
@@ -209,7 +209,6 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system diagram.
 QuizWeaver/
 ├── run.bat                    # Windows launcher (double-click to start)
 ├── run.sh                     # macOS/Linux launcher
-├── INSTALLATION.md            # Step-by-step setup guide for teachers
 ├── main.py                    # CLI entry point
 ├── config.yaml                # Application configuration
 ├── requirements.txt           # Python dependencies
@@ -251,12 +250,20 @@ QuizWeaver/
 ├── migrations/                # SQL migration scripts (001-009)
 ├── data/                      # Standards database (sol_standards.json)
 ├── prompts/                   # Agent system prompts
-└── docs/
-    ├── ARCHITECTURE.md        # System architecture
-    ├── BACKLOG.md             # Feature backlog with principles
-    ├── COMPETITIVE_ANALYSIS.md # EdTech landscape research
-    ├── COST_STRATEGY.md       # Cost control approach
-    └── ROADMAP.md             # Development roadmap
+├── docs/
+│   ├── ARCHITECTURE.md        # System architecture
+│   ├── BACKLOG.md             # Feature backlog with principles
+│   ├── COMPETITIVE_ANALYSIS.md # EdTech landscape research
+│   ├── COST_STRATEGY.md       # Cost control approach
+│   ├── INSTALLATION.md        # Step-by-step setup guide for teachers
+│   ├── DEMO_SCRIPT.md         # Demo walkthrough script
+│   ├── DEMO_VIDEO_SCRIPT.md   # Demo video narration
+│   ├── WORKSHOP_SLIDES.md     # Workshop presentation outline
+│   └── ROADMAP.md             # Development roadmap
+└── archive/                   # Historical planning artifacts
+    ├── openspec/              # OpenSpec change specs (completed)
+    ├── Project_Planning/      # Original architecture planning docs
+    └── agent_prompts/         # Multi-agent workshop prompts
 ```
 
 ---

@@ -15,9 +15,19 @@ generated_images/
 Quiz_Output/
 draft_preview.pdf
 
+# --- Binary content (user-supplied, not code) ---
+Content_Summary/
+Retake/
+
 # --- Database ---
 # Exclude the local SQLite database file
 quiz_warehouse.db
+
+# --- Logs ---
+api_costs.log
+
+# --- Backups ---
+backups/
 
 # --- E2E Test Scaffolding (temp files, never commit) ---
 test_server.py

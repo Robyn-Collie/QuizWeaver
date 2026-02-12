@@ -334,6 +334,51 @@ openspec status --change teaching-platform-expansion
 - **CLI commands**: `kebab-case` (e.g., `new-class`, `list-classes`)
 - **Database tables**: `snake_case` (e.g., `lesson_logs`, `performance_data`)
 
+## Repository Conventions
+
+Rules to prevent organizational debt. Established in Session 12 based on a full repo audit.
+
+### File Organization
+
+- Documentation `.md` files go in `docs/` -- NEVER create `.md` files at repo root (exceptions: `README.md`, `CLAUDE.md`, `LICENSE`, `CHANGELOG.md`)
+- Teacher-facing launcher scripts (`run.bat`, `run.sh`) stay at repo root; utility scripts go in `scripts/`
+- Archive completed planning artifacts to `archive/` -- don't leave stale directories in root
+- Sample content and binary files (PDFs, DOCX, images) belong in `.gitignore`, not tracked in git
+- Audit/report files from agents go in `docs/`
+
+### Code Organization
+
+- Shared utility functions go in `src/export_utils.py` (or appropriate `src/utils_*.py`) -- NEVER duplicate functions across modules. Before writing a helper, check if it already exists
+- CLI commands go in `src/cli/<area>_commands.py` modules -- `main.py` stays thin (just wiring)
+- Flask routes: when any route file exceeds ~500 lines, split into Flask blueprints
+- Keep route handlers thin -- business logic belongs in `src/` modules, not in route handlers
+
+### Config & Paths
+
+- `config.yaml` uses relative paths only -- NEVER commit absolute paths or temp file paths
+- Secrets (API keys, tokens) go in `.env` (gitignored) -- NEVER in source files or `config.yaml`
+- Use `os.getenv()` + `dotenv` for all secrets
+
+### Testing
+
+- Test files use descriptive names: `test_form_autofill.py` not `test_bl024_autofill.py`
+- Never use ticket numbers or session numbers in test file names
+- Shared test fixtures go in `tests/conftest.py`
+- Every new CLI command gets a test in `tests/test_cli.py`
+- Every new web route gets a test in the appropriate `tests/test_web_*.py`
+
+### CLI Parity
+
+- Every web-only feature should have a CLI equivalent in `src/cli/`
+- When adding a new web route for a feature, also add the CLI command
+- CLI output uses `[OK]`, `[PASS]`, `[FAIL]` markers (no emoji -- Windows compatibility)
+
+### Git Hygiene
+
+- Never commit binary files (PDFs, images, DOCX) -- add to `.gitignore`
+- Never commit temp files or build artifacts
+- Keep `.gitignore` up to date when adding new generated file patterns
+
 ## Git Workflow
 
 - **Branch strategy**: Work on `main` (small project)

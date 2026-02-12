@@ -7,7 +7,6 @@ Exports study sets to TSV (Anki-compatible), CSV, PDF, and DOCX formats.
 import csv
 import io
 import json
-import re
 from typing import List, Optional
 
 from docx import Document
@@ -15,6 +14,8 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+
+from src.export_utils import sanitize_filename, pdf_wrap_text
 
 
 def _parse_card_data(card) -> dict:
@@ -31,10 +32,11 @@ def _parse_card_data(card) -> dict:
 
 
 def _sanitize_filename(title: str) -> str:
-    """Sanitize a title for use as a filename."""
-    clean = re.sub(r"[^\w\s\-]", "", title)
-    clean = re.sub(r"\s+", "_", clean.strip())
-    return clean[:80] or "study"
+    """Sanitize a title for use as a filename.
+
+    .. deprecated:: Use ``sanitize_filename`` from ``src.export_utils`` instead.
+    """
+    return sanitize_filename(title, default="study")
 
 
 # ---------------------------------------------------------------------------
@@ -273,30 +275,7 @@ def _pdf_draw_review_item(c, card, data, y, width, height):
     return y
 
 
-def _pdf_wrap_text(c, text, x, y, max_width, page_height):
-    """Draw text with word wrapping. Returns new y position."""
-    if not text:
-        return y
-    words = text.split()
-    line = ""
-    for word in words:
-        test_line = f"{line} {word}".strip()
-        if c.stringWidth(test_line, c._fontname, c._fontsize) < max_width:
-            line = test_line
-        else:
-            if y < 60:
-                c.showPage()
-                y = page_height - 50
-            c.drawString(x, y, line)
-            y -= 14
-            line = word
-    if line:
-        if y < 60:
-            c.showPage()
-            y = page_height - 50
-        c.drawString(x, y, line)
-        y -= 14
-    return y
+_pdf_wrap_text = pdf_wrap_text  # Backward-compatible alias
 
 
 # ---------------------------------------------------------------------------

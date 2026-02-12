@@ -21,6 +21,8 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+from src.export_utils import sanitize_filename
+
 
 # Type normalization map: long form -> short form
 TYPE_MAP = {
@@ -180,11 +182,11 @@ def _escape_gift(text: str) -> str:
 
 
 def _sanitize_filename(title: str) -> str:
-    """Sanitize a quiz title for use as a filename."""
-    # Remove special chars, keep alphanumeric, spaces, hyphens, underscores
-    clean = re.sub(r"[^\w\s\-]", "", title)
-    clean = re.sub(r"\s+", "_", clean.strip())
-    return clean[:80] or "quiz"
+    """Sanitize a quiz title for use as a filename.
+
+    .. deprecated:: Use ``sanitize_filename`` from ``src.export_utils`` instead.
+    """
+    return sanitize_filename(title, default="quiz")
 
 
 # ---------------------------------------------------------------------------

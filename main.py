@@ -641,8 +641,34 @@ def main():
         "cost-summary", help="Display API cost summary."
     )
 
+    # --- Register CLI module commands ---
+    from src.cli.quiz_commands import register_quiz_commands
+    from src.cli.study_commands import register_study_commands
+    from src.cli.rubric_commands import register_rubric_commands
+    from src.cli.analytics_commands import register_analytics_commands
+    from src.cli.lesson_plan_commands import register_lesson_plan_commands
+    from src.cli.template_commands import register_template_commands
+    from src.cli.class_commands import register_class_commands
+    from src.cli.standards_commands import register_standards_commands
+    from src.cli.provider_commands import register_provider_commands
+    from src.cli.variant_commands import register_variant_commands
+    from src.cli.topic_commands import register_topic_commands
+
+    register_quiz_commands(subparsers)
+    register_study_commands(subparsers)
+    register_rubric_commands(subparsers)
+    register_analytics_commands(subparsers)
+    register_lesson_plan_commands(subparsers)
+    register_template_commands(subparsers)
+    register_class_commands(subparsers)
+    register_standards_commands(subparsers)
+    register_provider_commands(subparsers)
+    register_variant_commands(subparsers)
+    register_topic_commands(subparsers)
+
     args = parser.parse_args()
 
+    # --- Original command routing ---
     if args.command == "ingest":
         handle_ingest(config)
     elif args.command == "generate":
@@ -659,6 +685,71 @@ def main():
         handle_list_lessons(config, args)
     elif args.command == "cost-summary":
         handle_cost_summary(config, args)
+
+    # --- New CLI module command routing ---
+    elif args.command == "list-quizzes":
+        from src.cli.quiz_commands import handle_list_quizzes
+        handle_list_quizzes(config, args)
+    elif args.command == "view-quiz":
+        from src.cli.quiz_commands import handle_view_quiz
+        handle_view_quiz(config, args)
+    elif args.command == "export-quiz":
+        from src.cli.quiz_commands import handle_export_quiz
+        handle_export_quiz(config, args)
+    elif args.command == "generate-study":
+        from src.cli.study_commands import handle_generate_study
+        handle_generate_study(config, args)
+    elif args.command == "export-study":
+        from src.cli.study_commands import handle_export_study
+        handle_export_study(config, args)
+    elif args.command == "generate-rubric":
+        from src.cli.rubric_commands import handle_generate_rubric
+        handle_generate_rubric(config, args)
+    elif args.command == "export-rubric":
+        from src.cli.rubric_commands import handle_export_rubric
+        handle_export_rubric(config, args)
+    elif args.command == "import-performance":
+        from src.cli.analytics_commands import handle_import_performance
+        handle_import_performance(config, args)
+    elif args.command == "analytics":
+        from src.cli.analytics_commands import handle_analytics
+        handle_analytics(config, args)
+    elif args.command == "reteach":
+        from src.cli.analytics_commands import handle_reteach
+        handle_reteach(config, args)
+    elif args.command == "generate-lesson-plan":
+        from src.cli.lesson_plan_commands import handle_generate_lesson_plan
+        handle_generate_lesson_plan(config, args)
+    elif args.command == "export-lesson-plan":
+        from src.cli.lesson_plan_commands import handle_export_lesson_plan
+        handle_export_lesson_plan(config, args)
+    elif args.command == "export-template":
+        from src.cli.template_commands import handle_export_template
+        handle_export_template(config, args)
+    elif args.command == "import-template":
+        from src.cli.template_commands import handle_import_template
+        handle_import_template(config, args)
+    elif args.command == "edit-class":
+        from src.cli.class_commands import handle_edit_class
+        handle_edit_class(config, args)
+    elif args.command == "delete-class":
+        from src.cli.class_commands import handle_delete_class
+        handle_delete_class(config, args)
+    elif args.command == "delete-lesson":
+        from src.cli.class_commands import handle_delete_lesson
+        handle_delete_lesson(config, args)
+    elif args.command == "browse-standards":
+        from src.cli.standards_commands import handle_browse_standards
+        handle_browse_standards(config, args)
+    elif args.command == "provider-info":
+        from src.cli.provider_commands import handle_provider_info
+        handle_provider_info(config, args)
+    elif args.command == "generate-variant":
+        from src.cli.variant_commands import handle_generate_variant
+        handle_generate_variant(config, args)
+    elif args.command == "generate-topics":
+        from src.cli.topic_commands import handle_generate_topics
+        handle_generate_topics(config, args)
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ python app.py
 # Step 3: Open browser to http://localhost:5000
 ```
 
-Then follow the walkthrough in `demo_data/demo_script.md` for a guided tour.
+Then follow the walkthrough in `docs/DEMO_SCRIPT.md` for a guided tour.
 
 ## Full Demo Setup
 
@@ -131,7 +131,7 @@ Open your browser to [http://localhost:5000](http://localhost:5000)
 
 ### Step 4: Follow the Demo Script
 
-Open `demo_data/demo_script.md` for a step-by-step walkthrough of the platform's features:
+Open `docs/DEMO_SCRIPT.md` for a step-by-step walkthrough of the platform's features:
 
 1. Dashboard overview
 2. Class sections & organization
@@ -317,8 +317,8 @@ Use these stats when presenting:
 
 ## Related Demo Files
 
-- **demo_data/demo_script.md**: Step-by-step walkthrough for presentations
-- **demo_data/workshop_slides.md**: Talking points for workshop sessions
+- **docs/DEMO_SCRIPT.md**: Step-by-step walkthrough for presentations
+- **docs/WORKSHOP_SLIDES.md**: Talking points for workshop sessions
 - **demo_data/setup_demo.py**: Python script that loads demo data
 - **docs/ARCHITECTURE.md**: System architecture diagram and explanation
 - **docs/COST_STRATEGY.md**: Cost control strategy and implementation
@@ -349,7 +349,7 @@ Use these stats when presenting:
 
 After completing the demo setup:
 
-1. **Follow the Demo Script**: See `demo_data/demo_script.md` for guided tour
+1. **Follow the Demo Script**: See `docs/DEMO_SCRIPT.md` for guided tour
 2. **Read the Architecture**: See `docs/ARCHITECTURE.md` for system design
 3. **Review Cost Strategy**: See `docs/COST_STRATEGY.md` for cost control approach
 4. **Run the Tests**: `python -m pytest` to verify everything works
@@ -358,10 +358,10 @@ After completing the demo setup:
 ## Questions?
 
 - **Project Documentation**: See `README.md` and `CLAUDE.md`
-- **OpenSpec Workflow**: See `openspec/` directory for spec-driven development
-- **Workshop Materials**: See `demo_data/workshop_slides.md`
+- **OpenSpec Workflow**: See `archive/openspec/` directory for spec-driven development
+- **Workshop Materials**: See `docs/WORKSHOP_SLIDES.md`
 - **Architecture Details**: See `docs/ARCHITECTURE.md`
 
 ---
 
-**Ready to present?** Run `bash reset_demo.sh`, start the web app, and follow `demo_script.md`. Good luck!
+**Ready to present?** Run `bash reset_demo.sh`, start the web app, and follow `docs/DEMO_SCRIPT.md`. Good luck!

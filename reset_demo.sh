@@ -82,5 +82,5 @@ fi
 echo ""
 echo "Next steps:"
 echo "  1. Run the web app:    python app.py"
-echo "  2. Or follow:          demo_data/demo_script.md"
+echo "  2. Or follow:          docs/DEMO_SCRIPT.md"
 echo ""
