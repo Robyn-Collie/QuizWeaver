@@ -5,17 +5,26 @@ Verifies that AI-generated content banners appear on output pages
 and that the privacy notice appears on the lesson logging form.
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
 from datetime import date
 
+import pytest
+
 from src.database import (
-    Base, Class, LessonLog, Quiz, Question,
-    StudySet, StudyCard, Rubric, RubricCriterion,
+    Base,
+    Class,
+    LessonLog,
     PerformanceData,
-    get_engine, get_session,
+    Question,
+    Quiz,
+    Rubric,
+    RubricCriterion,
+    StudyCard,
+    StudySet,
+    get_engine,
+    get_session,
 )
 
 
@@ -65,10 +74,12 @@ def app():
         text="What is 2+2?",
         question_type="mc",
         points=1,
-        data=json.dumps({
-            "options": ["3", "4", "5", "6"],
-            "correct_index": 1,
-        }),
+        data=json.dumps(
+            {
+                "options": ["3", "4", "5", "6"],
+                "correct_index": 1,
+            }
+        ),
     )
     session.add(question)
     session.commit()
@@ -109,12 +120,14 @@ def app():
         criterion="Understanding",
         description="Shows understanding",
         max_points=4,
-        levels=json.dumps([
-            {"label": "Beginning", "description": "Limited"},
-            {"label": "Developing", "description": "Partial"},
-            {"label": "Proficient", "description": "Good"},
-            {"label": "Advanced", "description": "Excellent"},
-        ]),
+        levels=json.dumps(
+            [
+                {"label": "Beginning", "description": "Limited"},
+                {"label": "Developing", "description": "Partial"},
+                {"label": "Proficient", "description": "Good"},
+                {"label": "Advanced", "description": "Excellent"},
+            ]
+        ),
         sort_order=0,
     )
     session.add(criterion)

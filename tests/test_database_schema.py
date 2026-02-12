@@ -3,24 +3,21 @@ Tests for database schema and migrations.
 Run with: python tests/test_database_schema.py
 """
 
-import sys
 import os
+import sys
 import tempfile
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import (
-    Base, get_engine, init_db, get_session,
-    Class, LessonLog, Quiz, Question, PerformanceData
-)
+from src.database import Class, LessonLog, Quiz, get_engine, get_session, init_db
 from src.migrations import run_migrations
 
 
 def test_migration_on_clean_db():
     """Test that migrations work on a clean database."""
     # Create temporary database
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -44,7 +41,7 @@ def test_migration_on_clean_db():
 
 def test_migration_on_existing_db():
     """Test that migrations work on existing database."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -66,7 +63,7 @@ def test_migration_on_existing_db():
 
 def test_migration_is_idempotent():
     """Test that running migrations multiple times is safe."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -86,7 +83,7 @@ def test_migration_is_idempotent():
 
 def test_class_creation():
     """Test creating a Class record."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -101,7 +98,7 @@ def test_class_creation():
             grade_level="7th Grade",
             subject="Science",
             standards='["SOL 7.1", "SOL 7.2"]',
-            config='{}'
+            config="{}",
         )
         session.add(new_class)
         session.commit()
@@ -124,7 +121,7 @@ def test_class_creation():
 
 def test_relationships():
     """Test that relationships between models work."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -134,20 +131,12 @@ def test_relationships():
         session = get_session(engine)
 
         # Create a class
-        test_class = Class(
-            name="Test Class",
-            grade_level="8th Grade",
-            subject="Math"
-        )
+        test_class = Class(name="Test Class", grade_level="8th Grade", subject="Math")
         session.add(test_class)
         session.commit()
 
         # Create a lesson log for this class
-        lesson = LessonLog(
-            class_id=test_class.id,
-            content="Covered algebra basics",
-            topics='["algebra", "equations"]'
-        )
+        lesson = LessonLog(class_id=test_class.id, content="Covered algebra basics", topics='["algebra", "equations"]')
         session.add(lesson)
         session.commit()
 
@@ -167,7 +156,7 @@ def test_relationships():
 
 def test_quiz_class_relationship():
     """Test that quizzes can be associated with classes."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+    with tempfile.NamedTemporaryFile(suffix=".db", delete=False) as f:
         test_db = f.name
 
     try:
@@ -182,11 +171,7 @@ def test_quiz_class_relationship():
         session.commit()
 
         # Create a quiz for this class
-        quiz = Quiz(
-            title="Test Quiz",
-            class_id=test_class.id,
-            status="generated"
-        )
+        quiz = Quiz(title="Test Quiz", class_id=test_class.id, status="generated")
         session.add(quiz)
         session.commit()
 
@@ -231,7 +216,7 @@ def run_all_tests():
             print(f"[FAIL] {test.__name__}: Unexpected error: {e}")
             failed += 1
 
-    print(f"\n=== Test Results ===")
+    print("\n=== Test Results ===")
     print(f"Passed: {passed}/{len(tests)}")
     print(f"Failed: {failed}/{len(tests)}")
 

@@ -4,10 +4,10 @@ Performance import, analytics, and reteach CLI commands.
 
 import json
 
-from src.cli import get_db_session, resolve_class_id
 from src.classroom import get_class
-from src.performance_import import import_csv_data
+from src.cli import get_db_session, resolve_class_id
 from src.performance_analytics import compute_gap_analysis, get_class_summary
+from src.performance_import import import_csv_data
 from src.reteach_generator import generate_reteach_suggestions
 
 
@@ -24,7 +24,9 @@ def register_analytics_commands(subparsers):
     p = subparsers.add_parser("analytics", help="Show performance analytics for a class.")
     p.add_argument("--class", dest="class_id", type=int, help="Class ID.")
     p.add_argument(
-        "--format", dest="fmt", default="text",
+        "--format",
+        dest="fmt",
+        default="text",
         choices=["text", "json"],
         help="Output format.",
     )
@@ -46,14 +48,16 @@ def handle_import_performance(config, args):
             return
 
         try:
-            with open(args.csv_file, "r", encoding="utf-8") as f:
+            with open(args.csv_file, encoding="utf-8") as f:
                 csv_text = f.read()
         except FileNotFoundError:
             print(f"Error: File not found: {args.csv_file}")
             return
 
         count, errors = import_csv_data(
-            session, class_id, csv_text,
+            session,
+            class_id,
+            csv_text,
             quiz_id=getattr(args, "quiz_id", None),
         )
 
@@ -98,7 +102,7 @@ def handle_analytics(config, args):
         print(f"  Data points:      {summary['total_data_points']}")
 
         if gaps:
-            print(f"\nGap Analysis (worst first):")
+            print("\nGap Analysis (worst first):")
             print(f"  {'Topic':<30} {'Actual':>7} {'Expected':>8} {'Gap':>6} {'Severity':<12}")
             print(f"  {'---':<30} {'---':>7} {'---':>8} {'---':>6} {'---':<12}")
             for g in gaps[:10]:
@@ -146,7 +150,7 @@ def handle_reteach(config, args):
                 print(f"   Plan: {s['lesson_plan'][:80]}")
             activities = s.get("activities", [])
             if activities:
-                print(f"   Activities:")
+                print("   Activities:")
                 for act in activities[:3]:
                     print(f"     - {act}")
     finally:

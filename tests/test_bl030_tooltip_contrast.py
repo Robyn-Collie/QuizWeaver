@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine
@@ -33,20 +34,16 @@ def app():
 
 def test_dark_mode_tooltip_override_exists():
     """The CSS file must contain a dark theme override for .help-tip::after."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     assert ':root[data-theme="dark"] .help-tip::after' in css
 
 
 def test_dark_mode_tooltip_has_dark_background():
     """The dark tooltip background must be a dark color, not var(--text)."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     # Find the dark mode tooltip rule
     idx = css.index(':root[data-theme="dark"] .help-tip::after')
@@ -59,10 +56,8 @@ def test_dark_mode_tooltip_has_dark_background():
 
 def test_dark_mode_tooltip_has_light_text():
     """The dark tooltip text must be a light color for contrast."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     idx = css.index(':root[data-theme="dark"] .help-tip::after')
     block = css[idx : css.index("}", idx) + 1]
@@ -79,10 +74,8 @@ def test_dark_mode_tooltip_has_light_text():
 
 def test_dark_mode_tooltip_has_border():
     """Dark tooltip should have a border for visual definition."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     idx = css.index(':root[data-theme="dark"] .help-tip::after')
     block = css[idx : css.index("}", idx) + 1]

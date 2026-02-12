@@ -21,14 +21,14 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from sqlalchemy import event
 
-from src.database import get_engine, init_db, get_session, Class, LessonLog, Quiz
-from src.classroom import create_class, get_class, list_classes, delete_class, update_class
-from src.lesson_tracker import log_lesson, delete_lesson
-
+from src.classroom import create_class, delete_class, get_class, update_class
+from src.database import LessonLog, Quiz, get_engine, get_session, init_db
+from src.lesson_tracker import delete_lesson, log_lesson
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def db_session():
@@ -69,6 +69,7 @@ def db_session():
 # delete_class tests
 # ===========================================================================
 
+
 class TestDeleteClass:
     """Tests for classroom.delete_class()."""
 
@@ -80,17 +81,13 @@ class TestDeleteClass:
         result = delete_class(db_session, class_id)
 
         assert result is True, "delete_class should return True on success"
-        assert get_class(db_session, class_id) is None, (
-            "Class should no longer exist after deletion"
-        )
+        assert get_class(db_session, class_id) is None, "Class should no longer exist after deletion"
 
     def test_delete_class_not_found(self, db_session):
         """Deleting a nonexistent class_id should return False."""
         result = delete_class(db_session, 99999)
 
-        assert result is False, (
-            "delete_class should return False when the class does not exist"
-        )
+        assert result is False, "delete_class should return False when the class does not exist"
 
     def test_delete_class_cascades_lessons(self, db_session):
         """Deleting a class should also delete its associated lesson logs (CASCADE)."""
@@ -99,19 +96,13 @@ class TestDeleteClass:
         log_lesson(db_session, cls.id, content="Lesson about cell division")
 
         # Sanity check: lessons exist
-        lessons_before = (
-            db_session.query(LessonLog).filter_by(class_id=cls.id).all()
-        )
+        lessons_before = db_session.query(LessonLog).filter_by(class_id=cls.id).all()
         assert len(lessons_before) == 2, "Should have two lessons before delete"
 
         delete_class(db_session, cls.id)
 
-        lessons_after = (
-            db_session.query(LessonLog).filter_by(class_id=cls.id).all()
-        )
-        assert len(lessons_after) == 0, (
-            "All lesson logs for the deleted class should be removed (CASCADE)"
-        )
+        lessons_after = db_session.query(LessonLog).filter_by(class_id=cls.id).all()
+        assert len(lessons_after) == 0, "All lesson logs for the deleted class should be removed (CASCADE)"
 
     def test_delete_class_nullifies_quizzes(self, db_session):
         """Deleting a class should SET NULL on quiz.class_id, not delete the quiz."""
@@ -127,17 +118,14 @@ class TestDeleteClass:
         db_session.expire_all()
 
         remaining_quiz = db_session.query(Quiz).filter_by(id=quiz_id).first()
-        assert remaining_quiz is not None, (
-            "Quiz should still exist after its class is deleted"
-        )
-        assert remaining_quiz.class_id is None, (
-            "Quiz class_id should be NULL after class deletion (SET NULL)"
-        )
+        assert remaining_quiz is not None, "Quiz should still exist after its class is deleted"
+        assert remaining_quiz.class_id is None, "Quiz class_id should be NULL after class deletion (SET NULL)"
 
 
 # ===========================================================================
 # update_class tests
 # ===========================================================================
+
 
 class TestUpdateClass:
     """Tests for classroom.update_class()."""
@@ -162,9 +150,7 @@ class TestUpdateClass:
         """Updating grade_level and subject at the same time should apply both."""
         cls = create_class(db_session, name="Multi Update")
 
-        updated = update_class(
-            db_session, cls.id, grade_level="9th Grade", subject="Math"
-        )
+        updated = update_class(db_session, cls.id, grade_level="9th Grade", subject="Math")
 
         assert updated is not None
         assert updated.grade_level == "9th Grade"
@@ -194,9 +180,7 @@ class TestUpdateClass:
         """Updating a nonexistent class should return None."""
         result = update_class(db_session, 99999, name="Ghost")
 
-        assert result is None, (
-            "update_class should return None when the class does not exist"
-        )
+        assert result is None, "update_class should return None when the class does not exist"
 
     def test_update_class_standards(self, db_session):
         """Updating standards should store them as a JSON-encoded list."""
@@ -212,14 +196,13 @@ class TestUpdateClass:
         stored = updated.standards
         if isinstance(stored, str):
             stored = json.loads(stored)
-        assert stored == new_standards, (
-            "Standards should be stored as the provided list (JSON-encoded)"
-        )
+        assert stored == new_standards, "Standards should be stored as the provided list (JSON-encoded)"
 
 
 # ===========================================================================
 # delete_lesson tests
 # ===========================================================================
+
 
 class TestDeleteLesson:
     """Tests for lesson_tracker.delete_lesson()."""
@@ -233,17 +216,15 @@ class TestDeleteLesson:
         result = delete_lesson(db_session, lesson_id)
 
         assert result is True, "delete_lesson should return True on success"
-        assert (
-            db_session.query(LessonLog).filter_by(id=lesson_id).first() is None
-        ), "Lesson should no longer exist after deletion"
+        assert db_session.query(LessonLog).filter_by(id=lesson_id).first() is None, (
+            "Lesson should no longer exist after deletion"
+        )
 
     def test_delete_lesson_not_found(self, db_session):
         """Deleting a nonexistent lesson should return False."""
         result = delete_lesson(db_session, 99999)
 
-        assert result is False, (
-            "delete_lesson should return False when the lesson does not exist"
-        )
+        assert result is False, "delete_lesson should return False when the lesson does not exist"
 
     def test_delete_lesson_doesnt_affect_others(self, db_session):
         """Deleting one lesson should leave other lessons for the same class intact."""
@@ -254,9 +235,7 @@ class TestDeleteLesson:
 
         delete_lesson(db_session, lesson_b.id)
 
-        remaining = (
-            db_session.query(LessonLog).filter_by(class_id=cls.id).all()
-        )
+        remaining = db_session.query(LessonLog).filter_by(class_id=cls.id).all()
         remaining_ids = {l.id for l in remaining}
 
         assert lesson_a.id in remaining_ids, "Lesson A should still exist"

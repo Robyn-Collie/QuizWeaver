@@ -12,15 +12,17 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, LessonPlan,
-    get_engine, get_session,
+    Base,
+    Class,
+    get_engine,
+    get_session,
 )
 from src.lesson_plan_generator import (
-    generate_lesson_plan,
     LESSON_PLAN_SECTIONS,
     SECTION_LABELS,
     _build_prompt,
     _parse_plan,
+    generate_lesson_plan,
 )
 
 
@@ -65,6 +67,7 @@ def config():
 
 # --- Constants ---
 
+
 class TestConstants:
     def test_section_keys_defined(self):
         assert len(LESSON_PLAN_SECTIONS) == 10
@@ -76,10 +79,12 @@ class TestConstants:
 
 # --- Prompt building ---
 
+
 class TestBuildPrompt:
     def test_prompt_includes_class_name(self, db_session):
         session, class_id = db_session
         from src.classroom import get_class
+
         class_obj = get_class(session, class_id)
         prompt = _build_prompt(class_obj, ["Photosynthesis"], ["SOL 7.1"], 50, None)
         assert "Test Science" in prompt
@@ -87,6 +92,7 @@ class TestBuildPrompt:
     def test_prompt_includes_topics(self, db_session):
         session, class_id = db_session
         from src.classroom import get_class
+
         class_obj = get_class(session, class_id)
         prompt = _build_prompt(class_obj, ["Photosynthesis", "Respiration"], [], 50, None)
         assert "Photosynthesis" in prompt
@@ -95,6 +101,7 @@ class TestBuildPrompt:
     def test_prompt_includes_duration(self, db_session):
         session, class_id = db_session
         from src.classroom import get_class
+
         class_obj = get_class(session, class_id)
         prompt = _build_prompt(class_obj, [], [], 90, None)
         assert "90 minutes" in prompt
@@ -102,12 +109,14 @@ class TestBuildPrompt:
     def test_prompt_includes_grade_level_override(self, db_session):
         session, class_id = db_session
         from src.classroom import get_class
+
         class_obj = get_class(session, class_id)
         prompt = _build_prompt(class_obj, [], [], 50, "8th Grade")
         assert "8th Grade" in prompt
 
 
 # --- Parse plan ---
+
 
 class TestParsePlan:
     def test_parse_valid_json(self):
@@ -129,11 +138,14 @@ class TestParsePlan:
 
 # --- Generation ---
 
+
 class TestGenerateLessonPlan:
     def test_generate_basic(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Photosynthesis"],
         )
         assert plan is not None
@@ -159,7 +171,9 @@ class TestGenerateLessonPlan:
     def test_generate_with_standards(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Genetics"],
             standards=["SOL 7.1", "SOL 7.2"],
         )
@@ -170,7 +184,9 @@ class TestGenerateLessonPlan:
     def test_generate_with_duration(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Energy"],
             duration_minutes=90,
         )
@@ -180,7 +196,9 @@ class TestGenerateLessonPlan:
     def test_generate_with_grade_level(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Forces"],
             grade_level="8th Grade",
         )
@@ -201,7 +219,9 @@ class TestGenerateLessonPlan:
     def test_generate_stores_topics_json(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Mitosis", "Meiosis"],
         )
         assert plan is not None
@@ -212,7 +232,9 @@ class TestGenerateLessonPlan:
     def test_generate_with_provider_override(self, db_session, config):
         session, class_id = db_session
         plan = generate_lesson_plan(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             topics=["Respiration"],
             provider_name="mock",
         )

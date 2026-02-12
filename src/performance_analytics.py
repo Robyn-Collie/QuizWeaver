@@ -10,10 +10,9 @@ import logging
 from datetime import date, timedelta
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from src.database import Class, PerformanceData
+from src.database import PerformanceData
 from src.lesson_tracker import get_assumed_knowledge
 
 logger = logging.getLogger(__name__)
@@ -47,9 +46,7 @@ def _severity(gap: float) -> str:
         return "exceeding"
 
 
-def compute_gap_analysis(
-    session: Session, class_id: int
-) -> List[Dict[str, Any]]:
+def compute_gap_analysis(session: Session, class_id: int) -> List[Dict[str, Any]]:
     """Compare assumed knowledge against actual performance data.
 
     For each topic that has performance data, computes the gap between
@@ -65,11 +62,7 @@ def compute_gap_analysis(
     knowledge = get_assumed_knowledge(session, class_id)
 
     # Aggregate performance data by topic
-    perf_rows = (
-        session.query(PerformanceData)
-        .filter(PerformanceData.class_id == class_id)
-        .all()
-    )
+    perf_rows = session.query(PerformanceData).filter(PerformanceData.class_id == class_id).all()
 
     if not perf_rows:
         return []
@@ -86,10 +79,7 @@ def compute_gap_analysis(
             }
         topic_data[topic]["scores"].append(row.avg_score)
 
-        if row.date and (
-            topic_data[topic]["last_assessed"] is None
-            or row.date > topic_data[topic]["last_assessed"]
-        ):
+        if row.date and (topic_data[topic]["last_assessed"] is None or row.date > topic_data[topic]["last_assessed"]):
             topic_data[topic]["last_assessed"] = row.date
 
         # Collect weak areas
@@ -117,21 +107,19 @@ def compute_gap_analysis(
         gap = avg_score - expected
         severity = _severity(gap)
 
-        results.append({
-            "topic": topic,
-            "depth": depth,
-            "expected_score": expected,
-            "actual_score": round(avg_score, 3),
-            "gap": round(gap, 3),
-            "gap_severity": severity,
-            "data_points": len(data["scores"]),
-            "last_assessed": (
-                data["last_assessed"].isoformat()
-                if data["last_assessed"]
-                else None
-            ),
-            "weak_areas": data["weak_areas"],
-        })
+        results.append(
+            {
+                "topic": topic,
+                "depth": depth,
+                "expected_score": expected,
+                "actual_score": round(avg_score, 3),
+                "gap": round(gap, 3),
+                "gap_severity": severity,
+                "data_points": len(data["scores"]),
+                "last_assessed": (data["last_assessed"].isoformat() if data["last_assessed"] else None),
+                "weak_areas": data["weak_areas"],
+            }
+        )
 
     # Sort by gap ascending (worst gaps first)
     results.sort(key=lambda x: x["gap"])
@@ -157,12 +145,9 @@ def get_topic_trends(
     """
     threshold = date.today() - timedelta(days=days)
 
-    query = (
-        session.query(PerformanceData)
-        .filter(
-            PerformanceData.class_id == class_id,
-            PerformanceData.date >= threshold,
-        )
+    query = session.query(PerformanceData).filter(
+        PerformanceData.class_id == class_id,
+        PerformanceData.date >= threshold,
     )
 
     if topic:
@@ -180,9 +165,7 @@ def get_topic_trends(
     ]
 
 
-def get_class_summary(
-    session: Session, class_id: int
-) -> Dict[str, Any]:
+def get_class_summary(session: Session, class_id: int) -> Dict[str, Any]:
     """Get overall performance summary for a class.
 
     Args:
@@ -192,11 +175,7 @@ def get_class_summary(
     Returns:
         Summary dict with overall stats.
     """
-    perf_rows = (
-        session.query(PerformanceData)
-        .filter(PerformanceData.class_id == class_id)
-        .all()
-    )
+    perf_rows = session.query(PerformanceData).filter(PerformanceData.class_id == class_id).all()
 
     if not perf_rows:
         return {
@@ -217,9 +196,7 @@ def get_class_summary(
         topic_scores[row.topic].append(row.avg_score)
 
     # Compute averages per topic
-    topic_avgs = {
-        t: sum(s) / len(s) for t, s in topic_scores.items()
-    }
+    topic_avgs = {t: sum(s) / len(s) for t, s in topic_scores.items()}
 
     all_scores = [s for scores in topic_scores.values() for s in scores]
     overall_avg = sum(all_scores) / len(all_scores) if all_scores else 0.0
@@ -242,9 +219,7 @@ def get_class_summary(
     }
 
 
-def get_standards_mastery(
-    session: Session, class_id: int
-) -> List[Dict[str, Any]]:
+def get_standards_mastery(session: Session, class_id: int) -> List[Dict[str, Any]]:
     """Get mastery levels grouped by standard.
 
     Args:
@@ -286,12 +261,14 @@ def get_standards_mastery(
         else:
             level = "beginning"
 
-        results.append({
-            "standard": std,
-            "avg_score": round(avg, 3),
-            "topics": sorted(data["topics"]),
-            "mastery_level": level,
-        })
+        results.append(
+            {
+                "standard": std,
+                "avg_score": round(avg, 3),
+                "topics": sorted(data["topics"]),
+                "mastery_level": level,
+            }
+        )
 
     results.sort(key=lambda x: x["avg_score"])
     return results
@@ -325,11 +302,13 @@ def identify_weak_areas(
             else:
                 action = "Monitor; provide supplemental resources"
 
-            results.append({
-                "topic": item["topic"],
-                "avg_score": item["actual_score"],
-                "gap": item["gap"],
-                "recommended_action": action,
-            })
+            results.append(
+                {
+                    "topic": item["topic"],
+                    "avg_score": item["actual_score"],
+                    "gap": item["gap"],
+                    "recommended_action": action,
+                }
+            )
 
     return results

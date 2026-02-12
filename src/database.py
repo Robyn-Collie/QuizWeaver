@@ -1,17 +1,18 @@
+from datetime import date, datetime
+
 from sqlalchemy import (
-    create_engine,
+    JSON,
     Column,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
     Integer,
     String,
     Text,
-    Float,
-    DateTime,
-    Date,
-    ForeignKey,
-    JSON,
+    create_engine,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from datetime import datetime, date
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 Base = declarative_base()
 
@@ -28,6 +29,7 @@ class Lesson(Base):
         created_at: Timestamp when the lesson was ingested.
         assets: Relationship to associated Asset objects (images, etc.).
     """
+
     __tablename__ = "lessons"
     id = Column(Integer, primary_key=True)
     source_file = Column(String, unique=True)
@@ -49,6 +51,7 @@ class Asset(Base):
         created_at: Timestamp when the asset was extracted.
         lesson: Relationship to the parent Lesson object.
     """
+
     __tablename__ = "assets"
     id = Column(Integer, primary_key=True)
     lesson_id = Column(Integer, ForeignKey("lessons.id"))
@@ -74,6 +77,7 @@ class Class(Base):
         quizzes: Relationship to Quiz objects generated for this class.
         performance_data: Relationship to PerformanceData objects for this class.
     """
+
     __tablename__ = "classes"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
@@ -106,6 +110,7 @@ class LessonLog(Base):
         created_at: Timestamp when the log was created.
         class_obj: Relationship to the parent Class object.
     """
+
     __tablename__ = "lesson_logs"
     id = Column(Integer, primary_key=True)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
@@ -136,6 +141,7 @@ class PerformanceData(Base):
         class_obj: Relationship to the parent Class object.
         quiz: Relationship to the associated Quiz object.
     """
+
     __tablename__ = "performance_data"
     id = Column(Integer, primary_key=True)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
@@ -173,15 +179,14 @@ class Quiz(Base):
         parent_quiz: Relationship to the source quiz (for variants).
         variants: Relationship to variant quizzes derived from this quiz.
     """
+
     __tablename__ = "quizzes"
     id = Column(Integer, primary_key=True)
     title = Column(String)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="SET NULL"))  # New field
     parent_quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="SET NULL"))
     reading_level = Column(String)  # ell, below_grade, on_grade, advanced
-    status = Column(
-        String, default="pending"
-    )  # pending, generating, generated, failed, complete
+    status = Column(String, default="pending")  # pending, generating, generated, failed, complete
     style_profile = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -207,6 +212,7 @@ class Question(Base):
         data: JSON object containing question details (options, correct_index, is_true, image_ref, etc.).
         quiz: Relationship to the parent Quiz object.
     """
+
     __tablename__ = "questions"
     id = Column(Integer, primary_key=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.id"))
@@ -236,6 +242,7 @@ class StudySet(Base):
         class_obj: Relationship to the parent Class object.
         quiz: Relationship to the source Quiz object.
     """
+
     __tablename__ = "study_sets"
     id = Column(Integer, primary_key=True)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
@@ -265,6 +272,7 @@ class StudyCard(Base):
         data: JSON text for extras (tags, examples, part_of_speech, etc.).
         study_set: Relationship to the parent StudySet object.
     """
+
     __tablename__ = "study_cards"
     id = Column(Integer, primary_key=True)
     study_set_id = Column(Integer, ForeignKey("study_sets.id", ondelete="CASCADE"), nullable=False)
@@ -289,6 +297,7 @@ class FeedbackLog(Base):
         created_at: Timestamp when the feedback was recorded.
         quiz: Relationship to the parent Quiz object.
     """
+
     __tablename__ = "feedback_logs"
     id = Column(Integer, primary_key=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.id"))
@@ -311,6 +320,7 @@ class Rubric(Base):
         quiz: Relationship to the parent Quiz object.
         criteria: Relationship to RubricCriterion objects with cascade delete.
     """
+
     __tablename__ = "rubrics"
     id = Column(Integer, primary_key=True)
     quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
@@ -335,6 +345,7 @@ class User(Base):
         role: User role (default "teacher", or "admin").
         created_at: Timestamp when the user was created.
     """
+
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
@@ -364,6 +375,7 @@ class Standard(Base):
         standard_set: Key identifying the standard set (e.g., "sol", "ccss_ela", "ngss").
         created_at: Timestamp when the record was created.
     """
+
     __tablename__ = "standards"
     id = Column(Integer, primary_key=True)
     # Legacy column from migration 001; mirrors 'code' for backward compat
@@ -395,6 +407,7 @@ class LessonPlan(Base):
         status: Plan status (draft, finalized, generating, failed).
         created_at: Timestamp when the plan was created.
     """
+
     __tablename__ = "lesson_plans"
     id = Column(Integer, primary_key=True)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE"), nullable=False)
@@ -425,6 +438,7 @@ class RubricCriterion(Base):
                 (array of {level, label, description}).
         rubric: Relationship to the parent Rubric object.
     """
+
     __tablename__ = "rubric_criteria"
     id = Column(Integer, primary_key=True)
     rubric_id = Column(Integer, ForeignKey("rubrics.id", ondelete="CASCADE"), nullable=False)

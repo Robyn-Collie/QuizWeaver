@@ -26,15 +26,6 @@ import yaml
 # Ensure project root is on sys.path so imports work when running standalone.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import (
-    Base,
-    Class,
-    LessonLog,
-    Quiz,
-    get_engine,
-    get_session,
-    init_db,
-)
 from src.classroom import (
     create_class,
     get_active_class,
@@ -42,11 +33,19 @@ from src.classroom import (
     list_classes,
     set_active_class,
 )
-
+from src.database import (
+    Class,
+    LessonLog,
+    Quiz,
+    get_engine,
+    get_session,
+    init_db,
+)
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def db():
@@ -84,9 +83,7 @@ def tmp_config():
 
     Yields the file path.  The file is removed after the test.
     """
-    tmp = tempfile.NamedTemporaryFile(
-        suffix=".yaml", delete=False, mode="w", encoding="utf-8"
-    )
+    tmp = tempfile.NamedTemporaryFile(suffix=".yaml", delete=False, mode="w", encoding="utf-8")
     yaml.dump({"llm": {"provider": "mock"}, "paths": {}}, tmp, default_flow_style=False)
     tmp.close()
 
@@ -102,6 +99,7 @@ def tmp_config():
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 def test_create_class(db):
     """Create a class with all fields and verify they are stored correctly."""
@@ -275,7 +273,7 @@ def test_set_active_class(tmp_config):
     assert success is True
 
     # Read back the config and verify
-    with open(tmp_config, "r", encoding="utf-8") as f:
+    with open(tmp_config, encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
     assert config["active_class_id"] == 42

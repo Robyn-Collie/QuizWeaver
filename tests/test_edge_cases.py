@@ -18,19 +18,19 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.agents import load_prompt, get_qa_guidelines
-from src.mock_responses import fill_template_context, SCIENCE_TOPICS
-from src.llm_provider import MockLLMProvider, get_provider
-from src.lesson_tracker import extract_topics, KNOWN_TOPICS
-from src.database import get_engine, init_db, get_session, Class, Quiz
+from src.agents import get_qa_guidelines, load_prompt
 from src.classroom import create_class
-from src.quiz_generator import generate_quiz
+from src.database import Quiz, get_engine, get_session, init_db
+from src.lesson_tracker import KNOWN_TOPICS, extract_topics
+from src.llm_provider import MockLLMProvider, get_provider
 from src.migrations import run_migrations
-
+from src.mock_responses import SCIENCE_TOPICS, fill_template_context
+from src.quiz_generator import generate_quiz
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_session():
@@ -54,6 +54,7 @@ def db_session():
 # ---------------------------------------------------------------------------
 # 1. TestLoadPrompt
 # ---------------------------------------------------------------------------
+
 
 class TestLoadPrompt:
     """Tests for src.agents.load_prompt utility function."""
@@ -102,7 +103,7 @@ class TestLoadPrompt:
             loaded = load_prompt("generator_prompt.txt")
             # Read the same file directly
             prompt_path = os.path.join("prompts", "generator_prompt.txt")
-            with open(prompt_path, "r") as f:
+            with open(prompt_path) as f:
                 direct = f.read()
             assert loaded == direct, "load_prompt content should match direct read"
             print("[PASS] load_prompt content matches direct file read")
@@ -113,6 +114,7 @@ class TestLoadPrompt:
 # ---------------------------------------------------------------------------
 # 2. TestGetQaGuidelines
 # ---------------------------------------------------------------------------
+
 
 class TestGetQaGuidelines:
     """Tests for src.agents.get_qa_guidelines utility function."""
@@ -151,6 +153,7 @@ class TestGetQaGuidelines:
 # 3. TestFillTemplateContext
 # ---------------------------------------------------------------------------
 
+
 class TestFillTemplateContext:
     """Tests for src.mock_responses.fill_template_context."""
 
@@ -158,9 +161,7 @@ class TestFillTemplateContext:
         """Explicit keywords should replace {topic1} and {topic2} placeholders."""
         template = "{topic1} and {topic2}"
         result = fill_template_context(template, ["photosynthesis", "cells"])
-        assert result == "photosynthesis and cells", (
-            f"Expected 'photosynthesis and cells', got '{result}'"
-        )
+        assert result == "photosynthesis and cells", f"Expected 'photosynthesis and cells', got '{result}'"
         print("[PASS] fill_template_context replaces placeholders with keywords")
 
     def test_fill_with_no_keywords(self):
@@ -174,9 +175,7 @@ class TestFillTemplateContext:
         # Each replacement should be a valid SCIENCE_TOPICS entry
         parts = result.split(" and ")
         for part in parts:
-            assert part in SCIENCE_TOPICS, (
-                f"'{part}' should be a valid SCIENCE_TOPICS entry"
-            )
+            assert part in SCIENCE_TOPICS, f"'{part}' should be a valid SCIENCE_TOPICS entry"
         print("[PASS] fill_template_context fills with random topics when no keywords")
 
     def test_fill_no_placeholders(self):
@@ -198,6 +197,7 @@ class TestFillTemplateContext:
 # 4. TestGetProviderFactory
 # ---------------------------------------------------------------------------
 
+
 class TestGetProviderFactory:
     """Tests for src.llm_provider.get_provider factory function."""
 
@@ -205,18 +205,14 @@ class TestGetProviderFactory:
         """Config with llm.provider='mock' should return a MockLLMProvider."""
         config = {"llm": {"provider": "mock"}}
         provider = get_provider(config)
-        assert isinstance(provider, MockLLMProvider), (
-            f"Expected MockLLMProvider, got {type(provider).__name__}"
-        )
+        assert isinstance(provider, MockLLMProvider), f"Expected MockLLMProvider, got {type(provider).__name__}"
         print("[PASS] get_provider returns MockLLMProvider for provider='mock'")
 
     def test_get_provider_default_mock(self):
         """Config with no llm section should default to MockLLMProvider."""
         config = {}
         provider = get_provider(config)
-        assert isinstance(provider, MockLLMProvider), (
-            f"Expected MockLLMProvider, got {type(provider).__name__}"
-        )
+        assert isinstance(provider, MockLLMProvider), f"Expected MockLLMProvider, got {type(provider).__name__}"
         print("[PASS] get_provider defaults to MockLLMProvider with empty config")
 
     def test_get_provider_unsupported(self):
@@ -239,6 +235,7 @@ class TestGetProviderFactory:
 # ---------------------------------------------------------------------------
 # 5. TestExtractTopicsEdgeCases
 # ---------------------------------------------------------------------------
+
 
 class TestExtractTopicsEdgeCases:
     """Tests for src.lesson_tracker.extract_topics edge cases."""
@@ -264,12 +261,8 @@ class TestExtractTopicsEdgeCases:
         """Multi-word topics like 'cellular respiration' should be matched."""
         text = "Today we studied cellular respiration and plate tectonics."
         result = extract_topics(text)
-        assert "cellular respiration" in result, (
-            "Should find multi-word topic 'cellular respiration'"
-        )
-        assert "plate tectonics" in result, (
-            "Should find multi-word topic 'plate tectonics'"
-        )
+        assert "cellular respiration" in result, "Should find multi-word topic 'cellular respiration'"
+        assert "plate tectonics" in result, "Should find multi-word topic 'plate tectonics'"
         print("[PASS] extract_topics handles multi-word topics")
 
     def test_extract_topics_all_topics(self):
@@ -285,6 +278,7 @@ class TestExtractTopicsEdgeCases:
 # ---------------------------------------------------------------------------
 # 6. TestClassEdgeCases
 # ---------------------------------------------------------------------------
+
 
 class TestClassEdgeCases:
     """Tests for src.classroom.create_class with edge-case inputs."""
@@ -314,15 +308,14 @@ class TestClassEdgeCases:
         special_name = 'Block "A" \\ Period 1\'s Class'
         cls = create_class(session, name=special_name)
         assert cls is not None, "Should return a Class object"
-        assert cls.name == special_name, (
-            f"Name should preserve special chars, got: {cls.name}"
-        )
+        assert cls.name == special_name, f"Name should preserve special chars, got: {cls.name}"
         print("[PASS] create_class stores names with quotes and backslashes")
 
 
 # ---------------------------------------------------------------------------
 # 7. TestQuizGeneratorEdgeCases
 # ---------------------------------------------------------------------------
+
 
 class TestQuizGeneratorEdgeCases:
     """Tests for src.quiz_generator.generate_quiz edge cases."""

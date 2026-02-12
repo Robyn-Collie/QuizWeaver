@@ -12,16 +12,19 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, LessonPlan,
-    get_engine, get_session,
+    Base,
+    Class,
+    LessonPlan,
+    get_engine,
+    get_session,
 )
 from src.lesson_plan_export import (
-    export_lesson_plan_pdf,
-    export_lesson_plan_docx,
     SECTION_LABELS,
     SECTION_ORDER,
     _parse_plan_data,
     _sanitize_filename,
+    export_lesson_plan_docx,
+    export_lesson_plan_pdf,
 )
 
 
@@ -82,6 +85,7 @@ def db_session():
 
 # --- Helpers ---
 
+
 class TestHelpers:
     def test_parse_plan_data_json_string(self, db_session):
         _, plan = db_session
@@ -92,6 +96,7 @@ class TestHelpers:
     def test_parse_plan_data_invalid(self):
         class FakePlan:
             plan_data = "not json"
+
         data = _parse_plan_data(FakePlan())
         assert data == {}
 
@@ -107,6 +112,7 @@ class TestHelpers:
 
 
 # --- PDF Export ---
+
 
 class TestPdfExport:
     def test_pdf_returns_bytesio(self, db_session):
@@ -131,6 +137,7 @@ class TestPdfExport:
 
 
 # --- DOCX Export ---
+
 
 class TestDocxExport:
     def test_docx_returns_bytesio(self, db_session):

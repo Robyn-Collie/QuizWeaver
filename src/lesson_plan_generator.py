@@ -8,7 +8,7 @@ using the LLM pipeline. Uses MockLLMProvider by default for zero-cost developmen
 import copy
 import json
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -68,31 +68,17 @@ def _build_prompt(class_obj, topics, standards, duration_minutes, grade_level):
     parts.append(f"Duration: {duration_minutes} minutes")
 
     parts.append("")
-    parts.append(
-        "Return a JSON object with these keys, each containing a string value:"
-    )
+    parts.append("Return a JSON object with these keys, each containing a string value:")
     parts.append("- title: A descriptive lesson title")
-    parts.append(
-        "- learning_objectives: 2-4 objectives (what students will know/be able to do)"
-    )
+    parts.append("- learning_objectives: 2-4 objectives (what students will know/be able to do)")
     parts.append("- materials_needed: List of required materials")
     parts.append("- warm_up: Warm-up activity (5-10 min) to activate prior knowledge")
-    parts.append(
-        "- direct_instruction: Teacher-led content delivery (10-15 min)"
-    )
-    parts.append(
-        "- guided_practice: Teacher-supported practice activities (10-15 min)"
-    )
-    parts.append(
-        "- independent_practice: Student independent work (10-15 min)"
-    )
-    parts.append(
-        "- assessment: How to verify learning / check for understanding (5 min)"
-    )
+    parts.append("- direct_instruction: Teacher-led content delivery (10-15 min)")
+    parts.append("- guided_practice: Teacher-supported practice activities (10-15 min)")
+    parts.append("- independent_practice: Student independent work (10-15 min)")
+    parts.append("- assessment: How to verify learning / check for understanding (5 min)")
     parts.append("- closure: Summarize and preview next lesson (3-5 min)")
-    parts.append(
-        "- differentiation: Modifications for below grade, on grade, and advanced learners"
-    )
+    parts.append("- differentiation: Modifications for below grade, on grade, and advanced learners")
     parts.append("- standards_alignment: Which standards are addressed and how")
 
     return "\n".join(parts)
@@ -109,7 +95,8 @@ def _parse_plan(response_text):
 
     # Try to extract JSON object from response
     import re
-    match = re.search(r'\{.*\}', response_text, re.DOTALL)
+
+    match = re.search(r"\{.*\}", response_text, re.DOTALL)
     if match:
         try:
             data = json.loads(match.group())
@@ -162,7 +149,7 @@ def generate_lesson_plan(
         title="Generating...",
         topics=json.dumps(topics or []),
         standards=json.dumps(standards or []),
-        grade_level=grade_level or (class_obj.grade_level if hasattr(class_obj, 'grade_level') else None),
+        grade_level=grade_level or (class_obj.grade_level if hasattr(class_obj, "grade_level") else None),
         duration_minutes=duration_minutes,
         plan_data=json.dumps({}),
         status="generating",
@@ -177,14 +164,14 @@ def generate_lesson_plan(
     try:
         current_provider = config.get("llm", {}).get("provider", "mock")
         if current_provider == "mock":
-            from src.mock_responses import get_lesson_plan_response, SCIENCE_TOPICS
+            from src.mock_responses import SCIENCE_TOPICS, get_lesson_plan_response
+
             context_lower = prompt.lower()
             keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
-            response_text = get_lesson_plan_response(
-                topics or [], standards or [], duration_minutes, keywords or None
-            )
+            response_text = get_lesson_plan_response(topics or [], standards or [], duration_minutes, keywords or None)
         else:
             from src.llm_provider import get_provider
+
             provider = get_provider(config, web_mode=True)
             response_text = provider.generate([prompt], json_mode=True)
 

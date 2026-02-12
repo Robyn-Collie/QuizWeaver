@@ -12,8 +12,14 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, Rubric, RubricCriterion,
-    get_engine, get_session,
+    Base,
+    Class,
+    Question,
+    Quiz,
+    Rubric,
+    RubricCriterion,
+    get_engine,
+    get_session,
 )
 
 
@@ -41,10 +47,12 @@ def app():
         title="Photosynthesis Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "7th Grade",
-            "cognitive_framework": "blooms",
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "7th Grade",
+                "cognitive_framework": "blooms",
+            }
+        ),
     )
     session.add(quiz)
     session.commit()
@@ -53,15 +61,17 @@ def app():
         q = Question(
             quiz_id=quiz.id,
             question_type="mc",
-            title=f"Q{i+1}",
-            text=f"Photosynthesis question {i+1}?",
+            title=f"Q{i + 1}",
+            text=f"Photosynthesis question {i + 1}?",
             points=5.0,
             sort_order=i,
-            data=json.dumps({
-                "type": "mc",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                }
+            ),
         )
         session.add(q)
     session.commit()
@@ -87,12 +97,14 @@ def app():
     session.add(rubric)
     session.commit()
 
-    levels_json = json.dumps([
-        {"level": 1, "label": "Beginning", "description": "Min understanding"},
-        {"level": 2, "label": "Developing", "description": "Partial"},
-        {"level": 3, "label": "Proficient", "description": "Good"},
-        {"level": 4, "label": "Advanced", "description": "Excellent"},
-    ])
+    levels_json = json.dumps(
+        [
+            {"level": 1, "label": "Beginning", "description": "Min understanding"},
+            {"level": 2, "label": "Developing", "description": "Partial"},
+            {"level": 3, "label": "Proficient", "description": "Good"},
+            {"level": 4, "label": "Advanced", "description": "Excellent"},
+        ]
+    )
     c1 = RubricCriterion(
         rubric_id=rubric.id,
         sort_order=0,
@@ -108,6 +120,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -142,6 +155,7 @@ def anon_client(app):
 
 # --- Auth tests ---
 
+
 class TestVariantAuth:
     def test_generate_variant_requires_login(self, anon_client):
         resp = anon_client.get("/quizzes/1/generate-variant")
@@ -162,6 +176,7 @@ class TestVariantAuth:
 
 # --- Variant routes ---
 
+
 class TestVariantGeneration:
     def test_generate_variant_form_loads(self, client):
         resp = client.get("/quizzes/1/generate-variant")
@@ -170,15 +185,22 @@ class TestVariantGeneration:
         assert b"Reading Level" in resp.data
 
     def test_generate_variant_post(self, client):
-        resp = client.post("/quizzes/1/generate-variant", data={
-            "reading_level": "ell",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/quizzes/1/generate-variant",
+            data={
+                "reading_level": "ell",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
     def test_generate_variant_invalid_level(self, client):
-        resp = client.post("/quizzes/1/generate-variant", data={
-            "reading_level": "nonexistent",
-        })
+        resp = client.post(
+            "/quizzes/1/generate-variant",
+            data={
+                "reading_level": "nonexistent",
+            },
+        )
         assert resp.status_code == 400
 
     def test_generate_variant_404_quiz(self, client):
@@ -203,6 +225,7 @@ class TestVariantsList:
 
 # --- Rubric routes ---
 
+
 class TestRubricGeneration:
     def test_generate_rubric_form_loads(self, client):
         resp = client.get("/quizzes/1/generate-rubric")
@@ -210,8 +233,7 @@ class TestRubricGeneration:
         assert b"Generate Rubric" in resp.data
 
     def test_generate_rubric_post(self, client):
-        resp = client.post("/quizzes/1/generate-rubric", data={},
-                          follow_redirects=False)
+        resp = client.post("/quizzes/1/generate-rubric", data={}, follow_redirects=False)
         assert resp.status_code == 303
 
     def test_generate_rubric_404_quiz(self, client):
@@ -272,6 +294,7 @@ class TestRubricDelete:
 
 
 # --- Quiz detail integration ---
+
 
 class TestQuizDetailVariantInfo:
     def test_quiz_detail_shows_variant_buttons(self, client):

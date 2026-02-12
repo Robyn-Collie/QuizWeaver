@@ -3,8 +3,10 @@ Tests for MockLLMProvider to ensure cost-free development works correctly.
 """
 
 import json
+
 import pytest
-from src.llm_provider import MockLLMProvider, LLMProvider
+
+from src.llm_provider import LLMProvider, MockLLMProvider
 
 
 class TestMockProvider:
@@ -17,8 +19,8 @@ class TestMockProvider:
     def test_mock_provider_inherits_from_base(self):
         """Test that MockLLMProvider implements LLMProvider interface."""
         assert isinstance(self.provider, LLMProvider)
-        assert hasattr(self.provider, 'generate')
-        assert hasattr(self.provider, 'prepare_image_context')
+        assert hasattr(self.provider, "generate")
+        assert hasattr(self.provider, "prepare_image_context")
 
     def test_mock_provider_returns_valid_json(self):
         """Test that mock provider returns valid JSON."""
@@ -137,10 +139,7 @@ class TestMockProvider:
         # Response should be context-aware (contain relevant topic)
         response_text = json.dumps(data).lower()
         # Check if any science topics appear in response
-        has_context = any(
-            topic in response_text
-            for topic in ["mitosis", "meiosis", "cell", "biology", "science"]
-        )
+        has_context = any(topic in response_text for topic in ["mitosis", "meiosis", "cell", "biology", "science"])
         assert has_context, "Response should be context-aware"
 
 

@@ -4,9 +4,9 @@ Rubric generation and export CLI commands.
 
 from src.cli import get_db_session
 from src.database import Rubric, RubricCriterion
-from src.rubric_generator import generate_rubric
-from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
 from src.export_utils import sanitize_filename
+from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
+from src.rubric_generator import generate_rubric
 
 
 def register_rubric_commands(subparsers):
@@ -21,7 +21,9 @@ def register_rubric_commands(subparsers):
     p = subparsers.add_parser("export-rubric", help="Export a rubric to file.")
     p.add_argument("rubric_id", type=int, help="Rubric ID to export.")
     p.add_argument(
-        "--format", dest="fmt", required=True,
+        "--format",
+        dest="fmt",
+        required=True,
         choices=["csv", "docx", "pdf"],
         help="Export format.",
     )
@@ -39,11 +41,7 @@ def handle_generate_rubric(config, args):
             title=getattr(args, "title", None),
         )
         if rubric:
-            criteria_count = (
-                session.query(RubricCriterion)
-                .filter_by(rubric_id=rubric.id)
-                .count()
-            )
+            criteria_count = session.query(RubricCriterion).filter_by(rubric_id=rubric.id).count()
             print(f"[OK] Generated rubric: {rubric.title} (ID: {rubric.id})")
             print(f"   Criteria: {criteria_count}")
         else:
@@ -62,10 +60,7 @@ def handle_export_rubric(config, args):
             return
 
         criteria = (
-            session.query(RubricCriterion)
-            .filter_by(rubric_id=rubric.id)
-            .order_by(RubricCriterion.sort_order)
-            .all()
+            session.query(RubricCriterion).filter_by(rubric_id=rubric.id).order_by(RubricCriterion.sort_order).all()
         )
 
         base_name = sanitize_filename(rubric.title or "rubric", default="rubric")

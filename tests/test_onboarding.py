@@ -5,9 +5,10 @@ Verifies the onboarding page loads, redirects for new users,
 class creation via onboarding, and skip functionality.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session
@@ -137,11 +138,14 @@ class TestOnboardingPage:
 
 class TestOnboardingSubmit:
     def test_create_class_via_onboarding(self, app_empty, empty_client):
-        resp = empty_client.post("/onboarding", data={
-            "class_name": "My First Class",
-            "grade_level": "7th Grade",
-            "subject": "Science",
-        })
+        resp = empty_client.post(
+            "/onboarding",
+            data={
+                "class_name": "My First Class",
+                "grade_level": "7th Grade",
+                "subject": "Science",
+            },
+        )
         assert resp.status_code == 302
 
         # Verify class was created
@@ -153,20 +157,26 @@ class TestOnboardingSubmit:
         session.close()
 
     def test_submit_without_class_name_still_redirects(self, empty_client):
-        resp = empty_client.post("/onboarding", data={
-            "class_name": "",
-            "grade_level": "7th Grade",
-            "subject": "Science",
-        })
+        resp = empty_client.post(
+            "/onboarding",
+            data={
+                "class_name": "",
+                "grade_level": "7th Grade",
+                "subject": "Science",
+            },
+        )
         # Still redirects (gracefully handles empty form)
         assert resp.status_code == 302
 
     def test_after_onboarding_dashboard_works(self, app_empty, empty_client):
-        empty_client.post("/onboarding", data={
-            "class_name": "New Class",
-            "grade_level": "8th Grade",
-            "subject": "Math",
-        })
+        empty_client.post(
+            "/onboarding",
+            data={
+                "class_name": "New Class",
+                "grade_level": "8th Grade",
+                "subject": "Math",
+            },
+        )
         # Dashboard should now load without redirect
         resp = empty_client.get("/dashboard")
         assert resp.status_code == 200

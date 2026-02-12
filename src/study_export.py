@@ -7,15 +7,14 @@ Exports study sets to TSV (Anki-compatible), CSV, PDF, and DOCX formats.
 import csv
 import io
 import json
-from typing import List, Optional
 
 from docx import Document
-from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import sanitize_filename, pdf_wrap_text
+from src.export_utils import pdf_wrap_text, sanitize_filename
 
 
 def _parse_card_data(card) -> dict:
@@ -42,6 +41,7 @@ def _sanitize_filename(title: str) -> str:
 # ---------------------------------------------------------------------------
 # TSV Export (Anki-compatible)
 # ---------------------------------------------------------------------------
+
 
 def export_flashcards_tsv(study_set, cards) -> str:
     """Export flashcards to Anki-compatible TSV format.
@@ -72,6 +72,7 @@ def export_flashcards_tsv(study_set, cards) -> str:
 # ---------------------------------------------------------------------------
 # CSV Export
 # ---------------------------------------------------------------------------
+
 
 def export_flashcards_csv(study_set, cards) -> str:
     """Export flashcards/study material to CSV format with header row.
@@ -106,26 +107,30 @@ def export_flashcards_csv(study_set, cards) -> str:
         writer.writerow(["#", "Term", "Definition", "Example", "Part of Speech", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
-            writer.writerow([
-                i + 1,
-                card.front or "",
-                card.back or "",
-                data.get("example", ""),
-                data.get("part_of_speech", ""),
-                data.get("image_url", ""),
-            ])
+            writer.writerow(
+                [
+                    i + 1,
+                    card.front or "",
+                    card.back or "",
+                    data.get("example", ""),
+                    data.get("part_of_speech", ""),
+                    data.get("image_url", ""),
+                ]
+            )
 
     elif material_type == "review_sheet":
         writer.writerow(["#", "Heading", "Content", "Type", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
-            writer.writerow([
-                i + 1,
-                card.front or "",
-                card.back or "",
-                data.get("type", ""),
-                data.get("image_url", ""),
-            ])
+            writer.writerow(
+                [
+                    i + 1,
+                    card.front or "",
+                    card.back or "",
+                    data.get("type", ""),
+                    data.get("image_url", ""),
+                ]
+            )
     else:
         writer.writerow(["#", "Front", "Back", "Image URL"])
         for i, card in enumerate(cards):
@@ -138,6 +143,7 @@ def export_flashcards_csv(study_set, cards) -> str:
 # ---------------------------------------------------------------------------
 # PDF Export
 # ---------------------------------------------------------------------------
+
 
 def export_study_pdf(study_set, cards) -> io.BytesIO:
     """Export study material to PDF.
@@ -281,6 +287,7 @@ _pdf_wrap_text = pdf_wrap_text  # Backward-compatible alias
 # ---------------------------------------------------------------------------
 # DOCX (Word) Export
 # ---------------------------------------------------------------------------
+
 
 def export_study_docx(study_set, cards) -> io.BytesIO:
     """Export study material to a Word document.

@@ -10,20 +10,20 @@ Verifies:
 - Test-provider endpoint handles anthropic
 """
 
-import os
 import json
+import os
 import tempfile
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from src.llm_provider import (
+    _ANTHROPIC_AVAILABLE,
+    PROVIDER_REGISTRY,
     AnthropicProvider,
     VertexAnthropicProvider,
-    MockLLMProvider,
-    PROVIDER_REGISTRY,
     get_provider,
     get_provider_info,
-    _ANTHROPIC_AVAILABLE,
 )
 
 
@@ -69,6 +69,7 @@ class TestAnthropicProviderInit:
 
     def test_default_model(self):
         import inspect
+
         sig = inspect.signature(AnthropicProvider.__init__)
         default = sig.parameters["model_name"].default
         assert "claude" in default
@@ -144,9 +145,7 @@ class TestAnthropicProviderGenerate:
 
         with patch("src.cost_tracking.log_api_call") as mock_log:
             provider.generate(["Hello"])
-            mock_log.assert_called_once_with(
-                "anthropic", provider._model_name, 100, 50
-            )
+            mock_log.assert_called_once_with("anthropic", provider._model_name, 100, 50)
 
 
 class TestAnthropicProviderImage:
@@ -172,26 +171,19 @@ class TestVertexAnthropicProviderInit:
 
     def test_creates_vertex_client(self):
         with patch("anthropic.AnthropicVertex") as MockVertex:
-            provider = VertexAnthropicProvider(
-                project_id="my-project", location="us-east5"
-            )
-            MockVertex.assert_called_once_with(
-                project_id="my-project", region="us-east5"
-            )
+            provider = VertexAnthropicProvider(project_id="my-project", location="us-east5")
+            MockVertex.assert_called_once_with(project_id="my-project", region="us-east5")
 
     def test_stores_model_name(self):
         with patch("anthropic.AnthropicVertex"):
             provider = VertexAnthropicProvider(
-                project_id="proj", location="us-east5",
-                model_name="claude-opus-4@20250514"
+                project_id="proj", location="us-east5", model_name="claude-opus-4@20250514"
             )
             assert provider._model_name == "claude-opus-4@20250514"
 
     def test_generate_logs_vertex_anthropic(self):
         with patch("anthropic.AnthropicVertex"):
-            provider = VertexAnthropicProvider(
-                project_id="proj", location="us-east5"
-            )
+            provider = VertexAnthropicProvider(project_id="proj", location="us-east5")
         mock_client = MagicMock()
         provider.client = mock_client
         mock_usage = MagicMock()
@@ -206,9 +198,7 @@ class TestVertexAnthropicProviderInit:
 
         with patch("src.cost_tracking.log_api_call") as mock_log:
             provider.generate(["Hello"])
-            mock_log.assert_called_once_with(
-                "vertex-anthropic", provider._model_name, 200, 100
-            )
+            mock_log.assert_called_once_with("vertex-anthropic", provider._model_name, 200, 100)
 
 
 class TestGetProviderFactory:
@@ -216,17 +206,15 @@ class TestGetProviderFactory:
 
     def test_anthropic_returns_anthropic_provider(self):
         config = {"llm": {"provider": "anthropic", "mode": "production"}}
-        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("anthropic.Anthropic"):
-                provider = get_provider(config, web_mode=True)
-                assert isinstance(provider, AnthropicProvider)
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"}), patch("anthropic.Anthropic"):
+            provider = get_provider(config, web_mode=True)
+            assert isinstance(provider, AnthropicProvider)
 
     def test_anthropic_uses_registry_default_model(self):
         config = {"llm": {"provider": "anthropic", "mode": "production"}}
-        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"}):
-            with patch("anthropic.Anthropic"):
-                provider = get_provider(config, web_mode=True)
-                assert provider._model_name == PROVIDER_REGISTRY["anthropic"]["default_model"]
+        with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"}), patch("anthropic.Anthropic"):
+            provider = get_provider(config, web_mode=True)
+            assert provider._model_name == PROVIDER_REGISTRY["anthropic"]["default_model"]
 
     def test_anthropic_error_on_missing_key(self):
         config = {"llm": {"provider": "anthropic", "mode": "production"}}
@@ -283,6 +271,7 @@ class TestTestProviderEndpoint:
     def app(self):
         db_fd, db_path = tempfile.mkstemp(suffix=".db")
         from src.database import Base, get_engine, get_session
+
         engine = get_engine(db_path)
         Base.metadata.create_all(engine)
         session = get_session(engine)
@@ -290,6 +279,7 @@ class TestTestProviderEndpoint:
         engine.dispose()
 
         from src.web.app import create_app
+
         test_config = {
             "paths": {"database_file": db_path},
             "llm": {"provider": "mock"},

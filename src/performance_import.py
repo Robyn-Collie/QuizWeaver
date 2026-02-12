@@ -15,7 +15,7 @@ from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from src.database import PerformanceData, Quiz, Question
+from src.database import PerformanceData, Question
 
 logger = logging.getLogger(__name__)
 
@@ -35,9 +35,7 @@ def get_sample_csv() -> str:
     return "\n".join(lines) + "\n"
 
 
-def validate_csv_row(
-    row: Dict[str, str], row_num: int
-) -> Tuple[Optional[Dict], Optional[str]]:
+def validate_csv_row(row: Dict[str, str], row_num: int) -> Tuple[Optional[Dict], Optional[str]]:
     """Validate and normalize a single CSV row.
 
     Args:
@@ -82,11 +80,7 @@ def validate_csv_row(
 
     # Optional: weak_areas (semicolon-delimited)
     weak_areas_raw = (row.get("weak_areas") or "").strip()
-    weak_areas = (
-        [w.strip() for w in weak_areas_raw.split(";") if w.strip()]
-        if weak_areas_raw
-        else []
-    )
+    weak_areas = [w.strip() for w in weak_areas_raw.split(";") if w.strip()] if weak_areas_raw else []
 
     # Optional: sample_size
     sample_size_raw = (row.get("sample_size") or "").strip()

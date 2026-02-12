@@ -6,12 +6,13 @@ are present on all generation forms (variant, rubric, reteach, quiz, study).
 Also verifies the loading CSS and JS are loaded from base.html.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from src.database import Base, Class, LessonLog, Quiz, Question, get_engine, get_session
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -48,10 +49,12 @@ def app():
         text="Sample question?",
         question_type="mc",
         points=1,
-        data=json.dumps({
-            "options": ["A", "B", "C", "D"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "options": ["A", "B", "C", "D"],
+                "correct_index": 0,
+            }
+        ),
     )
     session.add(q)
     session.commit()

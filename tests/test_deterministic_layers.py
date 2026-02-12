@@ -13,17 +13,17 @@ Tests cover:
 import pytest
 
 from src.deterministic_layers import (
+    BLUEPRINT_TEMPLATES,
     LEXILE_BANDS,
-    get_lexile_band,
-    get_all_lexile_bands,
-    estimate_text_complexity,
     _count_syllables,
     _split_sentences,
     _split_words,
-    BLUEPRINT_TEMPLATES,
-    get_blueprint,
-    get_available_blueprints,
     apply_blueprint_to_config,
+    estimate_text_complexity,
+    get_all_lexile_bands,
+    get_available_blueprints,
+    get_blueprint,
+    get_lexile_band,
 )
 
 
@@ -210,9 +210,7 @@ class TestBlueprintTemplates:
         """Every blueprint has Remember through Create."""
         expected_levels = {"Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"}
         for name, bp in BLUEPRINT_TEMPLATES.items():
-            assert set(bp["distribution"].keys()) == expected_levels, (
-                f"Blueprint '{name}' missing levels"
-            )
+            assert set(bp["distribution"].keys()) == expected_levels, f"Blueprint '{name}' missing levels"
 
     def test_get_blueprint(self):
         bp = get_blueprint("balanced")
@@ -292,9 +290,7 @@ class TestApplyBlueprint:
             for count in [1, 5, 10, 20, 25, 50]:
                 result = apply_blueprint_to_config(name, count)
                 total = sum(result.values())
-                assert total == count, (
-                    f"Blueprint '{name}' with {count} questions: got {total}"
-                )
+                assert total == count, f"Blueprint '{name}' with {count} questions: got {total}"
 
     def test_result_has_all_cognitive_levels(self):
         result = apply_blueprint_to_config("balanced", 10)

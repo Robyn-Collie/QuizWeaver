@@ -1,12 +1,13 @@
-import os
 import json
+import os
 import time
-from typing import Dict, List, Any, Optional
-from src.llm_provider import get_provider
-from src.database import get_engine, init_db, get_session, Class
-from src.lesson_tracker import get_recent_lessons, get_assumed_knowledge
+from typing import Any, Dict, List, Optional
+
+from src.cognitive_frameworks import BLOOMS_LEVELS, DOK_LEVELS, get_framework
 from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
-from src.cognitive_frameworks import get_framework, BLOOMS_LEVELS, DOK_LEVELS
+from src.database import Class, get_engine, get_session
+from src.lesson_tracker import get_assumed_knowledge, get_recent_lessons
+from src.llm_provider import get_provider
 
 
 class AgentMetrics:
@@ -60,7 +61,7 @@ def load_prompt(filename: str) -> str:
     """
     path = os.path.join("prompts", filename)
     try:
-        with open(path, "r") as f:
+        with open(path) as f:
             return f.read()
     except FileNotFoundError:
         print(f"Warning: Prompt file {filename} not found.")
@@ -74,7 +75,7 @@ def get_qa_guidelines() -> str:
         QA guidelines text content, or empty string if file not found.
     """
     try:
-        with open("qa_guidelines.txt", "r") as f:
+        with open("qa_guidelines.txt") as f:
             return f.read()
     except FileNotFoundError:
         print("Warning: qa_guidelines.txt not found.")
@@ -95,9 +96,7 @@ class GeneratorAgent:
         self.provider = provider or get_provider(config)
         self.base_prompt = load_prompt("generator_prompt.txt")
 
-    def generate(
-        self, context: Dict[str, Any], feedback: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    def generate(self, context: Dict[str, Any], feedback: Optional[str] = None) -> List[Dict[str, Any]]:
         """Generate quiz questions based on provided context and optional feedback.
 
         Args:
@@ -140,9 +139,7 @@ class GeneratorAgent:
 
         structured_content_text = ""
         if structured_data:
-            structured_content_text = (
-                "**Structured Content Analysis (Headings, Diagrams, Layout):**\n"
-            )
+            structured_content_text = "**Structured Content Analysis (Headings, Diagrams, Layout):**\n"
             structured_content_text += json.dumps(structured_data, indent=2)
             structured_content_text += "\n---\n"
 
@@ -161,12 +158,16 @@ class GeneratorAgent:
                 class_context_section += "Recent lessons taught to this class:\n"
                 for log in lesson_logs[:10]:
                     topics = log.get("topics", [])
-                    class_context_section += f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                    class_context_section += (
+                        f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                    )
             if assumed_knowledge:
                 class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
                 for topic, data in assumed_knowledge.items():
                     depth = data.get("depth", 1)
-                    label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(depth, "unknown")
+                    label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
+                        depth, "unknown"
+                    )
                     class_context_section += f"- {topic}: depth {depth} ({label})\n"
 
         # Build cognitive framework section
@@ -200,11 +201,15 @@ class GeneratorAgent:
                                 t = types[i % len(types)]
                                 type_counts[t] = type_counts.get(t, 0) + 1
                             type_breakdown = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
-                            cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
+                            cognitive_section += (
+                                f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
+                            )
                         else:
                             cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, type: any\n"
-                cognitive_section += "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
-                cognitive_section += "Each question MUST have a \"type\" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n"
+                cognitive_section += (
+                    "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
+                )
+                cognitive_section += 'Each question MUST have a "type" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n'
             cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
             cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
             cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
@@ -300,9 +305,7 @@ The teacher will add or generate the actual image later. Do NOT include "image" 
 
                 # After all normalization attempts, if 'text' is still missing, log a warning
                 if "text" not in q:
-                    print(
-                        f"Warning: Question missing 'text' after normalization. Raw: {json.dumps(q)}"
-                    )
+                    print(f"Warning: Question missing 'text' after normalization. Raw: {json.dumps(q)}")
 
                 if "title" not in q and "question_title" in q:
                     q["title"] = q["question_title"]
@@ -441,7 +444,7 @@ class CriticAgent:
                 levels = get_framework(framework)
                 framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
                 cognitive_validation_section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
-                cognitive_validation_section += f"- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
+                cognitive_validation_section += "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
                 cognitive_validation_section += f"- Target difficulty: {difficulty}/5\n"
                 if distribution and levels:
                     cognitive_validation_section += "- Verify distribution matches targets:\n"
@@ -481,12 +484,16 @@ class CriticAgent:
                     class_context_section += "Recent lessons taught to this class:\n"
                     for log in lesson_logs[:10]:
                         topics = log.get("topics", [])
-                        class_context_section += f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                        class_context_section += (
+                            f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                        )
                 if assumed_knowledge:
                     class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
                     for topic, data in assumed_knowledge.items():
                         depth = data.get("depth", 1)
-                        label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(depth, "unknown")
+                        label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
+                            depth, "unknown"
+                        )
                         class_context_section += f"- {topic}: depth {depth} ({label})\n"
 
         full_prompt = f"""
@@ -557,11 +564,15 @@ class Orchestrator:
 
             estimate = estimate_pipeline_cost(self.config, self.max_retries)
             if estimate["estimated_max_cost"] > 0:
-                print(f"   [Cost] Estimated max cost: ${estimate['estimated_max_cost']:.4f} "
-                      f"({estimate['max_calls']} calls, {estimate['model']})")
+                print(
+                    f"   [Cost] Estimated max cost: ${estimate['estimated_max_cost']:.4f} "
+                    f"({estimate['max_calls']} calls, {estimate['model']})"
+                )
                 if remaining_budget < estimate["estimated_max_cost"]:
-                    print(f"   [WARNING] Remaining budget (${remaining_budget:.4f}) may not "
-                          f"cover worst-case cost (${estimate['estimated_max_cost']:.4f})")
+                    print(
+                        f"   [WARNING] Remaining budget (${remaining_budget:.4f}) may not "
+                        f"cover worst-case cost (${estimate['estimated_max_cost']:.4f})"
+                    )
 
         questions = []
         consecutive_errors = 0
@@ -588,21 +599,21 @@ class Orchestrator:
                     return []
                 # Brief pause before retry (skip in mock mode)
                 if provider_name != "mock":
-                    time.sleep(min(2 ** consecutive_errors, 10))
+                    time.sleep(min(2**consecutive_errors, 10))
                 feedback = "Your previous response caused an error. Please try again with valid output."
                 continue
 
             if not questions:
                 consecutive_errors += 1
-                print(
-                    "   [Agent Loop] Generator failed to produce questions. Retrying..."
-                )
+                print("   [Agent Loop] Generator failed to produce questions. Retrying...")
                 if consecutive_errors >= max_errors:
                     print("   [Agent Loop] Too many consecutive failures. Aborting.")
                     metrics.stop()
                     self.last_metrics = metrics
                     return []
-                feedback = "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
+                feedback = (
+                    "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
+                )
                 continue
 
             # Reset error counter on successful generation
@@ -623,7 +634,9 @@ class Orchestrator:
 
             try:
                 critique_result = self.critic.critique(
-                    questions, guidelines, content_summary,
+                    questions,
+                    guidelines,
+                    content_summary,
                     class_context=class_context,
                     cognitive_config=cognitive_config,
                 )
@@ -641,9 +654,7 @@ class Orchestrator:
                 self.last_metrics = metrics
                 return questions
 
-            print(
-                f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result['feedback'][:100]}..."
-            )
+            print(f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result['feedback'][:100]}...")
             feedback = critique_result["feedback"]
 
         print("   [Agent Loop] Max retries reached. Returning last draft with warning.")
@@ -676,12 +687,15 @@ def run_agentic_pipeline(config, context, class_id=None, web_mode=False):
             lesson_logs = []
             for log in recent:
                 import json as _json
+
                 topics = _json.loads(log.topics) if isinstance(log.topics, str) else (log.topics or [])
-                lesson_logs.append({
-                    "date": str(log.date),
-                    "topics": topics,
-                    "notes": log.notes,
-                })
+                lesson_logs.append(
+                    {
+                        "date": str(log.date),
+                        "topics": topics,
+                        "notes": log.notes,
+                    }
+                )
             context["lesson_logs"] = lesson_logs
 
             # Load assumed knowledge

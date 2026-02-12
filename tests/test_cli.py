@@ -12,19 +12,23 @@ import tempfile
 
 import pytest
 
-from src.database import (
-    get_engine, init_db, get_session,
-    Quiz, Question, Class, LessonLog,
-    StudySet, StudyCard, Rubric, RubricCriterion,
-    LessonPlan, PerformanceData,
-)
 from src.classroom import create_class
+from src.database import (
+    LessonPlan,
+    Question,
+    Quiz,
+    Rubric,
+    StudySet,
+    get_engine,
+    get_session,
+    init_db,
+)
 from src.lesson_tracker import log_lesson
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def temp_db():
@@ -118,9 +122,11 @@ def sample_lesson(temp_db, sample_class):
 # Quiz Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestListQuizzes:
     def test_list_quizzes_empty(self, mock_config, capsys):
         from src.cli.quiz_commands import handle_list_quizzes
+
         args = argparse.Namespace(class_id=None)
         handle_list_quizzes(mock_config, args)
         out = capsys.readouterr().out
@@ -128,6 +134,7 @@ class TestListQuizzes:
 
     def test_list_quizzes_with_data(self, mock_config, sample_quiz, capsys):
         from src.cli.quiz_commands import handle_list_quizzes
+
         args = argparse.Namespace(class_id=None)
         handle_list_quizzes(mock_config, args)
         out = capsys.readouterr().out
@@ -136,6 +143,7 @@ class TestListQuizzes:
 
     def test_list_quizzes_filter_class(self, mock_config, sample_quiz, capsys):
         from src.cli.quiz_commands import handle_list_quizzes
+
         # Filter by a non-existent class
         args = argparse.Namespace(class_id=999)
         handle_list_quizzes(mock_config, args)
@@ -146,6 +154,7 @@ class TestListQuizzes:
 class TestViewQuiz:
     def test_view_quiz_not_found(self, mock_config, capsys):
         from src.cli.quiz_commands import handle_view_quiz
+
         args = argparse.Namespace(quiz_id=999, show_answers=False)
         handle_view_quiz(mock_config, args)
         out = capsys.readouterr().out
@@ -153,6 +162,7 @@ class TestViewQuiz:
 
     def test_view_quiz_basic(self, mock_config, sample_quiz, capsys):
         from src.cli.quiz_commands import handle_view_quiz
+
         args = argparse.Namespace(quiz_id=sample_quiz, show_answers=False)
         handle_view_quiz(mock_config, args)
         out = capsys.readouterr().out
@@ -161,6 +171,7 @@ class TestViewQuiz:
 
     def test_view_quiz_with_answers(self, mock_config, sample_quiz, capsys):
         from src.cli.quiz_commands import handle_view_quiz
+
         args = argparse.Namespace(quiz_id=sample_quiz, show_answers=True)
         handle_view_quiz(mock_config, args)
         out = capsys.readouterr().out
@@ -170,17 +181,19 @@ class TestViewQuiz:
 class TestExportQuiz:
     def test_export_quiz_csv(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.quiz_commands import handle_export_quiz
+
         out_file = str(tmp_path / "test.csv")
         args = argparse.Namespace(quiz_id=sample_quiz, fmt="csv", output=out_file)
         handle_export_quiz(mock_config, args)
         out = capsys.readouterr().out
         assert "[OK]" in out
         assert os.path.exists(out_file)
-        content = open(out_file, "r", encoding="utf-8").read()
+        content = open(out_file, encoding="utf-8").read()
         assert "Question" in content
 
     def test_export_quiz_docx(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.quiz_commands import handle_export_quiz
+
         out_file = str(tmp_path / "test.docx")
         args = argparse.Namespace(quiz_id=sample_quiz, fmt="docx", output=out_file)
         handle_export_quiz(mock_config, args)
@@ -189,15 +202,17 @@ class TestExportQuiz:
 
     def test_export_quiz_gift(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.quiz_commands import handle_export_quiz
+
         out_file = str(tmp_path / "test.gift.txt")
         args = argparse.Namespace(quiz_id=sample_quiz, fmt="gift", output=out_file)
         handle_export_quiz(mock_config, args)
         assert os.path.exists(out_file)
-        content = open(out_file, "r", encoding="utf-8").read()
+        content = open(out_file, encoding="utf-8").read()
         assert "::Q1::" in content
 
     def test_export_quiz_pdf(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.quiz_commands import handle_export_quiz
+
         out_file = str(tmp_path / "test.pdf")
         args = argparse.Namespace(quiz_id=sample_quiz, fmt="pdf", output=out_file)
         handle_export_quiz(mock_config, args)
@@ -206,6 +221,7 @@ class TestExportQuiz:
 
     def test_export_quiz_qti(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.quiz_commands import handle_export_quiz
+
         out_file = str(tmp_path / "test.qti.zip")
         args = argparse.Namespace(quiz_id=sample_quiz, fmt="qti", output=out_file)
         handle_export_quiz(mock_config, args)
@@ -214,6 +230,7 @@ class TestExportQuiz:
 
     def test_export_quiz_not_found(self, mock_config, capsys):
         from src.cli.quiz_commands import handle_export_quiz
+
         args = argparse.Namespace(quiz_id=999, fmt="csv", output=None)
         handle_export_quiz(mock_config, args)
         out = capsys.readouterr().out
@@ -224,9 +241,11 @@ class TestExportQuiz:
 # Study Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateStudy:
     def test_generate_flashcard(self, mock_config, sample_class, capsys):
         from src.cli.study_commands import handle_generate_study
+
         args = argparse.Namespace(
             class_id=sample_class,
             material_type="flashcard",
@@ -241,6 +260,7 @@ class TestGenerateStudy:
 
     def test_generate_study_guide(self, mock_config, sample_class, capsys):
         from src.cli.study_commands import handle_generate_study
+
         args = argparse.Namespace(
             class_id=sample_class,
             material_type="study_guide",
@@ -256,6 +276,7 @@ class TestGenerateStudy:
 class TestExportStudy:
     def test_export_study_not_found(self, mock_config, capsys):
         from src.cli.study_commands import handle_export_study
+
         args = argparse.Namespace(study_set_id=999, fmt="csv", output=None)
         handle_export_study(mock_config, args)
         out = capsys.readouterr().out
@@ -263,8 +284,8 @@ class TestExportStudy:
 
     def test_export_study_csv(self, mock_config, sample_class, capsys, tmp_path):
         """Generate then export a study set."""
-        from src.cli.study_commands import handle_generate_study, handle_export_study
         from src.cli import get_db_session
+        from src.cli.study_commands import handle_export_study, handle_generate_study
 
         # Generate
         gen_args = argparse.Namespace(
@@ -295,9 +316,11 @@ class TestExportStudy:
 # Rubric Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateRubric:
     def test_generate_rubric(self, mock_config, sample_quiz, capsys):
         from src.cli.rubric_commands import handle_generate_rubric
+
         args = argparse.Namespace(quiz_id=sample_quiz, title=None)
         handle_generate_rubric(mock_config, args)
         out = capsys.readouterr().out
@@ -306,6 +329,7 @@ class TestGenerateRubric:
 
     def test_generate_rubric_quiz_not_found(self, mock_config, capsys):
         from src.cli.rubric_commands import handle_generate_rubric
+
         args = argparse.Namespace(quiz_id=999, title=None)
         handle_generate_rubric(mock_config, args)
         out = capsys.readouterr().out
@@ -315,14 +339,15 @@ class TestGenerateRubric:
 class TestExportRubric:
     def test_export_rubric_not_found(self, mock_config, capsys):
         from src.cli.rubric_commands import handle_export_rubric
+
         args = argparse.Namespace(rubric_id=999, fmt="csv", output=None)
         handle_export_rubric(mock_config, args)
         out = capsys.readouterr().out
         assert "not found" in out
 
     def test_export_rubric_csv(self, mock_config, sample_quiz, capsys, tmp_path):
-        from src.cli.rubric_commands import handle_generate_rubric, handle_export_rubric
         from src.cli import get_db_session
+        from src.cli.rubric_commands import handle_export_rubric, handle_generate_rubric
 
         # Generate
         gen_args = argparse.Namespace(quiz_id=sample_quiz, title=None)
@@ -345,6 +370,7 @@ class TestExportRubric:
 # ---------------------------------------------------------------------------
 # Analytics Commands Tests
 # ---------------------------------------------------------------------------
+
 
 class TestImportPerformance:
     def test_import_performance(self, mock_config, sample_class, capsys, tmp_path):
@@ -369,6 +395,7 @@ class TestImportPerformance:
 
     def test_import_performance_file_not_found(self, mock_config, sample_class, capsys):
         from src.cli.analytics_commands import handle_import_performance
+
         args = argparse.Namespace(
             class_id=sample_class,
             csv_file="/nonexistent/path.csv",
@@ -382,6 +409,7 @@ class TestImportPerformance:
 class TestAnalytics:
     def test_analytics_empty(self, mock_config, sample_class, capsys):
         from src.cli.analytics_commands import handle_analytics
+
         args = argparse.Namespace(class_id=sample_class, fmt="text")
         handle_analytics(mock_config, args)
         out = capsys.readouterr().out
@@ -389,6 +417,7 @@ class TestAnalytics:
 
     def test_analytics_json(self, mock_config, sample_class, capsys):
         from src.cli.analytics_commands import handle_analytics
+
         args = argparse.Namespace(class_id=sample_class, fmt="json")
         handle_analytics(mock_config, args)
         out = capsys.readouterr().out
@@ -398,6 +427,7 @@ class TestAnalytics:
 
     def test_analytics_class_not_found(self, mock_config, capsys):
         from src.cli.analytics_commands import handle_analytics
+
         args = argparse.Namespace(class_id=999, fmt="text")
         handle_analytics(mock_config, args)
         out = capsys.readouterr().out
@@ -407,6 +437,7 @@ class TestAnalytics:
 class TestReteach:
     def test_reteach_no_data(self, mock_config, sample_class, capsys):
         from src.cli.analytics_commands import handle_reteach
+
         args = argparse.Namespace(class_id=sample_class, max_suggestions=5)
         handle_reteach(mock_config, args)
         out = capsys.readouterr().out
@@ -418,9 +449,11 @@ class TestReteach:
 # Lesson Plan Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateLessonPlan:
     def test_generate_lesson_plan(self, mock_config, sample_class, capsys):
         from src.cli.lesson_plan_commands import handle_generate_lesson_plan
+
         args = argparse.Namespace(
             class_id=sample_class,
             topics="photosynthesis,cellular respiration",
@@ -433,6 +466,7 @@ class TestGenerateLessonPlan:
 
     def test_generate_lesson_plan_with_standards(self, mock_config, sample_class, capsys):
         from src.cli.lesson_plan_commands import handle_generate_lesson_plan
+
         args = argparse.Namespace(
             class_id=sample_class,
             topics="photosynthesis",
@@ -447,14 +481,15 @@ class TestGenerateLessonPlan:
 class TestExportLessonPlan:
     def test_export_lesson_plan_not_found(self, mock_config, capsys):
         from src.cli.lesson_plan_commands import handle_export_lesson_plan
+
         args = argparse.Namespace(plan_id=999, fmt="pdf", output=None)
         handle_export_lesson_plan(mock_config, args)
         out = capsys.readouterr().out
         assert "not found" in out
 
     def test_export_lesson_plan_pdf(self, mock_config, sample_class, capsys, tmp_path):
-        from src.cli.lesson_plan_commands import handle_generate_lesson_plan, handle_export_lesson_plan
         from src.cli import get_db_session
+        from src.cli.lesson_plan_commands import handle_export_lesson_plan, handle_generate_lesson_plan
 
         # Generate
         gen_args = argparse.Namespace(
@@ -483,9 +518,11 @@ class TestExportLessonPlan:
 # Template Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestExportTemplate:
     def test_export_template(self, mock_config, sample_quiz, capsys, tmp_path):
         from src.cli.template_commands import handle_export_template
+
         out_file = str(tmp_path / "template.json")
         args = argparse.Namespace(quiz_id=sample_quiz, output=out_file)
         handle_export_template(mock_config, args)
@@ -493,13 +530,14 @@ class TestExportTemplate:
         assert "[OK]" in out
         assert os.path.exists(out_file)
         # Verify it's valid JSON
-        with open(out_file, "r") as f:
+        with open(out_file) as f:
             template = json.load(f)
         assert "template_version" in template
         assert len(template["questions"]) == 3
 
     def test_export_template_not_found(self, mock_config, capsys):
         from src.cli.template_commands import handle_export_template
+
         args = argparse.Namespace(quiz_id=999, output=None)
         handle_export_template(mock_config, args)
         out = capsys.readouterr().out
@@ -529,6 +567,7 @@ class TestImportTemplate:
 
     def test_import_template_file_not_found(self, mock_config, sample_class, capsys):
         from src.cli.template_commands import handle_import_template
+
         args = argparse.Namespace(
             template_file="/nonexistent.json",
             class_id=sample_class,
@@ -540,6 +579,7 @@ class TestImportTemplate:
 
     def test_import_template_invalid_json(self, mock_config, sample_class, capsys, tmp_path):
         from src.cli.template_commands import handle_import_template
+
         bad_file = str(tmp_path / "bad.json")
         with open(bad_file, "w") as f:
             f.write("{not valid json")
@@ -557,9 +597,11 @@ class TestImportTemplate:
 # Class Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestEditClass:
     def test_edit_class(self, mock_config, sample_class, capsys):
         from src.cli.class_commands import handle_edit_class
+
         args = argparse.Namespace(
             class_id=sample_class,
             name="Updated Class",
@@ -573,6 +615,7 @@ class TestEditClass:
 
     def test_edit_class_not_found(self, mock_config, capsys):
         from src.cli.class_commands import handle_edit_class
+
         args = argparse.Namespace(class_id=999, name="X", grade=None, subject=None)
         handle_edit_class(mock_config, args)
         out = capsys.readouterr().out
@@ -582,6 +625,7 @@ class TestEditClass:
 class TestDeleteClass:
     def test_delete_class_with_confirm(self, mock_config, temp_db, capsys):
         from src.cli.class_commands import handle_delete_class
+
         _, session, _ = temp_db
         cls = create_class(session, name="Deletable Class")
         args = argparse.Namespace(class_id=cls.id, confirm=True)
@@ -591,6 +635,7 @@ class TestDeleteClass:
 
     def test_delete_class_not_found(self, mock_config, capsys):
         from src.cli.class_commands import handle_delete_class
+
         args = argparse.Namespace(class_id=999, confirm=True)
         handle_delete_class(mock_config, args)
         out = capsys.readouterr().out
@@ -600,6 +645,7 @@ class TestDeleteClass:
 class TestDeleteLesson:
     def test_delete_lesson_with_confirm(self, mock_config, sample_lesson, capsys):
         from src.cli.class_commands import handle_delete_lesson
+
         args = argparse.Namespace(lesson_id=sample_lesson, confirm=True)
         handle_delete_lesson(mock_config, args)
         out = capsys.readouterr().out
@@ -607,6 +653,7 @@ class TestDeleteLesson:
 
     def test_delete_lesson_not_found(self, mock_config, capsys):
         from src.cli.class_commands import handle_delete_lesson
+
         args = argparse.Namespace(lesson_id=999, confirm=True)
         handle_delete_lesson(mock_config, args)
         out = capsys.readouterr().out
@@ -617,9 +664,11 @@ class TestDeleteLesson:
 # Standards Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestBrowseStandards:
     def test_browse_standards_empty(self, mock_config, capsys):
         from src.cli.standards_commands import handle_browse_standards
+
         args = argparse.Namespace(standard_set=None, search=None, subject=None, grade_band=None)
         handle_browse_standards(mock_config, args)
         out = capsys.readouterr().out
@@ -628,6 +677,7 @@ class TestBrowseStandards:
 
     def test_browse_standards_with_search(self, mock_config, capsys):
         from src.cli.standards_commands import handle_browse_standards
+
         args = argparse.Namespace(standard_set=None, search="photosynthesis", subject=None, grade_band=None)
         handle_browse_standards(mock_config, args)
         # Just verifying it doesn't crash
@@ -638,9 +688,11 @@ class TestBrowseStandards:
 # Provider Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestProviderInfo:
     def test_provider_info(self, mock_config, capsys):
         from src.cli.provider_commands import handle_provider_info
+
         args = argparse.Namespace()
         handle_provider_info(mock_config, args)
         out = capsys.readouterr().out
@@ -652,9 +704,11 @@ class TestProviderInfo:
 # Variant Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateVariant:
     def test_generate_variant(self, mock_config, sample_quiz, capsys):
         from src.cli.variant_commands import handle_generate_variant
+
         args = argparse.Namespace(
             quiz_id=sample_quiz,
             reading_level="ell",
@@ -667,6 +721,7 @@ class TestGenerateVariant:
 
     def test_generate_variant_quiz_not_found(self, mock_config, capsys):
         from src.cli.variant_commands import handle_generate_variant
+
         args = argparse.Namespace(quiz_id=999, reading_level="ell", title=None)
         handle_generate_variant(mock_config, args)
         out = capsys.readouterr().out
@@ -677,9 +732,11 @@ class TestGenerateVariant:
 # Topic Commands Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateTopics:
     def test_generate_topics(self, mock_config, sample_class, capsys):
         from src.cli.topic_commands import handle_generate_topics
+
         args = argparse.Namespace(
             class_id=sample_class,
             topics="photosynthesis,cell division",
@@ -695,21 +752,25 @@ class TestGenerateTopics:
 # CLI Module Helpers Tests
 # ---------------------------------------------------------------------------
 
+
 class TestCLIHelpers:
     def test_get_db_session(self, mock_config):
         from src.cli import get_db_session
+
         engine, session = get_db_session(mock_config)
         assert session is not None
         session.close()
 
     def test_resolve_class_id_from_args(self, mock_config, temp_db):
         from src.cli import resolve_class_id
+
         _, session, _ = temp_db
         args = argparse.Namespace(class_id=42)
         assert resolve_class_id(mock_config, args, session) == 42
 
     def test_resolve_class_id_from_config(self, mock_config, temp_db):
         from src.cli import resolve_class_id
+
         _, session, _ = temp_db
         mock_config["active_class_id"] = 7
         args = argparse.Namespace(class_id=None)
@@ -717,6 +778,7 @@ class TestCLIHelpers:
 
     def test_resolve_class_id_default(self, mock_config, temp_db):
         from src.cli import resolve_class_id
+
         _, session, _ = temp_db
         args = argparse.Namespace(class_id=None)
         assert resolve_class_id(mock_config, args, session) == 1
@@ -726,6 +788,7 @@ class TestCLIHelpers:
 # Registration Tests - verify each register function adds subparsers
 # ---------------------------------------------------------------------------
 
+
 class TestRegistration:
     def _make_parser(self):
         parser = argparse.ArgumentParser()
@@ -733,55 +796,66 @@ class TestRegistration:
 
     def test_register_quiz_commands(self):
         from src.cli.quiz_commands import register_quiz_commands
+
         sp = self._make_parser()
         register_quiz_commands(sp)
 
     def test_register_study_commands(self):
         from src.cli.study_commands import register_study_commands
+
         sp = self._make_parser()
         register_study_commands(sp)
 
     def test_register_rubric_commands(self):
         from src.cli.rubric_commands import register_rubric_commands
+
         sp = self._make_parser()
         register_rubric_commands(sp)
 
     def test_register_analytics_commands(self):
         from src.cli.analytics_commands import register_analytics_commands
+
         sp = self._make_parser()
         register_analytics_commands(sp)
 
     def test_register_lesson_plan_commands(self):
         from src.cli.lesson_plan_commands import register_lesson_plan_commands
+
         sp = self._make_parser()
         register_lesson_plan_commands(sp)
 
     def test_register_template_commands(self):
         from src.cli.template_commands import register_template_commands
+
         sp = self._make_parser()
         register_template_commands(sp)
 
     def test_register_class_commands(self):
         from src.cli.class_commands import register_class_commands
+
         sp = self._make_parser()
         register_class_commands(sp)
 
     def test_register_standards_commands(self):
         from src.cli.standards_commands import register_standards_commands
+
         sp = self._make_parser()
         register_standards_commands(sp)
 
     def test_register_provider_commands(self):
         from src.cli.provider_commands import register_provider_commands
+
         sp = self._make_parser()
         register_provider_commands(sp)
 
     def test_register_variant_commands(self):
         from src.cli.variant_commands import register_variant_commands
+
         sp = self._make_parser()
         register_variant_commands(sp)
 
     def test_register_topic_commands(self):
         from src.cli.topic_commands import register_topic_commands
+
         sp = self._make_parser()
         register_topic_commands(sp)

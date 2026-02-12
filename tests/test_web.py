@@ -5,14 +5,15 @@ TDD: These tests are written BEFORE the implementation.
 They define the expected behavior of the Flask web UI.
 """
 
-import os
 import json
+import os
 import tempfile
+from datetime import date
+
 import pytest
-from datetime import date, datetime, timedelta
 
 # Import database models for test setup
-from src.database import Base, Class, LessonLog, Quiz, Question, get_engine, get_session
+from src.database import Base, Class, LessonLog, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -32,10 +33,14 @@ def app():
         grade_level="7th Grade",
         subject="Science",
         standards=json.dumps(["SOL 7.1"]),
-        config=json.dumps({"assumed_knowledge": {
-            "photosynthesis": {"depth": 3, "last_taught": "2026-02-01", "mention_count": 3},
-            "cell division": {"depth": 1, "last_taught": "2026-02-05", "mention_count": 1},
-        }}),
+        config=json.dumps(
+            {
+                "assumed_knowledge": {
+                    "photosynthesis": {"depth": 3, "last_taught": "2026-02-01", "mention_count": 3},
+                    "cell division": {"depth": 1, "last_taught": "2026-02-05", "mention_count": 1},
+                }
+            }
+        ),
     )
     block_a = Class(
         name="7th Grade Science - Block A",
@@ -84,12 +89,14 @@ def app():
         title="Q1",
         text="What is the process by which plants make food?",
         points=5.0,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is the process by which plants make food?",
-            "options": ["Photosynthesis", "Respiration", "Fermentation", "Digestion"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is the process by which plants make food?",
+                "options": ["Photosynthesis", "Respiration", "Fermentation", "Digestion"],
+                "correct_index": 0,
+            }
+        ),
     )
     session.add(q1)
     session.commit()
@@ -293,12 +300,16 @@ class TestClasses:
 
     def test_class_create_post_creates_class(self, client):
         """POST to /classes/new creates a new class."""
-        response = client.post("/classes/new", data={
-            "name": "8th Grade Biology - Block B",
-            "grade_level": "8th Grade",
-            "subject": "Biology",
-            "standards": "SOL 8.1, SOL 8.2",
-        }, follow_redirects=False)
+        response = client.post(
+            "/classes/new",
+            data={
+                "name": "8th Grade Biology - Block B",
+                "grade_level": "8th Grade",
+                "subject": "Biology",
+                "standards": "SOL 8.1, SOL 8.2",
+            },
+            follow_redirects=False,
+        )
         # Should redirect to classes list or detail
         assert response.status_code in (302, 303)
 
@@ -309,10 +320,13 @@ class TestClasses:
 
     def test_class_create_post_requires_name(self, client):
         """POST to /classes/new without name shows error."""
-        response = client.post("/classes/new", data={
-            "name": "",
-            "grade_level": "8th Grade",
-        })
+        response = client.post(
+            "/classes/new",
+            data={
+                "name": "",
+                "grade_level": "8th Grade",
+            },
+        )
         # Should stay on form or show error
         assert response.status_code in (200, 400)
         html = response.data.decode()
@@ -369,11 +383,15 @@ class TestLessons:
 
     def test_lesson_log_post_creates_lesson(self, client):
         """POST to lesson log creates a new lesson."""
-        response = client.post("/classes/1/lessons/new", data={
-            "content": "Today we studied ecosystems and food webs.",
-            "notes": "Used interactive simulation",
-            "topics": "ecosystems, food web",
-        }, follow_redirects=False)
+        response = client.post(
+            "/classes/1/lessons/new",
+            data={
+                "content": "Today we studied ecosystems and food webs.",
+                "notes": "Used interactive simulation",
+                "topics": "ecosystems, food web",
+            },
+            follow_redirects=False,
+        )
         assert response.status_code in (302, 303)
 
         # Verify lesson was created
@@ -531,30 +549,41 @@ class TestQuizGeneration:
 
     def test_generate_post_creates_quiz(self, client):
         """POST to generate creates a quiz and redirects to it."""
-        response = client.post("/classes/1/generate", data={
-            "num_questions": "5",
-            "grade_level": "7th Grade",
-            "sol_standards": "SOL 7.1",
-        }, follow_redirects=False)
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "5",
+                "grade_level": "7th Grade",
+                "sol_standards": "SOL 7.1",
+            },
+            follow_redirects=False,
+        )
         # Should redirect to the new quiz detail
         assert response.status_code in (302, 303)
         assert "/quizzes/" in response.headers["Location"]
 
     def test_generate_post_quiz_appears_in_list(self, client):
         """After generating, quiz appears in the quizzes list."""
-        client.post("/classes/1/generate", data={
-            "num_questions": "5",
-            "grade_level": "7th Grade",
-        })
+        client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "5",
+                "grade_level": "7th Grade",
+            },
+        )
         response = client.get("/quizzes")
         html = response.data.decode()
         assert "generated" in html.lower()
 
     def test_generate_post_default_questions(self, client):
         """Generate with default num_questions works."""
-        response = client.post("/classes/1/generate", data={
-            "grade_level": "7th Grade",
-        }, follow_redirects=False)
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "grade_level": "7th Grade",
+            },
+            follow_redirects=False,
+        )
         assert response.status_code in (302, 303)
 
     def test_class_detail_has_generate_link(self, client):
@@ -635,19 +664,26 @@ class TestAuthentication:
 
     def test_login_with_valid_credentials(self, anon_client):
         """Login with valid credentials redirects to dashboard."""
-        response = anon_client.post("/login", data={
-            "username": "teacher",
-            "password": "quizweaver",
-        }, follow_redirects=False)
+        response = anon_client.post(
+            "/login",
+            data={
+                "username": "teacher",
+                "password": "quizweaver",
+            },
+            follow_redirects=False,
+        )
         assert response.status_code in (302, 303)
         assert "/dashboard" in response.headers["Location"]
 
     def test_login_with_invalid_credentials(self, anon_client):
         """Login with bad credentials shows error."""
-        response = anon_client.post("/login", data={
-            "username": "teacher",
-            "password": "wrongpassword",
-        })
+        response = anon_client.post(
+            "/login",
+            data={
+                "username": "teacher",
+                "password": "wrongpassword",
+            },
+        )
         html = response.data.decode()
         assert response.status_code in (200, 401)
         assert "invalid" in html.lower() or "incorrect" in html.lower()
@@ -698,11 +734,15 @@ class TestEditDeleteActions:
 
     def test_class_edit_post_updates_class(self, client):
         """POST to class edit updates the class."""
-        response = client.post("/classes/1/edit", data={
-            "name": "Updated Class Name",
-            "grade_level": "8th Grade",
-            "subject": "Biology",
-        }, follow_redirects=False)
+        response = client.post(
+            "/classes/1/edit",
+            data={
+                "name": "Updated Class Name",
+                "grade_level": "8th Grade",
+                "subject": "Biology",
+            },
+            follow_redirects=False,
+        )
         assert response.status_code in (302, 303)
 
         # Verify update
@@ -809,21 +849,29 @@ class TestFlashMessages:
     def test_flash_renders_on_action(self, client):
         """Flash message appears after a form submission with redirect."""
         # Create a class, which should flash a success message
-        response = client.post("/classes/new", data={
-            "name": "Flash Render Test",
-            "grade_level": "10th Grade",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/new",
+            data={
+                "name": "Flash Render Test",
+                "grade_level": "10th Grade",
+            },
+            follow_redirects=True,
+        )
         html = response.data.decode()
         # After redirect, flash message should render in the alert div
         assert "alert" in html or "Flash Render Test" in html
 
     def test_class_create_shows_flash(self, client):
         """Creating a class shows a success flash message."""
-        response = client.post("/classes/new", data={
-            "name": "Flash Test Class",
-            "grade_level": "9th Grade",
-            "subject": "Math",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/new",
+            data={
+                "name": "Flash Test Class",
+                "grade_level": "9th Grade",
+                "subject": "Math",
+            },
+            follow_redirects=True,
+        )
         html = response.data.decode()
         assert "created" in html.lower() or "success" in html.lower() or "Flash Test Class" in html
 
@@ -835,19 +883,27 @@ class TestFlashMessages:
 
     def test_lesson_log_shows_flash(self, client):
         """Logging a lesson shows a success flash message."""
-        response = client.post("/classes/1/lessons/new", data={
-            "content": "Flash test lesson about gravity.",
-            "notes": "Testing flash",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/1/lessons/new",
+            data={
+                "content": "Flash test lesson about gravity.",
+                "notes": "Testing flash",
+            },
+            follow_redirects=True,
+        )
         html = response.data.decode()
         assert "logged" in html.lower() or "success" in html.lower() or "gravity" in html.lower()
 
     def test_quiz_generate_shows_flash(self, client):
         """Generating a quiz shows feedback."""
-        response = client.post("/classes/1/generate", data={
-            "num_questions": "5",
-            "grade_level": "7th Grade",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/1/generate",
+            data={
+                "num_questions": "5",
+                "grade_level": "7th Grade",
+            },
+            follow_redirects=True,
+        )
         html = response.data.decode()
         # Should either show quiz detail (success) or error message
         assert "generated" in html.lower() or "quiz" in html.lower()
@@ -881,22 +937,26 @@ class TestProviderAliasResolution:
     def test_gemini_3_pro_not_aliased(self):
         """gemini-3-pro should NOT be aliased to gemini-pro."""
         from src.llm_provider import _resolve_provider_name
+
         assert _resolve_provider_name("gemini-3-pro") == "gemini-3-pro"
 
     def test_gemini_3_flash_not_aliased(self):
         """gemini-3-flash should NOT be aliased."""
         from src.llm_provider import _resolve_provider_name
+
         assert _resolve_provider_name("gemini-3-flash") == "gemini-3-flash"
 
     def test_gemini_3_pro_registry_has_correct_model(self):
         """gemini-3-pro registry entry has gemini-3-pro-preview as default model."""
         from src.llm_provider import PROVIDER_REGISTRY
+
         assert "gemini-3-pro" in PROVIDER_REGISTRY
         assert PROVIDER_REGISTRY["gemini-3-pro"]["default_model"] == "gemini-3-pro-preview"
 
     def test_gemini_3_flash_registry_has_correct_model(self):
         """gemini-3-flash registry entry has gemini-3-flash-preview as default model."""
         from src.llm_provider import PROVIDER_REGISTRY
+
         assert "gemini-3-flash" in PROVIDER_REGISTRY
         assert PROVIDER_REGISTRY["gemini-3-flash"]["default_model"] == "gemini-3-flash-preview"
 
@@ -961,10 +1021,14 @@ class TestLessonFileUpload:
 
     def test_lesson_form_accepts_text_only(self, client):
         """Lesson log works with text content only (no file)."""
-        response = client.post("/classes/1/lessons/new", data={
-            "content": "Pure text lesson about atoms and molecules.",
-            "notes": "No file uploaded",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/1/lessons/new",
+            data={
+                "content": "Pure text lesson about atoms and molecules.",
+                "notes": "No file uploaded",
+            },
+            follow_redirects=True,
+        )
         html = response.data.decode()
         assert "atoms" in html.lower() or response.status_code == 200
 
@@ -1089,7 +1153,14 @@ class TestCognitiveFrameworkForm:
 
     def test_post_with_dok_framework(self, client):
         """POST with DOK framework should redirect to quiz detail."""
-        dist = json.dumps({"1": {"count": 5, "types": ["mc"]}, "2": {"count": 5, "types": ["tf"]}, "3": {"count": 5, "types": ["mc"]}, "4": {"count": 5, "types": ["mc"]}})
+        dist = json.dumps(
+            {
+                "1": {"count": 5, "types": ["mc"]},
+                "2": {"count": 5, "types": ["tf"]},
+                "3": {"count": 5, "types": ["mc"]},
+                "4": {"count": 5, "types": ["mc"]},
+            }
+        )
         response = client.post(
             "/classes/1/generate",
             data={
@@ -1122,7 +1193,8 @@ class TestCognitiveFrameworkQuizDetail:
     def test_quiz_detail_shows_cognitive_badge(self, app):
         """Quiz detail should show cognitive badges when question data has cognitive_level."""
         # Seed a quiz with cognitive-tagged questions
-        from src.database import get_engine, get_session, Quiz, Question
+        from src.database import Question, Quiz, get_session
+
         engine = app.config["DB_ENGINE"]
         session = get_session(engine)
 
@@ -1130,11 +1202,13 @@ class TestCognitiveFrameworkQuizDetail:
             title="Bloom's Quiz",
             class_id=1,
             status="generated",
-            style_profile=json.dumps({
-                "grade_level": "7th Grade",
-                "cognitive_framework": "blooms",
-                "difficulty": 4,
-            }),
+            style_profile=json.dumps(
+                {
+                    "grade_level": "7th Grade",
+                    "cognitive_framework": "blooms",
+                    "difficulty": 4,
+                }
+            ),
         )
         session.add(quiz)
         session.commit()
@@ -1145,15 +1219,17 @@ class TestCognitiveFrameworkQuizDetail:
             title="CogQ1",
             text="Test cognitive question",
             points=5.0,
-            data=json.dumps({
-                "type": "mc",
-                "text": "Test cognitive question",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-                "cognitive_level": "Remember",
-                "cognitive_framework": "blooms",
-                "cognitive_level_number": 1,
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "text": "Test cognitive question",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                    "cognitive_level": "Remember",
+                    "cognitive_framework": "blooms",
+                    "cognitive_level_number": 1,
+                }
+            ),
         )
         session.add(q1)
         session.commit()
@@ -1168,7 +1244,8 @@ class TestCognitiveFrameworkQuizDetail:
 
     def test_quiz_detail_shows_framework_info(self, app):
         """Quiz detail should show framework and difficulty in quiz info."""
-        from src.database import get_engine, get_session, Quiz
+        from src.database import Quiz, get_session
+
         engine = app.config["DB_ENGINE"]
         session = get_session(engine)
 
@@ -1176,11 +1253,13 @@ class TestCognitiveFrameworkQuizDetail:
             title="DOK Quiz",
             class_id=1,
             status="generated",
-            style_profile=json.dumps({
-                "grade_level": "7th Grade",
-                "cognitive_framework": "dok",
-                "difficulty": 3,
-            }),
+            style_profile=json.dumps(
+                {
+                    "grade_level": "7th Grade",
+                    "cognitive_framework": "dok",
+                    "difficulty": 3,
+                }
+            ),
         )
         session.add(quiz)
         session.commit()

@@ -4,21 +4,21 @@ Run with: python tests/test_mock_provider_simple.py
 """
 
 import json
-import sys
 import os
+import sys
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.llm_provider import MockLLMProvider, LLMProvider
+from src.llm_provider import LLMProvider, MockLLMProvider
 
 
 def test_mock_provider_inherits_from_base():
     """Test that MockLLMProvider implements LLMProvider interface."""
     provider = MockLLMProvider()
     assert isinstance(provider, LLMProvider), "MockLLMProvider should inherit from LLMProvider"
-    assert hasattr(provider, 'generate'), "Should have generate method"
-    assert hasattr(provider, 'prepare_image_context'), "Should have prepare_image_context method"
+    assert hasattr(provider, "generate"), "Should have generate method"
+    assert hasattr(provider, "prepare_image_context"), "Should have prepare_image_context method"
     print("[PASS] Mock provider inherits from base class")
 
 
@@ -154,7 +154,7 @@ def run_all_tests():
             print(f"[FAIL] {test.__name__}: Unexpected error: {e}")
             failed += 1
 
-    print(f"\n=== Test Results ===")
+    print("\n=== Test Results ===")
     print(f"Passed: {passed}/{len(tests)}")
     print(f"Failed: {failed}/{len(tests)}")
 

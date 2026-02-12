@@ -7,24 +7,24 @@ create_default_class_if_needed, and init_database_with_migrations.
 Run with: python -m pytest tests/test_migrations_extended.py -v
 """
 
-import sys
 import os
-import tempfile
 import sqlite3
+import sys
+import tempfile
 
 import pytest
 
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from src.database import get_engine, init_db
 from src.migrations import (
-    get_migration_files,
     check_if_migration_needed,
     create_default_class_if_needed,
-    run_migrations,
+    get_migration_files,
     init_database_with_migrations,
+    run_migrations,
 )
-from src.database import get_engine, init_db, get_session, Quiz
 
 
 @pytest.fixture
@@ -53,9 +53,7 @@ class TestGetMigrationFiles:
         results = get_migration_files("migrations")
         assert len(results) > 0, "Should find at least one migration file"
         for filename, filepath in results:
-            assert filename.endswith(".sql"), (
-                f"Each file should be a .sql file, got {filename}"
-            )
+            assert filename.endswith(".sql"), f"Each file should be a .sql file, got {filename}"
 
     def test_returns_empty_for_nonexistent_dir(self):
         """Call with a directory that does not exist and verify empty list."""
@@ -87,9 +85,7 @@ class TestGetMigrationFiles:
             assert isinstance(filename, str), "Filename should be a string"
             assert isinstance(filepath, str), "Filepath should be a string"
             assert filename.endswith(".sql"), f"Filename should end with .sql, got {filename}"
-            assert filepath.endswith(filename), (
-                f"Filepath should end with the filename: {filepath} vs {filename}"
-            )
+            assert filepath.endswith(filename), f"Filepath should end with the filename: {filepath} vs {filename}"
 
 
 # =========================================================================
@@ -120,9 +116,7 @@ class TestCheckIfMigrationNeeded:
         init_db(engine)
         engine.dispose()
         result = check_if_migration_needed(tmp_db)
-        assert result is False, (
-            "DB with ORM-created classes table should not need migration"
-        )
+        assert result is False, "DB with ORM-created classes table should not need migration"
 
     def test_db_without_classes_needs_migration(self, tmp_db):
         """A bare SQLite file that has some table but not 'classes' should
@@ -171,9 +165,7 @@ class TestCreateDefaultClassIfNeeded:
         conn.close()
 
         assert row is not None, "Legacy class should exist at id=1"
-        assert "Legacy" in row[1], (
-            f"Class name should contain 'Legacy', got '{row[1]}'"
-        )
+        assert "Legacy" in row[1], f"Class name should contain 'Legacy', got '{row[1]}'"
 
     def test_idempotent(self, tmp_db):
         """Calling create_default_class_if_needed twice should still result
@@ -204,10 +196,7 @@ class TestCreateDefaultClassIfNeeded:
 
         # Insert a quiz with NULL class_id directly via SQL
         conn = sqlite3.connect(tmp_db)
-        conn.execute(
-            "INSERT INTO quizzes (id, title, class_id, status) "
-            "VALUES (1, 'Old Quiz', NULL, 'generated')"
-        )
+        conn.execute("INSERT INTO quizzes (id, title, class_id, status) VALUES (1, 'Old Quiz', NULL, 'generated')")
         conn.commit()
         conn.close()
 
@@ -228,13 +217,8 @@ class TestCreateDefaultClassIfNeeded:
 
         # Create a second class, then a quiz assigned to it
         conn = sqlite3.connect(tmp_db)
-        conn.execute(
-            "INSERT INTO classes (id, name) VALUES (2, 'Other Class')"
-        )
-        conn.execute(
-            "INSERT INTO quizzes (id, title, class_id, status) "
-            "VALUES (1, 'Assigned Quiz', 2, 'generated')"
-        )
+        conn.execute("INSERT INTO classes (id, name) VALUES (2, 'Other Class')")
+        conn.execute("INSERT INTO quizzes (id, title, class_id, status) VALUES (1, 'Assigned Quiz', 2, 'generated')")
         conn.commit()
         conn.close()
 
@@ -247,9 +231,7 @@ class TestCreateDefaultClassIfNeeded:
         conn.close()
 
         assert row is not None, "Quiz should exist"
-        assert row[0] == 2, (
-            f"Quiz class_id should remain 2 (not overwritten), got {row[0]}"
-        )
+        assert row[0] == 2, f"Quiz class_id should remain 2 (not overwritten), got {row[0]}"
 
 
 # =========================================================================
@@ -272,9 +254,7 @@ class TestInitDatabaseWithMigrations:
         # Verify the classes table was created
         conn = sqlite3.connect(tmp_db)
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='classes'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='classes'")
         row = cursor.fetchone()
         conn.close()
 

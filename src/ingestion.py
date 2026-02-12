@@ -1,11 +1,13 @@
+import io
+import json
 import os
+
 import fitz  # PyMuPDF
 from docx import Document
-from .database import Lesson, Asset
-from .llm_provider import get_provider
-import json
 from PIL import Image
-import io
+
+from .database import Asset, Lesson
+from .llm_provider import get_provider
 
 
 def ingest_content(session, config):
@@ -28,9 +30,7 @@ def ingest_content(session, config):
             ingest_config["llm"]["provider"] = "gemini-pro"
             llm_provider = get_provider(ingest_config)
         except Exception as e:
-            print(
-                f"Failed to initialize multimodal provider: {e}. Falling back to standard ingestion."
-            )
+            print(f"Failed to initialize multimodal provider: {e}. Falling back to standard ingestion.")
             ingestion_mode = "standard"
 
     for filename in os.listdir(content_dir):
@@ -66,7 +66,7 @@ def ingest_content(session, config):
                 doc.close()
 
         elif filename.endswith(".txt"):
-            with open(filepath, "r", encoding="utf-8") as f:
+            with open(filepath, encoding="utf-8") as f:
                 content_text = f.read()
         elif filename.endswith(".docx"):
             doc = Document(filepath)
@@ -149,13 +149,9 @@ def process_pdf_multimodal(filepath, provider):
             structured_pages.append(page_analysis)
 
         except json.JSONDecodeError:
-            print(
-                f"    ! Failed to parse JSON for page {page_index + 1}. Fallback to text extraction."
-            )
+            print(f"    ! Failed to parse JSON for page {page_index + 1}. Fallback to text extraction.")
             full_text.append(page.get_text())
-            structured_pages.append(
-                {"error": "Failed to analyze layout", "page": page_index + 1}
-            )
+            structured_pages.append({"error": "Failed to analyze layout", "page": page_index + 1})
 
     doc.close()
     return "\n".join(full_text), structured_pages
@@ -178,7 +174,7 @@ def extract_and_save_images(session, config, lesson, pdf_path):
             base_image = doc.extract_image(xref)
             image_bytes = base_image["image"]
 
-            image_filename = f"image_{lesson.id}_{page_index+1}_{image_index}.png"
+            image_filename = f"image_{lesson.id}_{page_index + 1}_{image_index}.png"
             image_path = os.path.join(images_dir, image_filename)
 
             with open(image_path, "wb") as f:

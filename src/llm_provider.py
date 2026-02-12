@@ -1,15 +1,13 @@
-from abc import ABC, abstractmethod
-import os
-import json
-import time
 import logging
 import mimetypes
-from PIL import Image as PILImage
-import io
+import os
+import time
+from abc import ABC, abstractmethod
 from typing import Any
 
 # API call audit log — captures exact payloads for transparency reporting
 _api_audit_log = []
+
 
 def get_api_audit_log():
     """Return the API audit log and clear it."""
@@ -17,13 +15,16 @@ def get_api_audit_log():
     log = list(_api_audit_log)
     return log
 
+
 def clear_api_audit_log():
     """Clear the API audit log."""
     global _api_audit_log
     _api_audit_log = []
 
-def _log_api_call(provider_name, model, prompt_summary, response_summary,
-                  input_tokens=0, output_tokens=0, duration_ms=0, error=None):
+
+def _log_api_call(
+    provider_name, model, prompt_summary, response_summary, input_tokens=0, output_tokens=0, duration_ms=0, error=None
+):
     """Log an API call for audit purposes."""
     entry = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -45,15 +46,18 @@ def _log_api_call(provider_name, model, prompt_summary, response_summary,
         f"prompt={len(prompt_summary)} chars"
     )
 
+
 # Check if google-genai SDK is available (lazy import in provider classes)
 try:
     from google import genai as _genai_module
+
     _GENAI_AVAILABLE = True
 except ImportError:
     _GENAI_AVAILABLE = False
 
 try:
     import anthropic as _anthropic_module
+
     _ANTHROPIC_AVAILABLE = True
 except ImportError:
     _ANTHROPIC_AVAILABLE = False
@@ -110,6 +114,7 @@ class GeminiProvider(LLMProvider):
             model_name: Name of the Gemini model to use (default: gemini-2.5-flash)
         """
         from google import genai
+
         self.client = genai.Client(api_key=api_key)
         self._model_name = model_name
 
@@ -144,29 +149,28 @@ class GeminiProvider(LLMProvider):
             # Log cost if token metadata available
             try:
                 from src.cost_tracking import log_api_call
-                usage = getattr(response, 'usage_metadata', None)
+
+                usage = getattr(response, "usage_metadata", None)
                 if usage:
-                    input_tokens = getattr(usage, 'prompt_token_count', 0)
-                    output_tokens = getattr(usage, 'candidates_token_count', 0)
+                    input_tokens = getattr(usage, "prompt_token_count", 0)
+                    output_tokens = getattr(usage, "candidates_token_count", 0)
                     log_api_call(
-                        "gemini", self._model_name,
-                        input_tokens, output_tokens,
+                        "gemini",
+                        self._model_name,
+                        input_tokens,
+                        output_tokens,
                     )
             except Exception:
                 pass
 
             result_text = response.text
             _log_api_call(
-                "gemini", self._model_name, prompt_text, result_text,
-                input_tokens, output_tokens, duration_ms
+                "gemini", self._model_name, prompt_text, result_text, input_tokens, output_tokens, duration_ms
             )
             return result_text
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
-            _log_api_call(
-                "gemini", self._model_name, prompt_text, "",
-                0, 0, duration_ms, error=str(e)
-            )
+            _log_api_call("gemini", self._model_name, prompt_text, "", 0, 0, duration_ms, error=str(e))
             print(f"An error occurred with the Gemini provider: {e}")
             return "[]"
 
@@ -189,9 +193,7 @@ class VertexAIProvider(LLMProvider):
     using the unified google-genai SDK with vertexai=True.
     """
 
-    def __init__(
-        self, project_id: str, location: str, model_name: str = "gemini-2.5-flash"
-    ):
+    def __init__(self, project_id: str, location: str, model_name: str = "gemini-2.5-flash"):
         """
         Initialize the Vertex AI provider with Google Cloud credentials.
 
@@ -204,14 +206,11 @@ class VertexAIProvider(LLMProvider):
             ImportError: If google-genai is not installed
         """
         if not _GENAI_AVAILABLE:
-            raise ImportError(
-                "The Google AI library is not installed. Run: pip install google-genai"
-            )
+            raise ImportError("The Google AI library is not installed. Run: pip install google-genai")
 
         from google import genai
-        self.client = genai.Client(
-            vertexai=True, project=project_id, location=location
-        )
+
+        self.client = genai.Client(vertexai=True, project=project_id, location=location)
         self._model_name = model_name
 
     def generate(self, prompt_parts: list, json_mode: bool = False) -> str:
@@ -239,12 +238,14 @@ class VertexAIProvider(LLMProvider):
             # Log cost if token metadata available
             try:
                 from src.cost_tracking import log_api_call
-                usage = getattr(response, 'usage_metadata', None)
+
+                usage = getattr(response, "usage_metadata", None)
                 if usage:
                     log_api_call(
-                        "vertex", self._model_name,
-                        getattr(usage, 'prompt_token_count', 0),
-                        getattr(usage, 'candidates_token_count', 0),
+                        "vertex",
+                        self._model_name,
+                        getattr(usage, "prompt_token_count", 0),
+                        getattr(usage, "candidates_token_count", 0),
                     )
             except Exception:
                 pass
@@ -269,11 +270,10 @@ class VertexAIProvider(LLMProvider):
         """
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type or not mime_type.startswith("image/"):
-            raise ValueError(
-                f"Could not determine image MIME type or it's not an image: {image_path}"
-            )
+            raise ValueError(f"Could not determine image MIME type or it's not an image: {image_path}")
 
         from google.genai import types
+
         with open(image_path, "rb") as f:
             image_bytes = f.read()
         return types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
@@ -288,6 +288,7 @@ class MockLLMProvider(LLMProvider):
     def __init__(self):
         """Initialize mock provider (no API keys needed)."""
         from src.mock_responses import get_mock_response
+
         self._get_mock_response = get_mock_response
         self._call_count = 0
 
@@ -305,10 +306,7 @@ class MockLLMProvider(LLMProvider):
         self._call_count += 1
 
         # Use mock_responses module to generate realistic responses
-        response = self._get_mock_response(
-            prompt_parts=prompt_parts,
-            json_mode=json_mode
-        )
+        response = self._get_mock_response(prompt_parts=prompt_parts, json_mode=json_mode)
 
         return response
 
@@ -342,6 +340,7 @@ class OpenAICompatibleProvider(LLMProvider):
             model_name: Model name to use (e.g., gpt-4o, mistral-large, llama3)
         """
         from openai import OpenAI
+
         self.client = OpenAI(api_key=api_key, base_url=base_url)
         self._model_name = model_name
 
@@ -375,12 +374,14 @@ class OpenAICompatibleProvider(LLMProvider):
             # Log cost if usage data available
             try:
                 from src.cost_tracking import log_api_call
+
                 usage = response.usage
                 if usage:
                     log_api_call(
-                        "openai-compatible", self._model_name,
-                        getattr(usage, 'prompt_tokens', 0),
-                        getattr(usage, 'completion_tokens', 0),
+                        "openai-compatible",
+                        self._model_name,
+                        getattr(usage, "prompt_tokens", 0),
+                        getattr(usage, "completion_tokens", 0),
                     )
             except Exception:
                 pass
@@ -401,15 +402,13 @@ class OpenAICompatibleProvider(LLMProvider):
             Dict in OpenAI image_url format with base64-encoded data
         """
         import base64
+
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type:
             mime_type = "image/png"
         with open(image_path, "rb") as f:
             b64 = base64.b64encode(f.read()).decode()
-        return {
-            "type": "image_url",
-            "image_url": {"url": f"data:{mime_type};base64,{b64}"}
-        }
+        return {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{b64}"}}
 
 
 class AnthropicProvider(LLMProvider):
@@ -427,10 +426,9 @@ class AnthropicProvider(LLMProvider):
             model_name: Name of the Claude model to use
         """
         if not _ANTHROPIC_AVAILABLE:
-            raise ImportError(
-                "The Anthropic library is not installed. Run: pip install anthropic"
-            )
+            raise ImportError("The Anthropic library is not installed. Run: pip install anthropic")
         import anthropic
+
         self.client = anthropic.Anthropic(api_key=api_key)
         self._model_name = model_name
 
@@ -467,12 +465,14 @@ class AnthropicProvider(LLMProvider):
             # Log cost if usage data available
             try:
                 from src.cost_tracking import log_api_call
+
                 usage = response.usage
                 if usage:
                     log_api_call(
-                        "anthropic", self._model_name,
-                        getattr(usage, 'input_tokens', 0),
-                        getattr(usage, 'output_tokens', 0),
+                        "anthropic",
+                        self._model_name,
+                        getattr(usage, "input_tokens", 0),
+                        getattr(usage, "output_tokens", 0),
                     )
             except Exception:
                 pass
@@ -493,6 +493,7 @@ class AnthropicProvider(LLMProvider):
             Dict in Anthropic image format with base64-encoded data
         """
         import base64
+
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type:
             mime_type = "image/png"
@@ -504,7 +505,7 @@ class AnthropicProvider(LLMProvider):
                 "type": "base64",
                 "media_type": mime_type,
                 "data": b64,
-            }
+            },
         }
 
 
@@ -524,10 +525,9 @@ class VertexAnthropicProvider(LLMProvider):
             model_name: Name of the Claude model on Vertex AI
         """
         if not _ANTHROPIC_AVAILABLE:
-            raise ImportError(
-                "The Anthropic library is not installed. Run: pip install anthropic[vertex]"
-            )
+            raise ImportError("The Anthropic library is not installed. Run: pip install anthropic[vertex]")
         from anthropic import AnthropicVertex
+
         self.client = AnthropicVertex(project_id=project_id, region=location)
         self._model_name = model_name
 
@@ -563,12 +563,14 @@ class VertexAnthropicProvider(LLMProvider):
             # Log cost if usage data available
             try:
                 from src.cost_tracking import log_api_call
+
                 usage = response.usage
                 if usage:
                     log_api_call(
-                        "vertex-anthropic", self._model_name,
-                        getattr(usage, 'input_tokens', 0),
-                        getattr(usage, 'output_tokens', 0),
+                        "vertex-anthropic",
+                        self._model_name,
+                        getattr(usage, "input_tokens", 0),
+                        getattr(usage, "output_tokens", 0),
                     )
             except Exception:
                 pass
@@ -589,6 +591,7 @@ class VertexAnthropicProvider(LLMProvider):
             Dict in Anthropic image format with base64-encoded data
         """
         import base64
+
         mime_type, _ = mimetypes.guess_type(image_path)
         if not mime_type:
             mime_type = "image/png"
@@ -600,7 +603,7 @@ class VertexAnthropicProvider(LLMProvider):
                 "type": "base64",
                 "media_type": mime_type,
                 "data": b64,
-            }
+            },
         }
 
 
@@ -796,7 +799,17 @@ def get_provider(config, web_mode=False):
     model_name = llm_config.get("model_name") or default_model
 
     # Check if using real provider and warn user
-    real_providers = ["gemini", "gemini-pro", "gemini-3-flash", "gemini-3-pro", "vertex", "anthropic", "vertex-anthropic", "openai", "openai-compatible"]
+    real_providers = [
+        "gemini",
+        "gemini-pro",
+        "gemini-3-flash",
+        "gemini-3-pro",
+        "vertex",
+        "anthropic",
+        "vertex-anthropic",
+        "openai",
+        "openai-compatible",
+    ]
     if provider_name in real_providers:
         mode = llm_config.get("mode", "development")
         if mode == "development" and not web_mode:
@@ -829,9 +842,7 @@ def get_provider(config, web_mode=False):
         )
     elif provider_name == "vertex":
         if not _GENAI_AVAILABLE:
-            raise ImportError(
-                "The Google AI library is not installed. Run: pip install google-genai"
-            )
+            raise ImportError("The Google AI library is not installed. Run: pip install google-genai")
         project_id = llm_config.get("vertex_project_id")
         location = llm_config.get("vertex_location")
         if not project_id or not location:
@@ -855,9 +866,7 @@ def get_provider(config, web_mode=False):
         )
     elif provider_name == "vertex-anthropic":
         if not _ANTHROPIC_AVAILABLE:
-            raise ImportError(
-                "The Anthropic library is not installed. Run: pip install anthropic[vertex]"
-            )
+            raise ImportError("The Anthropic library is not installed. Run: pip install anthropic[vertex]")
         project_id = llm_config.get("vertex_project_id")
         location = llm_config.get("vertex_location")
         if not project_id or not location:

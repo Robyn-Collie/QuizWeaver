@@ -2,83 +2,91 @@
 Route handlers for QuizWeaver web frontend.
 """
 
+import functools
 import json
 import os
 import re
-import functools
-from io import BytesIO
 from datetime import date
-from werkzeug.utils import secure_filename
+from io import BytesIO
+
 from flask import (
-    render_template,
-    redirect,
-    url_for,
-    request,
     abort,
     current_app,
     flash,
     g,
-    session as flask_session,
     jsonify,
+    redirect,
+    render_template,
+    request,
     send_file,
+    url_for,
 )
-from src.database import LessonLog, Quiz, Question, StudySet, StudyCard, Rubric, RubricCriterion, PerformanceData, get_session
-from src.classroom import create_class, get_class, list_classes, update_class, delete_class
-from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge, delete_lesson
-from src.cost_tracking import get_cost_summary, check_budget, get_monthly_total
-from src.quiz_generator import generate_quiz
-from src.llm_provider import get_provider_info, get_provider, PROVIDER_REGISTRY
-from src.web.config_utils import save_config
+from flask import (
+    session as flask_session,
+)
+from werkzeug.utils import secure_filename
+
+from src.classroom import create_class, delete_class, get_class, list_classes, update_class
+from src.cost_tracking import check_budget, get_cost_summary, get_monthly_total
+from src.database import (
+    LessonLog,
+    PerformanceData,
+    Question,
+    Quiz,
+    Rubric,
+    RubricCriterion,
+    StudyCard,
+    StudySet,
+    get_session,
+)
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
-from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
-from src.study_export import (
-    export_flashcards_tsv,
-    export_flashcards_csv,
-    export_study_pdf,
-    export_study_docx,
-)
-from src.variant_generator import generate_variant, READING_LEVELS
-from src.rubric_generator import generate_rubric
-from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
-from src.performance_import import (
-    parse_performance_csv,
-    import_csv_data,
-    import_quiz_scores,
-    get_sample_csv,
-)
+from src.lesson_tracker import delete_lesson, get_assumed_knowledge, list_lessons, log_lesson
+from src.llm_provider import get_provider, get_provider_info
 from src.performance_analytics import (
     compute_gap_analysis,
-    get_topic_trends,
     get_class_summary,
     get_standards_mastery,
+    get_topic_trends,
 )
+from src.performance_import import (
+    get_sample_csv,
+    import_csv_data,
+    import_quiz_scores,
+)
+from src.quiz_generator import generate_quiz
 from src.reteach_generator import generate_reteach_suggestions
+from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
+from src.rubric_generator import generate_rubric
 from src.standards import (
+    STANDARD_SETS,
+    ensure_standard_set_loaded,
+    get_available_standard_sets,
+    get_grade_bands,
+    get_standard_sets_in_db,
+    get_subjects,
     list_standards,
     search_standards,
-    get_subjects,
-    get_grade_bands,
     standards_count,
-    load_standards_from_json,
-    get_available_standard_sets,
-    get_standard_sets_in_db,
-    ensure_standard_set_loaded,
-    STANDARD_SETS,
 )
+from src.study_export import (
+    export_flashcards_csv,
+    export_flashcards_tsv,
+    export_study_docx,
+    export_study_pdf,
+)
+from src.study_generator import generate_study_material
 from src.topic_generator import (
     generate_from_topics,
-    get_class_topics,
     search_topics,
-    VALID_OUTPUT_TYPES,
 )
+from src.variant_generator import READING_LEVELS, generate_variant
 from src.web.auth import (
-    create_user,
     authenticate_user,
     change_password,
+    create_user,
     get_user_count,
-    get_user_by_id,
 )
-
+from src.web.config_utils import save_config
 
 # Default credentials for backward-compatible config-based auth
 DEFAULT_USERNAME = "teacher"
@@ -95,6 +103,7 @@ def _get_session():
 
 def login_required(f):
     """Decorator to require login for a route."""
+
     @functools.wraps(f)
     def decorated_function(*args, **kwargs):
         if not flask_session.get("logged_in"):
@@ -106,6 +115,7 @@ def login_required(f):
             "display_name": flask_session.get("display_name"),
         }
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -258,40 +268,36 @@ def register_routes(app):
 
         # Recent activity: 5 most recent lessons and quizzes
         recent_lesson_rows = (
-            session.query(LessonLog)
-            .order_by(LessonLog.date.desc(), LessonLog.id.desc())
-            .limit(5)
-            .all()
+            session.query(LessonLog).order_by(LessonLog.date.desc(), LessonLog.id.desc()).limit(5).all()
         )
         recent_lessons = []
         for l in recent_lesson_rows:
             cls = get_class(session, l.class_id)
             topics = json.loads(l.topics) if l.topics else []
-            recent_lessons.append({
-                "id": l.id,
-                "date": str(l.date),
-                "class_id": l.class_id,
-                "class_name": cls.name if cls else "Unknown",
-                "topics": topics,
-                "preview": (l.content or "")[:80],
-            })
+            recent_lessons.append(
+                {
+                    "id": l.id,
+                    "date": str(l.date),
+                    "class_id": l.class_id,
+                    "class_name": cls.name if cls else "Unknown",
+                    "topics": topics,
+                    "preview": (l.content or "")[:80],
+                }
+            )
 
-        recent_quiz_rows = (
-            session.query(Quiz)
-            .order_by(Quiz.id.desc())
-            .limit(5)
-            .all()
-        )
+        recent_quiz_rows = session.query(Quiz).order_by(Quiz.id.desc()).limit(5).all()
         recent_quizzes = []
         for q in recent_quiz_rows:
             cls = get_class(session, q.class_id)
-            recent_quizzes.append({
-                "id": q.id,
-                "title": q.title,
-                "status": q.status,
-                "class_id": q.class_id,
-                "class_name": cls.name if cls else "Unknown",
-            })
+            recent_quizzes.append(
+                {
+                    "id": q.id,
+                    "title": q.title,
+                    "status": q.status,
+                    "class_id": q.class_id,
+                    "class_name": cls.name if cls else "Unknown",
+                }
+            )
 
         return render_template(
             "dashboard.html",
@@ -320,15 +326,14 @@ def register_routes(app):
 
         # Quizzes by class
         classes = list_classes(session)
-        quizzes_by_class = [
-            {"class_name": cls["name"], "count": cls["quiz_count"]}
-            for cls in classes
-        ]
+        quizzes_by_class = [{"class_name": cls["name"], "count": cls["quiz_count"]} for cls in classes]
 
-        return jsonify({
-            "lessons_by_date": lessons_by_date,
-            "quizzes_by_class": quizzes_by_class,
-        })
+        return jsonify(
+            {
+                "lessons_by_date": lessons_by_date,
+                "quizzes_by_class": quizzes_by_class,
+            }
+        )
 
     # --- Onboarding ---
 
@@ -344,6 +349,7 @@ def register_routes(app):
 
             if name and grade and subject:
                 from src.classroom import create_class as cc
+
                 cc(session, name, grade, subject)
                 flash("Welcome to QuizWeaver! Your first class has been created.", "success")
             else:
@@ -379,11 +385,7 @@ def register_routes(app):
             grade_level = request.form.get("grade_level", "").strip() or None
             subject = request.form.get("subject", "").strip() or None
             standards_raw = request.form.get("standards", "").strip()
-            standards = (
-                [s.strip() for s in standards_raw.split(",") if s.strip()]
-                if standards_raw
-                else None
-            )
+            standards = [s.strip() for s in standards_raw.split(",") if s.strip()] if standards_raw else None
 
             new_cls = create_class(
                 session,
@@ -432,11 +434,7 @@ def register_routes(app):
             grade_level = request.form.get("grade_level", "").strip() or None
             subject = request.form.get("subject", "").strip() or None
             standards_raw = request.form.get("standards", "").strip()
-            standards = (
-                [s.strip() for s in standards_raw.split(",") if s.strip()]
-                if standards_raw
-                else None
-            )
+            standards = [s.strip() for s in standards_raw.split(",") if s.strip()] if standards_raw else None
 
             update_class(
                 session,
@@ -481,13 +479,15 @@ def register_routes(app):
             topics = lesson.topics
             if isinstance(topics, str):
                 topics = json.loads(topics)
-            parsed_lessons.append({
-                "id": lesson.id,
-                "date": lesson.date,
-                "content": lesson.content,
-                "topics": topics or [],
-                "notes": lesson.notes,
-            })
+            parsed_lessons.append(
+                {
+                    "id": lesson.id,
+                    "date": lesson.date,
+                    "content": lesson.content,
+                    "topics": topics or [],
+                    "notes": lesson.notes,
+                }
+            )
 
         return render_template(
             "lessons/list.html",
@@ -508,11 +508,7 @@ def register_routes(app):
             content = request.form.get("content", "").strip()
             notes = request.form.get("notes", "").strip() or None
             topics_raw = request.form.get("topics", "").strip()
-            topics = (
-                [t.strip() for t in topics_raw.split(",") if t.strip()]
-                if topics_raw
-                else None
-            )
+            topics = [t.strip() for t in topics_raw.split(",") if t.strip()] if topics_raw else None
 
             log_lesson(
                 session,
@@ -522,9 +518,7 @@ def register_routes(app):
                 notes=notes,
             )
             flash("Lesson logged successfully.", "success")
-            return redirect(
-                url_for("lessons_list", class_id=class_id), code=303
-            )
+            return redirect(url_for("lessons_list", class_id=class_id), code=303)
 
         return render_template(
             "lessons/new.html",
@@ -582,14 +576,16 @@ def register_routes(app):
         for q in quizzes:
             class_obj = get_class(session, q.class_id) if q.class_id else None
             question_count = session.query(Question).filter_by(quiz_id=q.id).count()
-            quiz_data.append({
-                "id": q.id,
-                "title": q.title,
-                "status": q.status,
-                "class_name": class_obj.name if class_obj else "N/A",
-                "question_count": question_count,
-                "created_at": q.created_at,
-            })
+            quiz_data.append(
+                {
+                    "id": q.id,
+                    "title": q.title,
+                    "status": q.status,
+                    "class_name": class_obj.name if class_obj else "N/A",
+                    "question_count": question_count,
+                    "created_at": q.created_at,
+                }
+            )
 
         all_classes = list_classes(session)
 
@@ -622,15 +618,17 @@ def register_routes(app):
             data = q.data
             if isinstance(data, str):
                 data = json.loads(data)
-            parsed_questions.append({
-                "id": q.id,
-                "type": q.question_type,
-                "title": q.title,
-                "text": q.text,
-                "points": q.points,
-                "data": data,
-                "saved_to_bank": bool(getattr(q, "saved_to_bank", 0)),
-            })
+            parsed_questions.append(
+                {
+                    "id": q.id,
+                    "type": q.question_type,
+                    "title": q.title,
+                    "text": q.text,
+                    "points": q.points,
+                    "data": data,
+                    "saved_to_bank": bool(getattr(q, "saved_to_bank", 0)),
+                }
+            )
 
         # Parse style_profile for template use
         style_profile = quiz.style_profile
@@ -690,14 +688,16 @@ def register_routes(app):
         quiz_data = []
         for q in quizzes:
             question_count = session.query(Question).filter_by(quiz_id=q.id).count()
-            quiz_data.append({
-                "id": q.id,
-                "title": q.title,
-                "status": q.status,
-                "class_name": class_obj.name,
-                "question_count": question_count,
-                "created_at": q.created_at,
-            })
+            quiz_data.append(
+                {
+                    "id": q.id,
+                    "title": q.title,
+                    "status": q.status,
+                    "class_name": class_obj.name,
+                    "question_count": question_count,
+                    "created_at": q.created_at,
+                }
+            )
         return render_template(
             "quizzes/list.html",
             quizzes=quiz_data,
@@ -853,16 +853,22 @@ def register_routes(app):
         question.data = q_data
         # Force SQLAlchemy to detect the JSON change
         from sqlalchemy.orm.attributes import flag_modified
+
         flag_modified(question, "data")
         session.commit()
 
-        return jsonify({"ok": True, "question": {
-            "id": question.id,
-            "text": question.text,
-            "points": question.points,
-            "question_type": question.question_type,
-            "data": question.data,
-        }})
+        return jsonify(
+            {
+                "ok": True,
+                "question": {
+                    "id": question.id,
+                    "text": question.text,
+                    "points": question.points,
+                    "question_type": question.question_type,
+                    "data": question.data,
+                },
+            }
+        )
 
     @app.route("/api/questions/<int:question_id>", methods=["DELETE"])
     @login_required
@@ -888,9 +894,7 @@ def register_routes(app):
         question_ids = payload.get("question_ids", [])
 
         # Validate: the IDs must exactly match the quiz's question IDs
-        actual_ids = set(
-            row[0] for row in session.query(Question.id).filter_by(quiz_id=quiz_id).all()
-        )
+        actual_ids = set(row[0] for row in session.query(Question.id).filter_by(quiz_id=quiz_id).all())
         if set(question_ids) != actual_ids:
             return jsonify({"ok": False, "error": "Question IDs do not match quiz"}), 400
 
@@ -916,16 +920,16 @@ def register_routes(app):
 
         ext = os.path.splitext(file.filename)[1].lower()
         if ext not in ALLOWED_IMAGE_EXTENSIONS:
-            return jsonify({"ok": False, "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}"}), 400
+            return jsonify(
+                {"ok": False, "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}"}
+            ), 400
 
         safe_name = secure_filename(file.filename)
         # Add question_id prefix to avoid collisions
         filename = f"upload_{question_id}_{safe_name}"
 
         config = current_app.config["APP_CONFIG"]
-        images_dir = os.path.abspath(
-            config.get("paths", {}).get("generated_images_dir", "generated_images")
-        )
+        images_dir = os.path.abspath(config.get("paths", {}).get("generated_images_dir", "generated_images"))
         os.makedirs(images_dir, exist_ok=True)
         file.save(os.path.join(images_dir, filename))
 
@@ -940,6 +944,7 @@ def register_routes(app):
 
         question.data = q_data
         from sqlalchemy.orm.attributes import flag_modified
+
         flag_modified(question, "data")
         session.commit()
 
@@ -963,6 +968,7 @@ def register_routes(app):
 
         question.data = q_data
         from sqlalchemy.orm.attributes import flag_modified
+
         flag_modified(question, "data")
         session.commit()
 
@@ -982,17 +988,27 @@ def register_routes(app):
 
         config = current_app.config["APP_CONFIG"]
         from src.question_regenerator import regenerate_question
+
         result = regenerate_question(session, question_id, teacher_notes, config)
         if result is None:
             return jsonify({"ok": False, "error": "Regeneration failed"}), 500
 
-        return jsonify({"ok": True, "question": {
-            "id": result.id,
-            "text": result.text,
-            "points": result.points,
-            "question_type": result.question_type,
-            "data": result.data if isinstance(result.data, dict) else json.loads(result.data) if isinstance(result.data, str) else {},
-        }})
+        return jsonify(
+            {
+                "ok": True,
+                "question": {
+                    "id": result.id,
+                    "text": result.text,
+                    "points": result.points,
+                    "question_type": result.question_type,
+                    "data": result.data
+                    if isinstance(result.data, dict)
+                    else json.loads(result.data)
+                    if isinstance(result.data, str)
+                    else {},
+                },
+            }
+        )
 
     # --- Quiz Generation ---
 
@@ -1022,11 +1038,7 @@ def register_routes(app):
             num_questions = int(request.form.get("num_questions", 20))
             grade_level = request.form.get("grade_level", "").strip() or None
             sol_raw = request.form.get("sol_standards", "").strip()
-            sol_standards = (
-                [s.strip() for s in sol_raw.split(",") if s.strip()]
-                if sol_raw
-                else None
-            )
+            sol_standards = [s.strip() for s in sol_raw.split(",") if s.strip()] if sol_raw else None
 
             # Parse cognitive framework fields
             cognitive_framework = request.form.get("cognitive_framework", "").strip() or None
@@ -1175,6 +1187,7 @@ def register_routes(app):
     def api_audit_log():
         """Return the API call audit log for transparency reporting."""
         from src.llm_provider import get_api_audit_log
+
         return jsonify(get_api_audit_log())
 
     @app.route("/api/audit-log/clear", methods=["POST"])
@@ -1182,6 +1195,7 @@ def register_routes(app):
     def clear_audit_log():
         """Clear the API call audit log."""
         from src.llm_provider import clear_api_audit_log
+
         clear_api_audit_log()
         return jsonify({"status": "cleared"})
 
@@ -1211,11 +1225,13 @@ def register_routes(app):
 
         # Mock provider: instant success
         if provider_name == "mock":
-            return jsonify({
-                "success": True,
-                "message": "Mock provider always available",
-                "latency_ms": 0,
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Mock provider always available",
+                    "latency_ms": 0,
+                }
+            )
 
         # Build temporary config (do NOT save)
         temp_config = {
@@ -1253,11 +1269,13 @@ def register_routes(app):
             response = provider.generate(["Say hello in one sentence."])
             elapsed_ms = int((time.time() - start) * 1000)
 
-            return jsonify({
-                "success": True,
-                "message": f"Connected successfully ({elapsed_ms}ms)",
-                "latency_ms": elapsed_ms,
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "message": f"Connected successfully ({elapsed_ms}ms)",
+                    "latency_ms": elapsed_ms,
+                }
+            )
         except Exception as e:
             error_msg = str(e)
             # Add helpful context for common errors
@@ -1267,18 +1285,24 @@ def register_routes(app):
             elif "403" in error_msg or "forbidden" in lower_msg:
                 error_msg += " -- Your API key may not have permission for this model. Check your account settings."
             elif "404" in error_msg or "not found" in lower_msg:
-                error_msg += " -- The model name may be incorrect. Check the model name in your provider's documentation."
+                error_msg += (
+                    " -- The model name may be incorrect. Check the model name in your provider's documentation."
+                )
             elif "429" in error_msg or "rate" in lower_msg or "quota" in lower_msg:
                 error_msg += " -- You've hit a rate limit or quota. Wait a moment and try again, or check your billing."
             elif "timeout" in lower_msg or "timed out" in lower_msg:
                 error_msg += " -- The provider took too long to respond. Check your internet connection."
             elif "connection" in lower_msg or "refused" in lower_msg:
-                error_msg += " -- Could not reach the provider. Check your internet connection and the API endpoint URL."
-            return jsonify({
-                "success": False,
-                "message": error_msg,
-                "latency_ms": 0,
-            })
+                error_msg += (
+                    " -- Could not reach the provider. Check your internet connection and the API endpoint URL."
+                )
+            return jsonify(
+                {
+                    "success": False,
+                    "message": error_msg,
+                    "latency_ms": 0,
+                }
+            )
         finally:
             # Restore env vars
             for key, val in old_env.items():
@@ -1312,15 +1336,17 @@ def register_routes(app):
         for ss in study_sets:
             class_obj = get_class(session, ss.class_id) if ss.class_id else None
             card_count = session.query(StudyCard).filter_by(study_set_id=ss.id).count()
-            set_data.append({
-                "id": ss.id,
-                "title": ss.title,
-                "material_type": ss.material_type,
-                "status": ss.status,
-                "class_name": class_obj.name if class_obj else "N/A",
-                "card_count": card_count,
-                "created_at": ss.created_at,
-            })
+            set_data.append(
+                {
+                    "id": ss.id,
+                    "title": ss.title,
+                    "material_type": ss.material_type,
+                    "status": ss.status,
+                    "class_name": class_obj.name if class_obj else "N/A",
+                    "card_count": card_count,
+                    "created_at": ss.created_at,
+                }
+            )
 
         classes = list_classes(session)
         return render_template(
@@ -1421,14 +1447,16 @@ def register_routes(app):
                     card_data = {}
             if not isinstance(card_data, dict):
                 card_data = {}
-            parsed_cards.append({
-                "id": card.id,
-                "card_type": card.card_type,
-                "sort_order": card.sort_order,
-                "front": card.front,
-                "back": card.back,
-                "data": card_data,
-            })
+            parsed_cards.append(
+                {
+                    "id": card.id,
+                    "card_type": card.card_type,
+                    "sort_order": card.sort_order,
+                    "front": card.front,
+                    "back": card.back,
+                    "data": card_data,
+                }
+            )
 
         return render_template(
             "study/detail.html",
@@ -1526,11 +1554,16 @@ def register_routes(app):
         if "data" in payload:
             card.data = json.dumps(payload["data"]) if isinstance(payload["data"], dict) else payload["data"]
         session.commit()
-        return jsonify({"ok": True, "card": {
-            "id": card.id,
-            "front": card.front,
-            "back": card.back,
-        }})
+        return jsonify(
+            {
+                "ok": True,
+                "card": {
+                    "id": card.id,
+                    "front": card.front,
+                    "back": card.back,
+                },
+            }
+        )
 
     @app.route("/api/study-cards/<int:card_id>", methods=["DELETE"])
     @login_required
@@ -1558,10 +1591,14 @@ def register_routes(app):
         if not card_ids:
             return jsonify({"ok": False, "error": "No card_ids provided"}), 400
 
-        cards = session.query(StudyCard).filter(
-            StudyCard.study_set_id == study_set_id,
-            StudyCard.id.in_(card_ids),
-        ).all()
+        cards = (
+            session.query(StudyCard)
+            .filter(
+                StudyCard.study_set_id == study_set_id,
+                StudyCard.id.in_(card_ids),
+            )
+            .all()
+        )
         card_map = {c.id: c for c in cards}
         for i, cid in enumerate(card_ids):
             if cid in card_map:
@@ -1574,12 +1611,7 @@ def register_routes(app):
     def api_class_quizzes(class_id):
         """Return quizzes for a class as JSON (used by study generate form)."""
         session = _get_session()
-        quizzes = (
-            session.query(Quiz)
-            .filter_by(class_id=class_id)
-            .order_by(Quiz.created_at.desc())
-            .all()
-        )
+        quizzes = session.query(Quiz).filter_by(class_id=class_id).order_by(Quiz.created_at.desc()).all()
         result = []
         for q in quizzes:
             q_count = len(q.questions) if q.questions else 0
@@ -1594,14 +1626,16 @@ def register_routes(app):
                     except (json.JSONDecodeError, TypeError):
                         sp = {}
                 standards = sp.get("sol_standards", []) or []
-            result.append({
-                "id": q.id,
-                "title": q.title or f"Quiz #{q.id}",
-                "question_count": q_count,
-                "date": date_str,
-                "standards": standards[:3],
-                "reading_level": q.reading_level or "",
-            })
+            result.append(
+                {
+                    "id": q.id,
+                    "title": q.title or f"Quiz #{q.id}",
+                    "question_count": q_count,
+                    "date": date_str,
+                    "standards": standards[:3],
+                    "reading_level": q.reading_level or "",
+                }
+            )
         return jsonify(result)
 
     # --- Question Bank ---
@@ -1635,15 +1669,17 @@ def register_routes(app):
             if not isinstance(data, dict):
                 data = {}
             quiz = session.query(Quiz).filter_by(id=q.quiz_id).first() if q.quiz_id else None
-            parsed.append({
-                "id": q.id,
-                "type": q.question_type,
-                "text": q.text,
-                "points": q.points,
-                "data": data,
-                "quiz_title": quiz.title if quiz else "N/A",
-                "quiz_id": q.quiz_id,
-            })
+            parsed.append(
+                {
+                    "id": q.id,
+                    "type": q.question_type,
+                    "text": q.text,
+                    "points": q.points,
+                    "data": data,
+                    "quiz_title": quiz.title if quiz else "N/A",
+                    "quiz_id": q.quiz_id,
+                }
+            )
 
         return render_template(
             "question_bank.html",
@@ -1761,23 +1797,20 @@ def register_routes(app):
         if not quiz:
             abort(404)
 
-        variants = (
-            session.query(Quiz)
-            .filter_by(parent_quiz_id=quiz_id)
-            .order_by(Quiz.created_at.desc())
-            .all()
-        )
+        variants = session.query(Quiz).filter_by(parent_quiz_id=quiz_id).order_by(Quiz.created_at.desc()).all()
         variant_data = []
         for v in variants:
             question_count = session.query(Question).filter_by(quiz_id=v.id).count()
-            variant_data.append({
-                "id": v.id,
-                "title": v.title,
-                "reading_level": v.reading_level,
-                "status": v.status,
-                "question_count": question_count,
-                "created_at": v.created_at,
-            })
+            variant_data.append(
+                {
+                    "id": v.id,
+                    "title": v.title,
+                    "reading_level": v.reading_level,
+                    "status": v.status,
+                    "question_count": question_count,
+                    "created_at": v.created_at,
+                }
+            )
 
         return render_template(
             "quizzes/variants.html",
@@ -1864,13 +1897,15 @@ def register_routes(app):
                     levels = []
             if not isinstance(levels, list):
                 levels = []
-            parsed_criteria.append({
-                "id": c.id,
-                "criterion": c.criterion,
-                "description": c.description,
-                "max_points": c.max_points,
-                "levels": levels,
-            })
+            parsed_criteria.append(
+                {
+                    "id": c.id,
+                    "criterion": c.criterion,
+                    "description": c.description,
+                    "max_points": c.max_points,
+                    "levels": levels,
+                }
+            )
 
         total_points = sum(c.max_points or 0 for c in criteria)
 
@@ -1986,12 +2021,7 @@ def register_routes(app):
         if not class_obj:
             abort(404)
 
-        quizzes = (
-            session.query(Quiz)
-            .filter_by(class_id=class_id)
-            .order_by(Quiz.created_at.desc())
-            .all()
-        )
+        quizzes = session.query(Quiz).filter_by(class_id=class_id).order_by(Quiz.created_at.desc()).all()
 
         if request.method == "POST":
             csv_file = request.files.get("csv_file")
@@ -2027,9 +2057,7 @@ def register_routes(app):
                     errors=errors,
                 )
             if count > 0:
-                return redirect(
-                    url_for("analytics_dashboard", class_id=class_id), code=303
-                )
+                return redirect(url_for("analytics_dashboard", class_id=class_id), code=303)
 
             return render_template(
                 "analytics/import.html",
@@ -2087,6 +2115,7 @@ def register_routes(app):
                 ), 400
 
             from datetime import datetime as dt
+
             parsed_date = date.today()
             if date_raw:
                 try:
@@ -2096,11 +2125,7 @@ def register_routes(app):
 
             sample_size = int(sample_size_raw) if sample_size_raw.isdigit() else 0
 
-            weak_areas = (
-                [w.strip() for w in weak_areas_raw.split(";") if w.strip()]
-                if weak_areas_raw
-                else []
-            )
+            weak_areas = [w.strip() for w in weak_areas_raw.split(";") if w.strip()] if weak_areas_raw else []
 
             record = PerformanceData(
                 class_id=class_id,
@@ -2116,9 +2141,7 @@ def register_routes(app):
             session.commit()
 
             flash("Score saved successfully.", "success")
-            return redirect(
-                url_for("analytics_dashboard", class_id=class_id), code=303
-            )
+            return redirect(url_for("analytics_dashboard", class_id=class_id), code=303)
 
         return render_template(
             "analytics/manual_entry.html",
@@ -2136,12 +2159,7 @@ def register_routes(app):
         if not class_obj:
             abort(404)
 
-        quizzes = (
-            session.query(Quiz)
-            .filter_by(class_id=class_id)
-            .order_by(Quiz.created_at.desc())
-            .all()
-        )
+        quizzes = session.query(Quiz).filter_by(class_id=class_id).order_by(Quiz.created_at.desc()).all()
 
         if request.method == "POST":
             quiz_id = request.form.get("quiz_id", type=int)
@@ -2160,6 +2178,7 @@ def register_routes(app):
             sample_size = int(sample_size_raw) if sample_size_raw.isdigit() else 0
 
             from datetime import datetime as dt
+
             score_date = date.today()
             if date_raw:
                 try:
@@ -2188,14 +2207,10 @@ def register_routes(app):
                     error="Please enter at least one question score.",
                 ), 400
 
-            count = import_quiz_scores(
-                session, class_id, quiz_id, question_scores, sample_size, score_date
-            )
+            count = import_quiz_scores(session, class_id, quiz_id, question_scores, sample_size, score_date)
 
             flash(f"Imported {count} performance record(s) from quiz scores.", "success")
-            return redirect(
-                url_for("analytics_dashboard", class_id=class_id), code=303
-            )
+            return redirect(url_for("analytics_dashboard", class_id=class_id), code=303)
 
         return render_template(
             "analytics/quiz_scores.html",
@@ -2209,18 +2224,14 @@ def register_routes(app):
     def api_quiz_questions(quiz_id):
         """Return quiz questions as JSON (for quiz score entry form)."""
         session = _get_session()
-        questions = (
-            session.query(Question)
-            .filter_by(quiz_id=quiz_id)
-            .order_by(Question.sort_order, Question.id)
-            .all()
+        questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
+        return jsonify(
+            {
+                "questions": [
+                    {"id": q.id, "text": q.text or f"Question #{q.id}", "type": q.question_type} for q in questions
+                ]
+            }
         )
-        return jsonify({
-            "questions": [
-                {"id": q.id, "text": q.text or f"Question #{q.id}", "type": q.question_type}
-                for q in questions
-            ]
-        })
 
     @app.route("/classes/<int:class_id>/analytics/reteach", methods=["GET", "POST"])
     @login_required
@@ -2239,16 +2250,14 @@ def register_routes(app):
 
         if request.method == "POST":
             focus_raw = request.form.get("focus_topics", "").strip()
-            focus_topics = (
-                [t.strip() for t in focus_raw.split(",") if t.strip()]
-                if focus_raw
-                else None
-            )
+            focus_topics = [t.strip() for t in focus_raw.split(",") if t.strip()] if focus_raw else None
             max_suggestions = int(request.form.get("max_suggestions", 5))
             provider_override = request.form.get("provider", "").strip() or None
 
             suggestions = generate_reteach_suggestions(
-                session, class_id, config,
+                session,
+                class_id,
+                config,
                 focus_topics=focus_topics,
                 max_suggestions=max_suggestions,
                 provider_name=provider_override,
@@ -2284,10 +2293,12 @@ def register_routes(app):
         gap_data = compute_gap_analysis(session, class_id)
         summary = get_class_summary(session, class_id)
 
-        return jsonify({
-            "gap_data": gap_data,
-            "summary": summary,
-        })
+        return jsonify(
+            {
+                "gap_data": gap_data,
+                "summary": summary,
+            }
+        )
 
     @app.route("/api/classes/<int:class_id>/analytics/trends")
     @login_required
@@ -2528,20 +2539,22 @@ def register_routes(app):
             grade_band=grade_band or None,
             standard_set=standard_set or None,
         )
-        return jsonify({
-            "results": [
-                {
-                    "id": std.id,
-                    "code": std.code,
-                    "description": std.description,
-                    "subject": std.subject,
-                    "grade_band": std.grade_band,
-                    "strand": std.strand,
-                    "standard_set": std.standard_set or "sol",
-                }
-                for std in results[:20]  # Limit autocomplete results
-            ]
-        })
+        return jsonify(
+            {
+                "results": [
+                    {
+                        "id": std.id,
+                        "code": std.code,
+                        "description": std.description,
+                        "subject": std.subject,
+                        "grade_band": std.grade_band,
+                        "strand": std.strand,
+                        "standard_set": std.standard_set or "sol",
+                    }
+                    for std in results[:20]  # Limit autocomplete results
+                ]
+            }
+        )
 
     @app.route("/settings/standards", methods=["POST"])
     @login_required
@@ -2571,6 +2584,7 @@ def register_routes(app):
         """List lesson plans, optionally filtered by class or search."""
         session = _get_session()
         from src.database import LessonPlan
+
         query = session.query(LessonPlan)
 
         class_id_filter = request.args.get("class_id", type=int)
@@ -2591,15 +2605,17 @@ def register_routes(app):
                     topics_list = json.loads(lp.topics) if isinstance(lp.topics, str) else lp.topics
                 except (json.JSONDecodeError, ValueError):
                     topics_list = []
-            plan_data.append({
-                "id": lp.id,
-                "title": lp.title,
-                "status": lp.status,
-                "class_name": class_obj.name if class_obj else "N/A",
-                "topics": ", ".join(topics_list) if topics_list else "",
-                "duration_minutes": lp.duration_minutes,
-                "created_at": lp.created_at,
-            })
+            plan_data.append(
+                {
+                    "id": lp.id,
+                    "title": lp.title,
+                    "status": lp.status,
+                    "class_name": class_obj.name if class_obj else "N/A",
+                    "topics": ", ".join(topics_list) if topics_list else "",
+                    "duration_minutes": lp.duration_minutes,
+                    "created_at": lp.created_at,
+                }
+            )
 
         classes = list_classes(session)
         return render_template(
@@ -2648,6 +2664,7 @@ def register_routes(app):
             standards = [s.strip() for s in standards_str.split(",") if s.strip()] if standards_str else None
 
             from src.lesson_plan_generator import generate_lesson_plan
+
             try:
                 plan = generate_lesson_plan(
                     session,
@@ -2693,6 +2710,7 @@ def register_routes(app):
         """Show lesson plan detail with all sections."""
         session = _get_session()
         from src.database import LessonPlan
+
         plan = session.query(LessonPlan).filter_by(id=plan_id).first()
         if not plan:
             abort(404)
@@ -2743,6 +2761,7 @@ def register_routes(app):
         """Save edits to a single plan section."""
         session = _get_session()
         from src.database import LessonPlan
+
         plan = session.query(LessonPlan).filter_by(id=plan_id).first()
         if not plan:
             abort(404)
@@ -2774,16 +2793,19 @@ def register_routes(app):
         """Export a lesson plan as PDF or DOCX."""
         session = _get_session()
         from src.database import LessonPlan
+
         plan = session.query(LessonPlan).filter_by(id=plan_id).first()
         if not plan:
             abort(404)
 
         import re
+
         safe_title = re.sub(r"[^\w\s\-]", "", plan.title or "lesson_plan")
         safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "lesson_plan"
 
         if format_name == "pdf":
             from src.lesson_plan_export import export_lesson_plan_pdf
+
             buf = export_lesson_plan_pdf(plan)
             return send_file(
                 buf,
@@ -2793,6 +2815,7 @@ def register_routes(app):
             )
         elif format_name == "docx":
             from src.lesson_plan_export import export_lesson_plan_docx
+
             buf = export_lesson_plan_docx(plan)
             return send_file(
                 buf,
@@ -2809,6 +2832,7 @@ def register_routes(app):
         """Delete a lesson plan."""
         session = _get_session()
         from src.database import LessonPlan
+
         plan = session.query(LessonPlan).filter_by(id=plan_id).first()
         if not plan:
             abort(404)
@@ -2824,6 +2848,7 @@ def register_routes(app):
         """Redirect to quiz generation with pre-filled topics/standards from plan."""
         session = _get_session()
         from src.database import LessonPlan
+
         plan = session.query(LessonPlan).filter_by(id=plan_id).first()
         if not plan:
             abort(404)
@@ -2842,13 +2867,16 @@ def register_routes(app):
             except (json.JSONDecodeError, ValueError):
                 pass
 
-        return redirect(url_for(
-            "generate_quiz",
-            class_id=plan.class_id,
-            topics=",".join(topics) if topics else "",
-            standards=",".join(standards) if standards else "",
-            lesson_plan_id=plan.id,
-        ), code=303)
+        return redirect(
+            url_for(
+                "generate_quiz",
+                class_id=plan.class_id,
+                topics=",".join(topics) if topics else "",
+                standards=",".join(standards) if standards else "",
+                lesson_plan_id=plan.id,
+            ),
+            code=303,
+        )
 
     # --- Quiz Template Routes ---
 
@@ -2857,12 +2885,7 @@ def register_routes(app):
     def quiz_template_list():
         """Browse imported quiz templates."""
         session = _get_session()
-        imported_quizzes = (
-            session.query(Quiz)
-            .filter_by(status="imported")
-            .order_by(Quiz.created_at.desc())
-            .all()
-        )
+        imported_quizzes = session.query(Quiz).filter_by(status="imported").order_by(Quiz.created_at.desc()).all()
 
         templates = []
         for q in imported_quizzes:
@@ -2872,14 +2895,16 @@ def register_routes(app):
                 class_obj = get_class(session, q.class_id)
                 if class_obj:
                     class_name = class_obj.name
-            templates.append({
-                "id": q.id,
-                "title": q.title,
-                "status": q.status,
-                "class_name": class_name,
-                "question_count": question_count,
-                "created_at": q.created_at,
-            })
+            templates.append(
+                {
+                    "id": q.id,
+                    "title": q.title,
+                    "status": q.status,
+                    "class_name": class_name,
+                    "question_count": question_count,
+                    "created_at": q.created_at,
+                }
+            )
 
         return render_template("quiz_templates/list.html", templates=templates)
 

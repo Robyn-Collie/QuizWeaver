@@ -13,15 +13,19 @@ from datetime import date
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, PerformanceData,
-    get_engine, get_session,
+    Base,
+    Class,
+    PerformanceData,
+    Question,
+    Quiz,
+    get_engine,
+    get_session,
 )
 from src.performance_import import (
-    parse_performance_csv,
-    validate_csv_row,
+    get_sample_csv,
     import_csv_data,
     import_quiz_scores,
-    get_sample_csv,
+    parse_performance_csv,
 )
 
 
@@ -55,16 +59,18 @@ def db_session():
         q = Question(
             quiz_id=quiz.id,
             question_type="mc",
-            title=f"Q{i+1}",
-            text=f"Question about topic {i+1}?",
+            title=f"Q{i + 1}",
+            text=f"Question about topic {i + 1}?",
             points=5.0,
             sort_order=i,
-            data=json.dumps({
-                "type": "mc",
-                "topic": f"topic_{i+1}",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "topic": f"topic_{i + 1}",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                }
+            ),
         )
         session.add(q)
     session.commit()

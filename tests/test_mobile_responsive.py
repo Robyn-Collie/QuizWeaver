@@ -6,8 +6,8 @@ responsive table classes, and mobile breakpoint coverage.
 """
 
 import os
-import json
 import tempfile
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session
@@ -27,6 +27,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -56,13 +57,14 @@ def client(app):
 def _read_css(app):
     """Read the main CSS file content."""
     css_path = os.path.join(app.static_folder, "css", "style.css")
-    with open(css_path, "r") as f:
+    with open(css_path) as f:
         return f.read()
 
 
 # ============================================================
 # CSS Responsive Rules
 # ============================================================
+
 
 class TestResponsiveCSS:
     """Test that responsive CSS rules are present in style.css."""
@@ -141,6 +143,7 @@ class TestResponsiveCSS:
 # Viewport Meta Tag
 # ============================================================
 
+
 class TestViewportMeta:
     """Test that the viewport meta tag is present in base template."""
 
@@ -167,6 +170,7 @@ class TestViewportMeta:
 # ============================================================
 # Responsive Template Elements
 # ============================================================
+
 
 class TestResponsiveTemplates:
     """Test that templates include responsive helper elements."""

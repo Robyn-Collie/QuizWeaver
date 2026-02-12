@@ -17,9 +17,24 @@ BLOOMS_LEVELS = [
 
 DOK_LEVELS = [
     {"number": 1, "name": "Recall", "description": "Basic recall of facts, terms, or procedures", "color": "#3B82F6"},
-    {"number": 2, "name": "Skill/Concept", "description": "Use of information, conceptual knowledge", "color": "#10B981"},
-    {"number": 3, "name": "Strategic Thinking", "description": "Reasoning, planning, using evidence", "color": "#F59E0B"},
-    {"number": 4, "name": "Extended Thinking", "description": "Complex reasoning over time, real-world applications", "color": "#EF4444"},
+    {
+        "number": 2,
+        "name": "Skill/Concept",
+        "description": "Use of information, conceptual knowledge",
+        "color": "#10B981",
+    },
+    {
+        "number": 3,
+        "name": "Strategic Thinking",
+        "description": "Reasoning, planning, using evidence",
+        "color": "#F59E0B",
+    },
+    {
+        "number": 4,
+        "name": "Extended Thinking",
+        "description": "Complex reasoning over time, real-world applications",
+        "color": "#EF4444",
+    },
 ]
 
 QUESTION_TYPES = ["mc", "tf", "fill_in_blank", "short_answer", "matching", "essay"]

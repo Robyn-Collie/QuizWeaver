@@ -5,13 +5,14 @@ Verifies that quiz dropdowns show richer metadata (question count, date,
 standards) in the API endpoint and in server-rendered templates.
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
 from datetime import datetime
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+import pytest
+
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -39,11 +40,13 @@ def app():
         title="Cell Division Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "9th Grade",
-            "sol_standards": ["BIO.1", "BIO.2"],
-            "num_questions": 10,
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "9th Grade",
+                "sol_standards": ["BIO.1", "BIO.2"],
+                "num_questions": 10,
+            }
+        ),
         created_at=datetime(2026, 1, 15, 10, 0, 0),
     )
     session.add(quiz1)
@@ -56,10 +59,12 @@ def app():
             text=f"Question {i + 1} about cell division?",
             question_type="mc",
             points=2,
-            data=json.dumps({
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-            }),
+            data=json.dumps(
+                {
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                }
+            ),
         )
         session.add(q)
 
@@ -67,10 +72,12 @@ def app():
         title="Photosynthesis Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "9th Grade",
-            "sol_standards": ["BIO.3"],
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "9th Grade",
+                "sol_standards": ["BIO.3"],
+            }
+        ),
         created_at=datetime(2026, 2, 1, 14, 30, 0),
     )
     session.add(quiz2)
@@ -83,10 +90,12 @@ def app():
             text=f"Question {i + 1} about photosynthesis?",
             question_type="mc",
             points=1,
-            data=json.dumps({
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 1,
-            }),
+            data=json.dumps(
+                {
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 1,
+                }
+            ),
         )
         session.add(q)
 

@@ -6,7 +6,7 @@ import unittest
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import sanitize_filename, pdf_wrap_text
+from src.export_utils import pdf_wrap_text, sanitize_filename
 
 
 class TestSanitizeFilename(unittest.TestCase):

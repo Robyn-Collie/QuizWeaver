@@ -32,35 +32,35 @@ import yaml
 # Ensure project root is on sys.path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import (
-    Class,
-    LessonLog,
-    Quiz,
-    Question,
-    get_engine,
-    get_session,
-    init_db,
-)
 from src.classroom import (
     create_class,
     delete_class,
     set_active_class,
 )
-from src.lesson_tracker import (
-    log_lesson,
-    list_lessons,
-    get_recent_lessons,
-)
 from src.cost_tracking import (
-    log_api_call,
-    get_cost_summary,
     format_cost_report,
+    get_cost_summary,
+    log_api_call,
 )
-
+from src.database import (
+    Class,
+    LessonLog,
+    Question,
+    Quiz,
+    get_engine,
+    get_session,
+    init_db,
+)
+from src.lesson_tracker import (
+    get_recent_lessons,
+    list_lessons,
+    log_lesson,
+)
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def db():
@@ -98,9 +98,7 @@ def tmp_config():
 
     Yields the file path. The file is removed after the test.
     """
-    tmp = tempfile.NamedTemporaryFile(
-        suffix=".yaml", delete=False, mode="w", encoding="utf-8"
-    )
+    tmp = tempfile.NamedTemporaryFile(suffix=".yaml", delete=False, mode="w", encoding="utf-8")
     yaml.dump({"llm": {"provider": "mock"}, "paths": {}}, tmp, default_flow_style=False)
     tmp.close()
 
@@ -136,6 +134,7 @@ def tmp_cost_log():
 # Classroom Module Tests - Targeted Gaps
 # ---------------------------------------------------------------------------
 
+
 def test_delete_class_with_quizzes(db):
     """
     Test that deleting a class with associated quizzes sets quiz.class_id to NULL.
@@ -161,7 +160,7 @@ def test_delete_class_with_quizzes(db):
         title="Q1",
         text="What is photosynthesis?",
         points=1.0,
-        data=json.dumps({"options": ["A", "B", "C"], "correct_index": 0})
+        data=json.dumps({"options": ["A", "B", "C"], "correct_index": 0}),
     )
     session.add(question)
     session.commit()
@@ -233,7 +232,7 @@ def test_set_active_class_with_invalid_id(tmp_config):
     assert result is True, "set_active_class should return True (writes to config)"
 
     # Read config and verify the invalid ID was written
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     assert config.get("active_class_id") == 9999, "Invalid class_id should be written to config"
@@ -242,7 +241,7 @@ def test_set_active_class_with_invalid_id(tmp_config):
     result = set_active_class(config_path, -1)
     assert result is True, "set_active_class should return True for negative ID"
 
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         config = yaml.safe_load(f)
 
     assert config.get("active_class_id") == -1, "Negative class_id should be written to config"
@@ -253,6 +252,7 @@ def test_set_active_class_with_invalid_id(tmp_config):
 # ---------------------------------------------------------------------------
 # Lesson Tracker Module Tests - Targeted Gaps
 # ---------------------------------------------------------------------------
+
 
 def test_log_lesson_with_empty_content(db):
     """
@@ -397,6 +397,7 @@ def test_get_recent_lessons_with_negative_days(db):
 # Cost Tracking Module Tests - Targeted Gaps
 # ---------------------------------------------------------------------------
 
+
 def test_log_cost_with_negative_values(tmp_cost_log):
     """
     Test logging API call with negative token counts.
@@ -497,12 +498,8 @@ def test_format_cost_report_with_high_cost():
         "total_cost": 10.50,
         "total_input_tokens": 500000,
         "total_output_tokens": 250000,
-        "by_provider": {
-            "gemini": {"calls": 100, "cost": 10.50}
-        },
-        "by_day": {
-            "2026-02-06": {"calls": 100, "cost": 10.50}
-        },
+        "by_provider": {"gemini": {"calls": 100, "cost": 10.50}},
+        "by_day": {"2026-02-06": {"calls": 100, "cost": 10.50}},
     }
 
     report = format_cost_report(high_cost_summary)

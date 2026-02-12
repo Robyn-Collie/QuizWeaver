@@ -7,11 +7,11 @@ injected via context processor, and present in key templates.
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine, get_session
 from src.web.tooltip_data import AI_TOOLTIPS
-
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 

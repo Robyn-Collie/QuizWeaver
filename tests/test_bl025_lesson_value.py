@@ -1,8 +1,9 @@
 """Tests for BL-025: Add lesson logging value explanation."""
 
+import json
 import os
 import tempfile
-import json
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session

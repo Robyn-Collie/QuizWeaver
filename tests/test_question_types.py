@@ -14,24 +14,23 @@ import tempfile
 
 import pytest
 
-from src.database import Base, Quiz, Question, Class, get_engine, init_db, get_session
+from src.database import Class, Question, Quiz, get_engine, get_session, init_db
 from src.export import (
-    normalize_question,
+    _format_options_csv,
+    _gift_ordering,
+    _gift_short_answer,
     export_csv,
     export_docx,
     export_gift,
     export_pdf,
-    _format_options_csv,
-    _gift_ordering,
-    _gift_short_answer,
-    _escape_gift,
+    normalize_question,
 )
 from src.mock_responses import get_generator_response
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_session():
@@ -122,6 +121,7 @@ def short_answer_question(db_session):
 # Mock Response Tests
 # ---------------------------------------------------------------------------
 
+
 class TestMockResponses:
     """Test that mock responses include new question types."""
 
@@ -183,6 +183,7 @@ class TestMockResponses:
 # Normalization Tests
 # ---------------------------------------------------------------------------
 
+
 class TestNormalization:
     """Test normalize_question handles new types correctly."""
 
@@ -215,6 +216,7 @@ class TestNormalization:
 # ---------------------------------------------------------------------------
 # CSV Export Tests
 # ---------------------------------------------------------------------------
+
 
 class TestCSVExport:
     """Test CSV export for new question types."""
@@ -257,6 +259,7 @@ class TestCSVExport:
 # DOCX Export Tests
 # ---------------------------------------------------------------------------
 
+
 class TestDOCXExport:
     """Test DOCX export for new question types."""
 
@@ -279,6 +282,7 @@ class TestDOCXExport:
 # ---------------------------------------------------------------------------
 # GIFT Export Tests
 # ---------------------------------------------------------------------------
+
 
 class TestGIFTExport:
     """Test GIFT export for new question types."""
@@ -337,6 +341,7 @@ class TestGIFTExport:
 # ---------------------------------------------------------------------------
 # PDF Export Tests
 # ---------------------------------------------------------------------------
+
 
 class TestPDFExport:
     """Test PDF export for new question types."""

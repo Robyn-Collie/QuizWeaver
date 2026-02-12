@@ -12,7 +12,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from src.database import Quiz, Question, Rubric, RubricCriterion
+from src.database import Question, Quiz, Rubric, RubricCriterion
 
 logger = logging.getLogger(__name__)
 
@@ -25,12 +25,7 @@ def _load_quiz_context(session, quiz_id):
     if not quiz:
         return None, None, None
 
-    questions = (
-        session.query(Question)
-        .filter_by(quiz_id=quiz_id)
-        .order_by(Question.sort_order, Question.id)
-        .all()
-    )
+    questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
 
     # Parse style_profile
     style_profile = quiz.style_profile
@@ -54,13 +49,15 @@ def _load_quiz_context(session, quiz_id):
         if not isinstance(data, dict):
             data = {}
 
-        q_data_list.append({
-            "type": q.question_type or data.get("type", "mc"),
-            "text": q.text or data.get("text", ""),
-            "points": q.points or data.get("points", 5),
-            "cognitive_level": data.get("cognitive_level"),
-            "cognitive_framework": data.get("cognitive_framework"),
-        })
+        q_data_list.append(
+            {
+                "type": q.question_type or data.get("type", "mc"),
+                "text": q.text or data.get("text", ""),
+                "points": q.points or data.get("points", 5),
+                "cognitive_level": data.get("cognitive_level"),
+                "cognitive_framework": data.get("cognitive_framework"),
+            }
+        )
 
     return quiz, style_profile, q_data_list
 
@@ -75,7 +72,8 @@ def _parse_criteria(response_text):
         pass
 
     import re
-    match = re.search(r'\[.*\]', response_text, re.DOTALL)
+
+    match = re.search(r"\[.*\]", response_text, re.DOTALL)
     if match:
         try:
             items = json.loads(match.group())
@@ -129,10 +127,12 @@ def generate_rubric(
         quiz_id=quiz_id,
         title=title,
         status="generating",
-        config=json.dumps({
-            "quiz_id": quiz_id,
-            "provider": config.get("llm", {}).get("provider", "mock"),
-        }),
+        config=json.dumps(
+            {
+                "quiz_id": quiz_id,
+                "provider": config.get("llm", {}).get("provider", "mock"),
+            }
+        ),
     )
     session.add(rubric)
     session.commit()
@@ -143,10 +143,7 @@ def generate_rubric(
     if isinstance(standards, list):
         standards = ", ".join(standards)
 
-    prompt = (
-        f"Generate a scoring rubric for the following quiz.\n\n"
-        f"Quiz: {quiz.title}\n"
-    )
+    prompt = f"Generate a scoring rubric for the following quiz.\n\nQuiz: {quiz.title}\n"
     if framework:
         prompt += f"Cognitive Framework: {framework}\n"
     if standards:
@@ -166,14 +163,14 @@ def generate_rubric(
     try:
         provider_name = config.get("llm", {}).get("provider", "mock")
         if provider_name == "mock":
-            from src.mock_responses import get_rubric_response, SCIENCE_TOPICS
+            from src.mock_responses import SCIENCE_TOPICS, get_rubric_response
+
             context_lower = prompt.lower()
             keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
-            response_text = get_rubric_response(
-                q_data_list, style_profile, keywords or None
-            )
+            response_text = get_rubric_response(q_data_list, style_profile, keywords or None)
         else:
             from src.llm_provider import get_provider
+
             provider = get_provider(config, web_mode=True)
             response_text = provider.generate([prompt], json_mode=True)
 

@@ -8,6 +8,7 @@ glass box, deterministic layers, privacy, costs, and source links.
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine, get_session
@@ -126,9 +127,11 @@ class TestAILiteracySection:
         """Section uses empowering, non-intimidating language."""
         response = client.get("/help")
         html = response.data.decode()
-        assert "do not need to be a tech expert" in html.lower() or \
-               "don&#39;t need to be a tech expert" in html.lower() or \
-               "do not need to be a tech expert" in html
+        assert (
+            "do not need to be a tech expert" in html.lower()
+            or "don&#39;t need to be a tech expert" in html.lower()
+            or "do not need to be a tech expert" in html
+        )
 
     def test_source_links_present(self, client):
         """Section includes links to authoritative sources."""
@@ -159,4 +162,4 @@ class TestAILiteracySection:
         """Accordion toggles have aria-expanded for accessibility."""
         response = client.get("/help")
         html = response.data.decode()
-        assert 'aria-expanded' in html
+        assert "aria-expanded" in html

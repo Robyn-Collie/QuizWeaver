@@ -7,25 +7,18 @@ Covers all export formats and material types.
 import csv
 import io
 import json
-import os
-import tempfile
 
-import pytest
 from docx import Document
 
-from src.database import (
-    Base, Class, StudySet, StudyCard,
-    get_engine, get_session,
-)
 from src.study_export import (
-    export_flashcards_tsv,
     export_flashcards_csv,
-    export_study_pdf,
+    export_flashcards_tsv,
     export_study_docx,
+    export_study_pdf,
 )
-
 
 # --- Helpers ---
+
 
 class FakeStudySet:
     def __init__(self, **kw):
@@ -50,12 +43,16 @@ class FakeCard:
 def _flashcard_set():
     study_set = FakeStudySet(material_type="flashcard", title="Test Flashcards")
     cards = [
-        FakeCard(front="What is DNA?", back="Deoxyribonucleic acid",
-                 data=json.dumps({"tags": ["biology", "genetics"]}), sort_order=0),
-        FakeCard(front="What is RNA?", back="Ribonucleic acid",
-                 data=json.dumps({"tags": ["biology"]}), sort_order=1),
-        FakeCard(front="What is ATP?", back="Adenosine triphosphate",
-                 data=json.dumps({"tags": ["energy"]}), sort_order=2),
+        FakeCard(
+            front="What is DNA?",
+            back="Deoxyribonucleic acid",
+            data=json.dumps({"tags": ["biology", "genetics"]}),
+            sort_order=0,
+        ),
+        FakeCard(front="What is RNA?", back="Ribonucleic acid", data=json.dumps({"tags": ["biology"]}), sort_order=1),
+        FakeCard(
+            front="What is ATP?", back="Adenosine triphosphate", data=json.dumps({"tags": ["energy"]}), sort_order=2
+        ),
     ]
     return study_set, cards
 
@@ -63,10 +60,18 @@ def _flashcard_set():
 def _vocab_set():
     study_set = FakeStudySet(material_type="vocabulary", title="Science Vocab")
     cards = [
-        FakeCard(card_type="term", front="Mitosis", back="Cell division producing two identical cells",
-                 data=json.dumps({"example": "Skin cells divide by mitosis.", "part_of_speech": "noun"})),
-        FakeCard(card_type="term", front="Meiosis", back="Cell division producing gametes",
-                 data=json.dumps({"example": "Egg and sperm are made by meiosis.", "part_of_speech": "noun"})),
+        FakeCard(
+            card_type="term",
+            front="Mitosis",
+            back="Cell division producing two identical cells",
+            data=json.dumps({"example": "Skin cells divide by mitosis.", "part_of_speech": "noun"}),
+        ),
+        FakeCard(
+            card_type="term",
+            front="Meiosis",
+            back="Cell division producing gametes",
+            data=json.dumps({"example": "Egg and sperm are made by meiosis.", "part_of_speech": "noun"}),
+        ),
     ]
     return study_set, cards
 
@@ -74,10 +79,18 @@ def _vocab_set():
 def _study_guide_set():
     study_set = FakeStudySet(material_type="study_guide", title="Biology Guide")
     cards = [
-        FakeCard(card_type="section", front="Introduction", back="Biology is the study of life.",
-                 data=json.dumps({"key_points": ["Life requires energy", "Cells are basic units"]})),
-        FakeCard(card_type="section", front="Cell Theory", back="All living things are made of cells.",
-                 data=json.dumps({"key_points": ["Cells come from cells", "Cell is basic unit"]})),
+        FakeCard(
+            card_type="section",
+            front="Introduction",
+            back="Biology is the study of life.",
+            data=json.dumps({"key_points": ["Life requires energy", "Cells are basic units"]}),
+        ),
+        FakeCard(
+            card_type="section",
+            front="Cell Theory",
+            back="All living things are made of cells.",
+            data=json.dumps({"key_points": ["Cells come from cells", "Cell is basic unit"]}),
+        ),
     ]
     return study_set, cards
 
@@ -85,15 +98,24 @@ def _study_guide_set():
 def _review_sheet_set():
     study_set = FakeStudySet(material_type="review_sheet", title="Quick Review")
     cards = [
-        FakeCard(card_type="fact", front="Photosynthesis Equation", back="6CO2 + 6H2O -> C6H12O6 + 6O2",
-                 data=json.dumps({"type": "formula"})),
-        FakeCard(card_type="fact", front="Key Fact", back="Mitochondria are the powerhouse of the cell.",
-                 data=json.dumps({"type": "fact"})),
+        FakeCard(
+            card_type="fact",
+            front="Photosynthesis Equation",
+            back="6CO2 + 6H2O -> C6H12O6 + 6O2",
+            data=json.dumps({"type": "formula"}),
+        ),
+        FakeCard(
+            card_type="fact",
+            front="Key Fact",
+            back="Mitochondria are the powerhouse of the cell.",
+            data=json.dumps({"type": "fact"}),
+        ),
     ]
     return study_set, cards
 
 
 # --- TSV Tests ---
+
 
 class TestTSVExport:
     def test_tsv_no_header(self):
@@ -134,6 +156,7 @@ class TestTSVExport:
 
 # --- CSV Tests ---
 
+
 class TestCSVExport:
     def test_csv_has_header(self):
         study_set, cards = _flashcard_set()
@@ -169,6 +192,7 @@ class TestCSVExport:
 
 # --- PDF Tests ---
 
+
 class TestPDFExport:
     def test_pdf_returns_bytes(self):
         study_set, cards = _flashcard_set()
@@ -198,6 +222,7 @@ class TestPDFExport:
 
 
 # --- DOCX Tests ---
+
 
 class TestDOCXExport:
     def test_docx_returns_bytes(self):

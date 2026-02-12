@@ -5,9 +5,10 @@ Verifies the POST /api/settings/test-provider endpoint and
 the settings page UI additions.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine, get_session

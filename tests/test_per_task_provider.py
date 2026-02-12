@@ -5,12 +5,13 @@ Verifies that all generation forms have a provider dropdown and that
 the provider override is passed through to generation functions.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -46,10 +47,12 @@ def app():
         text="Sample question?",
         question_type="mc",
         points=1,
-        data=json.dumps({
-            "options": ["A", "B", "C", "D"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "options": ["A", "B", "C", "D"],
+                "correct_index": 0,
+            }
+        ),
     )
     session.add(q)
     session.commit()
@@ -114,11 +117,15 @@ class TestStudyGenerateProviderDropdown:
 
     def test_study_generate_passes_provider(self, client):
         """Study generate POST passes provider to generation."""
-        response = client.post("/study/generate", data={
-            "class_id": "1",
-            "material_type": "flashcard",
-            "provider": "mock",
-        }, follow_redirects=True)
+        response = client.post(
+            "/study/generate",
+            data={
+                "class_id": "1",
+                "material_type": "flashcard",
+                "provider": "mock",
+            },
+            follow_redirects=True,
+        )
         # Should succeed (mock provider)
         assert response.status_code == 200
 
@@ -135,10 +142,14 @@ class TestVariantGenerateProviderDropdown:
 
     def test_variant_generate_passes_provider(self, client):
         """Variant generate POST passes provider to generation."""
-        response = client.post("/quizzes/1/generate-variant", data={
-            "reading_level": "on_grade",
-            "provider": "mock",
-        }, follow_redirects=True)
+        response = client.post(
+            "/quizzes/1/generate-variant",
+            data={
+                "reading_level": "on_grade",
+                "provider": "mock",
+            },
+            follow_redirects=True,
+        )
         assert response.status_code == 200
 
 
@@ -154,9 +165,13 @@ class TestRubricGenerateProviderDropdown:
 
     def test_rubric_generate_passes_provider(self, client):
         """Rubric generate POST passes provider to generation."""
-        response = client.post("/quizzes/1/generate-rubric", data={
-            "provider": "mock",
-        }, follow_redirects=True)
+        response = client.post(
+            "/quizzes/1/generate-rubric",
+            data={
+                "provider": "mock",
+            },
+            follow_redirects=True,
+        )
         assert response.status_code == 200
 
 
@@ -172,10 +187,14 @@ class TestReteachProviderDropdown:
 
     def test_reteach_passes_provider(self, client):
         """Reteach POST passes provider to generation."""
-        response = client.post("/classes/1/analytics/reteach", data={
-            "max_suggestions": "3",
-            "provider": "mock",
-        }, follow_redirects=True)
+        response = client.post(
+            "/classes/1/analytics/reteach",
+            data={
+                "max_suggestions": "3",
+                "provider": "mock",
+            },
+            follow_redirects=True,
+        )
         assert response.status_code == 200
 
 
@@ -184,16 +203,12 @@ class TestProviderPartialTemplate:
 
     def test_partial_exists(self):
         """Provider select partial template exists."""
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "templates", "partials", "provider_select.html"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "templates", "partials", "provider_select.html")
         assert os.path.isfile(path)
 
     def test_partial_has_provider_name(self):
         """Provider select partial uses 'provider' as the field name."""
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "templates", "partials", "provider_select.html"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "templates", "partials", "provider_select.html")
         with open(path) as f:
             content = f.read()
         assert 'name="provider"' in content
@@ -206,34 +221,44 @@ class TestGeneratorFunctionsAcceptProviderName:
     def test_study_generator_accepts_provider_name(self):
         """generate_study_material accepts provider_name."""
         import inspect
+
         from src.study_generator import generate_study_material
+
         sig = inspect.signature(generate_study_material)
         assert "provider_name" in sig.parameters
 
     def test_variant_generator_accepts_provider_name(self):
         """generate_variant accepts provider_name."""
         import inspect
+
         from src.variant_generator import generate_variant
+
         sig = inspect.signature(generate_variant)
         assert "provider_name" in sig.parameters
 
     def test_rubric_generator_accepts_provider_name(self):
         """generate_rubric accepts provider_name."""
         import inspect
+
         from src.rubric_generator import generate_rubric
+
         sig = inspect.signature(generate_rubric)
         assert "provider_name" in sig.parameters
 
     def test_reteach_generator_accepts_provider_name(self):
         """generate_reteach_suggestions accepts provider_name."""
         import inspect
+
         from src.reteach_generator import generate_reteach_suggestions
+
         sig = inspect.signature(generate_reteach_suggestions)
         assert "provider_name" in sig.parameters
 
     def test_quiz_generator_accepts_provider_name(self):
         """generate_quiz accepts provider_name (already existed)."""
         import inspect
+
         from src.quiz_generator import generate_quiz
+
         sig = inspect.signature(generate_quiz)
         assert "provider_name" in sig.parameters

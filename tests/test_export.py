@@ -11,23 +11,22 @@ import json
 import os
 import tempfile
 import zipfile
+from datetime import datetime
 
 import pytest
 from docx import Document
-from datetime import datetime
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 from src.export import (
-    normalize_question,
+    _escape_gift,
+    _sanitize_filename,
     export_csv,
     export_docx,
     export_gift,
     export_pdf,
     export_qti,
-    _escape_gift,
-    _sanitize_filename,
+    normalize_question,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -219,10 +218,12 @@ class TestNormalizeQuestion:
         q = _make_question(
             question_type="mc",
             text="Question?",
-            data=json.dumps({
-                "options": ["A", "B"],
-                "correct_index": 0,
-            }),
+            data=json.dumps(
+                {
+                    "options": ["A", "B"],
+                    "correct_index": 0,
+                }
+            ),
         )
         nq = normalize_question(q, 0)
         assert nq["options"] == ["A", "B"]
@@ -272,8 +273,14 @@ class TestExportCSV:
         reader = csv.reader(io.StringIO(result))
         headers = next(reader)
         assert headers == [
-            "#", "Type", "Question", "Options", "Correct Answer",
-            "Points", "Cognitive Level", "Framework",
+            "#",
+            "Type",
+            "Question",
+            "Options",
+            "Correct Answer",
+            "Points",
+            "Cognitive Level",
+            "Framework",
         ]
 
     def test_csv_mc_row(self):
@@ -391,18 +398,24 @@ class TestExportDOCX:
     def test_style_profile_info(self):
         quiz = _make_quiz(
             title="Test",
-            style_profile=json.dumps({
+            style_profile=json.dumps(
+                {
+                    "sol_standards": ["SOL 7.1"],
+                    "cognitive_framework": "blooms",
+                    "difficulty": 3,
+                }
+            ),
+        )
+        q = _make_question(question_type="mc", text="Q?", data={"options": ["A"], "correct_index": 0})
+        buf = export_docx(
+            quiz,
+            [q],
+            style_profile={
                 "sol_standards": ["SOL 7.1"],
                 "cognitive_framework": "blooms",
                 "difficulty": 3,
-            }),
+            },
         )
-        q = _make_question(question_type="mc", text="Q?", data={"options": ["A"], "correct_index": 0})
-        buf = export_docx(quiz, [q], style_profile={
-            "sol_standards": ["SOL 7.1"],
-            "cognitive_framework": "blooms",
-            "difficulty": 3,
-        })
         doc = Document(buf)
         text = "\n".join(p.text for p in doc.paragraphs)
         assert "SOL 7.1" in text
@@ -668,13 +681,15 @@ def app():
         title="Export Test Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "8th Grade",
-            "sol_standards": ["SOL 8.1"],
-            "cognitive_framework": "blooms",
-            "difficulty": 3,
-            "provider": "mock",
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "8th Grade",
+                "sol_standards": ["SOL 8.1"],
+                "cognitive_framework": "blooms",
+                "difficulty": 3,
+                "provider": "mock",
+            }
+        ),
     )
     session.add(quiz)
     session.commit()
@@ -685,13 +700,15 @@ def app():
         title="Q1",
         text="What is photosynthesis?",
         points=5.0,
-        data=json.dumps({
-            "type": "mc",
-            "options": ["A process", "A disease", "A planet", "A tool"],
-            "correct_index": 0,
-            "cognitive_level": "Remember",
-            "cognitive_framework": "blooms",
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "options": ["A process", "A disease", "A planet", "A tool"],
+                "correct_index": 0,
+                "cognitive_level": "Remember",
+                "cognitive_framework": "blooms",
+            }
+        ),
     )
     q2 = Question(
         quiz_id=quiz.id,
@@ -699,10 +716,12 @@ def app():
         title="Q2",
         text="Plants need sunlight.",
         points=5.0,
-        data=json.dumps({
-            "type": "tf",
-            "correct_answer": "True",
-        }),
+        data=json.dumps(
+            {
+                "type": "tf",
+                "correct_answer": "True",
+            }
+        ),
     )
     session.add(q1)
     session.add(q2)

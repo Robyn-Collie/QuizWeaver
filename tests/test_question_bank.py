@@ -5,12 +5,13 @@ Tests the API endpoints for saving/removing questions to/from the bank,
 the question bank page, and the bank toggle on quiz detail.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -42,11 +43,13 @@ def app():
     session.flush()
 
     # Add questions with different types
-    for i, (qtype, text, saved) in enumerate([
-        ("mc", "What is photosynthesis?", 0),
-        ("tf", "The sun is a star.", 1),  # Already saved
-        ("mc", "What is mitosis?", 0),
-    ]):
+    for i, (qtype, text, saved) in enumerate(
+        [
+            ("mc", "What is photosynthesis?", 0),
+            ("tf", "The sun is a star.", 1),  # Already saved
+            ("mc", "What is mitosis?", 0),
+        ]
+    ):
         q = Question(
             quiz_id=quiz.id,
             question_type=qtype,
@@ -102,6 +105,7 @@ def _get_question_ids(app):
 
 # --- API: Add to Bank ---
 
+
 class TestAddToBank:
     def test_add_question(self, app, client):
         qids = _get_question_ids(app)
@@ -134,6 +138,7 @@ class TestAddToBank:
 
 # --- API: Remove from Bank ---
 
+
 class TestRemoveFromBank:
     def test_remove_question(self, app, client):
         qids = _get_question_ids(app)
@@ -161,6 +166,7 @@ class TestRemoveFromBank:
 
 
 # --- Question Bank Page ---
+
 
 class TestQuestionBankPage:
     def test_page_loads(self, client):
@@ -202,6 +208,7 @@ class TestQuestionBankPage:
 
 
 # --- Quiz Detail Bank Toggle ---
+
 
 class TestQuizDetailBankToggle:
     def test_detail_has_bank_button(self, app, client):

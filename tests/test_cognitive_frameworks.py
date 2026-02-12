@@ -15,14 +15,10 @@ Run with: python -m pytest tests/test_cognitive_frameworks.py -v
 import os
 import sys
 
-import pytest
-
 # Ensure project root is on sys.path so imports work when running standalone.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from src.cognitive_frameworks import (
-    BLOOMS_LEVELS,
-    DOK_LEVELS,
     QUESTION_TYPES,
     get_framework,
     validate_distribution,

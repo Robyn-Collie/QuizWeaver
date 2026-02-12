@@ -15,18 +15,22 @@ import pytest
 from docx import Document
 
 from src.database import (
-    Base, Class, StudySet, StudyCard,
-    get_engine, get_session,
+    Base,
+    Class,
+    StudyCard,
+    StudySet,
+    get_engine,
+    get_session,
 )
 from src.study_export import (
-    export_flashcards_tsv,
     export_flashcards_csv,
-    export_study_pdf,
+    export_flashcards_tsv,
     export_study_docx,
+    export_study_pdf,
 )
 
-
 # --- Helpers ---
+
 
 class FakeStudySet:
     def __init__(self, **kw):
@@ -54,10 +58,12 @@ def _flashcard_set_with_images():
         FakeCard(
             front="Cell Diagram",
             back="A labeled diagram of a cell",
-            data=json.dumps({
-                "tags": ["biology", "cells"],
-                "image_url": "https://example.com/cell.png",
-            }),
+            data=json.dumps(
+                {
+                    "tags": ["biology", "cells"],
+                    "image_url": "https://example.com/cell.png",
+                }
+            ),
             sort_order=0,
         ),
         FakeCard(
@@ -77,10 +83,12 @@ def _study_guide_with_images():
             card_type="section",
             front="Photosynthesis",
             back="Process by which plants convert sunlight to energy",
-            data=json.dumps({
-                "key_points": ["Uses chlorophyll", "Produces oxygen"],
-                "image_url": "https://example.com/photosynthesis.jpg",
-            }),
+            data=json.dumps(
+                {
+                    "key_points": ["Uses chlorophyll", "Produces oxygen"],
+                    "image_url": "https://example.com/photosynthesis.jpg",
+                }
+            ),
             sort_order=0,
         ),
     ]
@@ -94,11 +102,13 @@ def _vocabulary_with_images():
             card_type="term",
             front="Mitochondria",
             back="Powerhouse of the cell",
-            data=json.dumps({
-                "example": "Mitochondria produce ATP.",
-                "part_of_speech": "noun",
-                "image_url": "https://example.com/mitochondria.png",
-            }),
+            data=json.dumps(
+                {
+                    "example": "Mitochondria produce ATP.",
+                    "part_of_speech": "noun",
+                    "image_url": "https://example.com/mitochondria.png",
+                }
+            ),
             sort_order=0,
         ),
     ]
@@ -112,10 +122,12 @@ def _review_sheet_with_images():
             card_type="fact",
             front="E=mc^2",
             back="Energy equals mass times the speed of light squared",
-            data=json.dumps({
-                "type": "formula",
-                "image_url": "https://example.com/einstein.png",
-            }),
+            data=json.dumps(
+                {
+                    "type": "formula",
+                    "image_url": "https://example.com/einstein.png",
+                }
+            ),
             sort_order=0,
         ),
     ]
@@ -125,6 +137,7 @@ def _review_sheet_with_images():
 # ============================================================
 # TSV Export with Images
 # ============================================================
+
 
 class TestTSVExportImages:
     """Test TSV export includes image_url column."""
@@ -159,6 +172,7 @@ class TestTSVExportImages:
 # ============================================================
 # CSV Export with Images
 # ============================================================
+
 
 class TestCSVExportImages:
     """Test CSV export includes Image URL column."""
@@ -209,6 +223,7 @@ class TestCSVExportImages:
 # PDF Export with Images
 # ============================================================
 
+
 class TestPDFExportImages:
     """Test PDF export includes image URL references."""
 
@@ -230,6 +245,7 @@ class TestPDFExportImages:
 # ============================================================
 # DOCX Export with Images
 # ============================================================
+
 
 class TestDOCXExportImages:
     """Test DOCX export includes image URL columns/references."""
@@ -288,6 +304,7 @@ class TestDOCXExportImages:
 # Study Generator Image URL Support
 # ============================================================
 
+
 class TestStudyGeneratorImages:
     """Test that study generator preserves image_url in card data."""
 
@@ -295,14 +312,16 @@ class TestStudyGeneratorImages:
         """Verify image_url from LLM response is stored in card extras."""
         from src.study_generator import _parse_items
 
-        response_json = json.dumps([
-            {
-                "front": "Test card",
-                "back": "Test answer",
-                "tags": ["test"],
-                "image_url": "https://example.com/img.png",
-            }
-        ])
+        response_json = json.dumps(
+            [
+                {
+                    "front": "Test card",
+                    "back": "Test answer",
+                    "tags": ["test"],
+                    "image_url": "https://example.com/img.png",
+                }
+            ]
+        )
         items = _parse_items(response_json, "flashcard")
         assert items is not None
         assert items[0]["image_url"] == "https://example.com/img.png"
@@ -311,9 +330,7 @@ class TestStudyGeneratorImages:
         """Items without image_url don't have it in parsed output."""
         from src.study_generator import _parse_items
 
-        response_json = json.dumps([
-            {"front": "Card", "back": "Answer", "tags": []}
-        ])
+        response_json = json.dumps([{"front": "Card", "back": "Answer", "tags": []}])
         items = _parse_items(response_json, "flashcard")
         assert items is not None
         # image_url is simply not in the dict
@@ -323,6 +340,7 @@ class TestStudyGeneratorImages:
 # ============================================================
 # Web Template Image Display
 # ============================================================
+
 
 class TestWebImageDisplay:
     """Test image display in study detail templates."""
@@ -355,10 +373,12 @@ class TestWebImageDisplay:
             sort_order=0,
             front="Cell",
             back="Basic unit of life",
-            data=json.dumps({
-                "tags": ["biology"],
-                "image_url": "https://example.com/cell.png",
-            }),
+            data=json.dumps(
+                {
+                    "tags": ["biology"],
+                    "image_url": "https://example.com/cell.png",
+                }
+            ),
         )
         card_without_img = StudyCard(
             study_set_id=study_set.id,
@@ -375,6 +395,7 @@ class TestWebImageDisplay:
         engine.dispose()
 
         from src.web.app import create_app
+
         test_config = {
             "paths": {"database_file": db_path},
             "llm": {"provider": "mock"},
@@ -456,6 +477,7 @@ class TestWebImageDisplay:
         engine.dispose()
 
         from src.web.app import create_app
+
         test_config = {
             "paths": {"database_file": db_path},
             "llm": {"provider": "mock"},

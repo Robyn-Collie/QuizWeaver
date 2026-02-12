@@ -13,7 +13,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from src.classroom import get_class
-from src.database import Quiz, Question, StudySet, StudyCard
+from src.database import Question, Quiz, StudyCard, StudySet
 
 logger = logging.getLogger(__name__)
 
@@ -73,10 +73,7 @@ def _build_context(session, class_id, quiz_id=None, topic=None):
         if quiz:
             parts.append(f"\nSource Quiz: {quiz.title}")
             questions = (
-                session.query(Question)
-                .filter_by(quiz_id=quiz_id)
-                .order_by(Question.sort_order, Question.id)
-                .all()
+                session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
             )
             for q in questions:
                 parts.append(f"- {q.text}")
@@ -98,7 +95,8 @@ def _parse_items(response_text, material_type):
 
     # Try to extract JSON array from response
     import re
-    match = re.search(r'\[.*\]', response_text, re.DOTALL)
+
+    match = re.search(r"\[.*\]", response_text, re.DOTALL)
     if match:
         try:
             items = json.loads(match.group())
@@ -170,12 +168,14 @@ def generate_study_material(
         title=title,
         material_type=material_type,
         status="generating",
-        config=json.dumps({
-            "material_type": material_type,
-            "quiz_id": quiz_id,
-            "topic": topic,
-            "provider": config.get("llm", {}).get("provider", "mock"),
-        }),
+        config=json.dumps(
+            {
+                "material_type": material_type,
+                "quiz_id": quiz_id,
+                "topic": topic,
+                "provider": config.get("llm", {}).get("provider", "mock"),
+            }
+        ),
     )
     session.add(study_set)
     session.commit()
@@ -188,18 +188,18 @@ def generate_study_material(
     # Get LLM response
     try:
         from src.llm_provider import get_provider
+
         provider = get_provider(config, web_mode=True)
 
         # Check if mock provider — use specialized mock response
         provider_name = config.get("llm", {}).get("provider", "mock")
         if provider_name == "mock":
-            from src.mock_responses import get_study_material_response, SCIENCE_TOPICS
+            from src.mock_responses import SCIENCE_TOPICS, get_study_material_response
+
             # Extract keywords from context
             context_lower = context.lower()
             keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
-            response_text = get_study_material_response(
-                [full_prompt], material_type, keywords or None
-            )
+            response_text = get_study_material_response([full_prompt], material_type, keywords or None)
         else:
             response_text = provider.generate([full_prompt], json_mode=True)
 

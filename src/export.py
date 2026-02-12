@@ -9,20 +9,18 @@ mock vs real LLM providers.
 import csv
 import io
 import json
-import re
 import uuid
 import zipfile
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from docx import Document
-from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
 from src.export_utils import sanitize_filename
-
 
 # Type normalization map: long form -> short form
 TYPE_MAP = {
@@ -116,9 +114,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
     }
 
 
-def _resolve_correct_answer(
-    data: dict, options: list, q_type: str
-) -> str:
+def _resolve_correct_answer(data: dict, options: list, q_type: str) -> str:
     """Resolve the correct answer string from various data shapes."""
     # Try direct answer fields first
     answer = data.get("correct_answer") or data.get("answer")
@@ -152,10 +148,12 @@ def _resolve_matches(data: dict) -> List[Dict[str, str]]:
         result = []
         for m in matches:
             if isinstance(m, dict):
-                result.append({
-                    "term": m.get("term", ""),
-                    "definition": m.get("definition", ""),
-                })
+                result.append(
+                    {
+                        "term": m.get("term", ""),
+                        "definition": m.get("definition", ""),
+                    }
+                )
         if result:
             return result
 
@@ -209,24 +207,34 @@ def export_csv(quiz, questions, style_profile: Optional[dict] = None) -> str:
     writer = csv.writer(output)
 
     # Header row
-    writer.writerow([
-        "#", "Type", "Question", "Options", "Correct Answer",
-        "Points", "Cognitive Level", "Framework",
-    ])
+    writer.writerow(
+        [
+            "#",
+            "Type",
+            "Question",
+            "Options",
+            "Correct Answer",
+            "Points",
+            "Cognitive Level",
+            "Framework",
+        ]
+    )
 
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         options_str = _format_options_csv(nq)
-        writer.writerow([
-            nq["number"],
-            nq["type"],
-            nq["text"],
-            options_str,
-            nq["correct_answer"],
-            nq["points"],
-            nq["cognitive_level"] or "",
-            nq["cognitive_framework"] or "",
-        ])
+        writer.writerow(
+            [
+                nq["number"],
+                nq["type"],
+                nq["text"],
+                options_str,
+                nq["correct_answer"],
+                nq["points"],
+                nq["cognitive_level"] or "",
+                nq["cognitive_framework"] or "",
+            ]
+        )
 
     return output.getvalue()
 
@@ -234,9 +242,7 @@ def export_csv(quiz, questions, style_profile: Optional[dict] = None) -> str:
 def _format_options_csv(nq: dict) -> str:
     """Format options for CSV column."""
     if nq["type"] == "matching" and nq["matches"]:
-        return " | ".join(
-            f"{m['term']} -> {m['definition']}" for m in nq["matches"]
-        )
+        return " | ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
     if nq["type"] == "ordering" and nq.get("ordering_items"):
         return ", ".join(nq["ordering_items"])
     if nq["type"] == "short_answer":
@@ -429,6 +435,7 @@ def _add_docx_ordering(doc, nq: dict):
     # Show items in a scrambled display order (reverse of correct)
     items = nq.get("ordering_items", [])
     import random as _rng
+
     display_order = list(range(len(items)))
     # Use a deterministic shuffle based on question number
     _rng.Random(nq["number"]).shuffle(display_order)
@@ -442,9 +449,7 @@ def _add_docx_answer_key(doc, normalized: list):
     """Add answer key section listing all correct answers."""
     for nq in normalized:
         if nq["type"] == "matching" and nq["matches"]:
-            answer_text = "; ".join(
-                f"{m['term']} -> {m['definition']}" for m in nq["matches"]
-            )
+            answer_text = "; ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
         elif nq["type"] == "ordering" and nq.get("ordering_items"):
             correct_order = nq.get("ordering_correct_order", [])
             items = nq.get("ordering_items", [])
@@ -486,7 +491,7 @@ def export_gift(quiz, questions) -> str:
     lines = []
     # Add quiz title as a comment
     lines.append(f"// {quiz.title or 'Quiz'}")
-    lines.append(f"// Exported from QuizWeaver")
+    lines.append("// Exported from QuizWeaver")
     lines.append("")
 
     for i, q in enumerate(questions):
@@ -734,9 +739,7 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
     # Image description if present
     if nq.get("image_description"):
         c.setFont("Helvetica-Oblique", 9)
-        y = _pdf_draw_wrapped_text(
-            c, f"[Image: {nq['image_description']}]", 60, y, page_width - 120, page_height
-        )
+        y = _pdf_draw_wrapped_text(c, f"[Image: {nq['image_description']}]", 60, y, page_width - 120, page_height)
         c.setFont("Helvetica", 10)
 
     # Options based on type
@@ -777,6 +780,7 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
             c.setFont("Helvetica", 10)
         items = nq["ordering_items"]
         import random as _rng
+
         display_order = list(range(len(items)))
         _rng.Random(nq["number"]).shuffle(display_order)
         for rank, idx in enumerate(display_order):
@@ -913,10 +917,10 @@ def _qti_mc_item(ident: str, nq: dict) -> str:
         response_labels += (
             f'          <response_label ident="opt_{idx}">'
             f'<material><mattext texttype="text/plain">{_xml_escape(str(opt))}</mattext></material>'
-            f'</response_label>\n'
+            f"</response_label>\n"
         )
 
-    return f"""      <item ident="{ident}" title="Q{nq['number']}">
+    return f"""      <item ident="{ident}" title="Q{nq["number"]}">
         <itemmetadata>
           <qtimetadata>
             <qtimetadatafield>
@@ -961,7 +965,7 @@ def _qti_essay_item(ident: str, nq: dict) -> str:
     text = _xml_escape(nq["text"])
     points = nq["points"] or 5
 
-    return f"""      <item ident="{ident}" title="Q{nq['number']}">
+    return f"""      <item ident="{ident}" title="Q{nq["number"]}">
         <itemmetadata>
           <qtimetadata>
             <qtimetadatafield>
@@ -1027,9 +1031,7 @@ def export_qti(quiz, questions) -> io.BytesIO:
                 item_parts.append(_qti_essay_item(ident, nq))
 
     # Assemble assessment XML
-    assessment_xml = _QTI_ASSESSMENT_HEADER.format(
-        assessment_id=assessment_id, title=title
-    )
+    assessment_xml = _QTI_ASSESSMENT_HEADER.format(assessment_id=assessment_id, title=title)
     assessment_xml += "\n".join(item_parts)
     assessment_xml += "\n" + _QTI_ASSESSMENT_FOOTER
 

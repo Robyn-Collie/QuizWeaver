@@ -47,9 +47,7 @@ def check_if_migration_needed(db_path):
         cursor = conn.cursor()
 
         # Check if classes table exists
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='classes'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='classes'")
         classes_exists = cursor.fetchone() is not None
 
         if not classes_exists:
@@ -58,9 +56,7 @@ def check_if_migration_needed(db_path):
 
         # Check if sort_order column exists on questions table
         # (if questions table doesn't exist yet, ORM will create it with the column)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='questions'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='questions'")
         questions_exists = cursor.fetchone() is not None
 
         if questions_exists:
@@ -72,21 +68,15 @@ def check_if_migration_needed(db_path):
             sort_order_exists = True
 
         # Check if study_sets table exists (migration 003)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='study_sets'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='study_sets'")
         study_sets_exists = cursor.fetchone() is not None
 
         # Check if rubrics table exists (migration 004)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='rubrics'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='rubrics'")
         rubrics_exists = cursor.fetchone() is not None
 
         # Check if source column exists on performance_data (migration 005)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='performance_data'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='performance_data'")
         perf_exists = cursor.fetchone() is not None
 
         perf_source_exists = True
@@ -96,15 +86,11 @@ def check_if_migration_needed(db_path):
             perf_source_exists = "source" in perf_columns
 
         # Check if users table exists (migration 006)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='users'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
         users_exists = cursor.fetchone() is not None
 
         # Check if standards table exists (migration 007)
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='standards'"
-        )
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='standards'")
         standards_exists = cursor.fetchone() is not None
 
         # Check if standard_set column exists on standards (migration 009)
@@ -116,7 +102,15 @@ def check_if_migration_needed(db_path):
 
         conn.close()
 
-        return not sort_order_exists or not study_sets_exists or not rubrics_exists or not perf_source_exists or not users_exists or not standards_exists or not standards_set_exists
+        return (
+            not sort_order_exists
+            or not study_sets_exists
+            or not rubrics_exists
+            or not perf_source_exists
+            or not users_exists
+            or not standards_exists
+            or not standards_set_exists
+        )
     except Exception as e:
         print(f"Error checking migration status: {e}")
         return True
@@ -149,7 +143,7 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
         return False
 
     if verbose:
-        print(f"\n=== Running Database Migrations ===")
+        print("\n=== Running Database Migrations ===")
         print(f"Database: {db_path}")
         print(f"Migrations: {len(migration_files)} file(s)\n")
 
@@ -163,7 +157,7 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
                 print(f"Applying: {filename}...", end=" ")
 
             # Read migration SQL
-            with open(filepath, 'r') as f:
+            with open(filepath) as f:
                 migration_sql = f.read()
 
             # Execute migration (may contain multiple statements)
@@ -187,13 +181,13 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
         conn.close()
 
         if verbose:
-            print(f"\n[OK] All migrations applied successfully\n")
+            print("\n[OK] All migrations applied successfully\n")
 
         return True
 
     except Exception as e:
         print(f"\n[FAIL] Migration failed: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
         return False
 

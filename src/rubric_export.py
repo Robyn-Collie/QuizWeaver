@@ -7,14 +7,12 @@ Exports rubrics to PDF, DOCX (Word), and CSV formats.
 import csv
 import io
 import json
-from typing import List
 
 from docx import Document
-from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-
 
 PROFICIENCY_LABELS = ["Beginning", "Developing", "Proficient", "Advanced"]
 
@@ -35,6 +33,7 @@ def _parse_levels(criterion) -> list:
 # ---------------------------------------------------------------------------
 # CSV Export
 # ---------------------------------------------------------------------------
+
 
 def export_rubric_csv(rubric, criteria) -> str:
     """Export rubric to CSV format.
@@ -77,6 +76,7 @@ def export_rubric_csv(rubric, criteria) -> str:
 # ---------------------------------------------------------------------------
 # DOCX (Word) Export
 # ---------------------------------------------------------------------------
+
 
 def export_rubric_docx(rubric, criteria) -> io.BytesIO:
     """Export rubric to a Word document with a formatted table.
@@ -156,6 +156,7 @@ def export_rubric_docx(rubric, criteria) -> io.BytesIO:
 # ---------------------------------------------------------------------------
 # PDF Export
 # ---------------------------------------------------------------------------
+
 
 def export_rubric_pdf(rubric, criteria) -> io.BytesIO:
     """Export rubric to a PDF with a table layout.

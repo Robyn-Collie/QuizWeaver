@@ -7,10 +7,10 @@ all required steps: provider selection, instructions, connect/test, and success.
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine, get_session
-
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 

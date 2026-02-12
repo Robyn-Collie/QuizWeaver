@@ -1,0 +1,27 @@
+[project]
+name = "quizweaver"
+version = "0.12.0"
+description = "A language-model-assisted teaching platform"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "B011"]
+"migrations/*" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

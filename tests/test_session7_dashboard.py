@@ -5,13 +5,14 @@ Verifies the new dashboard layout: classes at top, tool cards,
 recent activity feed, and removal of old stat cards + chart.
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
 from datetime import date
 
-from src.database import Base, Class, LessonLog, Quiz, Question, get_engine, get_session
+import pytest
+
+from src.database import Base, Class, LessonLog, Quiz, get_engine, get_session
 
 
 @pytest.fixture

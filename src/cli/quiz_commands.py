@@ -3,10 +3,9 @@ Quiz listing, viewing, and export CLI commands.
 """
 
 import json
-import os
 
-from src.cli import get_db_session, resolve_class_id
-from src.database import Quiz, Question
+from src.cli import get_db_session
+from src.database import Question, Quiz
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
 from src.export_utils import sanitize_filename
 
@@ -27,7 +26,9 @@ def register_quiz_commands(subparsers):
     p = subparsers.add_parser("export-quiz", help="Export a quiz to file.")
     p.add_argument("quiz_id", type=int, help="Quiz ID to export.")
     p.add_argument(
-        "--format", dest="fmt", required=True,
+        "--format",
+        dest="fmt",
+        required=True,
         choices=["csv", "docx", "gift", "pdf", "qti"],
         help="Export format.",
     )
@@ -72,12 +73,7 @@ def handle_view_quiz(config, args):
             print(f"Error: Quiz with ID {args.quiz_id} not found.")
             return
 
-        questions = (
-            session.query(Question)
-            .filter_by(quiz_id=quiz.id)
-            .order_by(Question.sort_order, Question.id)
-            .all()
-        )
+        questions = session.query(Question).filter_by(quiz_id=quiz.id).order_by(Question.sort_order, Question.id).all()
 
         print(f"\n{quiz.title or 'Untitled Quiz'}")
         print(f"Status: {quiz.status or 'unknown'}  |  Questions: {len(questions)}")
@@ -131,12 +127,7 @@ def handle_export_quiz(config, args):
             print(f"Error: Quiz with ID {args.quiz_id} not found.")
             return
 
-        questions = (
-            session.query(Question)
-            .filter_by(quiz_id=quiz.id)
-            .order_by(Question.sort_order, Question.id)
-            .all()
-        )
+        questions = session.query(Question).filter_by(quiz_id=quiz.id).order_by(Question.sort_order, Question.id).all()
 
         if not questions:
             print(f"Error: Quiz {args.quiz_id} has no questions.")

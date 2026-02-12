@@ -8,7 +8,6 @@ engine.dispose() before cleanup for Windows compatibility.
 Run with: python -m pytest tests/test_e2e_multi_class.py -v
 """
 
-import json
 import os
 import sys
 import tempfile
@@ -18,20 +17,19 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import get_engine, init_db, get_session, Class, LessonLog, Quiz
 from src.classroom import create_class, get_class, list_classes
+from src.database import Quiz, get_engine, get_session, init_db
 from src.lesson_tracker import (
-    log_lesson,
-    get_recent_lessons,
     get_assumed_knowledge,
-    extract_topics,
+    get_recent_lessons,
+    log_lesson,
 )
-from src.migrations import run_migrations, create_default_class_if_needed
-
+from src.migrations import create_default_class_if_needed, run_migrations
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_env():
@@ -64,6 +62,7 @@ def db_env():
 # ---------------------------------------------------------------------------
 # 1. Full multi-class workflow
 # ---------------------------------------------------------------------------
+
 
 class TestFullMultiClassWorkflow:
     """
@@ -120,23 +119,16 @@ class TestFullMultiClassWorkflow:
         knowledge_a = get_assumed_knowledge(session, block_a.id)
         knowledge_b = get_assumed_knowledge(session, block_b.id)
 
-        assert "photosynthesis" in knowledge_a, (
-            "Block A should know photosynthesis"
-        )
-        assert "cell division" not in knowledge_a, (
-            "Block A should NOT know cell division"
-        )
-        assert "cell division" in knowledge_b, (
-            "Block B should know cell division"
-        )
-        assert "photosynthesis" not in knowledge_b, (
-            "Block B should NOT know photosynthesis"
-        )
+        assert "photosynthesis" in knowledge_a, "Block A should know photosynthesis"
+        assert "cell division" not in knowledge_a, "Block A should NOT know cell division"
+        assert "cell division" in knowledge_b, "Block B should know cell division"
+        assert "photosynthesis" not in knowledge_b, "Block B should NOT know photosynthesis"
 
 
 # ---------------------------------------------------------------------------
 # 2. Backward compatibility
 # ---------------------------------------------------------------------------
+
 
 class TestBackwardCompatibility:
     """
@@ -153,9 +145,7 @@ class TestBackwardCompatibility:
         session.commit()
         legacy_quiz_id = legacy_quiz.id
 
-        assert legacy_quiz.class_id is None, (
-            "Legacy quiz should have NULL class_id before migration"
-        )
+        assert legacy_quiz.class_id is None, "Legacy quiz should have NULL class_id before migration"
 
         # -- Run SQL migrations and create default class ------------------
         run_migrations(db_path, verbose=False)
@@ -171,14 +161,13 @@ class TestBackwardCompatibility:
 
         # After create_default_class_if_needed, NULL class_ids are updated to 1
         # The quiz's class_id should now be 1 (Legacy Class)
-        assert reloaded.class_id == 1, (
-            "Legacy quiz should be assigned to default Legacy Class (id=1)"
-        )
+        assert reloaded.class_id == 1, "Legacy quiz should be assigned to default Legacy Class (id=1)"
 
 
 # ---------------------------------------------------------------------------
 # 3. Class knowledge builds over time
 # ---------------------------------------------------------------------------
+
 
 class TestClassKnowledgeBuildsOverTime:
     """
@@ -205,9 +194,7 @@ class TestClassKnowledgeBuildsOverTime:
             topics=["photosynthesis"],
         )
         knowledge = get_assumed_knowledge(session, cls.id)
-        assert knowledge["photosynthesis"]["depth"] == 1, (
-            "First mention should be depth 1"
-        )
+        assert knowledge["photosynthesis"]["depth"] == 1, "First mention should be depth 1"
         assert knowledge["photosynthesis"]["mention_count"] == 1
 
         # -- Lesson 2: revisit photosynthesis (depth 2) -------------------
@@ -218,9 +205,7 @@ class TestClassKnowledgeBuildsOverTime:
             topics=["photosynthesis"],
         )
         knowledge = get_assumed_knowledge(session, cls.id)
-        assert knowledge["photosynthesis"]["depth"] == 2, (
-            "Second mention should be depth 2"
-        )
+        assert knowledge["photosynthesis"]["depth"] == 2, "Second mention should be depth 2"
         assert knowledge["photosynthesis"]["mention_count"] == 2
 
         # -- Lesson 3: introduce cell division (depth 1) ------------------
@@ -232,21 +217,16 @@ class TestClassKnowledgeBuildsOverTime:
             topics=["cell division"],
         )
         knowledge = get_assumed_knowledge(session, cls.id)
-        assert knowledge["photosynthesis"]["depth"] == 2, (
-            "Photosynthesis depth should remain 2 after unrelated lesson"
-        )
-        assert knowledge["photosynthesis"]["mention_count"] == 2, (
-            "Photosynthesis mention_count should remain 2"
-        )
-        assert knowledge["cell division"]["depth"] == 1, (
-            "Cell division should start at depth 1"
-        )
+        assert knowledge["photosynthesis"]["depth"] == 2, "Photosynthesis depth should remain 2 after unrelated lesson"
+        assert knowledge["photosynthesis"]["mention_count"] == 2, "Photosynthesis mention_count should remain 2"
+        assert knowledge["cell division"]["depth"] == 1, "Cell division should start at depth 1"
         assert knowledge["cell division"]["mention_count"] == 1
 
 
 # ---------------------------------------------------------------------------
 # 4. Error handling -- invalid class
 # ---------------------------------------------------------------------------
+
 
 class TestErrorHandlingInvalidClass:
     """
@@ -258,9 +238,7 @@ class TestErrorHandlingInvalidClass:
         engine, session, db_path = db_env
 
         result = get_class(session, class_id=99999)
-        assert result is None, (
-            "get_class should return None for a non-existent class ID"
-        )
+        assert result is None, "get_class should return None for a non-existent class ID"
 
     def test_log_lesson_with_invalid_class_id(self, db_env):
         engine, session, db_path = db_env
@@ -268,9 +246,7 @@ class TestErrorHandlingInvalidClass:
         # Logging to a non-existent class_id should raise an IntegrityError
         # because of the foreign-key constraint (class_id references classes.id).
         # Enable SQLite foreign key enforcement for this session.
-        session.execute(
-            __import__("sqlalchemy").text("PRAGMA foreign_keys = ON")
-        )
+        session.execute(__import__("sqlalchemy").text("PRAGMA foreign_keys = ON"))
 
         with pytest.raises(Exception):
             log_lesson(
@@ -286,14 +262,13 @@ class TestErrorHandlingInvalidClass:
         engine, session, db_path = db_env
 
         knowledge = get_assumed_knowledge(session, class_id=99999)
-        assert knowledge == {}, (
-            "get_assumed_knowledge should return empty dict for non-existent class"
-        )
+        assert knowledge == {}, "get_assumed_knowledge should return empty dict for non-existent class"
 
 
 # ---------------------------------------------------------------------------
 # 5. list_classes with data (lesson_count and quiz_count)
 # ---------------------------------------------------------------------------
+
 
 class TestListClassesWithData:
     """
@@ -351,28 +326,18 @@ class TestListClassesWithData:
         assert "Algebra I" in by_name, "Algebra I should appear in list_classes"
         assert "Geometry" in by_name, "Geometry should appear in list_classes"
 
-        assert by_name["Algebra I"]["lesson_count"] == 3, (
-            "Algebra I should have 3 lessons"
-        )
-        assert by_name["Algebra I"]["quiz_count"] == 2, (
-            "Algebra I should have 2 quizzes"
-        )
+        assert by_name["Algebra I"]["lesson_count"] == 3, "Algebra I should have 3 lessons"
+        assert by_name["Algebra I"]["quiz_count"] == 2, "Algebra I should have 2 quizzes"
 
-        assert by_name["Geometry"]["lesson_count"] == 1, (
-            "Geometry should have 1 lesson"
-        )
-        assert by_name["Geometry"]["quiz_count"] == 1, (
-            "Geometry should have 1 quiz"
-        )
+        assert by_name["Geometry"]["lesson_count"] == 1, "Geometry should have 1 lesson"
+        assert by_name["Geometry"]["quiz_count"] == 1, "Geometry should have 1 quiz"
 
     def test_list_classes_empty(self, db_env):
         """list_classes on a fresh DB should return an empty list."""
         engine, session, db_path = db_env
 
         classes_info = list_classes(session)
-        assert classes_info == [], (
-            "list_classes should return [] when no classes exist"
-        )
+        assert classes_info == [], "list_classes should return [] when no classes exist"
 
 
 # ---------------------------------------------------------------------------

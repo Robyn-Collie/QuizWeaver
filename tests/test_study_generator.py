@@ -12,10 +12,15 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, StudySet, StudyCard,
-    get_engine, get_session,
+    Base,
+    Class,
+    Question,
+    Quiz,
+    StudyCard,
+    get_engine,
+    get_session,
 )
-from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
+from src.study_generator import generate_study_material
 
 
 @pytest.fixture
@@ -53,12 +58,14 @@ def db_session():
         title="Q1",
         text="What is photosynthesis?",
         points=5.0,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is photosynthesis?",
-            "options": ["Making food from light", "Breathing", "Eating", "Sleeping"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is photosynthesis?",
+                "options": ["Making food from light", "Breathing", "Eating", "Sleeping"],
+                "correct_index": 0,
+            }
+        ),
     )
     session.add(q1)
     session.commit()
@@ -84,6 +91,7 @@ def config():
 
 
 # --- Test each material type ---
+
 
 class TestGenerateFlashcards:
     def test_generates_flashcard_set(self, db_session, config):
@@ -172,12 +180,12 @@ class TestGenerateReviewSheet:
 
 # --- Title / config tests ---
 
+
 class TestStudySetMetadata:
     def test_custom_title(self, db_session, config):
         session, class_id, _ = db_session
         result = generate_study_material(
-            session, class_id, "flashcard", config,
-            topic="mitosis", title="Chapter 3 Flashcards"
+            session, class_id, "flashcard", config, topic="mitosis", title="Chapter 3 Flashcards"
         )
         assert result.title == "Chapter 3 Flashcards"
 
@@ -195,6 +203,7 @@ class TestStudySetMetadata:
 
 
 # --- Error handling ---
+
 
 class TestErrorHandling:
     def test_invalid_class_id(self, db_session, config):

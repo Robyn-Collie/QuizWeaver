@@ -7,10 +7,10 @@ attributes and that the dismiss JS is loaded in base.html.
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine, get_session
-
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "templates")
 
@@ -117,9 +117,8 @@ class TestStudyDetailBanner:
     def test_study_detail_template_has_dismiss_key(self):
         """Study detail template contains dismiss key attribute."""
         import os
-        template_path = os.path.join(
-            os.path.dirname(__file__), "..", "templates", "study", "detail.html"
-        )
+
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "study", "detail.html")
         with open(template_path) as f:
             content = f.read()
         assert 'data-dismiss-key="study-detail"' in content
@@ -132,9 +131,8 @@ class TestRubricDetailBanner:
     def test_rubric_detail_template_has_dismiss_key(self):
         """Rubric detail template contains dismiss key attribute."""
         import os
-        template_path = os.path.join(
-            os.path.dirname(__file__), "..", "templates", "rubrics", "detail.html"
-        )
+
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "rubrics", "detail.html")
         with open(template_path) as f:
             content = f.read()
         assert 'data-dismiss-key="rubric-detail"' in content
@@ -147,9 +145,8 @@ class TestReteachBanner:
     def test_reteach_template_has_dismiss_key(self):
         """Reteach template contains dismiss key attribute."""
         import os
-        template_path = os.path.join(
-            os.path.dirname(__file__), "..", "templates", "analytics", "reteach.html"
-        )
+
+        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "analytics", "reteach.html")
         with open(template_path) as f:
             content = f.read()
         assert 'data-dismiss-key="reteach-suggestions"' in content
@@ -162,9 +159,8 @@ class TestDismissCSS:
     def test_dismiss_css_exists(self):
         """CSS file contains ai-notice-dismiss styles."""
         import os
-        css_path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "css", "style.css"
-        )
+
+        css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
         with open(css_path) as f:
             content = f.read()
         assert ".ai-notice-dismiss" in content
@@ -172,9 +168,8 @@ class TestDismissCSS:
     def test_dismiss_key_padding(self):
         """CSS adds padding-right for banners with dismiss keys."""
         import os
-        css_path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "css", "style.css"
-        )
+
+        css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
         with open(css_path) as f:
             content = f.read()
         assert "data-dismiss-key" in content
@@ -188,6 +183,7 @@ class TestAllBannersHaveDismiss:
         """Every ai-notice in templates has a data-dismiss-key attribute."""
         import os
         import re
+
         templates_dir = os.path.join(os.path.dirname(__file__), "..", "templates")
         missing = []
         for root, dirs, files in os.walk(templates_dir):

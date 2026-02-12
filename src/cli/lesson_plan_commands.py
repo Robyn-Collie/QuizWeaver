@@ -4,9 +4,9 @@ Lesson plan generation and export CLI commands.
 
 from src.cli import get_db_session, resolve_class_id
 from src.database import LessonPlan
-from src.lesson_plan_generator import generate_lesson_plan
-from src.lesson_plan_export import export_lesson_plan_pdf, export_lesson_plan_docx
 from src.export_utils import sanitize_filename
+from src.lesson_plan_export import export_lesson_plan_docx, export_lesson_plan_pdf
+from src.lesson_plan_generator import generate_lesson_plan
 
 
 def register_lesson_plan_commands(subparsers):
@@ -23,7 +23,9 @@ def register_lesson_plan_commands(subparsers):
     p = subparsers.add_parser("export-lesson-plan", help="Export a lesson plan to file.")
     p.add_argument("plan_id", type=int, help="Lesson plan ID to export.")
     p.add_argument(
-        "--format", dest="fmt", required=True,
+        "--format",
+        dest="fmt",
+        required=True,
         choices=["pdf", "docx"],
         help="Export format.",
     )

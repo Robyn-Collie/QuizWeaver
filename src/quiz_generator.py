@@ -11,15 +11,14 @@ Run tests with: python -m pytest tests/test_quiz_generator.py -v
 import copy
 import json
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
 from src.agents import run_agentic_pipeline
 from src.classroom import get_class
 from src.cognitive_frameworks import validate_distribution
-from src.database import Quiz, Question
-
+from src.database import Question, Quiz
 
 logger = logging.getLogger(__name__)
 
@@ -73,9 +72,7 @@ def generate_quiz(
     if resolved_grade is None:
         resolved_grade = class_obj.grade_level
     if resolved_grade is None:
-        resolved_grade = config.get("generation", {}).get(
-            "default_grade_level", "7th Grade Science"
-        )
+        resolved_grade = config.get("generation", {}).get("default_grade_level", "7th Grade Science")
 
     # Resolve SOL standards: explicit arg > config default
     resolved_sol = sol_standards
@@ -86,13 +83,9 @@ def generate_quiz(
     validated_framework = cognitive_framework
     validated_distribution = cognitive_distribution
     if cognitive_framework and cognitive_distribution:
-        is_valid, error_msg = validate_distribution(
-            cognitive_framework, cognitive_distribution, num_questions
-        )
+        is_valid, error_msg = validate_distribution(cognitive_framework, cognitive_distribution, num_questions)
         if not is_valid:
-            logger.warning(
-                "generate_quiz: invalid cognitive distribution: %s", error_msg
-            )
+            logger.warning("generate_quiz: invalid cognitive distribution: %s", error_msg)
             validated_framework = None
             validated_distribution = None
 
@@ -135,9 +128,7 @@ def generate_quiz(
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)
     try:
-        questions_data = run_agentic_pipeline(
-            run_config, context, class_id=class_id, web_mode=True
-        )
+        questions_data = run_agentic_pipeline(run_config, context, class_id=class_id, web_mode=True)
     except Exception as e:
         logger.error("generate_quiz: pipeline crashed: %s", e)
         new_quiz.status = "failed"

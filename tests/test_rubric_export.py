@@ -11,8 +11,13 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Rubric, RubricCriterion,
-    get_engine, get_session,
+    Base,
+    Class,
+    Quiz,
+    Rubric,
+    RubricCriterion,
+    get_engine,
+    get_session,
 )
 from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
 
@@ -53,12 +58,14 @@ def db_session():
     session.add(rubric)
     session.commit()
 
-    levels_json = json.dumps([
-        {"level": 1, "label": "Beginning", "description": "Minimal understanding"},
-        {"level": 2, "label": "Developing", "description": "Partial understanding"},
-        {"level": 3, "label": "Proficient", "description": "Solid understanding"},
-        {"level": 4, "label": "Advanced", "description": "Deep understanding"},
-    ])
+    levels_json = json.dumps(
+        [
+            {"level": 1, "label": "Beginning", "description": "Minimal understanding"},
+            {"level": 2, "label": "Developing", "description": "Partial understanding"},
+            {"level": 3, "label": "Proficient", "description": "Solid understanding"},
+            {"level": 4, "label": "Advanced", "description": "Deep understanding"},
+        ]
+    )
 
     c1 = RubricCriterion(
         rubric_id=rubric.id,
@@ -87,12 +94,7 @@ def db_session():
     session.add_all([c1, c2, c3])
     session.commit()
 
-    criteria = (
-        session.query(RubricCriterion)
-        .filter_by(rubric_id=rubric.id)
-        .order_by(RubricCriterion.sort_order)
-        .all()
-    )
+    criteria = session.query(RubricCriterion).filter_by(rubric_id=rubric.id).order_by(RubricCriterion.sort_order).all()
 
     yield rubric, criteria
 

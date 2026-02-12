@@ -11,8 +11,11 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, LessonPlan,
-    get_engine, get_session,
+    Base,
+    Class,
+    LessonPlan,
+    get_engine,
+    get_session,
 )
 
 
@@ -66,6 +69,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -100,6 +104,7 @@ def anon_client(app):
 
 # --- Auth tests ---
 
+
 class TestLessonPlanAuth:
     def test_list_requires_login(self, anon_client):
         resp = anon_client.get("/lesson-plans")
@@ -115,6 +120,7 @@ class TestLessonPlanAuth:
 
 
 # --- List route ---
+
 
 class TestLessonPlanList:
     def test_list_page_loads(self, client):
@@ -139,6 +145,7 @@ class TestLessonPlanList:
 
 # --- Generate route ---
 
+
 class TestLessonPlanGenerate:
     def test_generate_form_loads(self, client):
         resp = client.get("/lesson-plans/generate")
@@ -146,32 +153,45 @@ class TestLessonPlanGenerate:
         assert b"Generate Lesson Plan" in resp.data
 
     def test_generate_post_success(self, client):
-        resp = client.post("/lesson-plans/generate", data={
-            "class_id": "1",
-            "topics": "Ecosystems",
-            "standards": "SOL 7.1",
-            "duration_minutes": "50",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/lesson-plans/generate",
+            data={
+                "class_id": "1",
+                "topics": "Ecosystems",
+                "standards": "SOL 7.1",
+                "duration_minutes": "50",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
     def test_generate_post_no_class(self, client):
-        resp = client.post("/lesson-plans/generate", data={
-            "topics": "Ecosystems",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/lesson-plans/generate",
+            data={
+                "topics": "Ecosystems",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 400
 
     def test_generate_post_with_all_fields(self, client):
-        resp = client.post("/lesson-plans/generate", data={
-            "class_id": "1",
-            "topics": "Photosynthesis, Respiration",
-            "standards": "SOL 7.1, SOL 7.2",
-            "duration_minutes": "90",
-            "grade_level": "8th Grade",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/lesson-plans/generate",
+            data={
+                "class_id": "1",
+                "topics": "Photosynthesis, Respiration",
+                "standards": "SOL 7.1, SOL 7.2",
+                "duration_minutes": "90",
+                "grade_level": "8th Grade",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
 
 # --- Detail route ---
+
 
 class TestLessonPlanDetail:
     def test_detail_page_loads(self, client):
@@ -196,31 +216,43 @@ class TestLessonPlanDetail:
 
 # --- Edit route ---
 
+
 class TestLessonPlanEdit:
     def test_edit_section(self, client):
-        resp = client.post("/lesson-plans/1/edit", data={
-            "section_key": "warm_up",
-            "section_content": "Updated warm-up activity.",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/lesson-plans/1/edit",
+            data={
+                "section_key": "warm_up",
+                "section_content": "Updated warm-up activity.",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
     def test_edit_section_persists(self, client):
-        client.post("/lesson-plans/1/edit", data={
-            "section_key": "closure",
-            "section_content": "New closure text.",
-        })
+        client.post(
+            "/lesson-plans/1/edit",
+            data={
+                "section_key": "closure",
+                "section_content": "New closure text.",
+            },
+        )
         resp = client.get("/lesson-plans/1")
         assert b"New closure text." in resp.data
 
     def test_edit_invalid_plan(self, client):
-        resp = client.post("/lesson-plans/9999/edit", data={
-            "section_key": "warm_up",
-            "section_content": "Test",
-        })
+        resp = client.post(
+            "/lesson-plans/9999/edit",
+            data={
+                "section_key": "warm_up",
+                "section_content": "Test",
+            },
+        )
         assert resp.status_code == 404
 
 
 # --- Export routes ---
+
 
 class TestLessonPlanExport:
     def test_export_pdf(self, client):
@@ -244,13 +276,17 @@ class TestLessonPlanExport:
 
 # --- Delete route ---
 
+
 class TestLessonPlanDelete:
     def test_delete_plan(self, client):
         # Generate a new plan to delete
-        client.post("/lesson-plans/generate", data={
-            "class_id": "1",
-            "topics": "Temporary",
-        })
+        client.post(
+            "/lesson-plans/generate",
+            data={
+                "class_id": "1",
+                "topics": "Temporary",
+            },
+        )
         resp = client.post("/lesson-plans/2/delete", follow_redirects=False)
         assert resp.status_code == 303
 

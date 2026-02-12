@@ -180,8 +180,13 @@ Return ONLY the JSON object, no markdown.
     question.points = float(new_q.get("points", question.points or 1))
 
     # Preserve certain fields from old data (image_ref, cognitive fields)
-    for keep_key in ("image_ref", "image_description", "cognitive_level",
-                     "cognitive_framework", "cognitive_level_number"):
+    for keep_key in (
+        "image_ref",
+        "image_description",
+        "cognitive_level",
+        "cognitive_framework",
+        "cognitive_level_number",
+    ):
         if keep_key in old_data and keep_key not in new_q:
             new_q[keep_key] = old_data[keep_key]
 

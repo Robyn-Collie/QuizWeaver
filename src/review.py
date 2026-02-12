@@ -1,4 +1,5 @@
 import os
+
 from src.output import generate_pdf_preview
 
 
@@ -9,7 +10,7 @@ def clear_screen():
 def print_summary(questions, used_images):
     print("\n--- Quiz Draft Review ---")
     for i, q in enumerate(questions):
-        title = q.get("title", f"Question {i+1}")
+        title = q.get("title", f"Question {i + 1}")
         text = q.get("text", "")
 
         img_ref = q.get("image_ref")
@@ -19,19 +20,19 @@ def print_summary(questions, used_images):
         elif q.get("image_placeholder"):
             img_status = "Placeholder"
 
-        print(f"\n{i+1}. [{title}] ({img_status})")
+        print(f"\n{i + 1}. [{title}] ({img_status})")
         print(f"   {text}")
 
         # Show options if available
         options = q.get("options", [])
         if isinstance(options, list):
             for idx, opt in enumerate(options):
-                print(f"   {chr(65+idx)}. {opt}")
+                print(f"   {chr(65 + idx)}. {opt}")
 
         if "correct_answer" in q:
             print(f"   Answer: {q['correct_answer']}")
         elif "correct_index" in q:
-            print(f"   Answer: {chr(65+q['correct_index'])}")
+            print(f"   Answer: {chr(65 + q['correct_index'])}")
 
     print("\n-------------------------\n")
 
@@ -48,9 +49,7 @@ def interactive_review(questions, used_images, config, regenerate_callback):
     while True:
         # Generate/Update PDF Preview
         try:
-            generate_pdf_preview(
-                questions, draft_filename, "Draft Quiz Preview", image_map
-            )
+            generate_pdf_preview(questions, draft_filename, "Draft Quiz Preview", image_map)
             print(f"\n[Preview] Draft PDF generated: {os.path.abspath(draft_filename)}")
             print("Please open this file to review the quiz layout and images.")
         except Exception as e:

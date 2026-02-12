@@ -17,13 +17,12 @@ Supports multiple standard sets:
 
 import json
 import os
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
-from sqlalchemy.orm import Session
 from sqlalchemy import or_
+from sqlalchemy.orm import Session
 
 from src.database import Standard
-
 
 # Registry of available standard sets with metadata
 STANDARD_SETS = {
@@ -43,11 +42,13 @@ def get_available_standard_sets() -> List[Dict]:
     """
     result = []
     for key, info in STANDARD_SETS.items():
-        result.append({
-            "key": key,
-            "label": info["label"],
-            "file": info["file"],
-        })
+        result.append(
+            {
+                "key": key,
+                "label": info["label"],
+                "file": info["file"],
+            }
+        )
     return result
 
 
@@ -74,18 +75,13 @@ def load_standard_set(session: Session, standard_set: str = "sol") -> int:
         FileNotFoundError: If the data file does not exist
     """
     if standard_set not in STANDARD_SETS:
-        raise ValueError(
-            f"Unknown standard set '{standard_set}'. "
-            f"Available: {list(STANDARD_SETS.keys())}"
-        )
+        raise ValueError(f"Unknown standard set '{standard_set}'. Available: {list(STANDARD_SETS.keys())}")
 
     info = STANDARD_SETS[standard_set]
     json_path = os.path.join(get_data_dir(), info["file"])
 
     if not os.path.exists(json_path):
-        raise FileNotFoundError(
-            f"Standards data file not found: {json_path}"
-        )
+        raise FileNotFoundError(f"Standards data file not found: {json_path}")
 
     return load_standards_from_json(session, json_path)
 
@@ -325,7 +321,7 @@ def load_standards_from_json(session: Session, json_path: str) -> int:
         FileNotFoundError: If the JSON file does not exist
         json.JSONDecodeError: If the file is not valid JSON
     """
-    with open(json_path, "r", encoding="utf-8") as f:
+    with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
 
     standards_list = data.get("standards", [])
@@ -469,11 +465,8 @@ def get_standard_sets_in_db(session: Session) -> List[Dict]:
         List of dicts with 'key', 'label', 'count'
     """
     from sqlalchemy import func
-    results = (
-        session.query(Standard.standard_set, func.count(Standard.id))
-        .group_by(Standard.standard_set)
-        .all()
-    )
+
+    results = session.query(Standard.standard_set, func.count(Standard.id)).group_by(Standard.standard_set).all()
     sets = []
     for set_key, count in results:
         if not set_key:

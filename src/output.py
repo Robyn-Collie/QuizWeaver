@@ -1,11 +1,11 @@
-import zipfile
 import os
 import uuid
+import zipfile
 from datetime import datetime
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.utils import ImageReader
 
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.utils import ImageReader
+from reportlab.pdfgen import canvas
 
 # --- QTI XML Templates ---
 
@@ -117,9 +117,7 @@ def create_mc_question(
     )
 
 
-def create_tf_question(
-    id, title, text, points, is_true, image_ref=None, image_placeholder=None
-):
+def create_tf_question(id, title, text, points, is_true, image_ref=None, image_placeholder=None):
     return create_mc_question(
         id,
         title,
@@ -132,9 +130,7 @@ def create_tf_question(
     )
 
 
-def create_essay_question(
-    id, title, text, points, image_ref=None, image_placeholder=None
-):
+def create_essay_question(id, title, text, points, image_ref=None, image_placeholder=None):
     response_block = """<response_str ident="response1" rcardinality="Single">
             <render_fib>
               <response_label ident="answer1"/>
@@ -185,9 +181,7 @@ def create_multiple_answers_question(
         if i in correct_indices:
             conditions += f'<varequal respident="response1">opt_{i}</varequal>'
         else:
-            conditions += (
-                f'<not><varequal respident="response1">opt_{i}</varequal></not>'
-            )
+            conditions += f'<not><varequal respident="response1">opt_{i}</varequal></not>'
 
     processing_block = f"""<respcondition continue="No">
             <conditionvar>
@@ -225,13 +219,13 @@ def generate_pdf_preview(questions, filename, quiz_title, image_map=None):
 
         q_text = q.get("text", "")
         q_type = q.get("type", "")
-        q_title = q.get("title", f"Question {i+1}")
+        q_title = q.get("title", f"Question {i + 1}")
         q_points = q.get("points", 5)
         image_ref = q.get("image_ref")
         image_placeholder = q.get("image_placeholder")
 
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, y_position, f"{i+1}. {q_title} ({q_points} points)")
+        c.drawString(50, y_position, f"{i + 1}. {q_title} ({q_points} points)")
         y_position -= 20
 
         # Draw Image or Placeholder
@@ -270,9 +264,7 @@ def generate_pdf_preview(questions, filename, quiz_title, image_map=None):
             # Simple text wrap for placeholder
             c.setFont("Helvetica-Oblique", 10)
             c.drawString(60, y_position - 20, "IMAGE PLACEHOLDER:")
-            c.drawString(
-                60, y_position - 35, image_placeholder[:80]
-            )  # Truncate for simplicity
+            c.drawString(60, y_position - 35, image_placeholder[:80])  # Truncate for simplicity
             y_position -= 70
 
         c.setFont("Helvetica", 10)
@@ -324,7 +316,7 @@ def create_qti_package(questions, used_images, config):
     # Build XML for each question
     question_xml_parts = []
     for i, q in enumerate(questions):
-        q_id = f"q{i+1}"
+        q_id = f"q{i + 1}"
         image_ref = q.get("image_ref")
         image_placeholder = q.get("image_placeholder")
 
@@ -398,9 +390,7 @@ def create_qti_package(questions, used_images, config):
             )
 
     # Assemble the full assessment XML
-    quiz_content = ASSESSMENT_HEADER.format(
-        assessment_id=assessment_id, title=config["generation"]["quiz_title"]
-    )
+    quiz_content = ASSESSMENT_HEADER.format(assessment_id=assessment_id, title=config["generation"]["quiz_title"])
     quiz_content += "\n".join(question_xml_parts)
     quiz_content += ASSESSMENT_FOOTER
 

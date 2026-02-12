@@ -12,10 +12,14 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question,
-    get_engine, get_session,
+    Base,
+    Class,
+    Question,
+    Quiz,
+    get_engine,
+    get_session,
 )
-from src.variant_generator import generate_variant, READING_LEVELS
+from src.variant_generator import generate_variant
 
 
 @pytest.fixture
@@ -51,16 +55,18 @@ def db_session():
         q = Question(
             quiz_id=quiz.id,
             question_type="mc",
-            title=f"Q{i+1}",
-            text=f"What is photosynthesis concept {i+1}?",
+            title=f"Q{i + 1}",
+            text=f"What is photosynthesis concept {i + 1}?",
             points=5.0,
             sort_order=i,
-            data=json.dumps({
-                "type": "mc",
-                "text": f"What is photosynthesis concept {i+1}?",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": i % 4,
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "text": f"What is photosynthesis concept {i + 1}?",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": i % 4,
+                }
+            ),
         )
         session.add(q)
     session.commit()

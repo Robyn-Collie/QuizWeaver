@@ -8,23 +8,24 @@ Verifies:
 - Error types (ValueError, ImportError) remain unchanged
 """
 
-import os
 import json
+import os
 import tempfile
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from src.llm_provider import (
-    get_provider,
     AnthropicProvider,
-    VertexAnthropicProvider,
     VertexAIProvider,
+    VertexAnthropicProvider,
+    get_provider,
 )
-
 
 # ---------------------------------------------------------------------------
 # 1. Provider factory: teacher-friendly error messages
 # ---------------------------------------------------------------------------
+
 
 class TestGeminiMissingKey:
     """Gemini provider without API key mentions Settings and Setup Wizard."""
@@ -162,21 +163,18 @@ class TestImportErrorMessages:
     def test_vertex_anthropic_init_import_error_mentions_pip_install(self):
         with patch("src.llm_provider._ANTHROPIC_AVAILABLE", False):
             with pytest.raises(ImportError, match=r"pip install anthropic\[vertex\]"):
-                VertexAnthropicProvider(
-                    project_id="proj", location="us-east5"
-                )
+                VertexAnthropicProvider(project_id="proj", location="us-east5")
 
     def test_vertex_ai_init_import_error_mentions_pip_install(self):
         with patch("src.llm_provider._GENAI_AVAILABLE", False):
             with pytest.raises(ImportError, match="pip install google-genai"):
-                VertexAIProvider(
-                    project_id="proj", location="us-central1"
-                )
+                VertexAIProvider(project_id="proj", location="us-central1")
 
 
 # ---------------------------------------------------------------------------
 # 2. Test-provider endpoint: error classification with helpful hints
 # ---------------------------------------------------------------------------
+
 
 class TestTestProviderErrorClassification:
     """Test that the test-provider endpoint adds helpful hints to common errors."""
@@ -185,6 +183,7 @@ class TestTestProviderErrorClassification:
     def app(self):
         db_fd, db_path = tempfile.mkstemp(suffix=".db")
         from src.database import Base, get_engine, get_session
+
         engine = get_engine(db_path)
         Base.metadata.create_all(engine)
         session = get_session(engine)
@@ -192,6 +191,7 @@ class TestTestProviderErrorClassification:
         engine.dispose()
 
         from src.web.app import create_app
+
         test_config = {
             "paths": {"database_file": db_path},
             "llm": {"provider": "mock"},

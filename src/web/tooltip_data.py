@@ -23,41 +23,34 @@ AI_TOOLTIPS = {
         "The AI receives your lesson summaries, topics, and standards to generate questions. "
         "No student names or personal data is sent."
     ),
-
     # Quiz detail / review page
     "review_reminder": (
         "AI-generated questions are drafts. Review each question for accuracy, "
         "bias, and grade-level appropriateness before sharing with students."
     ),
-
     # Study material pages
     "study_review": (
         "Always verify AI-generated study content against your lesson materials. "
         "AI can produce plausible-sounding but inaccurate information."
     ),
-
     # Settings page
     "api_key_privacy": (
-        "Your API key is stored locally on this computer only. "
-        "It is never shared with QuizWeaver or any third party."
+        "Your API key is stored locally on this computer only. It is never shared with QuizWeaver or any third party."
     ),
     "mock_provider": (
         "Mock mode generates placeholder content at zero cost. "
         "Use it to explore QuizWeaver before connecting a real AI provider."
     ),
-
     # Lesson logging
     "lesson_privacy": (
         "Lesson content you enter here may be sent to your AI provider during quiz generation. "
         "Never include student names or personally identifiable information."
     ),
-
     # Lesson logging value
     "lesson_logging_value": (
         "Logging lessons creates context for AI generation. The more lessons you log, "
         "the better QuizWeaver can align quizzes and study materials to what you've actually taught."
     ),
-
     # Rubric detail
     "rubric_review": (
         "Rubric criteria are structured by fixed proficiency levels, but descriptions "

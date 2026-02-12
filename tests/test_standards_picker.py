@@ -1,14 +1,11 @@
 """Tests for the standards picker UX (API endpoint + template integration)."""
 
-import json
 import os
 import tempfile
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from src.database import Base, Standard, get_session as db_get_session
-from src.standards import create_standard, load_standards_from_json
+import pytest
+
+from src.standards import create_standard
 
 
 @pytest.fixture
@@ -18,7 +15,8 @@ def app():
     db_path = db_fd.name
     db_fd.close()
 
-    from src.database import get_engine, init_db, get_session, Class
+    from src.database import Class, get_engine, get_session, init_db
+
     engine = get_engine(db_path)
     init_db(engine)
 
@@ -30,14 +28,38 @@ def app():
     session.commit()
 
     # Load some standards
-    create_standard(session, code="SOL 7.1", description="Negative exponents",
-                    subject="Mathematics", grade_band="6-8", strand="Number Sense")
-    create_standard(session, code="SOL 7.2", description="Rational numbers",
-                    subject="Mathematics", grade_band="6-8", strand="Computation")
-    create_standard(session, code="SOL 7.1E", description="Scientific investigation",
-                    subject="Science", grade_band="6-8", strand="Investigation")
-    create_standard(session, code="SOL 8.5R", description="Fictional texts analysis",
-                    subject="English", grade_band="6-8", strand="Reading")
+    create_standard(
+        session,
+        code="SOL 7.1",
+        description="Negative exponents",
+        subject="Mathematics",
+        grade_band="6-8",
+        strand="Number Sense",
+    )
+    create_standard(
+        session,
+        code="SOL 7.2",
+        description="Rational numbers",
+        subject="Mathematics",
+        grade_band="6-8",
+        strand="Computation",
+    )
+    create_standard(
+        session,
+        code="SOL 7.1E",
+        description="Scientific investigation",
+        subject="Science",
+        grade_band="6-8",
+        strand="Investigation",
+    )
+    create_standard(
+        session,
+        code="SOL 8.5R",
+        description="Fictional texts analysis",
+        subject="English",
+        grade_band="6-8",
+        strand="Reading",
+    )
     session.close()
     engine.dispose()
 
@@ -48,6 +70,7 @@ def app():
     }
 
     from src.web.app import create_app
+
     app = create_app(config)
     app.config["TESTING"] = True
     app.config["DB_PATH"] = db_path
@@ -151,7 +174,8 @@ class TestStandardsPickerInForms:
 
     def test_edit_class_has_picker(self, client):
         # Create a class first
-        from src.database import get_engine, get_session, Class
+        from src.database import Class, get_engine, get_session
+
         engine = get_engine(client.application.config["DB_PATH"])
         session = get_session(engine)
         cls = Class(name="Test Class", standards='["SOL 7.1", "SOL 7.2"]')
@@ -170,7 +194,8 @@ class TestStandardsPickerInForms:
 
     def test_generate_quiz_has_picker(self, client):
         # Create a class first
-        from src.database import get_engine, get_session, Class
+        from src.database import Class, get_engine, get_session
+
         engine = get_engine(client.application.config["DB_PATH"])
         session = get_session(engine)
         cls = Class(name="Test Class", standards='["SOL 7.1"]')
@@ -189,12 +214,16 @@ class TestStandardsPickerInForms:
         assert "sol_standards_chips" in html
 
     def test_new_class_submit_with_standards(self, client):
-        resp = client.post("/classes/new", data={
-            "name": "Picker Test Class",
-            "grade_level": "7th Grade",
-            "subject": "Math",
-            "standards": "SOL 7.1, SOL 7.2",
-        }, follow_redirects=True)
+        resp = client.post(
+            "/classes/new",
+            data={
+                "name": "Picker Test Class",
+                "grade_level": "7th Grade",
+                "subject": "Math",
+                "standards": "SOL 7.1, SOL 7.2",
+            },
+            follow_redirects=True,
+        )
         assert resp.status_code == 200
 
     def test_standards_page_accessible(self, client):

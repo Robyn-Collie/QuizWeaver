@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+
 from PIL import Image, ImageDraw, ImageFont
 
 # Try to import Vertex AI modules
@@ -83,15 +84,13 @@ def create_placeholder_image(text):
         # Try to use a standard font if available
         font = ImageFont.truetype("arial.ttf", 14)
         title_font = ImageFont.truetype("arial.ttf", 20)
-    except IOError:
+    except OSError:
         # Fallback to default font
         font = ImageFont.load_default()
         title_font = ImageFont.load_default()
 
     # Draw Title
-    d.text(
-        (20, height / 2 - 40), "AI Image Placeholder", fill=(0, 0, 0), font=title_font
-    )
+    d.text((20, height / 2 - 40), "AI Image Placeholder", fill=(0, 0, 0), font=title_font)
 
     # Wrap text
     margin = 20

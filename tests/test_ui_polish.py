@@ -2,9 +2,10 @@
 Tests for UI polish features (Session 6): dark mode, toasts, print, health.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session
@@ -24,6 +25,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -60,6 +62,7 @@ def anon_client(app):
 # TestDarkMode
 # ============================================================
 
+
 class TestDarkMode:
     """Test dark mode UI elements."""
 
@@ -77,7 +80,7 @@ class TestDarkMode:
     def test_dark_css_vars_exist(self, app):
         """CSS file contains dark theme variables."""
         css_path = os.path.join(app.static_folder, "css", "style.css")
-        with open(css_path, "r") as f:
+        with open(css_path) as f:
             css = f.read()
         assert 'data-theme="dark"' in css
         assert "--bg: #1a1e24" in css
@@ -86,6 +89,7 @@ class TestDarkMode:
 # ============================================================
 # TestToast
 # ============================================================
+
 
 class TestToast:
     """Test toast notification elements."""
@@ -105,13 +109,14 @@ class TestToast:
 # TestPrint
 # ============================================================
 
+
 class TestPrint:
     """Test print CSS."""
 
     def test_print_media_query_in_css(self, app):
         """CSS file contains @media print block."""
         css_path = os.path.join(app.static_folder, "css", "style.css")
-        with open(css_path, "r") as f:
+        with open(css_path) as f:
             css = f.read()
         assert "@media print" in css
 
@@ -119,6 +124,7 @@ class TestPrint:
 # ============================================================
 # TestHealth
 # ============================================================
+
 
 class TestHealth:
     """Test health check endpoint."""

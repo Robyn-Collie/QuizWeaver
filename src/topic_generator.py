@@ -8,15 +8,14 @@ study_generator based on the requested output type.
 
 import json
 import logging
-from typing import Optional, List
+from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
-from src.classroom import get_class
-from src.lesson_tracker import get_assumed_knowledge
 from src.database import LessonLog
+from src.lesson_tracker import get_assumed_knowledge
 from src.quiz_generator import generate_quiz
-from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
+from src.study_generator import VALID_MATERIAL_TYPES, generate_study_material
 
 logger = logging.getLogger(__name__)
 
@@ -35,11 +34,7 @@ def get_class_topics(session: Session, class_id: int) -> List[str]:
     Returns:
         Sorted list of unique topic strings
     """
-    lessons = (
-        session.query(LessonLog)
-        .filter(LessonLog.class_id == class_id)
-        .all()
-    )
+    lessons = session.query(LessonLog).filter(LessonLog.class_id == class_id).all()
     topics = set()
     for lesson in lessons:
         if lesson.topics:
@@ -157,6 +152,7 @@ def _enrich_config_with_topics(config, topics, class_id, session):
     Does not mutate the original config.
     """
     import copy
+
     enriched = copy.deepcopy(config)
 
     # Inject topic context into the generation section

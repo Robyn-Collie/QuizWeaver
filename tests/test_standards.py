@@ -3,23 +3,24 @@
 import json
 import os
 import tempfile
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.database import Base, Standard
+from src.database import Base
 from src.standards import (
+    bulk_import_standards,
     create_standard,
+    delete_standard,
+    get_grade_bands,
     get_standard,
     get_standard_by_code,
-    list_standards,
-    search_standards,
-    delete_standard,
-    bulk_import_standards,
-    load_standards_from_json,
-    get_subjects,
-    get_grade_bands,
     get_strands,
+    get_subjects,
+    list_standards,
+    load_standards_from_json,
+    search_standards,
     standards_count,
 )
 
@@ -267,9 +268,7 @@ class TestLoadFromJSON:
                 {"code": "SOL J.2", "description": "JSON Test 2", "subject": "Science"},
             ],
         }
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False, encoding="utf-8"
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False, encoding="utf-8") as f:
             json.dump(data, f)
             json_path = f.name
 

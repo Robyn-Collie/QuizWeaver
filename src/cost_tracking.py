@@ -6,9 +6,8 @@ accidental overspending when using real LLM providers.
 """
 
 import os
-from datetime import datetime, date
-from typing import Dict, Any, Tuple, Optional
-
+from datetime import date, datetime
+from typing import Any, Dict, Optional, Tuple
 
 # Pricing table (per 1M tokens) for known models
 MODEL_PRICING = {
@@ -21,9 +20,7 @@ MODEL_PRICING = {
 DEFAULT_LOG_FILE = "api_costs.log"
 
 
-def estimate_cost(
-    model: str, input_tokens: int, output_tokens: int
-) -> float:
+def estimate_cost(model: str, input_tokens: int, output_tokens: int) -> float:
     """
     Estimate cost based on model pricing table.
 
@@ -103,7 +100,7 @@ def get_cost_summary(log_file: str = DEFAULT_LOG_FILE) -> Dict[str, Any]:
         return summary
 
     try:
-        with open(log_file, "r") as f:
+        with open(log_file) as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -126,9 +123,7 @@ def get_cost_summary(log_file: str = DEFAULT_LOG_FILE) -> Dict[str, Any]:
 
                 # By provider
                 if provider not in summary["by_provider"]:
-                    summary["by_provider"][provider] = {
-                        "calls": 0, "cost": 0.0
-                    }
+                    summary["by_provider"][provider] = {"calls": 0, "cost": 0.0}
                 summary["by_provider"][provider]["calls"] += 1
                 summary["by_provider"][provider]["cost"] += cost
 
@@ -148,9 +143,7 @@ def get_cost_summary(log_file: str = DEFAULT_LOG_FILE) -> Dict[str, Any]:
     return summary
 
 
-def check_rate_limit(
-    config: dict, log_file: str = DEFAULT_LOG_FILE
-) -> Tuple[bool, int, float]:
+def check_rate_limit(config: dict, log_file: str = DEFAULT_LOG_FILE) -> Tuple[bool, int, float]:
     """
     Check if rate limits have been exceeded.
 
@@ -223,14 +216,12 @@ def summarize_lesson_context(lesson_logs: list, assumed_knowledge: dict, max_cha
     summary = "\n".join(parts)
     if len(summary) > max_chars:
         truncation_marker = "\n... (truncated)"
-        summary = summary[:max_chars - len(truncation_marker)] + truncation_marker
+        summary = summary[: max_chars - len(truncation_marker)] + truncation_marker
 
     return summary
 
 
-def estimate_pipeline_cost(
-    config: dict, max_retries: int = 3
-) -> Dict[str, Any]:
+def estimate_pipeline_cost(config: dict, max_retries: int = 3) -> Dict[str, Any]:
     """
     Estimate the cost of running the full agent pipeline.
 
@@ -308,7 +299,7 @@ def get_monthly_total(
         return result
 
     try:
-        with open(log_file, "r") as f:
+        with open(log_file) as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -328,9 +319,7 @@ def get_monthly_total(
     return result
 
 
-def check_budget(
-    config: dict, log_file: str = DEFAULT_LOG_FILE
-) -> Dict[str, Any]:
+def check_budget(config: dict, log_file: str = DEFAULT_LOG_FILE) -> Dict[str, Any]:
     """
     Check monthly budget status.
 

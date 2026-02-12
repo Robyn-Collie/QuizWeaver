@@ -7,25 +7,26 @@ rate limit checking, report formatting, and mock provider behavior.
 
 import os
 import tempfile
+
 import pytest
 
 from src.cost_tracking import (
-    estimate_cost,
-    log_api_call,
-    get_cost_summary,
+    DEFAULT_LOG_FILE,
+    MODEL_PRICING,
     check_rate_limit,
-    format_cost_report,
+    estimate_cost,
     estimate_pipeline_cost,
     estimate_tokens,
+    format_cost_report,
+    get_cost_summary,
+    log_api_call,
     summarize_lesson_context,
-    MODEL_PRICING,
-    DEFAULT_LOG_FILE,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _create_temp_log():
     """Create a temp file for use as a cost log. Caller must clean up."""
@@ -47,6 +48,7 @@ def _remove_if_exists(path):
 # 1. test_estimate_cost - known model pricing
 # ---------------------------------------------------------------------------
 
+
 class TestEstimateCost:
     def test_estimate_cost_known_model(self):
         """Verify cost calculation for a known model (gemini-1.5-flash)."""
@@ -58,9 +60,7 @@ class TestEstimateCost:
         expected = pricing["input"] + pricing["output"]
 
         result = estimate_cost(model, input_tokens, output_tokens)
-        assert result == pytest.approx(expected), (
-            f"Expected {expected}, got {result}"
-        )
+        assert result == pytest.approx(expected), f"Expected {expected}, got {result}"
 
     def test_estimate_cost_small_token_count(self):
         """Verify cost scales linearly for small token counts."""
@@ -100,6 +100,7 @@ class TestEstimateCost:
 # 3. test_log_api_call - log to temp file, verify line written
 # ---------------------------------------------------------------------------
 
+
 class TestLogApiCall:
     def test_log_api_call(self):
         """Log an API call with explicit cost and verify the line is written."""
@@ -116,7 +117,7 @@ class TestLogApiCall:
             assert success is True
             assert os.path.exists(log_path)
 
-            with open(log_path, "r") as f:
+            with open(log_path) as f:
                 lines = f.readlines()
 
             assert len(lines) == 1
@@ -147,7 +148,7 @@ class TestLogApiCall:
             )
             assert success is True
 
-            with open(log_path, "r") as f:
+            with open(log_path) as f:
                 line = f.readline().strip()
 
             parts = [p.strip() for p in line.split("|")]
@@ -166,7 +167,7 @@ class TestLogApiCall:
             log_api_call("vertex", "gemini-1.5-pro", 200, 100, cost=0.02, log_file=log_path)
             log_api_call("gemini", "gemini-2.5-flash", 300, 150, cost=0.03, log_file=log_path)
 
-            with open(log_path, "r") as f:
+            with open(log_path) as f:
                 lines = f.readlines()
             assert len(lines) == 3
         finally:
@@ -176,6 +177,7 @@ class TestLogApiCall:
 # ---------------------------------------------------------------------------
 # 5. test_get_cost_summary_empty - no log file returns zeros
 # ---------------------------------------------------------------------------
+
 
 class TestGetCostSummary:
     def test_get_cost_summary_empty(self):
@@ -251,6 +253,7 @@ class TestGetCostSummary:
             assert len(summary["by_day"]) == 1
             # The key should be today's date in YYYY-MM-DD format
             from datetime import date
+
             today_str = date.today().isoformat()
             assert today_str in summary["by_day"]
             assert summary["by_day"][today_str]["calls"] == 1
@@ -275,6 +278,7 @@ class TestGetCostSummary:
 # 8. test_check_rate_limit_within - under limits
 # ---------------------------------------------------------------------------
 
+
 class TestCheckRateLimit:
     def test_check_rate_limit_within(self):
         """When under limits, is_exceeded is False with remaining counts."""
@@ -291,9 +295,7 @@ class TestCheckRateLimit:
             log_api_call("gemini", "gemini-1.5-flash", 1000, 500, cost=0.10, log_file=log_path)
             log_api_call("gemini", "gemini-1.5-flash", 1000, 500, cost=0.10, log_file=log_path)
 
-            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-                config, log_file=log_path
-            )
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=log_path)
 
             assert is_exceeded is False
             assert remaining_calls == 48
@@ -320,9 +322,7 @@ class TestCheckRateLimit:
             for _ in range(3):
                 log_api_call("gemini", "gemini-1.5-flash", 100, 50, cost=0.001, log_file=log_path)
 
-            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-                config, log_file=log_path
-            )
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=log_path)
 
             assert is_exceeded is True
             assert remaining_calls == 0
@@ -343,9 +343,7 @@ class TestCheckRateLimit:
             # Log a call that exceeds the budget
             log_api_call("vertex", "gemini-1.5-pro", 1000, 500, cost=1.50, log_file=log_path)
 
-            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-                config, log_file=log_path
-            )
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=log_path)
 
             assert is_exceeded is True
             assert remaining_budget == pytest.approx(0.0)
@@ -364,9 +362,7 @@ class TestCheckRateLimit:
             }
         }
 
-        is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-            config, log_file=nonexistent
-        )
+        is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=nonexistent)
 
         assert is_exceeded is False
         assert remaining_calls == 50
@@ -378,9 +374,7 @@ class TestCheckRateLimit:
         try:
             config = {}  # No llm config at all
 
-            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-                config, log_file=log_path
-            )
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=log_path)
 
             assert is_exceeded is False
             assert remaining_calls == 50
@@ -392,6 +386,7 @@ class TestCheckRateLimit:
 # ---------------------------------------------------------------------------
 # 10. test_format_cost_report - verify output format
 # ---------------------------------------------------------------------------
+
 
 class TestFormatCostReport:
     def test_format_cost_report_basic(self):
@@ -480,15 +475,14 @@ class TestFormatCostReport:
 # 11. test_mock_provider_no_logging - MockLLMProvider should not log costs
 # ---------------------------------------------------------------------------
 
+
 class TestMockProviderNoLogging:
     def test_mock_provider_no_logging(self):
         """MockLLMProvider.generate() should NOT create or write to the cost log."""
         from src.llm_provider import MockLLMProvider
 
         # Use a unique temp path that should NOT be created
-        log_path = os.path.join(
-            tempfile.gettempdir(), "mock_provider_should_not_create_this.log"
-        )
+        log_path = os.path.join(tempfile.gettempdir(), "mock_provider_should_not_create_this.log")
         _remove_if_exists(log_path)
 
         try:
@@ -502,9 +496,7 @@ class TestMockProviderNoLogging:
 
             # The mock provider should NOT have created any cost log
             # (Cost logging only happens in GeminiProvider and VertexAIProvider)
-            assert not os.path.exists(log_path), (
-                "MockLLMProvider should not create cost log files"
-            )
+            assert not os.path.exists(log_path), "MockLLMProvider should not create cost log files"
         finally:
             _remove_if_exists(log_path)
 
@@ -524,19 +516,16 @@ class TestMockProviderNoLogging:
         if existed_before:
             # File size should not have changed
             size_after = os.path.getsize(default_log)
-            assert size_after == size_before, (
-                "MockLLMProvider should not append to existing cost log"
-            )
+            assert size_after == size_before, "MockLLMProvider should not append to existing cost log"
         else:
             # File should not have been created
-            assert not os.path.exists(default_log), (
-                "MockLLMProvider should not create default cost log"
-            )
+            assert not os.path.exists(default_log), "MockLLMProvider should not create default cost log"
 
 
 # ---------------------------------------------------------------------------
 # Integration: round-trip test
 # ---------------------------------------------------------------------------
+
 
 class TestEstimatePipelineCost:
     def test_estimate_pipeline_cost_mock_provider(self):
@@ -681,9 +670,7 @@ class TestIntegration:
 
             # Check rate limit
             config = {"llm": {"max_calls_per_session": 10, "max_cost_per_session": 5.00}}
-            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(
-                config, log_file=log_path
-            )
+            is_exceeded, remaining_calls, remaining_budget = check_rate_limit(config, log_file=log_path)
             assert is_exceeded is False
             assert remaining_calls == 7
         finally:

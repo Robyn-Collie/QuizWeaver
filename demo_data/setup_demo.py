@@ -15,16 +15,16 @@ The script will:
 Note: This script is idempotent - it will skip creating classes/lessons if they already exist.
 """
 
-import sys
 import os
+import sys
 from datetime import date
 
 # Add project root to sys.path so imports work from any directory
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from src.database import get_engine, get_session
 from src.classroom import create_class
+from src.database import get_engine, get_session
 from src.lesson_tracker import log_lesson
 from src.migrations import init_database_with_migrations
 
@@ -69,7 +69,7 @@ def setup_demo_data():
             name="7th Grade Science - Block A",
             grade_level="7th Grade",
             subject="Science",
-            standards=["SOL 7.1", "SOL 7.2", "SOL 7.3"]
+            standards=["SOL 7.1", "SOL 7.2", "SOL 7.3"],
         )
         session.commit()
         classes_created.append(class1)
@@ -81,7 +81,7 @@ def setup_demo_data():
             name="8th Grade Earth Science",
             grade_level="8th Grade",
             subject="Earth Science",
-            standards=["SOL 8.1", "SOL 8.2"]
+            standards=["SOL 8.1", "SOL 8.2"],
         )
         session.commit()
         classes_created.append(class2)
@@ -121,7 +121,7 @@ Activities:
             topics=["photosynthesis", "chloroplasts", "light reactions", "Calvin cycle", "glucose production"],
             notes="Students struggled with understanding the difference between light-dependent and light-independent reactions. Need to review the flow of energy through both stages.",
             lesson_date=date(2026, 2, 3),
-            standards_addressed=["SOL 7.1", "SOL 7.2"]
+            standards_addressed=["SOL 7.1", "SOL 7.2"],
         )
         session.commit()
         lessons_logged[class1.id] += 1
@@ -150,10 +150,18 @@ Activities:
 
 Assessment:
 - Students completed a concept map showing the relationship between photosynthesis and cellular respiration""",
-            topics=["cellular respiration", "ATP", "mitochondria", "glycolysis", "Krebs cycle", "electron transport chain", "fermentation"],
+            topics=[
+                "cellular respiration",
+                "ATP",
+                "mitochondria",
+                "glycolysis",
+                "Krebs cycle",
+                "electron transport chain",
+                "fermentation",
+            ],
             notes="Strong understanding of the overall process. Some confusion about where each stage occurs in the cell. The yeast lab was very engaging - students loved seeing the balloons inflate from CO2 production.",
             lesson_date=date(2026, 2, 4),
-            standards_addressed=["SOL 7.1", "SOL 7.3"]
+            standards_addressed=["SOL 7.1", "SOL 7.3"],
         )
         session.commit()
         lessons_logged[class1.id] += 1
@@ -188,10 +196,19 @@ Activities:
 Discussion:
 - Why is Virginia's water quality important for the Chesapeake Bay?
 - How does the water cycle connect to weather and climate?""",
-            topics=["water cycle", "evaporation", "precipitation", "condensation", "infiltration", "runoff", "groundwater", "Chesapeake Bay"],
+            topics=[
+                "water cycle",
+                "evaporation",
+                "precipitation",
+                "condensation",
+                "infiltration",
+                "runoff",
+                "groundwater",
+                "Chesapeake Bay",
+            ],
             notes="Students had great prior knowledge from elementary school. Focused on the energy aspects and human impacts. Need to review the differences between weather and climate before our next unit.",
             lesson_date=date(2026, 2, 5),
-            standards_addressed=["SOL 8.1"]
+            standards_addressed=["SOL 8.1"],
         )
         session.commit()
         lessons_logged[class2.id] += 1
@@ -226,10 +243,19 @@ Activities:
 
 Key Vocabulary:
 organelle, nucleus, mitochondria, chloroplast, cell membrane, cell wall, cytoplasm, ribosome""",
-            topics=["cell structure", "organelles", "cell theory", "plant cells", "animal cells", "microscopy", "prokaryotic", "eukaryotic"],
+            topics=[
+                "cell structure",
+                "organelles",
+                "cell theory",
+                "plant cells",
+                "animal cells",
+                "microscopy",
+                "prokaryotic",
+                "eukaryotic",
+            ],
             notes="Microscope lab went well! Most students successfully focused and saw cells. A few students still struggling with the concept that cells are three-dimensional, not flat like in diagrams. The cell model project is due next week - students are excited about getting creative.",
             lesson_date=date(2026, 2, 6),
-            standards_addressed=["SOL 7.1"]
+            standards_addressed=["SOL 7.1"],
         )
         session.commit()
         lessons_logged[class1.id] += 1
@@ -276,5 +302,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n[FAIL] Unexpected error: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

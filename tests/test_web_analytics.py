@@ -13,8 +13,13 @@ from datetime import date
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, PerformanceData,
-    get_engine, get_session,
+    Base,
+    Class,
+    PerformanceData,
+    Question,
+    Quiz,
+    get_engine,
+    get_session,
 )
 
 
@@ -32,11 +37,13 @@ def app():
         grade_level="7th Grade",
         subject="Science",
         standards=json.dumps(["SOL 7.1"]),
-        config=json.dumps({
-            "assumed_knowledge": {
-                "photosynthesis": {"depth": 2, "last_taught": "2025-03-01", "mention_count": 2},
+        config=json.dumps(
+            {
+                "assumed_knowledge": {
+                    "photosynthesis": {"depth": 2, "last_taught": "2025-03-01", "mention_count": 2},
+                }
             }
-        }),
+        ),
     )
     session.add(cls)
     session.commit()
@@ -54,16 +61,18 @@ def app():
         q = Question(
             quiz_id=quiz.id,
             question_type="mc",
-            title=f"Q{i+1}",
-            text=f"Question about topic {i+1}?",
+            title=f"Q{i + 1}",
+            text=f"Question about topic {i + 1}?",
             points=5.0,
             sort_order=i,
-            data=json.dumps({
-                "type": "mc",
-                "topic": f"topic_{i+1}",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "topic": f"topic_{i + 1}",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                }
+            ),
         )
         session.add(q)
     session.commit()
@@ -85,6 +94,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -119,6 +129,7 @@ def anon_client(app):
 
 # --- Auth Tests ---
 
+
 class TestAnalyticsAuth:
     def test_dashboard_requires_login(self, anon_client):
         resp = anon_client.get("/classes/1/analytics")
@@ -135,6 +146,7 @@ class TestAnalyticsAuth:
 
 # --- Dashboard Tests ---
 
+
 class TestAnalyticsDashboard:
     def test_dashboard_loads(self, client):
         resp = client.get("/classes/1/analytics")
@@ -148,11 +160,14 @@ class TestAnalyticsDashboard:
 
     def test_dashboard_empty_state(self, client):
         # Create class with no performance data
-        resp = client.post("/classes/new", data={
-            "name": "Empty Class",
-            "grade_level": "8th",
-            "subject": "Math",
-        })
+        resp = client.post(
+            "/classes/new",
+            data={
+                "name": "Empty Class",
+                "grade_level": "8th",
+                "subject": "Math",
+            },
+        )
         assert resp.status_code == 303
         resp = client.get("/classes/2/analytics")
         assert resp.status_code == 200
@@ -160,6 +175,7 @@ class TestAnalyticsDashboard:
 
 
 # --- Import Tests ---
+
 
 class TestAnalyticsImport:
     def test_import_form_loads(self, client):
@@ -169,6 +185,7 @@ class TestAnalyticsImport:
 
     def test_csv_upload(self, client):
         from io import BytesIO
+
         csv_data = b"topic,score\ngenetics,72\ncell division,85\n"
         data = {
             "csv_file": (BytesIO(csv_data), "test.csv"),
@@ -182,6 +199,7 @@ class TestAnalyticsImport:
 
     def test_invalid_file_type(self, client):
         from io import BytesIO
+
         data = {
             "csv_file": (BytesIO(b"not csv"), "test.txt"),
         }
@@ -200,6 +218,7 @@ class TestAnalyticsImport:
 
 # --- Manual Entry Tests ---
 
+
 class TestAnalyticsManualEntry:
     def test_manual_form_loads(self, client):
         resp = client.get("/classes/1/analytics/manual")
@@ -207,17 +226,21 @@ class TestAnalyticsManualEntry:
         assert b"Manual Score Entry" in resp.data
 
     def test_post_creates_record(self, client):
-        resp = client.post("/classes/1/analytics/manual", data={
-            "topic": "genetics",
-            "score": "75",
-            "standard": "SOL 7.2",
-            "date": date.today().isoformat(),
-            "sample_size": "25",
-        })
+        resp = client.post(
+            "/classes/1/analytics/manual",
+            data={
+                "topic": "genetics",
+                "score": "75",
+                "standard": "SOL 7.2",
+                "date": date.today().isoformat(),
+                "sample_size": "25",
+            },
+        )
         assert resp.status_code == 303  # Redirect on success
 
 
 # --- Re-teach Tests ---
+
 
 class TestAnalyticsReteach:
     def test_reteach_page_loads(self, client):
@@ -226,16 +249,20 @@ class TestAnalyticsReteach:
         assert b"Re-teach Suggestions" in resp.data
 
     def test_post_generates_suggestions(self, client):
-        resp = client.post("/classes/1/analytics/reteach", data={
-            "focus_topics": "",
-            "max_suggestions": "5",
-        })
+        resp = client.post(
+            "/classes/1/analytics/reteach",
+            data={
+                "focus_topics": "",
+                "max_suggestions": "5",
+            },
+        )
         assert resp.status_code == 200
         # Should show suggestions or empty state
         assert b"Re-teach Suggestions" in resp.data
 
 
 # --- API Tests ---
+
 
 class TestAnalyticsAPI:
     def test_analytics_json(self, client):

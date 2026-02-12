@@ -12,10 +12,15 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, Rubric, RubricCriterion,
-    get_engine, get_session,
+    Base,
+    Class,
+    Question,
+    Quiz,
+    RubricCriterion,
+    get_engine,
+    get_session,
 )
-from src.rubric_generator import generate_rubric, PROFICIENCY_LEVELS
+from src.rubric_generator import PROFICIENCY_LEVELS, generate_rubric
 
 
 @pytest.fixture
@@ -42,11 +47,13 @@ def db_session():
         title="Photosynthesis Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "7th Grade",
-            "cognitive_framework": "blooms",
-            "sol_standards": ["SOL 7.1"],
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "7th Grade",
+                "cognitive_framework": "blooms",
+                "sol_standards": ["SOL 7.1"],
+            }
+        ),
     )
     session.add(quiz)
     session.commit()
@@ -55,18 +62,20 @@ def db_session():
         q = Question(
             quiz_id=quiz.id,
             question_type="mc",
-            title=f"Q{i+1}",
-            text=f"Photosynthesis question {i+1}?",
+            title=f"Q{i + 1}",
+            text=f"Photosynthesis question {i + 1}?",
             points=5.0,
             sort_order=i,
-            data=json.dumps({
-                "type": "mc",
-                "text": f"Photosynthesis question {i+1}?",
-                "options": ["A", "B", "C", "D"],
-                "correct_index": 0,
-                "cognitive_level": "Remember",
-                "cognitive_framework": "blooms",
-            }),
+            data=json.dumps(
+                {
+                    "type": "mc",
+                    "text": f"Photosynthesis question {i + 1}?",
+                    "options": ["A", "B", "C", "D"],
+                    "correct_index": 0,
+                    "cognitive_level": "Remember",
+                    "cognitive_framework": "blooms",
+                }
+            ),
         )
         session.add(q)
     session.commit()
@@ -141,10 +150,7 @@ class TestRubricGeneration:
         session, class_id, quiz_id = db_session
         result = generate_rubric(session, quiz_id, config)
         criteria = (
-            session.query(RubricCriterion)
-            .filter_by(rubric_id=result.id)
-            .order_by(RubricCriterion.sort_order)
-            .all()
+            session.query(RubricCriterion).filter_by(rubric_id=result.id).order_by(RubricCriterion.sort_order).all()
         )
         for i, c in enumerate(criteria):
             assert c.sort_order == i

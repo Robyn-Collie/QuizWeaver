@@ -2,11 +2,13 @@
 Tests for BL-026: Keyboard Shortcuts Discoverability Hint.
 Verifies the shortcuts hint appears in the footer on pages.
 """
+
+import json
 import os
 import tempfile
-import json
 
 import pytest
+
 from src.database import Base, Class, get_engine, get_session
 
 

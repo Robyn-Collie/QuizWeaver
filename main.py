@@ -1,19 +1,21 @@
-import os
 import argparse
-from dotenv import load_dotenv
+import os
+from datetime import date, datetime
+
 import yaml
-from datetime import datetime, date
+from dotenv import load_dotenv
+
+from src.agents import run_agentic_pipeline
+from src.classroom import create_class, get_class, list_classes, set_active_class
+from src.cost_tracking import format_cost_report, get_cost_summary
+from src.database import Asset, Lesson, Question, Quiz, get_engine, get_session, init_db
+from src.image_gen import generate_image
 
 # Import from our new library structure
-from src.ingestion import ingest_content, get_retake_analysis
-from src.agents import run_agentic_pipeline
-from src.output import generate_pdf_preview, create_qti_package
-from src.image_gen import generate_image
-from src.database import get_engine, init_db, get_session, Lesson, Asset, Quiz, Question
+from src.ingestion import get_retake_analysis, ingest_content
+from src.lesson_tracker import get_assumed_knowledge, list_lessons, log_lesson
+from src.output import create_qti_package, generate_pdf_preview
 from src.review import interactive_review
-from src.classroom import create_class, get_class, list_classes, get_active_class, set_active_class
-from src.lesson_tracker import log_lesson, list_lessons, get_assumed_knowledge
-from src.cost_tracking import get_cost_summary, format_cost_report
 
 
 def _get_db_session(config):
@@ -90,9 +92,7 @@ def handle_generate(config, args):
     retake_text, est_q_count, img_count, img_ratio = get_retake_analysis(config)
 
     num_questions = args.count if args.count else est_q_count
-    grade_level = (
-        args.grade if args.grade else config["generation"]["default_grade_level"]
-    )
+    grade_level = args.grade if args.grade else config["generation"]["default_grade_level"]
     sol_standards = args.sol if args.sol else config["generation"]["sol_standards"]
 
     # --- 2. Create Quiz Record ---
@@ -146,9 +146,7 @@ def handle_generate(config, args):
     print("\nStep 4: Assigning images and reviewing...")
     used_images = []
     generate_ai_images = config.get("generation", {}).get("generate_ai_images", True)
-    prefer_generated_images = config.get("generation", {}).get(
-        "prefer_generated_images", False
-    )
+    prefer_generated_images = config.get("generation", {}).get("prefer_generated_images", False)
 
     # We use a mutable copy of extracted_images to track usage
     available_extracted = extracted_images[:]
@@ -201,9 +199,7 @@ def handle_generate(config, args):
                 use_generated = True
 
             if use_generated:
-                api_key = os.getenv(
-                    "GEMINI_API_KEY"
-                )  # Keep for potential Gemini provider if needed
+                api_key = os.getenv("GEMINI_API_KEY")  # Keep for potential Gemini provider if needed
                 prompt = q_data.get("text", "A relevant science diagram.")
 
                 # Get Vertex config
@@ -229,9 +225,7 @@ def handle_generate(config, args):
             else:
                 # Placeholder
                 text_preview = q_data.get("text", "")[:50]
-                q_data["image_placeholder"] = (
-                    f"Image Recommendation: An image or diagram related to: {text_preview}..."
-                )
+                q_data["image_placeholder"] = f"Image Recommendation: An image or diagram related to: {text_preview}..."
                 image_ref = None
 
         q_data["image_ref"] = image_ref
@@ -243,9 +237,7 @@ def handle_generate(config, args):
     if interactive_mode and not no_interactive:
 
         def regen_callback(q_data):
-            api_key = os.getenv(
-                "GEMINI_API_KEY"
-            )  # Keep for potential Gemini provider if needed
+            api_key = os.getenv("GEMINI_API_KEY")  # Keep for potential Gemini provider if needed
             prompt = q_data.get("text", "A relevant science diagram.")
 
             # Get Vertex config
@@ -299,9 +291,7 @@ def handle_generate(config, args):
     )
 
     image_map = {ref: path for path, ref in used_images}
-    generate_pdf_preview(
-        output_questions, pdf_path, config["generation"]["quiz_title"], image_map
-    )
+    generate_pdf_preview(output_questions, pdf_path, config["generation"]["quiz_title"], image_map)
     print(f"   - PDF preview saved to: {pdf_path}")
 
     qti_path = create_qti_package(output_questions, used_images, config)
@@ -356,7 +346,7 @@ def handle_list_classes(config, args):
 
     classes = list_classes(session)
     if not classes:
-        print("No classes found. Create one with: python main.py new-class --name \"Class Name\"")
+        print('No classes found. Create one with: python main.py new-class --name "Class Name"')
         session.close()
         return
 
@@ -374,7 +364,7 @@ def handle_list_classes(config, args):
             f"{cls['lesson_count']:>7} {cls['quiz_count']:>7}"
         )
 
-    print(f"\n   * = active class")
+    print("\n   * = active class")
     session.close()
 
 
@@ -416,7 +406,7 @@ def handle_log_lesson(config, args):
     content = ""
     if args.file:
         try:
-            with open(args.file, "r") as f:
+            with open(args.file) as f:
                 content = f.read()
         except FileNotFoundError:
             print(f"Error: File not found: {args.file}")
@@ -447,6 +437,7 @@ def handle_log_lesson(config, args):
     )
 
     import json
+
     lesson_topics = json.loads(lesson.topics) if isinstance(lesson.topics, str) else (lesson.topics or [])
 
     print(f"Lesson logged for: {class_obj.name}")
@@ -493,6 +484,7 @@ def handle_list_lessons(config, args):
         return
 
     import json
+
     print(f"\n{'Date':<12} {'Topics':<40} {'Notes'}")
     print(f"{'---':<12} {'---':<40} {'---'}")
 
@@ -507,7 +499,7 @@ def handle_list_lessons(config, args):
     # Show assumed knowledge summary
     knowledge = get_assumed_knowledge(session, class_id)
     if knowledge:
-        print(f"\nAssumed Knowledge:")
+        print("\nAssumed Knowledge:")
         for topic, data in sorted(knowledge.items(), key=lambda x: x[1]["depth"], reverse=True):
             depth_label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
                 data["depth"], "unknown"
@@ -532,7 +524,7 @@ def handle_cost_summary(config, args):
 def main():
     load_dotenv()
     try:
-        with open("config.yaml", "r") as f:
+        with open("config.yaml") as f:
             config = yaml.safe_load(f)
     except FileNotFoundError:
         print("Error: config.yaml not found.")
@@ -542,117 +534,65 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # --- Ingest Command ---
-    subparsers.add_parser(
-        "ingest", help="Ingest content from the content directory into the database."
-    )
+    subparsers.add_parser("ingest", help="Ingest content from the content directory into the database.")
 
     # --- Generate Command ---
-    parser_generate = subparsers.add_parser(
-        "generate", help="Generate a new quiz from the content in the database."
-    )
-    parser_generate.add_argument(
-        "--count", type=int, help="Manually specify the number of questions."
-    )
-    parser_generate.add_argument(
-        "--grade", type=str, help="The grade level for the quiz."
-    )
-    parser_generate.add_argument(
-        "--sol", nargs="+", help="A list of SOL standards to focus on."
-    )
-    parser_generate.add_argument(
-        "--no-interactive", action="store_true", help="Skip interactive review."
-    )
+    parser_generate = subparsers.add_parser("generate", help="Generate a new quiz from the content in the database.")
+    parser_generate.add_argument("--count", type=int, help="Manually specify the number of questions.")
+    parser_generate.add_argument("--grade", type=str, help="The grade level for the quiz.")
+    parser_generate.add_argument("--sol", nargs="+", help="A list of SOL standards to focus on.")
+    parser_generate.add_argument("--no-interactive", action="store_true", help="Skip interactive review.")
     parser_generate.add_argument(
         "--class", dest="class_id", type=int, help="Override active class for this generation."
     )
 
     # --- New Class Command ---
-    parser_new_class = subparsers.add_parser(
-        "new-class", help="Create a new class/block."
-    )
+    parser_new_class = subparsers.add_parser("new-class", help="Create a new class/block.")
     parser_new_class.add_argument(
         "--name", required=True, help="Name of the class (e.g., '7th Grade Science - Block A')."
     )
-    parser_new_class.add_argument(
-        "--grade", type=str, help="Grade level (e.g., '7th Grade')."
-    )
-    parser_new_class.add_argument(
-        "--subject", type=str, help="Subject area (e.g., 'Science')."
-    )
-    parser_new_class.add_argument(
-        "--standards", type=str, help="Comma-separated standards (e.g., 'SOL 7.1,SOL 7.2')."
-    )
+    parser_new_class.add_argument("--grade", type=str, help="Grade level (e.g., '7th Grade').")
+    parser_new_class.add_argument("--subject", type=str, help="Subject area (e.g., 'Science').")
+    parser_new_class.add_argument("--standards", type=str, help="Comma-separated standards (e.g., 'SOL 7.1,SOL 7.2').")
 
     # --- List Classes Command ---
-    subparsers.add_parser(
-        "list-classes", help="List all classes/blocks."
-    )
+    subparsers.add_parser("list-classes", help="List all classes/blocks.")
 
     # --- Set Class Command ---
-    parser_set_class = subparsers.add_parser(
-        "set-class", help="Set the active class for subsequent commands."
-    )
-    parser_set_class.add_argument(
-        "class_id", type=int, help="The ID of the class to set as active."
-    )
+    parser_set_class = subparsers.add_parser("set-class", help="Set the active class for subsequent commands.")
+    parser_set_class.add_argument("class_id", type=int, help="The ID of the class to set as active.")
 
     # --- Log Lesson Command ---
-    parser_log_lesson = subparsers.add_parser(
-        "log-lesson", help="Log a lesson taught to a class."
-    )
-    parser_log_lesson.add_argument(
-        "--text", type=str, help="Lesson content text."
-    )
-    parser_log_lesson.add_argument(
-        "--file", type=str, help="Path to file containing lesson content."
-    )
-    parser_log_lesson.add_argument(
-        "--notes", type=str, help="Teacher observations/notes."
-    )
-    parser_log_lesson.add_argument(
-        "--topics", type=str, help="Comma-separated topic overrides."
-    )
-    parser_log_lesson.add_argument(
-        "--class", dest="class_id", type=int, help="Override active class."
-    )
+    parser_log_lesson = subparsers.add_parser("log-lesson", help="Log a lesson taught to a class.")
+    parser_log_lesson.add_argument("--text", type=str, help="Lesson content text.")
+    parser_log_lesson.add_argument("--file", type=str, help="Path to file containing lesson content.")
+    parser_log_lesson.add_argument("--notes", type=str, help="Teacher observations/notes.")
+    parser_log_lesson.add_argument("--topics", type=str, help="Comma-separated topic overrides.")
+    parser_log_lesson.add_argument("--class", dest="class_id", type=int, help="Override active class.")
 
     # --- List Lessons Command ---
-    parser_list_lessons = subparsers.add_parser(
-        "list-lessons", help="List lessons for a class."
-    )
-    parser_list_lessons.add_argument(
-        "--last", type=int, help="Show lessons from last N days."
-    )
-    parser_list_lessons.add_argument(
-        "--from", dest="date_from", type=str, help="Start date (YYYY-MM-DD)."
-    )
-    parser_list_lessons.add_argument(
-        "--to", dest="date_to", type=str, help="End date (YYYY-MM-DD)."
-    )
-    parser_list_lessons.add_argument(
-        "--topic", type=str, help="Filter by topic name."
-    )
-    parser_list_lessons.add_argument(
-        "--class", dest="class_id", type=int, help="Override active class."
-    )
+    parser_list_lessons = subparsers.add_parser("list-lessons", help="List lessons for a class.")
+    parser_list_lessons.add_argument("--last", type=int, help="Show lessons from last N days.")
+    parser_list_lessons.add_argument("--from", dest="date_from", type=str, help="Start date (YYYY-MM-DD).")
+    parser_list_lessons.add_argument("--to", dest="date_to", type=str, help="End date (YYYY-MM-DD).")
+    parser_list_lessons.add_argument("--topic", type=str, help="Filter by topic name.")
+    parser_list_lessons.add_argument("--class", dest="class_id", type=int, help="Override active class.")
 
     # --- Cost Summary Command ---
-    subparsers.add_parser(
-        "cost-summary", help="Display API cost summary."
-    )
+    subparsers.add_parser("cost-summary", help="Display API cost summary.")
 
     # --- Register CLI module commands ---
-    from src.cli.quiz_commands import register_quiz_commands
-    from src.cli.study_commands import register_study_commands
-    from src.cli.rubric_commands import register_rubric_commands
     from src.cli.analytics_commands import register_analytics_commands
-    from src.cli.lesson_plan_commands import register_lesson_plan_commands
-    from src.cli.template_commands import register_template_commands
     from src.cli.class_commands import register_class_commands
-    from src.cli.standards_commands import register_standards_commands
+    from src.cli.lesson_plan_commands import register_lesson_plan_commands
     from src.cli.provider_commands import register_provider_commands
-    from src.cli.variant_commands import register_variant_commands
+    from src.cli.quiz_commands import register_quiz_commands
+    from src.cli.rubric_commands import register_rubric_commands
+    from src.cli.standards_commands import register_standards_commands
+    from src.cli.study_commands import register_study_commands
+    from src.cli.template_commands import register_template_commands
     from src.cli.topic_commands import register_topic_commands
+    from src.cli.variant_commands import register_variant_commands
 
     register_quiz_commands(subparsers)
     register_study_commands(subparsers)
@@ -689,66 +629,87 @@ def main():
     # --- New CLI module command routing ---
     elif args.command == "list-quizzes":
         from src.cli.quiz_commands import handle_list_quizzes
+
         handle_list_quizzes(config, args)
     elif args.command == "view-quiz":
         from src.cli.quiz_commands import handle_view_quiz
+
         handle_view_quiz(config, args)
     elif args.command == "export-quiz":
         from src.cli.quiz_commands import handle_export_quiz
+
         handle_export_quiz(config, args)
     elif args.command == "generate-study":
         from src.cli.study_commands import handle_generate_study
+
         handle_generate_study(config, args)
     elif args.command == "export-study":
         from src.cli.study_commands import handle_export_study
+
         handle_export_study(config, args)
     elif args.command == "generate-rubric":
         from src.cli.rubric_commands import handle_generate_rubric
+
         handle_generate_rubric(config, args)
     elif args.command == "export-rubric":
         from src.cli.rubric_commands import handle_export_rubric
+
         handle_export_rubric(config, args)
     elif args.command == "import-performance":
         from src.cli.analytics_commands import handle_import_performance
+
         handle_import_performance(config, args)
     elif args.command == "analytics":
         from src.cli.analytics_commands import handle_analytics
+
         handle_analytics(config, args)
     elif args.command == "reteach":
         from src.cli.analytics_commands import handle_reteach
+
         handle_reteach(config, args)
     elif args.command == "generate-lesson-plan":
         from src.cli.lesson_plan_commands import handle_generate_lesson_plan
+
         handle_generate_lesson_plan(config, args)
     elif args.command == "export-lesson-plan":
         from src.cli.lesson_plan_commands import handle_export_lesson_plan
+
         handle_export_lesson_plan(config, args)
     elif args.command == "export-template":
         from src.cli.template_commands import handle_export_template
+
         handle_export_template(config, args)
     elif args.command == "import-template":
         from src.cli.template_commands import handle_import_template
+
         handle_import_template(config, args)
     elif args.command == "edit-class":
         from src.cli.class_commands import handle_edit_class
+
         handle_edit_class(config, args)
     elif args.command == "delete-class":
         from src.cli.class_commands import handle_delete_class
+
         handle_delete_class(config, args)
     elif args.command == "delete-lesson":
         from src.cli.class_commands import handle_delete_lesson
+
         handle_delete_lesson(config, args)
     elif args.command == "browse-standards":
         from src.cli.standards_commands import handle_browse_standards
+
         handle_browse_standards(config, args)
     elif args.command == "provider-info":
         from src.cli.provider_commands import handle_provider_info
+
         handle_provider_info(config, args)
     elif args.command == "generate-variant":
         from src.cli.variant_commands import handle_generate_variant
+
         handle_generate_variant(config, args)
     elif args.command == "generate-topics":
         from src.cli.topic_commands import handle_generate_topics
+
         handle_generate_topics(config, args)
 
 

@@ -13,23 +13,21 @@ Covers:
 import json
 import os
 import tempfile
-from io import BytesIO
 
 import pytest
-from flask import Flask
 
-from src.database import Base, Quiz, Question, Class, get_engine, init_db, get_session
+from src.database import Class, Question, Quiz, get_engine, get_session, init_db
 from src.template_manager import (
+    TEMPLATE_VERSION,
     export_quiz_template,
     import_quiz_template,
     validate_template,
-    TEMPLATE_VERSION,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_session():
@@ -54,13 +52,15 @@ def sample_quiz(db_session):
     db_session.add(cls)
     db_session.flush()
 
-    style = json.dumps({
-        "sol_standards": ["SOL 8.1", "SOL 8.2"],
-        "cognitive_framework": "blooms",
-        "grade_level": "8th Grade",
-        "subject": "Biology",
-        "provider": "mock",
-    })
+    style = json.dumps(
+        {
+            "sol_standards": ["SOL 8.1", "SOL 8.2"],
+            "cognitive_framework": "blooms",
+            "grade_level": "8th Grade",
+            "subject": "Biology",
+            "provider": "mock",
+        }
+    )
 
     quiz = Quiz(
         title="Photosynthesis Quiz",
@@ -72,59 +72,87 @@ def sample_quiz(db_session):
     db_session.flush()
 
     # MC question
-    mc_data = json.dumps({
-        "type": "multiple_choice",
-        "options": ["Glucose", "Oxygen", "Carbon dioxide", "Water"],
-        "correct_answer": "Glucose",
-        "cognitive_level": "Remember",
-        "cognitive_framework": "blooms",
-        "difficulty": "easy",
-    })
-    db_session.add(Question(
-        quiz_id=quiz.id, question_type="mc",
-        text="What is the primary product?",
-        points=5, sort_order=0, data=mc_data,
-    ))
+    mc_data = json.dumps(
+        {
+            "type": "multiple_choice",
+            "options": ["Glucose", "Oxygen", "Carbon dioxide", "Water"],
+            "correct_answer": "Glucose",
+            "cognitive_level": "Remember",
+            "cognitive_framework": "blooms",
+            "difficulty": "easy",
+        }
+    )
+    db_session.add(
+        Question(
+            quiz_id=quiz.id,
+            question_type="mc",
+            text="What is the primary product?",
+            points=5,
+            sort_order=0,
+            data=mc_data,
+        )
+    )
 
     # TF question
-    tf_data = json.dumps({
-        "type": "true_false",
-        "correct_answer": "True",
-        "cognitive_level": "Understand",
-    })
-    db_session.add(Question(
-        quiz_id=quiz.id, question_type="tf",
-        text="Photosynthesis occurs in chloroplasts.",
-        points=3, sort_order=1, data=tf_data,
-    ))
+    tf_data = json.dumps(
+        {
+            "type": "true_false",
+            "correct_answer": "True",
+            "cognitive_level": "Understand",
+        }
+    )
+    db_session.add(
+        Question(
+            quiz_id=quiz.id,
+            question_type="tf",
+            text="Photosynthesis occurs in chloroplasts.",
+            points=3,
+            sort_order=1,
+            data=tf_data,
+        )
+    )
 
     # Ordering question
-    ordering_data = json.dumps({
-        "type": "ordering",
-        "question_type": "ordering",
-        "items": ["Light absorption", "Water splitting", "Carbon fixation", "Sugar production"],
-        "correct_order": [0, 1, 2, 3],
-        "instructions": "Arrange the steps of photosynthesis.",
-    })
-    db_session.add(Question(
-        quiz_id=quiz.id, question_type="ordering",
-        text="Order the steps of photosynthesis.",
-        points=5, sort_order=2, data=ordering_data,
-    ))
+    ordering_data = json.dumps(
+        {
+            "type": "ordering",
+            "question_type": "ordering",
+            "items": ["Light absorption", "Water splitting", "Carbon fixation", "Sugar production"],
+            "correct_order": [0, 1, 2, 3],
+            "instructions": "Arrange the steps of photosynthesis.",
+        }
+    )
+    db_session.add(
+        Question(
+            quiz_id=quiz.id,
+            question_type="ordering",
+            text="Order the steps of photosynthesis.",
+            points=5,
+            sort_order=2,
+            data=ordering_data,
+        )
+    )
 
     # Short answer question
-    sa_data = json.dumps({
-        "type": "short_answer",
-        "question_type": "short_answer",
-        "expected_answer": "chlorophyll",
-        "acceptable_answers": ["chlorophyll", "chlorophyll a"],
-        "rubric_hint": "Green pigment that captures light energy",
-    })
-    db_session.add(Question(
-        quiz_id=quiz.id, question_type="short_answer",
-        text="What pigment is responsible for capturing light?",
-        points=4, sort_order=3, data=sa_data,
-    ))
+    sa_data = json.dumps(
+        {
+            "type": "short_answer",
+            "question_type": "short_answer",
+            "expected_answer": "chlorophyll",
+            "acceptable_answers": ["chlorophyll", "chlorophyll a"],
+            "rubric_hint": "Green pigment that captures light energy",
+        }
+    )
+    db_session.add(
+        Question(
+            quiz_id=quiz.id,
+            question_type="short_answer",
+            text="What pigment is responsible for capturing light?",
+            points=4,
+            sort_order=3,
+            data=sa_data,
+        )
+    )
 
     db_session.commit()
     return quiz, cls
@@ -133,6 +161,7 @@ def sample_quiz(db_session):
 # ---------------------------------------------------------------------------
 # Export Tests
 # ---------------------------------------------------------------------------
+
 
 class TestExport:
     """Test template export functionality."""
@@ -207,6 +236,7 @@ class TestExport:
 # Import Tests
 # ---------------------------------------------------------------------------
 
+
 class TestImport:
     """Test template import functionality."""
 
@@ -264,6 +294,7 @@ class TestImport:
 # Round-Trip Tests
 # ---------------------------------------------------------------------------
 
+
 class TestRoundTrip:
     """Test export->import preserves content fidelity."""
 
@@ -305,6 +336,7 @@ class TestRoundTrip:
 # Validation Tests
 # ---------------------------------------------------------------------------
 
+
 class TestValidation:
     """Test template validation logic."""
 
@@ -312,9 +344,7 @@ class TestValidation:
         template = {
             "template_version": "1.0",
             "title": "Test",
-            "questions": [
-                {"question_type": "mc", "text": "Q1?", "options": ["A", "B"], "correct_answer": "A"}
-            ],
+            "questions": [{"question_type": "mc", "text": "Q1?", "options": ["A", "B"], "correct_answer": "A"}],
         }
         is_valid, errors = validate_template(template)
         assert is_valid

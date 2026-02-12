@@ -7,21 +7,29 @@ BL-033: Color Blind Safe Theme
 BL-034: Screen Reader Optimization (ARIA/Semantic HTML)
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
 from datetime import date
 
-from src.database import (
-    Base, Class, LessonLog, Quiz, Question, StudySet, StudyCard,
-    get_engine, get_session,
-)
+import pytest
 
+from src.database import (
+    Base,
+    Class,
+    LessonLog,
+    Question,
+    Quiz,
+    StudyCard,
+    StudySet,
+    get_engine,
+    get_session,
+)
 
 # ============================================================
 # Fixtures
 # ============================================================
+
 
 @pytest.fixture
 def app():
@@ -70,12 +78,14 @@ def app():
         text="What is an ecosystem?",
         points=5.0,
         sort_order=0,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is an ecosystem?",
-            "options": ["A community of organisms", "A single plant", "A rock", "A cloud"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is an ecosystem?",
+                "options": ["A community of organisms", "A single plant", "A rock", "A cloud"],
+                "correct_index": 0,
+            }
+        ),
     )
     q2 = Question(
         quiz_id=quiz.id,
@@ -84,11 +94,13 @@ def app():
         text="All ecosystems contain water.",
         points=3.0,
         sort_order=1,
-        data=json.dumps({
-            "type": "tf",
-            "text": "All ecosystems contain water.",
-            "correct_answer": "True",
-        }),
+        data=json.dumps(
+            {
+                "type": "tf",
+                "text": "All ecosystems contain water.",
+                "correct_answer": "True",
+            }
+        ),
     )
     session.add(q1)
     session.add(q2)
@@ -159,6 +171,7 @@ def client(app):
 # ============================================================
 # BL-034: Base Template - Skip Nav & ARIA Landmarks
 # ============================================================
+
 
 class TestSkipNav:
     """BL-034: Skip navigation link for screen readers."""
@@ -244,6 +257,7 @@ class TestARIALandmarks:
 # BL-034: Accessibility CSS File Linked
 # ============================================================
 
+
 class TestAccessibilityCSS:
     """BL-034: Accessibility CSS loaded in base template."""
 
@@ -284,6 +298,7 @@ class TestAccessibilityCSS:
 # ============================================================
 # BL-031: Dyslexia Font Toggle in Settings
 # ============================================================
+
 
 class TestDyslexiaFontSettings:
     """BL-031: Dyslexia-friendly font toggle on settings page."""
@@ -351,6 +366,7 @@ class TestDyslexiaFontSettings:
 # BL-033: Color Blind Safe Theme in Settings
 # ============================================================
 
+
 class TestColorBlindSettings:
     """BL-033: Color blind safe theme toggle on settings page."""
 
@@ -395,6 +411,7 @@ class TestColorBlindSettings:
 # ============================================================
 # BL-032: Text-to-Speech on Quiz Detail
 # ============================================================
+
 
 class TestTTSQuizDetail:
     """BL-032: TTS panel and read-aloud buttons on quiz detail."""
@@ -466,6 +483,7 @@ class TestTTSQuizDetail:
 # BL-032: Text-to-Speech on Study Detail
 # ============================================================
 
+
 class TestTTSStudyDetail:
     """BL-032: TTS panel and read-aloud on study material detail."""
 
@@ -497,6 +515,7 @@ class TestTTSStudyDetail:
 # ============================================================
 # BL-034: ARIA on Quiz Detail Action Buttons
 # ============================================================
+
 
 class TestQuizDetailARIA:
     """BL-034: ARIA labels on quiz detail action buttons."""
@@ -531,6 +550,7 @@ class TestQuizDetailARIA:
 # BL-031/033: localStorage Preference Script
 # ============================================================
 
+
 class TestPreferenceScript:
     """BL-031/033: Accessibility preference JS in settings page."""
 
@@ -552,6 +572,7 @@ class TestPreferenceScript:
 # ============================================================
 # Migration & Static File Tests
 # ============================================================
+
 
 class TestMigration:
     """Migration 009: accessibility_prefs column on users."""
@@ -585,7 +606,9 @@ class TestStaticFiles:
         """TTS JavaScript file exists."""
         path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
-            "static", "js", "tts.js",
+            "static",
+            "js",
+            "tts.js",
         )
         assert os.path.exists(path)
 
@@ -593,7 +616,9 @@ class TestStaticFiles:
         """Accessibility CSS file exists."""
         path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
-            "static", "css", "accessibility.css",
+            "static",
+            "css",
+            "accessibility.css",
         )
         assert os.path.exists(path)
 
@@ -601,7 +626,8 @@ class TestStaticFiles:
         """Fonts directory exists."""
         path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
-            "static", "fonts",
+            "static",
+            "fonts",
         )
         assert os.path.isdir(path)
 
@@ -609,6 +635,7 @@ class TestStaticFiles:
 # ============================================================
 # BL-031: OpenDyslexic Font Face in CSS
 # ============================================================
+
 
 class TestOpenDyslexicFontFace:
     """BL-031: OpenDyslexic @font-face declarations in CSS."""
@@ -630,6 +657,7 @@ class TestOpenDyslexicFontFace:
 # ============================================================
 # BL-032: TTS JS Content Checks
 # ============================================================
+
 
 class TestTTSJavascript:
     """BL-032: TTS JavaScript content and API usage."""

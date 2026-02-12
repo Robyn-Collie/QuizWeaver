@@ -2,8 +2,8 @@
 Class management CLI commands (edit, delete, delete-lesson).
 """
 
+from src.classroom import delete_class, get_class, update_class
 from src.cli import get_db_session
-from src.classroom import get_class, update_class, delete_class
 from src.lesson_tracker import delete_lesson
 
 

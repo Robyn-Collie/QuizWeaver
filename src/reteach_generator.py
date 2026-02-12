@@ -28,7 +28,8 @@ def _parse_suggestions(response_text: str) -> Optional[List[Dict]]:
         pass
 
     import re
-    match = re.search(r'\[.*\]', response_text, re.DOTALL)
+
+    match = re.search(r"\[.*\]", response_text, re.DOTALL)
     if match:
         try:
             items = json.loads(match.group())
@@ -79,10 +80,7 @@ def generate_reteach_suggestions(
         return []
 
     # Filter to weak areas (negative gap or concerning/critical)
-    weak_gaps = [
-        g for g in gap_data
-        if g["gap_severity"] in ("critical", "concerning")
-    ]
+    weak_gaps = [g for g in gap_data if g["gap_severity"] in ("critical", "concerning")]
     if not weak_gaps and not focus_topics:
         # Nothing concerning, return empty
         return []
@@ -95,13 +93,13 @@ def generate_reteach_suggestions(
 
         if provider_name == "mock":
             from src.mock_responses import get_reteach_response
-            response_text = get_reteach_response(
-                relevant_gaps, focus_topics, max_suggestions
-            )
+
+            response_text = get_reteach_response(relevant_gaps, focus_topics, max_suggestions)
         else:
             # Build prompt for real LLM
             prompt = _build_prompt(class_obj, relevant_gaps, focus_topics, max_suggestions)
             from src.llm_provider import get_provider
+
             provider = get_provider(config, web_mode=True)
             response_text = provider.generate([prompt], json_mode=True)
 

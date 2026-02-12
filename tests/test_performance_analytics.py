@@ -13,17 +13,20 @@ from datetime import date, timedelta
 import pytest
 
 from src.database import (
-    Base, Class, PerformanceData,
-    get_engine, get_session,
+    Base,
+    Class,
+    PerformanceData,
+    get_engine,
+    get_session,
 )
 from src.lesson_tracker import log_lesson
 from src.performance_analytics import (
+    DEPTH_EXPECTATION,
     compute_gap_analysis,
-    get_topic_trends,
     get_class_summary,
     get_standards_mastery,
+    get_topic_trends,
     identify_weak_areas,
-    DEPTH_EXPECTATION,
 )
 
 
@@ -76,8 +79,7 @@ class TestGapAnalysis:
     def test_basic_gap_analysis(self, db_session):
         session, class_id = db_session
         # Teach photosynthesis (depth 1)
-        log_lesson(session, class_id, "Learned about photosynthesis",
-                   topics=["photosynthesis"])
+        log_lesson(session, class_id, "Learned about photosynthesis", topics=["photosynthesis"])
         # Score below expectation for depth 1 (expected 0.40)
         _seed_performance(session, class_id, "photosynthesis", 0.30)
 

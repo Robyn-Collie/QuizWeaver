@@ -6,35 +6,75 @@ assumed knowledge depth for each class.
 """
 
 import json
-from datetime import datetime, date, timedelta
-from typing import Optional, List, Dict, Any
+from datetime import date, timedelta
+from typing import Any, Dict, List, Optional
+
 from sqlalchemy.orm import Session
 
 from src.database import Class, LessonLog
 
-
 # Known science topic keywords for simple extraction
 KNOWN_TOPICS = [
-    "photosynthesis", "cell division", "mitosis", "meiosis",
-    "respiration", "cellular respiration", "genetics", "heredity",
-    "evolution", "natural selection", "ecosystems", "ecology",
-    "atomic structure", "atoms", "molecules",
-    "chemical reactions", "chemical bonds",
-    "forces", "motion", "newton", "gravity",
-    "energy", "kinetic energy", "potential energy",
-    "waves", "sound", "light", "electromagnetic",
-    "electricity", "magnetism", "circuits",
-    "plate tectonics", "earthquakes", "volcanoes",
-    "weather", "climate", "atmosphere",
-    "water cycle", "rock cycle", "carbon cycle",
-    "cells", "organelles", "membrane",
-    "dna", "rna", "protein synthesis",
-    "classification", "taxonomy",
-    "food web", "food chain",
-    "adaptation", "biodiversity",
-    "periodic table", "elements",
-    "acids", "bases", "ph",
-    "solar system", "planets", "stars",
+    "photosynthesis",
+    "cell division",
+    "mitosis",
+    "meiosis",
+    "respiration",
+    "cellular respiration",
+    "genetics",
+    "heredity",
+    "evolution",
+    "natural selection",
+    "ecosystems",
+    "ecology",
+    "atomic structure",
+    "atoms",
+    "molecules",
+    "chemical reactions",
+    "chemical bonds",
+    "forces",
+    "motion",
+    "newton",
+    "gravity",
+    "energy",
+    "kinetic energy",
+    "potential energy",
+    "waves",
+    "sound",
+    "light",
+    "electromagnetic",
+    "electricity",
+    "magnetism",
+    "circuits",
+    "plate tectonics",
+    "earthquakes",
+    "volcanoes",
+    "weather",
+    "climate",
+    "atmosphere",
+    "water cycle",
+    "rock cycle",
+    "carbon cycle",
+    "cells",
+    "organelles",
+    "membrane",
+    "dna",
+    "rna",
+    "protein synthesis",
+    "classification",
+    "taxonomy",
+    "food web",
+    "food chain",
+    "adaptation",
+    "biodiversity",
+    "periodic table",
+    "elements",
+    "acids",
+    "bases",
+    "ph",
+    "solar system",
+    "planets",
+    "stars",
     "change over time",
 ]
 
@@ -102,9 +142,7 @@ def log_lesson(
     return lesson
 
 
-def get_recent_lessons(
-    session: Session, class_id: int, days: int = 14
-) -> List[LessonLog]:
+def get_recent_lessons(session: Session, class_id: int, days: int = 14) -> List[LessonLog]:
     """
     Query lessons from the past N days for a class.
 
@@ -125,9 +163,7 @@ def get_recent_lessons(
     )
 
 
-def list_lessons(
-    session: Session, class_id: int, filters: Optional[Dict[str, Any]] = None
-) -> List[LessonLog]:
+def list_lessons(session: Session, class_id: int, filters: Optional[Dict[str, Any]] = None) -> List[LessonLog]:
     """
     Query lessons with optional filters.
 

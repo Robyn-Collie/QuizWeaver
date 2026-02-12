@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+
 import pytest
 
 from src.database import Base, get_engine
@@ -61,20 +62,16 @@ def test_nav_user_has_display_name(client):
 
 def test_css_has_user_section_styles():
     """CSS must contain styles for the nav user section."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     assert ".nav-user-section" in css
 
 
 def test_css_has_username_truncation():
     """CSS must truncate long usernames with ellipsis."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     assert "text-overflow: ellipsis" in css
     assert "max-width:" in css
@@ -82,20 +79,16 @@ def test_css_has_username_truncation():
 
 def test_css_has_user_icon_styles():
     """CSS must have styles for the user icon in the nav."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     assert ".nav-user-icon" in css
 
 
 def test_css_mobile_user_section():
     """CSS must handle user section in mobile view."""
-    css_path = os.path.join(
-        os.path.dirname(__file__), "..", "static", "css", "style.css"
-    )
-    with open(css_path, "r", encoding="utf-8") as f:
+    css_path = os.path.join(os.path.dirname(__file__), "..", "static", "css", "style.css")
+    with open(css_path, encoding="utf-8") as f:
         css = f.read()
     # The mobile responsive block should restyle the user section with border-top
     assert "border-top:" in css
@@ -105,4 +98,4 @@ def test_logout_still_present(client):
     """Logout link should still be present in the user section."""
     resp = client.get("/dashboard?skip_onboarding=1")
     html = resp.data.decode("utf-8")
-    assert '/logout' in html
+    assert "/logout" in html

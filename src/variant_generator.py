@@ -13,7 +13,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from src.database import Quiz, Question
+from src.database import Question, Quiz
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +27,7 @@ READING_LEVELS = {
 
 def _load_source_questions(session, quiz_id):
     """Load and serialize source quiz questions as dicts."""
-    questions = (
-        session.query(Question)
-        .filter_by(quiz_id=quiz_id)
-        .order_by(Question.sort_order, Question.id)
-        .all()
-    )
+    questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
     result = []
     for q in questions:
         data = q.data
@@ -72,7 +67,8 @@ def _parse_variant_questions(response_text):
         pass
 
     import re
-    match = re.search(r'\[.*\]', response_text, re.DOTALL)
+
+    match = re.search(r"\[.*\]", response_text, re.DOTALL)
     if match:
         try:
             items = json.loads(match.group())
@@ -157,14 +153,14 @@ def generate_variant(
     try:
         provider_name = config.get("llm", {}).get("provider", "mock")
         if provider_name == "mock":
-            from src.mock_responses import get_variant_response, SCIENCE_TOPICS
+            from src.mock_responses import SCIENCE_TOPICS, get_variant_response
+
             context_lower = prompt.lower()
             keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
-            response_text = get_variant_response(
-                source_questions, reading_level, keywords or None
-            )
+            response_text = get_variant_response(source_questions, reading_level, keywords or None)
         else:
             from src.llm_provider import get_provider
+
             provider = get_provider(config, web_mode=True)
             response_text = provider.generate([prompt], json_mode=True)
 
@@ -190,9 +186,17 @@ def generate_variant(
 
         # Build data dict (preserve all fields except text/title)
         data_dict = {}
-        for key in ("type", "text", "options", "correct_index", "correct_answer",
-                     "image_ref", "cognitive_level", "cognitive_framework",
-                     "cognitive_level_number"):
+        for key in (
+            "type",
+            "text",
+            "options",
+            "correct_index",
+            "correct_answer",
+            "image_ref",
+            "cognitive_level",
+            "cognitive_framework",
+            "cognitive_level_number",
+        ):
             if key in q_data:
                 data_dict[key] = q_data[key]
         data_dict["text"] = text

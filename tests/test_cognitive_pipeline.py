@@ -14,15 +14,15 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import get_engine, init_db, get_session, Base, Class, Quiz, Question
 from src.classroom import create_class
+from src.database import get_engine, get_session, init_db
 from src.migrations import run_migrations
 from src.quiz_generator import generate_quiz
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_path():
@@ -80,6 +80,7 @@ def sample_class(db_session):
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 class TestCognitivePipelineBlooms:
     """Tests for quiz generation with Bloom's Taxonomy framework."""

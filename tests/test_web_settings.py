@@ -11,22 +11,22 @@ Tests cover:
 - OpenAICompatibleProvider class
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+import pytest
+
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 from src.llm_provider import (
-    OpenAICompatibleProvider,
     PROVIDER_REGISTRY,
-    get_provider_info,
-    get_provider,
     MockLLMProvider,
+    OpenAICompatibleProvider,
+    get_provider,
+    get_provider_info,
 )
 from src.web.config_utils import save_config
-
 
 # ============================================================
 # Fixtures
@@ -58,11 +58,13 @@ def app():
         title="Test Quiz",
         class_id=test_class.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "8th Grade",
-            "provider": "openai",
-            "difficulty": 3,
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "8th Grade",
+                "provider": "openai",
+                "difficulty": 3,
+            }
+        ),
     )
     session.add(quiz)
     session.commit()
@@ -73,12 +75,14 @@ def app():
         title="Q1",
         text="What is gravity?",
         points=5.0,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is gravity?",
-            "options": ["A force", "A color", "A sound", "A taste"],
-            "correct_index": 0,
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is gravity?",
+                "options": ["A force", "A color", "A sound", "A taste"],
+                "correct_index": 0,
+            }
+        ),
     )
     session.add(q1)
     session.commit()
@@ -314,10 +318,9 @@ class TestGetProviderWebMode:
     def test_web_mode_true_with_env_openai_key(self):
         """web_mode=True reads OPENAI_API_KEY from env for openai provider."""
         config = {"llm": {"provider": "openai", "mode": "development"}}
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-env-test"}):
-            with patch("openai.OpenAI"):
-                provider = get_provider(config, web_mode=True)
-                assert isinstance(provider, OpenAICompatibleProvider)
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "sk-env-test"}), patch("openai.OpenAI"):
+            provider = get_provider(config, web_mode=True)
+            assert isinstance(provider, OpenAICompatibleProvider)
 
 
 # ============================================================
@@ -465,10 +468,7 @@ class TestOpenAICompatibleProvider:
                 base_url="https://api.openai.com/v1",
                 model_name="gpt-4o",
             )
-            image_part = {
-                "type": "image_url",
-                "image_url": {"url": "data:image/png;base64,abc123"}
-            }
+            image_part = {"type": "image_url", "image_url": {"url": "data:image/png;base64,abc123"}}
             provider.generate(["Describe this image", image_part])
 
             call_kwargs = mock_client.chat.completions.create.call_args[1]
@@ -565,7 +565,7 @@ class TestSaveConfig:
             }
             save_config(config, config_path=temp_path)
 
-            with open(temp_path, "r") as f:
+            with open(temp_path) as f:
                 loaded = yaml.safe_load(f)
 
             assert loaded["llm"]["provider"] == "openai"

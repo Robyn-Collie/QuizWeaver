@@ -5,9 +5,10 @@ Verifies that shortcuts.js is loaded, the shortcuts modal
 CSS exists, and the keyboard shortcut definitions are correct.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session
@@ -94,40 +95,30 @@ class TestShortcutsFileContent:
     """Verify the shortcuts JS file has expected content."""
 
     def test_shortcuts_file_exists(self):
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "js", "shortcuts.js"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "shortcuts.js")
         assert os.path.exists(path)
 
     def test_shortcuts_has_help_modal(self):
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "js", "shortcuts.js"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "shortcuts.js")
         content = open(path).read()
         assert "shortcuts-modal" in content
         assert "toggleHelpModal" in content
 
     def test_shortcuts_has_navigation(self):
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "js", "shortcuts.js"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "shortcuts.js")
         content = open(path).read()
         assert "/dashboard" in content
         assert "/quizzes" in content
         assert "/study" in content
 
     def test_shortcuts_has_chord_support(self):
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "js", "shortcuts.js"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "shortcuts.js")
         content = open(path).read()
         assert "pendingPrefix" in content
         assert "CHORD_DELAY" in content
 
     def test_shortcuts_skips_input_fields(self):
-        path = os.path.join(
-            os.path.dirname(__file__), "..", "static", "js", "shortcuts.js"
-        )
+        path = os.path.join(os.path.dirname(__file__), "..", "static", "js", "shortcuts.js")
         content = open(path).read()
         assert "isInputFocused" in content
 

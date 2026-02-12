@@ -4,9 +4,10 @@ Flask application factory for QuizWeaver web frontend.
 
 import json
 import os
+
 from flask import Flask, g, send_from_directory
 
-from src.database import get_engine, init_db, get_session
+from src.database import get_engine, init_db
 from src.migrations import run_migrations
 from src.web.routes import register_routes
 
@@ -33,7 +34,8 @@ def create_app(config=None):
 
     if config is None:
         import yaml
-        with open("config.yaml", "r") as f:
+
+        with open("config.yaml") as f:
             config = yaml.safe_load(f)
 
     app.config["APP_CONFIG"] = config
@@ -72,6 +74,7 @@ def create_app(config=None):
     def inject_ai_tooltips():
         """Make AI literacy tooltips available in all templates."""
         from src.web.tooltip_data import AI_TOOLTIPS
+
         return {"ai_tips": AI_TOOLTIPS}
 
     @app.template_filter("ensure_list")
@@ -99,9 +102,7 @@ def create_app(config=None):
     register_routes(app)
 
     # Serve generated quiz images
-    generated_images_dir = os.path.abspath(
-        config.get("paths", {}).get("generated_images_dir", "generated_images")
-    )
+    generated_images_dir = os.path.abspath(config.get("paths", {}).get("generated_images_dir", "generated_images"))
 
     @app.route("/generated_images/<path:filename>")
     def serve_generated_image(filename):

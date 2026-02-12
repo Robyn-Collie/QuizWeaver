@@ -2,12 +2,13 @@
 Tests for search, filtering, and pagination (Session 6, Phase C).
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from src.database import Base, Class, Quiz, Question, StudySet, StudyCard, get_engine, get_session
+from src.database import Base, Class, Question, Quiz, StudySet, get_engine, get_session
 
 
 @pytest.fixture
@@ -29,15 +30,19 @@ def app():
     for i in range(25):
         status = "generated" if i % 3 != 2 else "pending"
         class_id = cls1.id if i < 15 else cls2.id
-        title = f"Algebra Quiz {i+1}" if i < 15 else f"Biology Quiz {i+1}"
-        quiz = Quiz(title=title, class_id=class_id, status=status,
-                    style_profile=json.dumps({}))
+        title = f"Algebra Quiz {i + 1}" if i < 15 else f"Biology Quiz {i + 1}"
+        quiz = Quiz(title=title, class_id=class_id, status=status, style_profile=json.dumps({}))
         session.add(quiz)
     session.commit()
 
     # Add a question to the first quiz for verification
-    q = Question(quiz_id=1, question_type="mc", text="What is 2+2?", points=1.0,
-                 data=json.dumps({"options": ["3", "4", "5"], "correct_index": 1}))
+    q = Question(
+        quiz_id=1,
+        question_type="mc",
+        text="What is 2+2?",
+        points=1.0,
+        data=json.dumps({"options": ["3", "4", "5"], "correct_index": 1}),
+    )
     session.add(q)
     session.commit()
 
@@ -52,6 +57,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -82,6 +88,7 @@ def client(app):
 # ============================================================
 # TestQuizSearch
 # ============================================================
+
 
 class TestQuizSearch:
     """Test quiz search, filtering, and pagination."""
@@ -144,6 +151,7 @@ class TestQuizSearch:
 # ============================================================
 # TestStudySearch
 # ============================================================
+
 
 class TestStudySearch:
     """Test study materials search."""

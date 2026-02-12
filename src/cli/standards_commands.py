@@ -5,10 +5,10 @@ Standards browsing CLI commands.
 from src.cli import get_db_session
 from src.standards import (
     STANDARD_SETS,
-    list_standards,
-    search_standards,
     ensure_standard_set_loaded,
     get_standard_sets_in_db,
+    list_standards,
+    search_standards,
 )
 
 
@@ -17,7 +17,8 @@ def register_standards_commands(subparsers):
 
     p = subparsers.add_parser("browse-standards", help="Browse educational standards.")
     p.add_argument(
-        "--set", dest="standard_set",
+        "--set",
+        dest="standard_set",
         choices=list(STANDARD_SETS.keys()),
         help="Standard set to browse.",
     )

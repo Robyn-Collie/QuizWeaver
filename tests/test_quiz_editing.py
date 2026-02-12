@@ -6,13 +6,13 @@ image upload/remove, and question regeneration.
 """
 
 import io
-import os
 import json
+import os
 import tempfile
-import pytest
-from datetime import date
 
-from src.database import Base, Class, Quiz, Question, get_engine, get_session
+import pytest
+
+from src.database import Base, Class, Question, Quiz, get_engine, get_session
 
 
 @pytest.fixture
@@ -40,10 +40,12 @@ def app():
         title="Test Quiz",
         class_id=cls.id,
         status="generated",
-        style_profile=json.dumps({
-            "grade_level": "7th Grade",
-            "provider": "mock",
-        }),
+        style_profile=json.dumps(
+            {
+                "grade_level": "7th Grade",
+                "provider": "mock",
+            }
+        ),
     )
     session.add(quiz)
     session.commit()
@@ -56,13 +58,15 @@ def app():
         text="What is photosynthesis?",
         points=5.0,
         sort_order=0,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is photosynthesis?",
-            "options": ["A process", "A thing", "A place", "A person"],
-            "correct_index": 0,
-            "correct_answer": "A process",
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is photosynthesis?",
+                "options": ["A process", "A thing", "A place", "A person"],
+                "correct_index": 0,
+                "correct_answer": "A process",
+            }
+        ),
     )
     q2 = Question(
         quiz_id=quiz.id,
@@ -71,11 +75,13 @@ def app():
         text="The sun is a star.",
         points=2.0,
         sort_order=1,
-        data=json.dumps({
-            "type": "tf",
-            "text": "The sun is a star.",
-            "correct_answer": "True",
-        }),
+        data=json.dumps(
+            {
+                "type": "tf",
+                "text": "The sun is a star.",
+                "correct_answer": "True",
+            }
+        ),
     )
     q3 = Question(
         quiz_id=quiz.id,
@@ -84,13 +90,15 @@ def app():
         text="What is mitosis?",
         points=3.0,
         sort_order=2,
-        data=json.dumps({
-            "type": "mc",
-            "text": "What is mitosis?",
-            "options": ["Cell division", "Respiration", "Digestion"],
-            "correct_index": 0,
-            "image_ref": "existing_image.png",
-        }),
+        data=json.dumps(
+            {
+                "type": "mc",
+                "text": "What is mitosis?",
+                "options": ["Cell division", "Respiration", "Digestion"],
+                "correct_index": 0,
+                "image_ref": "existing_image.png",
+            }
+        ),
     )
     session.add_all([q1, q2, q3])
     session.commit()
@@ -139,6 +147,7 @@ def anon_client(app):
 # Quiz Title Editing
 # ============================================================
 
+
 class TestQuizTitleEdit:
     def test_edit_title_success(self, client):
         resp = client.put(
@@ -178,6 +187,7 @@ class TestQuizTitleEdit:
 # ============================================================
 # Question Editing
 # ============================================================
+
 
 class TestQuestionEdit:
     def test_edit_text(self, client):
@@ -254,6 +264,7 @@ class TestQuestionEdit:
 # Question Deletion
 # ============================================================
 
+
 class TestQuestionDelete:
     def test_delete_success(self, client):
         resp = client.delete("/api/questions/2")
@@ -273,6 +284,7 @@ class TestQuestionDelete:
         client.delete("/api/questions/1")
         with app.app_context():
             from src.database import get_session as gs
+
             session = gs(app.config["DB_ENGINE"])
             q = session.query(Question).filter_by(id=1).first()
             assert q is None
@@ -282,6 +294,7 @@ class TestQuestionDelete:
 # ============================================================
 # Question Reorder
 # ============================================================
+
 
 class TestQuestionReorder:
     def test_reorder_success(self, client):
@@ -320,6 +333,7 @@ class TestQuestionReorder:
 # ============================================================
 # Image Upload
 # ============================================================
+
 
 class TestImageUpload:
     def test_upload_success(self, client):
@@ -389,6 +403,7 @@ class TestImageUpload:
 # Image Remove
 # ============================================================
 
+
 class TestImageRemove:
     def test_remove_success(self, client):
         # Question 3 has an image_ref
@@ -412,6 +427,7 @@ class TestImageRemove:
 # ============================================================
 # Question Regeneration
 # ============================================================
+
 
 class TestQuestionRegenerate:
     def test_regenerate_success(self, client):

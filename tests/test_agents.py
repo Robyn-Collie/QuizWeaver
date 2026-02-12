@@ -1,7 +1,8 @@
-import unittest
 import time
+import unittest
 from unittest.mock import MagicMock, patch
-from src.agents import GeneratorAgent, CriticAgent, Orchestrator
+
+from src.agents import CriticAgent, GeneratorAgent, Orchestrator
 
 
 class TestAgents(unittest.TestCase):
@@ -21,9 +22,7 @@ class TestAgents(unittest.TestCase):
     @patch("src.agents.get_provider")
     @patch("src.agents.load_prompt")
     @patch("src.agents.get_qa_guidelines")
-    def test_generator_success(
-        self, mock_guidelines, mock_load_prompt, mock_get_provider
-    ):
+    def test_generator_success(self, mock_guidelines, mock_load_prompt, mock_get_provider):
         mock_guidelines.return_value = "Rules"
         mock_load_prompt.return_value = "Prompt Template"
 
@@ -107,15 +106,15 @@ class TestLessonContextInPrompts(unittest.TestCase):
     @patch("src.agents.get_provider")
     @patch("src.agents.load_prompt")
     @patch("src.agents.get_qa_guidelines")
-    def test_generator_includes_lesson_logs_in_prompt(
-        self, mock_guidelines, mock_load_prompt, mock_get_provider
-    ):
+    def test_generator_includes_lesson_logs_in_prompt(self, mock_guidelines, mock_load_prompt, mock_get_provider):
         """Generator prompt should contain recent lesson topics."""
         mock_guidelines.return_value = "Rules"
         mock_load_prompt.return_value = "Grade: {grade_level}\n{sol_section}\n{class_context}"
 
         mock_provider = MagicMock()
-        mock_provider.generate.return_value = '[{"text": "Q1", "type": "mc", "options": ["A","B","C","D"], "correct_index": 0}]'
+        mock_provider.generate.return_value = (
+            '[{"text": "Q1", "type": "mc", "options": ["A","B","C","D"], "correct_index": 0}]'
+        )
         mock_get_provider.return_value = mock_provider
 
         context = {
@@ -144,15 +143,15 @@ class TestLessonContextInPrompts(unittest.TestCase):
     @patch("src.agents.get_provider")
     @patch("src.agents.load_prompt")
     @patch("src.agents.get_qa_guidelines")
-    def test_generator_includes_assumed_knowledge_in_prompt(
-        self, mock_guidelines, mock_load_prompt, mock_get_provider
-    ):
+    def test_generator_includes_assumed_knowledge_in_prompt(self, mock_guidelines, mock_load_prompt, mock_get_provider):
         """Generator prompt should contain assumed knowledge with depth labels."""
         mock_guidelines.return_value = "Rules"
         mock_load_prompt.return_value = "Grade: {grade_level}\n{sol_section}\n{class_context}"
 
         mock_provider = MagicMock()
-        mock_provider.generate.return_value = '[{"text": "Q1", "type": "mc", "options": ["A","B","C","D"], "correct_index": 0}]'
+        mock_provider.generate.return_value = (
+            '[{"text": "Q1", "type": "mc", "options": ["A","B","C","D"], "correct_index": 0}]'
+        )
         mock_get_provider.return_value = mock_provider
 
         context = {
@@ -200,7 +199,9 @@ class TestLessonContextInPrompts(unittest.TestCase):
 
         critic = CriticAgent(self.config)
         critic.critique(
-            [{"text": "Q1"}], "guidelines", "summary",
+            [{"text": "Q1"}],
+            "guidelines",
+            "summary",
             class_context=class_context,
         )
 
@@ -229,9 +230,7 @@ class TestLessonContextInPrompts(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_passes_class_context_to_critic(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_passes_class_context_to_critic(self, mock_guidelines, MockCritic, MockGenerator):
         """Orchestrator should forward lesson_logs and assumed_knowledge to the critic."""
         mock_guidelines.return_value = "Rules"
 
@@ -239,9 +238,7 @@ class TestLessonContextInPrompts(unittest.TestCase):
         mock_critic_instance = MockCritic.return_value
 
         mock_gen_instance.generate.return_value = [{"text": "Q1"}]
-        mock_critic_instance.critique.return_value = {
-            "status": "APPROVED", "feedback": None
-        }
+        mock_critic_instance.critique.return_value = {"status": "APPROVED", "feedback": None}
 
         context = {
             "content_summary": "Cells",
@@ -265,9 +262,7 @@ class TestLessonContextInPrompts(unittest.TestCase):
     @patch("src.agents.get_provider")
     @patch("src.agents.load_prompt")
     @patch("src.agents.get_qa_guidelines")
-    def test_generator_no_lesson_context_still_works(
-        self, mock_guidelines, mock_load_prompt, mock_get_provider
-    ):
+    def test_generator_no_lesson_context_still_works(self, mock_guidelines, mock_load_prompt, mock_get_provider):
         """Generator should work when no lesson_logs or assumed_knowledge are in context."""
         mock_guidelines.return_value = "Rules"
         mock_load_prompt.return_value = "Grade: {grade_level}\n{sol_section}\n{class_context}"
@@ -326,17 +321,14 @@ class TestOrchestratorCostWarnings(unittest.TestCase):
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
     def test_orchestrator_proceeds_with_mock_provider(
-        self, mock_guidelines, MockCritic, MockGenerator,
-        mock_estimate, mock_rate_limit
+        self, mock_guidelines, MockCritic, MockGenerator, mock_estimate, mock_rate_limit
     ):
         """Mock provider should skip rate limit check entirely."""
         mock_guidelines.return_value = "Rules"
 
         mock_gen = MockGenerator.return_value
         mock_gen.generate.return_value = [{"text": "Q1"}]
-        MockCritic.return_value.critique.return_value = {
-            "status": "APPROVED", "feedback": None
-        }
+        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
 
         config = {
             "agent_loop": {"max_retries": 3},
@@ -363,9 +355,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_retries_on_generator_exception(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_retries_on_generator_exception(self, mock_guidelines, MockCritic, MockGenerator):
         """Generator exceptions should be caught and retried."""
         mock_guidelines.return_value = "Rules"
 
@@ -375,9 +365,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
             RuntimeError("API timeout"),
             [{"text": "Q1"}],
         ]
-        MockCritic.return_value.critique.return_value = {
-            "status": "APPROVED", "feedback": None
-        }
+        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
 
         orch = Orchestrator(self.config)
         result = orch.run({"content_summary": "Test"})
@@ -388,9 +376,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_aborts_after_consecutive_errors(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_aborts_after_consecutive_errors(self, mock_guidelines, MockCritic, MockGenerator):
         """Should abort after max_errors consecutive failures."""
         mock_guidelines.return_value = "Rules"
 
@@ -407,9 +393,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_returns_draft_on_critic_exception(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_returns_draft_on_critic_exception(self, mock_guidelines, MockCritic, MockGenerator):
         """If critic throws, return the generated draft instead of failing."""
         mock_guidelines.return_value = "Rules"
 
@@ -427,9 +411,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_resets_error_counter_on_success(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_resets_error_counter_on_success(self, mock_guidelines, MockCritic, MockGenerator):
         """Error counter should reset after a successful generation."""
         mock_guidelines.return_value = "Rules"
 
@@ -457,9 +439,7 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_aborts_on_consecutive_empty_results(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_aborts_on_consecutive_empty_results(self, mock_guidelines, MockCritic, MockGenerator):
         """Should abort after consecutive empty results from generator."""
         mock_guidelines.return_value = "Rules"
 
@@ -480,6 +460,7 @@ class TestAgentMetrics(unittest.TestCase):
     def test_metrics_report_structure(self):
         """Metrics report should have all expected keys."""
         from src.agents import AgentMetrics
+
         m = AgentMetrics()
         m.start()
         m.generator_calls = 2
@@ -503,6 +484,7 @@ class TestAgentMetrics(unittest.TestCase):
     def test_metrics_duration(self):
         """Duration should be positive after start/stop."""
         from src.agents import AgentMetrics
+
         m = AgentMetrics()
         m.start()
         time.sleep(0.01)
@@ -512,6 +494,7 @@ class TestAgentMetrics(unittest.TestCase):
     def test_metrics_duration_before_stop(self):
         """Duration should be 0 before stop is called."""
         from src.agents import AgentMetrics
+
         m = AgentMetrics()
         m.start()
         self.assertEqual(m.duration, 0.0)
@@ -519,16 +502,12 @@ class TestAgentMetrics(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_tracks_metrics(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_tracks_metrics(self, mock_guidelines, MockCritic, MockGenerator):
         """Orchestrator should populate last_metrics after run."""
         mock_guidelines.return_value = "Rules"
         mock_gen = MockGenerator.return_value
         mock_gen.generate.return_value = [{"text": "Q1"}]
-        MockCritic.return_value.critique.return_value = {
-            "status": "APPROVED", "feedback": None
-        }
+        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
 
         config = {
             "agent_loop": {"max_retries": 3},
@@ -547,9 +526,7 @@ class TestAgentMetrics(unittest.TestCase):
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_metrics_on_failure(
-        self, mock_guidelines, MockCritic, MockGenerator
-    ):
+    def test_orchestrator_metrics_on_failure(self, mock_guidelines, MockCritic, MockGenerator):
         """Metrics should track errors on failure."""
         mock_guidelines.return_value = "Rules"
         mock_gen = MockGenerator.return_value

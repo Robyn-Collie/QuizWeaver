@@ -5,8 +5,8 @@ Quiz template export/import CLI commands.
 import json
 
 from src.cli import get_db_session, resolve_class_id
-from src.template_manager import export_quiz_template, import_quiz_template, validate_template
 from src.export_utils import sanitize_filename
+from src.template_manager import export_quiz_template, import_quiz_template, validate_template
 
 
 def register_template_commands(subparsers):
@@ -51,7 +51,7 @@ def handle_import_template(config, args):
     engine, session = get_db_session(config)
     try:
         try:
-            with open(args.template_file, "r", encoding="utf-8") as f:
+            with open(args.template_file, encoding="utf-8") as f:
                 template_data = json.load(f)
         except FileNotFoundError:
             print(f"Error: File not found: {args.template_file}")

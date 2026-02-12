@@ -10,12 +10,12 @@ excludes student performance data, class context, teacher identity, and timestam
 
 import json
 import logging
-from datetime import datetime, date
+from datetime import date
 from typing import Any, Dict, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from src.database import Quiz, Question
+from src.database import Question, Quiz
 
 logger = logging.getLogger(__name__)
 
@@ -42,12 +42,7 @@ def export_quiz_template(session: Session, quiz_id: int) -> Optional[Dict[str, A
         logger.warning("export_quiz_template: quiz_id=%s not found", quiz_id)
         return None
 
-    questions = (
-        session.query(Question)
-        .filter_by(quiz_id=quiz_id)
-        .order_by(Question.sort_order, Question.id)
-        .all()
-    )
+    questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
 
     # Parse style profile for metadata
     style_profile = quiz.style_profile
@@ -179,9 +174,7 @@ def _resolve_template_matches(data: dict) -> List[Dict[str, str]]:
     matches = data.get("matches")
     if matches and isinstance(matches, list):
         return [
-            {"term": m.get("term", ""), "definition": m.get("definition", "")}
-            for m in matches
-            if isinstance(m, dict)
+            {"term": m.get("term", ""), "definition": m.get("definition", "")} for m in matches if isinstance(m, dict)
         ]
 
     prompts = data.get("prompt_items", [])
@@ -255,9 +248,7 @@ def import_quiz_template(
     return quiz
 
 
-def _create_question_from_template(
-    tq: Dict[str, Any], quiz_id: int, sort_order: int
-) -> Question:
+def _create_question_from_template(tq: Dict[str, Any], quiz_id: int, sort_order: int) -> Question:
     """Create a Question ORM object from a template question dict."""
     q_type = tq.get("question_type", "mc")
     text = tq.get("text", "")
@@ -347,12 +338,12 @@ def validate_template(template_data: Any) -> Tuple[bool, List[str]]:
         # Validate each question
         for i, q in enumerate(template_data["questions"]):
             if not isinstance(q, dict):
-                errors.append(f"Question {i+1}: must be a JSON object")
+                errors.append(f"Question {i + 1}: must be a JSON object")
                 continue
             if not q.get("text"):
-                errors.append(f"Question {i+1}: missing 'text' field")
+                errors.append(f"Question {i + 1}: missing 'text' field")
             if not q.get("question_type"):
-                errors.append(f"Question {i+1}: missing 'question_type' field")
+                errors.append(f"Question {i + 1}: missing 'question_type' field")
 
     # Version check
     version = template_data.get("template_version")

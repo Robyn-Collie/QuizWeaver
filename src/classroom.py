@@ -5,8 +5,9 @@ Provides CRUD operations for teacher classes/blocks and active class switching.
 """
 
 import json
+from typing import List, Optional
+
 import yaml
-from typing import Optional, List
 from sqlalchemy.orm import Session
 
 from src.database import Class, LessonLog, Quiz
@@ -73,16 +74,18 @@ def list_classes(session: Session) -> List[dict]:
     for cls in classes:
         lesson_count = session.query(LessonLog).filter_by(class_id=cls.id).count()
         quiz_count = session.query(Quiz).filter_by(class_id=cls.id).count()
-        result.append({
-            "id": cls.id,
-            "name": cls.name,
-            "grade_level": cls.grade_level,
-            "subject": cls.subject,
-            "standards": cls.standards,
-            "lesson_count": lesson_count,
-            "quiz_count": quiz_count,
-            "created_at": cls.created_at,
-        })
+        result.append(
+            {
+                "id": cls.id,
+                "name": cls.name,
+                "grade_level": cls.grade_level,
+                "subject": cls.subject,
+                "standards": cls.standards,
+                "lesson_count": lesson_count,
+                "quiz_count": quiz_count,
+                "created_at": cls.created_at,
+            }
+        )
     return result
 
 
@@ -183,7 +186,7 @@ def set_active_class(config_path: str, class_id: int) -> bool:
         True on success, False on failure
     """
     try:
-        with open(config_path, "r") as f:
+        with open(config_path) as f:
             config = yaml.safe_load(f)
 
         config["active_class_id"] = class_id

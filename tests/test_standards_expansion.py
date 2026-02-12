@@ -14,31 +14,29 @@ Tests cover:
 
 import json
 import os
-import tempfile
 import sqlite3
+import tempfile
 
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.database import Base, Standard
+from src.database import Base
 from src.standards import (
     STANDARD_SETS,
-    get_available_standard_sets,
-    load_standard_set,
-    ensure_standard_set_loaded,
     create_standard,
-    list_standards,
-    search_standards,
-    bulk_import_standards,
-    load_standards_from_json,
-    import_custom_standards,
-    get_subjects,
-    get_grade_bands,
-    get_strands,
-    standards_count,
-    get_standard_sets_in_db,
+    ensure_standard_set_loaded,
+    get_available_standard_sets,
     get_data_dir,
+    get_grade_bands,
+    get_standard_sets_in_db,
+    get_strands,
+    get_subjects,
+    import_custom_standards,
+    list_standards,
+    load_standard_set,
+    search_standards,
+    standards_count,
 )
 
 
@@ -115,19 +113,18 @@ class TestDataFilesExist:
         """All data files parse as valid JSON with a 'standards' key."""
         for key, info in STANDARD_SETS.items():
             path = os.path.join(get_data_dir(), info["file"])
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             assert "standards" in data, f"Missing 'standards' key in {info['file']}"
             assert len(data["standards"]) >= 20, (
-                f"Expected at least 20 standards in {info['file']}, "
-                f"got {len(data['standards'])}"
+                f"Expected at least 20 standards in {info['file']}, got {len(data['standards'])}"
             )
 
     def test_each_standard_has_required_fields(self):
         """Every standard in every file has code, description, subject."""
         for key, info in STANDARD_SETS.items():
             path = os.path.join(get_data_dir(), info["file"])
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 data = json.load(f)
             for std in data["standards"]:
                 assert "code" in std, f"Missing code in {info['file']}: {std}"
@@ -326,7 +323,7 @@ class TestMigration009:
                 "migrations",
                 "009_expand_standards.sql",
             )
-            with open(migration_path, "r") as f:
+            with open(migration_path) as f:
                 migration_sql = f.read()
             conn.executescript(migration_sql)
             conn.commit()

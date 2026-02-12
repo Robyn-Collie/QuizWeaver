@@ -5,22 +5,21 @@ Verifies budget tracking, monthly totals, budget checking, and
 the improved cost tracking UI (budget bar, daily chart, provider bars).
 """
 
-import os
 import json
+import os
 import tempfile
-import pytest
 from datetime import datetime
 
+import pytest
+
 from src.cost_tracking import (
-    log_api_call,
-    get_cost_summary,
-    get_monthly_total,
     check_budget,
+    get_monthly_total,
 )
 from src.database import Base, Class, get_engine, get_session
 
-
 # --- Unit tests for cost_tracking functions ---
+
 
 class TestGetMonthlyTotal:
     """Test the get_monthly_total function."""
@@ -112,6 +111,7 @@ class TestCheckBudget:
 
 
 # --- Integration tests for the web UI ---
+
 
 @pytest.fixture
 def app():

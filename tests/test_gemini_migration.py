@@ -11,19 +11,18 @@ Verifies:
 - get_provider_info() includes gemini-pro
 """
 
-import os
 import json
+import os
 import tempfile
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from src.llm_provider import (
+    _PROVIDER_ALIASES,
+    PROVIDER_REGISTRY,
     GeminiProvider,
     VertexAIProvider,
-    MockLLMProvider,
-    OpenAICompatibleProvider,
-    PROVIDER_REGISTRY,
-    _PROVIDER_ALIASES,
     _resolve_provider_name,
     get_provider,
     get_provider_info,
@@ -99,6 +98,7 @@ class TestGeminiProviderInit:
         """GeminiProvider default model matches registry."""
         # We can check the class signature default
         import inspect
+
         sig = inspect.signature(GeminiProvider.__init__)
         default = sig.parameters["model_name"].default
         assert default == "gemini-2.5-flash"
@@ -106,6 +106,7 @@ class TestGeminiProviderInit:
     def test_no_gemini3pro_class(self):
         """Gemini3ProProvider class should not exist."""
         import src.llm_provider as mod
+
         assert not hasattr(mod, "Gemini3ProProvider")
 
 
@@ -202,6 +203,7 @@ class TestVertexAIProviderInit:
 
     def test_default_model_is_gemini_2_5_flash(self):
         import inspect
+
         sig = inspect.signature(VertexAIProvider.__init__)
         default = sig.parameters["model_name"].default
         assert default == "gemini-2.5-flash"
@@ -212,23 +214,17 @@ class TestGetProviderReadsRegistry:
 
     def test_gemini_uses_registry_default(self):
         """get_provider with gemini and no model_name uses registry default."""
-        config = {
-            "llm": {"provider": "gemini", "mode": "production"}
-        }
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}):
-            with patch("google.genai.Client"):
-                provider = get_provider(config, web_mode=True)
-                assert provider._model_name == "gemini-2.5-flash"
+        config = {"llm": {"provider": "gemini", "mode": "production"}}
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), patch("google.genai.Client"):
+            provider = get_provider(config, web_mode=True)
+            assert provider._model_name == "gemini-2.5-flash"
 
     def test_gemini_pro_uses_registry_default(self):
         """get_provider with gemini-pro and no model_name uses gemini-2.5-pro."""
-        config = {
-            "llm": {"provider": "gemini-pro", "mode": "production"}
-        }
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}):
-            with patch("google.genai.Client"):
-                provider = get_provider(config, web_mode=True)
-                assert provider._model_name == "gemini-2.5-pro"
+        config = {"llm": {"provider": "gemini-pro", "mode": "production"}}
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), patch("google.genai.Client"):
+            provider = get_provider(config, web_mode=True)
+            assert provider._model_name == "gemini-2.5-pro"
 
     def test_user_model_overrides_registry(self):
         """User's model_name in config takes priority over registry default."""
@@ -239,22 +235,18 @@ class TestGetProviderReadsRegistry:
                 "model_name": "gemini-1.5-flash",
             }
         }
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}):
-            with patch("google.genai.Client"):
-                provider = get_provider(config, web_mode=True)
-                assert provider._model_name == "gemini-1.5-flash"
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), patch("google.genai.Client"):
+            provider = get_provider(config, web_mode=True)
+            assert provider._model_name == "gemini-1.5-flash"
 
     def test_gemini_3_pro_alias_works(self):
         """Old gemini-3-pro config still works via alias."""
-        config = {
-            "llm": {"provider": "gemini-3-pro", "mode": "production"}
-        }
-        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}):
-            with patch("google.genai.Client"):
-                provider = get_provider(config, web_mode=True)
-                assert isinstance(provider, GeminiProvider)
-                # Should use gemini-pro's default model
-                assert provider._model_name == "gemini-2.5-pro"
+        config = {"llm": {"provider": "gemini-3-pro", "mode": "production"}}
+        with patch.dict(os.environ, {"GEMINI_API_KEY": "test-key"}), patch("google.genai.Client"):
+            provider = get_provider(config, web_mode=True)
+            assert isinstance(provider, GeminiProvider)
+            # Should use gemini-pro's default model
+            assert provider._model_name == "gemini-2.5-pro"
 
     def test_gemini_accepts_api_key_from_config(self):
         """Gemini provider accepts api_key from llm config (not just env var)."""
@@ -313,6 +305,7 @@ class TestTestProviderEndpoint:
     def app(self):
         db_fd, db_path = tempfile.mkstemp(suffix=".db")
         from src.database import Base, get_engine, get_session
+
         engine = get_engine(db_path)
         Base.metadata.create_all(engine)
         session = get_session(engine)
@@ -320,6 +313,7 @@ class TestTestProviderEndpoint:
         engine.dispose()
 
         from src.web.app import create_app
+
         test_config = {
             "paths": {"database_file": db_path},
             "llm": {"provider": "mock"},

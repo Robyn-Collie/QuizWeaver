@@ -13,8 +13,11 @@ from datetime import date
 import pytest
 
 from src.database import (
-    Base, Class, PerformanceData,
-    get_engine, get_session,
+    Base,
+    Class,
+    PerformanceData,
+    get_engine,
+    get_session,
 )
 from src.lesson_tracker import log_lesson
 from src.reteach_generator import generate_reteach_suggestions
@@ -39,22 +42,26 @@ def db_session():
     session.commit()
 
     # Teach topics to set expected depth
-    log_lesson(session, cls.id, "Intro to photosynthesis",
-               topics=["photosynthesis"])
-    log_lesson(session, cls.id, "Genetics basics",
-               topics=["genetics"])
+    log_lesson(session, cls.id, "Intro to photosynthesis", topics=["photosynthesis"])
+    log_lesson(session, cls.id, "Genetics basics", topics=["genetics"])
 
     # Add performance data with gaps (scores below expectations)
     records = [
         PerformanceData(
-            class_id=cls.id, topic="photosynthesis",
-            avg_score=0.25, source="manual_entry",
-            sample_size=25, date=date.today(),
+            class_id=cls.id,
+            topic="photosynthesis",
+            avg_score=0.25,
+            source="manual_entry",
+            sample_size=25,
+            date=date.today(),
         ),
         PerformanceData(
-            class_id=cls.id, topic="genetics",
-            avg_score=0.30, source="manual_entry",
-            sample_size=25, date=date.today(),
+            class_id=cls.id,
+            topic="genetics",
+            avg_score=0.30,
+            source="manual_entry",
+            sample_size=25,
+            date=date.today(),
         ),
     ]
     for r in records:
@@ -88,9 +95,16 @@ class TestReteachGeneration:
         session, class_id = db_session
         result = generate_reteach_suggestions(session, class_id, config)
         required = [
-            "topic", "gap_severity", "current_score", "target_score",
-            "lesson_plan", "activities", "estimated_duration",
-            "resources", "assessment_suggestion", "priority",
+            "topic",
+            "gap_severity",
+            "current_score",
+            "target_score",
+            "lesson_plan",
+            "activities",
+            "estimated_duration",
+            "resources",
+            "assessment_suggestion",
+            "priority",
         ]
         for s in result:
             for field in required:
@@ -99,7 +113,9 @@ class TestReteachGeneration:
     def test_focus_topics(self, db_session, config):
         session, class_id = db_session
         result = generate_reteach_suggestions(
-            session, class_id, config,
+            session,
+            class_id,
+            config,
             focus_topics=["photosynthesis"],
         )
         assert result is not None
@@ -109,7 +125,10 @@ class TestReteachGeneration:
     def test_max_suggestions_limit(self, db_session, config):
         session, class_id = db_session
         result = generate_reteach_suggestions(
-            session, class_id, config, max_suggestions=1,
+            session,
+            class_id,
+            config,
+            max_suggestions=1,
         )
         assert len(result) <= 1
 
@@ -148,8 +167,11 @@ class TestReteachErrors:
         session = get_session(engine)
 
         cls = Class(
-            name="Empty Class", grade_level="7th", subject="Science",
-            standards=json.dumps([]), config=json.dumps({}),
+            name="Empty Class",
+            grade_level="7th",
+            subject="Science",
+            standards=json.dumps([]),
+            config=json.dumps({}),
         )
         session.add(cls)
         session.commit()
@@ -173,17 +195,23 @@ class TestReteachErrors:
         session = get_session(engine)
 
         cls = Class(
-            name="Good Class", grade_level="7th", subject="Science",
-            standards=json.dumps([]), config=json.dumps({}),
+            name="Good Class",
+            grade_level="7th",
+            subject="Science",
+            standards=json.dumps([]),
+            config=json.dumps({}),
         )
         session.add(cls)
         session.commit()
 
         # All scores at or above expectation
         record = PerformanceData(
-            class_id=cls.id, topic="photosynthesis",
-            avg_score=0.95, source="manual_entry",
-            sample_size=25, date=date.today(),
+            class_id=cls.id,
+            topic="photosynthesis",
+            avg_score=0.95,
+            source="manual_entry",
+            sample_size=25,
+            date=date.today(),
         )
         session.add(record)
         session.commit()

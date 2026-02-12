@@ -2,11 +2,13 @@
 Tests for BL-027: Responsive Navigation.
 Verifies grouped nav structure, dropdown classes, and proper links.
 """
+
+import json
 import os
 import tempfile
-import json
 
 import pytest
+
 from src.database import Base, Class, get_engine, get_session
 
 

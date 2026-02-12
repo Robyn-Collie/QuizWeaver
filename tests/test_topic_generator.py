@@ -3,18 +3,19 @@
 import json
 import os
 import tempfile
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from src.database import Base, Class, LessonLog, Quiz, Question, StudySet
+from src.database import Base, Class, LessonLog, Quiz, StudySet
+from src.lesson_tracker import log_lesson
 from src.topic_generator import (
+    VALID_OUTPUT_TYPES,
+    generate_from_topics,
     get_class_topics,
     search_topics,
-    generate_from_topics,
-    VALID_OUTPUT_TYPES,
 )
-from src.lesson_tracker import log_lesson
 
 
 @pytest.fixture
@@ -225,7 +226,8 @@ class TestWebIntegration:
         db_path = db_fd.name
         db_fd.close()
 
-        from src.database import get_engine, init_db, get_session, Class
+        from src.database import Class, get_engine, get_session, init_db
+
         engine = get_engine(db_path)
         init_db(engine)
         session = get_session(engine)
@@ -249,6 +251,7 @@ class TestWebIntegration:
         }
 
         from src.web.app import create_app
+
         app = create_app(config)
         app.config["TESTING"] = True
         app.config["DB_PATH"] = db_path

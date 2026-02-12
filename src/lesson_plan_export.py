@@ -8,13 +8,12 @@ import io
 import json
 
 from docx import Document
-from docx.shared import Pt, Inches
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import sanitize_filename, pdf_wrap_text
-
+from src.export_utils import pdf_wrap_text, sanitize_filename
 
 SECTION_LABELS = {
     "learning_objectives": "Learning Objectives",
@@ -105,10 +104,7 @@ def export_lesson_plan_pdf(lesson_plan) -> io.BytesIO:
 
     # AI draft notice
     c.setFont("Helvetica-Oblique", 8)
-    c.drawCentredString(
-        width / 2, y,
-        "AI-Generated Draft - Review and edit all sections before classroom use."
-    )
+    c.drawCentredString(width / 2, y, "AI-Generated Draft - Review and edit all sections before classroom use.")
     y -= 24
 
     # Sections
@@ -145,6 +141,7 @@ def export_lesson_plan_pdf(lesson_plan) -> io.BytesIO:
 # DOCX (Word) Export
 # ---------------------------------------------------------------------------
 
+
 def export_lesson_plan_docx(lesson_plan) -> io.BytesIO:
     """Export a lesson plan to a Word document.
 
@@ -173,9 +170,7 @@ def export_lesson_plan_docx(lesson_plan) -> io.BytesIO:
             run.font.size = Pt(10)
 
     # AI draft notice
-    p = doc.add_paragraph(
-        "AI-Generated Draft - Review and edit all sections before classroom use."
-    )
+    p = doc.add_paragraph("AI-Generated Draft - Review and edit all sections before classroom use.")
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     for run in p.runs:
         run.font.size = Pt(8)

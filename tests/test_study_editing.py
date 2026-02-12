@@ -5,12 +5,13 @@ Tests the API endpoints for editing, deleting, and reordering study cards,
 and verifies the detail template renders edit controls.
 """
 
-import os
 import json
+import os
 import tempfile
+
 import pytest
 
-from src.database import Base, Class, StudySet, StudyCard, get_engine, get_session
+from src.database import Base, Class, StudyCard, StudySet, get_engine, get_session
 
 
 @pytest.fixture
@@ -43,11 +44,13 @@ def app():
     session.flush()
 
     # Add three cards
-    for i, (front, back) in enumerate([
-        ("Term A", "Definition A"),
-        ("Term B", "Definition B"),
-        ("Term C", "Definition C"),
-    ]):
+    for i, (front, back) in enumerate(
+        [
+            ("Term A", "Definition A"),
+            ("Term B", "Definition B"),
+            ("Term C", "Definition C"),
+        ]
+    ):
         card = StudyCard(
             study_set_id=study_set.id,
             card_type="flashcard",
@@ -119,10 +122,12 @@ def vocab_app():
     session.add(study_set)
     session.flush()
 
-    for i, (front, back) in enumerate([
-        ("Photosynthesis", "Process by which plants make food"),
-        ("Mitosis", "Cell division process"),
-    ]):
+    for i, (front, back) in enumerate(
+        [
+            ("Photosynthesis", "Process by which plants make food"),
+            ("Mitosis", "Cell division process"),
+        ]
+    ):
         card = StudyCard(
             study_set_id=study_set.id,
             card_type="term",
@@ -187,6 +192,7 @@ def _get_study_set_id(app):
 
 # --- API: Update Card ---
 
+
 class TestUpdateCard:
     def test_update_front_and_back(self, app, client):
         card_ids = _get_card_ids(app)
@@ -248,6 +254,7 @@ class TestUpdateCard:
 
 # --- API: Delete Card ---
 
+
 class TestDeleteCard:
     def test_delete_card(self, app, client):
         card_ids = _get_card_ids(app)
@@ -281,6 +288,7 @@ class TestDeleteCard:
 
 
 # --- API: Reorder Cards ---
+
 
 class TestReorderCards:
     def test_reorder_cards(self, app, client):
@@ -320,6 +328,7 @@ class TestReorderCards:
 
 
 # --- Detail Page Rendering ---
+
 
 class TestDetailPageRendering:
     def test_detail_has_edit_buttons(self, app, client):

@@ -12,9 +12,7 @@ Includes:
 """
 
 import re
-import math
-from typing import Dict, List, Optional, Tuple
-
+from typing import Dict, List, Optional
 
 # --- Lexile / Reading Complexity Bands ---
 
@@ -61,6 +59,7 @@ def get_all_lexile_bands() -> Dict[str, Dict]:
 
 
 # --- Text Complexity Estimation (Flesch-Kincaid) ---
+
 
 def _count_syllables(word: str) -> int:
     """Count syllables in a word using a heuristic approach.
@@ -176,11 +175,7 @@ def estimate_text_complexity(text: str) -> Dict:
     avg_syllables_per_word = total_syllables / total_words
 
     # Flesch-Kincaid Grade Level
-    grade_level = (
-        0.39 * avg_words_per_sentence
-        + 11.8 * avg_syllables_per_word
-        - 15.59
-    )
+    grade_level = 0.39 * avg_words_per_sentence + 11.8 * avg_syllables_per_word - 15.59
 
     # Clamp to reasonable range
     grade_level = max(0.0, round(grade_level, 1))
@@ -303,12 +298,14 @@ def get_available_blueprints() -> List[Dict]:
     """
     result = []
     for key, bp in BLUEPRINT_TEMPLATES.items():
-        result.append({
-            "key": key,
-            "label": bp["label"],
-            "description": bp["description"],
-            "distribution": dict(bp["distribution"]),
-        })
+        result.append(
+            {
+                "key": key,
+                "label": bp["label"],
+                "description": bp["description"],
+                "distribution": dict(bp["distribution"]),
+            }
+        )
     return result
 
 
@@ -335,10 +332,7 @@ def apply_blueprint_to_config(blueprint_name: str, question_count: int) -> Dict[
 
     bp = BLUEPRINT_TEMPLATES.get(blueprint_name)
     if bp is None:
-        raise ValueError(
-            f"Unknown blueprint '{blueprint_name}'. "
-            f"Available: {list(BLUEPRINT_TEMPLATES.keys())}"
-        )
+        raise ValueError(f"Unknown blueprint '{blueprint_name}'. Available: {list(BLUEPRINT_TEMPLATES.keys())}")
 
     distribution = bp["distribution"]
     result = {}

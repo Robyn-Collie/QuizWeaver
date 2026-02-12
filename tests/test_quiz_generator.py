@@ -15,15 +15,15 @@ import pytest
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src.database import get_engine, init_db, get_session, Base, Class, Quiz, Question
-from src.classroom import create_class, get_class
+from src.classroom import create_class
+from src.database import Question, Quiz, get_engine, get_session, init_db
 from src.migrations import run_migrations
 from src.quiz_generator import generate_quiz
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def db_path():
@@ -88,6 +88,7 @@ def sample_class(db_session):
 # Tests
 # ---------------------------------------------------------------------------
 
+
 class TestGenerateQuizReturnsQuizObject:
     """test_generate_quiz_returns_quiz_object"""
 
@@ -127,8 +128,7 @@ class TestGenerateQuizCreatesQuestions:
         assert quiz is not None
         for question in quiz.questions:
             assert question.quiz_id == quiz.id, (
-                f"Question {question.id} has quiz_id={question.quiz_id}, "
-                f"expected {quiz.id}"
+                f"Question {question.id} has quiz_id={question.quiz_id}, expected {quiz.id}"
             )
 
     def test_questions_are_question_instances(self, db_session, mock_config, sample_class):
@@ -158,9 +158,7 @@ class TestGenerateQuizUsesClassGradeLevel:
             profile = json.loads(profile)
         assert profile is not None, "style_profile should not be None"
         profile_str = json.dumps(profile) if isinstance(profile, dict) else str(profile)
-        assert "8th Grade" in profile_str, (
-            f"Expected '8th Grade' in style_profile, got: {profile_str}"
-        )
+        assert "8th Grade" in profile_str, f"Expected '8th Grade' in style_profile, got: {profile_str}"
 
 
 class TestGenerateQuizGradeOverride:
@@ -174,17 +172,13 @@ class TestGenerateQuizGradeOverride:
             grade_level="7th Grade",
             subject="Science",
         )
-        quiz = generate_quiz(
-            db_session, cls.id, mock_config, grade_level="9th Grade"
-        )
+        quiz = generate_quiz(db_session, cls.id, mock_config, grade_level="9th Grade")
         assert quiz is not None
         profile = quiz.style_profile
         if isinstance(profile, str):
             profile = json.loads(profile)
         profile_str = json.dumps(profile) if isinstance(profile, dict) else str(profile)
-        assert "9th Grade" in profile_str, (
-            f"Expected '9th Grade' override in style_profile, got: {profile_str}"
-        )
+        assert "9th Grade" in profile_str, f"Expected '9th Grade' override in style_profile, got: {profile_str}"
 
 
 class TestGenerateQuizWithSolStandards:
@@ -193,18 +187,14 @@ class TestGenerateQuizWithSolStandards:
     def test_sol_standards_in_profile(self, db_session, mock_config, sample_class):
         """Supplied SOL standards should appear in the quiz style_profile."""
         sol = ["SOL 7.1", "SOL 7.2"]
-        quiz = generate_quiz(
-            db_session, sample_class.id, mock_config, sol_standards=sol
-        )
+        quiz = generate_quiz(db_session, sample_class.id, mock_config, sol_standards=sol)
         assert quiz is not None
         profile = quiz.style_profile
         if isinstance(profile, str):
             profile = json.loads(profile)
         profile_str = json.dumps(profile) if isinstance(profile, dict) else str(profile)
         for standard in sol:
-            assert standard in profile_str, (
-                f"Expected '{standard}' in style_profile, got: {profile_str}"
-            )
+            assert standard in profile_str, f"Expected '{standard}' in style_profile, got: {profile_str}"
 
 
 class TestGenerateQuizWithNonexistentClass:
@@ -213,9 +203,7 @@ class TestGenerateQuizWithNonexistentClass:
     def test_returns_none_for_missing_class(self, db_session, mock_config):
         """generate_quiz should return None when the class does not exist."""
         result = generate_quiz(db_session, 9999, mock_config)
-        assert result is None, (
-            "generate_quiz should return None for a nonexistent class_id"
-        )
+        assert result is None, "generate_quiz should return None for a nonexistent class_id"
 
 
 class TestGenerateQuizSetsNumQuestions:
@@ -223,9 +211,7 @@ class TestGenerateQuizSetsNumQuestions:
 
     def test_num_questions_forwarded(self, db_session, mock_config, sample_class):
         """The num_questions parameter should influence the generation context."""
-        quiz = generate_quiz(
-            db_session, sample_class.id, mock_config, num_questions=5
-        )
+        quiz = generate_quiz(db_session, sample_class.id, mock_config, num_questions=5)
         assert quiz is not None
         # The mock provider may not honour exact counts, but the quiz should
         # still be created successfully.  At minimum, verify the quiz has
@@ -260,9 +246,7 @@ class TestGenerateQuizPersistedToDB:
         quiz = generate_quiz(db_session, sample_class.id, mock_config)
         assert quiz is not None
 
-        questions = (
-            db_session.query(Question).filter_by(quiz_id=quiz.id).all()
-        )
+        questions = db_session.query(Question).filter_by(quiz_id=quiz.id).all()
         assert len(questions) > 0, "Questions should be persisted in the database"
         assert len(questions) == len(quiz.questions)
 

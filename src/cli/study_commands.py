@@ -2,18 +2,16 @@
 Study material generation and export CLI commands.
 """
 
-import json
-
 from src.cli import get_db_session, resolve_class_id
-from src.database import StudySet, StudyCard
-from src.study_generator import generate_study_material, VALID_MATERIAL_TYPES
-from src.study_export import (
-    export_flashcards_tsv,
-    export_flashcards_csv,
-    export_study_pdf,
-    export_study_docx,
-)
+from src.database import StudyCard, StudySet
 from src.export_utils import sanitize_filename
+from src.study_export import (
+    export_flashcards_csv,
+    export_flashcards_tsv,
+    export_study_docx,
+    export_study_pdf,
+)
+from src.study_generator import VALID_MATERIAL_TYPES, generate_study_material
 
 
 def register_study_commands(subparsers):
@@ -23,7 +21,9 @@ def register_study_commands(subparsers):
     p = subparsers.add_parser("generate-study", help="Generate study materials.")
     p.add_argument("--class", dest="class_id", type=int, help="Class ID.")
     p.add_argument(
-        "--type", dest="material_type", required=True,
+        "--type",
+        dest="material_type",
+        required=True,
         choices=list(VALID_MATERIAL_TYPES),
         help="Type of study material.",
     )
@@ -35,7 +35,9 @@ def register_study_commands(subparsers):
     p = subparsers.add_parser("export-study", help="Export a study set to file.")
     p.add_argument("study_set_id", type=int, help="Study set ID to export.")
     p.add_argument(
-        "--format", dest="fmt", required=True,
+        "--format",
+        dest="fmt",
+        required=True,
         choices=["tsv", "csv", "pdf", "docx"],
         help="Export format.",
     )
@@ -57,11 +59,7 @@ def handle_generate_study(config, args):
             title=args.title,
         )
         if study_set:
-            card_count = (
-                session.query(StudyCard)
-                .filter_by(study_set_id=study_set.id)
-                .count()
-            )
+            card_count = session.query(StudyCard).filter_by(study_set_id=study_set.id).count()
             print(f"[OK] Generated study set: {study_set.title} (ID: {study_set.id})")
             print(f"   Type: {study_set.material_type}")
             print(f"   Cards: {card_count}")
@@ -80,12 +78,7 @@ def handle_export_study(config, args):
             print(f"Error: Study set with ID {args.study_set_id} not found.")
             return
 
-        cards = (
-            session.query(StudyCard)
-            .filter_by(study_set_id=study_set.id)
-            .order_by(StudyCard.sort_order)
-            .all()
-        )
+        cards = session.query(StudyCard).filter_by(study_set_id=study_set.id).order_by(StudyCard.sort_order).all()
 
         base_name = sanitize_filename(study_set.title or "study", default="study")
         fmt = args.fmt

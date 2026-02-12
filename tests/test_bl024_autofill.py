@@ -1,8 +1,9 @@
 """Tests for BL-024: Prevent Edge/Chrome autofill on settings fields."""
 
+import json
 import os
 import tempfile
-import json
+
 import pytest
 
 from src.database import Base, Class, get_engine, get_session

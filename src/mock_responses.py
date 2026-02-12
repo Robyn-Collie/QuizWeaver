@@ -9,12 +9,20 @@ import json
 import random
 from typing import Any, Dict, List
 
-
 # Sample topics for generating realistic content
 SCIENCE_TOPICS = [
-    "photosynthesis", "cell division", "mitosis", "meiosis",
-    "respiration", "genetics", "evolution", "ecosystems",
-    "atomic structure", "chemical reactions", "forces", "energy"
+    "photosynthesis",
+    "cell division",
+    "mitosis",
+    "meiosis",
+    "respiration",
+    "genetics",
+    "evolution",
+    "ecosystems",
+    "atomic structure",
+    "chemical reactions",
+    "forces",
+    "energy",
 ]
 
 
@@ -65,19 +73,11 @@ def get_analyst_response(prompt_parts: List[Any]) -> str:
     response = {
         "estimated_question_count": question_count,
         "image_ratio": image_ratio,
-        "difficulty_distribution": {
-            "easy": 0.3,
-            "medium": 0.5,
-            "hard": 0.2
-        },
-        "question_types": {
-            "multiple_choice": 0.7,
-            "true_false": 0.2,
-            "short_answer": 0.1
-        },
+        "difficulty_distribution": {"easy": 0.3, "medium": 0.5, "hard": 0.2},
+        "question_types": {"multiple_choice": 0.7, "true_false": 0.2, "short_answer": 0.1},
         "topics_identified": random.sample(SCIENCE_TOPICS, k=random.randint(3, 6)),
         "recommended_points_per_question": 5,
-        "notes": "Content appears to be grade 7-8 science level."
+        "notes": "Content appears to be grade 7-8 science level.",
     }
 
     return json.dumps(response, indent=2)
@@ -124,35 +124,40 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
         topic = context_keywords[i % len(context_keywords)]
 
         # Randomly choose question type including new types
-        q_type = random.choice([
-            "multiple_choice", "multiple_choice", "true_false",
-            "ordering", "short_answer",
-        ])
+        q_type = random.choice(
+            [
+                "multiple_choice",
+                "multiple_choice",
+                "true_false",
+                "ordering",
+                "short_answer",
+            ]
+        )
 
         if q_type == "multiple_choice":
             question = {
                 "type": "multiple_choice",
-                "title": f"Question {i+1}",
+                "title": f"Question {i + 1}",
                 "text": f"Which of the following best describes {topic}?",
                 "points": 5,
                 "options": [
                     f"Option A about {topic}",
                     f"Option B about {topic}",
                     f"Option C about {topic}",
-                    f"Option D about {topic}"
+                    f"Option D about {topic}",
                 ],
                 "correct_index": random.randint(0, 3),
-                "image_ref": None if random.random() > 0.3 else f"image_{i+1}.png"
+                "image_ref": None if random.random() > 0.3 else f"image_{i + 1}.png",
             }
         elif q_type == "true_false":
             question = {
                 "type": "true_false",
-                "title": f"Question {i+1}",
+                "title": f"Question {i + 1}",
                 "text": f"{topic.capitalize()} is a fundamental concept in science.",
                 "points": 5,
                 "options": ["True", "False"],
                 "correct_index": random.randint(0, 1),
-                "image_ref": None
+                "image_ref": None,
             }
         elif q_type == "ordering":
             steps = [
@@ -164,7 +169,7 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
             question = {
                 "type": "ordering",
                 "question_type": "ordering",
-                "title": f"Question {i+1}",
+                "title": f"Question {i + 1}",
                 "text": f"Arrange the steps of the {topic} experiment in the correct order.",
                 "points": 5,
                 "items": steps,
@@ -176,7 +181,7 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
             question = {
                 "type": "short_answer",
                 "question_type": "short_answer",
-                "title": f"Question {i+1}",
+                "title": f"Question {i + 1}",
                 "text": f"What is the primary function of {topic} in living organisms?",
                 "points": 5,
                 "expected_answer": f"{topic}",
@@ -220,7 +225,7 @@ def get_critic_response(prompt_parts: List[Any], iteration: int = 1) -> str:
         response = {
             "status": "approved",
             "feedback": "Questions are well-structured and align with the lesson content. Grade level is appropriate.",
-            "suggested_changes": []
+            "suggested_changes": [],
         }
     else:
         response = {
@@ -230,21 +235,20 @@ def get_critic_response(prompt_parts: List[Any], iteration: int = 1) -> str:
                 {
                     "question_index": 0,
                     "issue": "Question is too ambiguous",
-                    "suggestion": "Add more specific details about the concept"
+                    "suggestion": "Add more specific details about the concept",
                 },
                 {
                     "question_index": 2,
                     "issue": "Difficulty mismatch",
-                    "suggestion": "This question seems too advanced for the grade level"
-                }
-            ]
+                    "suggestion": "This question seems too advanced for the grade level",
+                },
+            ],
         }
 
     return json.dumps(response, indent=2)
 
 
-def get_study_material_response(prompt_parts: List[Any], material_type: str,
-                                context_keywords: List[str] = None) -> str:
+def get_study_material_response(prompt_parts: List[Any], material_type: str, context_keywords: List[str] = None) -> str:
     """
     Generate mock study material response based on material type.
 
@@ -265,54 +269,189 @@ def get_study_material_response(prompt_parts: List[Any], material_type: str,
 
     if material_type == "flashcard":
         items = [
-            {"front": f"What is {topic1}?", "back": f"The process of {topic1} in living organisms.", "tags": [topic1, "definition"]},
-            {"front": f"Define {topic2}", "back": f"{topic2.capitalize()} is a fundamental concept in science that involves cellular processes.", "tags": [topic2]},
-            {"front": f"Key function of {topic3}", "back": f"{topic3.capitalize()} plays an essential role in maintaining biological systems.", "tags": [topic3]},
-            {"front": f"Stages of {topic1}", "back": f"Stage 1: Initiation, Stage 2: Progression, Stage 3: Completion of {topic1}.", "tags": [topic1, "stages"]},
-            {"front": f"Compare {topic1} and {topic2}", "back": f"{topic1.capitalize()} involves energy conversion while {topic2} involves structural changes.", "tags": [topic1, topic2, "comparison"]},
-            {"front": f"Where does {topic1} occur?", "back": f"{topic1.capitalize()} primarily occurs in specialized cellular structures.", "tags": [topic1, "location"]},
-            {"front": f"Why is {topic2} important?", "back": f"{topic2.capitalize()} is essential for growth, repair, and reproduction.", "tags": [topic2, "importance"]},
-            {"front": f"Products of {topic3}", "back": f"The main products of {topic3} include energy and waste byproducts.", "tags": [topic3, "products"]},
-            {"front": f"Factors affecting {topic1}", "back": f"Temperature, light, and availability of resources affect the rate of {topic1}.", "tags": [topic1, "factors"]},
-            {"front": f"Real-world application of {topic2}", "back": f"{topic2.capitalize()} has applications in medicine, agriculture, and biotechnology.", "tags": [topic2, "application"]},
+            {
+                "front": f"What is {topic1}?",
+                "back": f"The process of {topic1} in living organisms.",
+                "tags": [topic1, "definition"],
+            },
+            {
+                "front": f"Define {topic2}",
+                "back": f"{topic2.capitalize()} is a fundamental concept in science that involves cellular processes.",
+                "tags": [topic2],
+            },
+            {
+                "front": f"Key function of {topic3}",
+                "back": f"{topic3.capitalize()} plays an essential role in maintaining biological systems.",
+                "tags": [topic3],
+            },
+            {
+                "front": f"Stages of {topic1}",
+                "back": f"Stage 1: Initiation, Stage 2: Progression, Stage 3: Completion of {topic1}.",
+                "tags": [topic1, "stages"],
+            },
+            {
+                "front": f"Compare {topic1} and {topic2}",
+                "back": f"{topic1.capitalize()} involves energy conversion while {topic2} involves structural changes.",
+                "tags": [topic1, topic2, "comparison"],
+            },
+            {
+                "front": f"Where does {topic1} occur?",
+                "back": f"{topic1.capitalize()} primarily occurs in specialized cellular structures.",
+                "tags": [topic1, "location"],
+            },
+            {
+                "front": f"Why is {topic2} important?",
+                "back": f"{topic2.capitalize()} is essential for growth, repair, and reproduction.",
+                "tags": [topic2, "importance"],
+            },
+            {
+                "front": f"Products of {topic3}",
+                "back": f"The main products of {topic3} include energy and waste byproducts.",
+                "tags": [topic3, "products"],
+            },
+            {
+                "front": f"Factors affecting {topic1}",
+                "back": f"Temperature, light, and availability of resources affect the rate of {topic1}.",
+                "tags": [topic1, "factors"],
+            },
+            {
+                "front": f"Real-world application of {topic2}",
+                "back": f"{topic2.capitalize()} has applications in medicine, agriculture, and biotechnology.",
+                "tags": [topic2, "application"],
+            },
         ]
     elif material_type == "study_guide":
         items = [
-            {"heading": f"Introduction to {topic1.capitalize()}", "content": f"{topic1.capitalize()} is a fundamental process in biology. It involves the conversion of energy and materials within living systems. Understanding {topic1} is essential for grasping how organisms function.", "key_points": [f"{topic1.capitalize()} is a core biological process", "It involves energy transformation", "All living organisms depend on it"]},
-            {"heading": f"{topic2.capitalize()}: Key Concepts", "content": f"{topic2.capitalize()} encompasses several important mechanisms. These mechanisms work together to maintain the structure and function of living organisms. Students should focus on the relationship between {topic2} and overall organism health.", "key_points": [f"{topic2.capitalize()} has multiple components", "It is critical for organism survival", f"Related to {topic1}"]},
-            {"heading": f"The Role of {topic3.capitalize()}", "content": f"{topic3.capitalize()} is closely related to both {topic1} and {topic2}. It provides the chemical basis for many biological reactions. Understanding {topic3} helps explain why organisms need specific nutrients.", "key_points": [f"{topic3.capitalize()} supports biological reactions", f"Connected to {topic1} and {topic2}", "Explains nutrient requirements"]},
-            {"heading": "Review and Connections", "content": f"All three topics -- {topic1}, {topic2}, and {topic3} -- are interconnected. Changes in one process can affect the others. For the assessment, focus on how these processes work together in living systems.", "key_points": ["Topics are interconnected", "Changes propagate between systems", "Focus on integration for assessment"]},
+            {
+                "heading": f"Introduction to {topic1.capitalize()}",
+                "content": f"{topic1.capitalize()} is a fundamental process in biology. It involves the conversion of energy and materials within living systems. Understanding {topic1} is essential for grasping how organisms function.",
+                "key_points": [
+                    f"{topic1.capitalize()} is a core biological process",
+                    "It involves energy transformation",
+                    "All living organisms depend on it",
+                ],
+            },
+            {
+                "heading": f"{topic2.capitalize()}: Key Concepts",
+                "content": f"{topic2.capitalize()} encompasses several important mechanisms. These mechanisms work together to maintain the structure and function of living organisms. Students should focus on the relationship between {topic2} and overall organism health.",
+                "key_points": [
+                    f"{topic2.capitalize()} has multiple components",
+                    "It is critical for organism survival",
+                    f"Related to {topic1}",
+                ],
+            },
+            {
+                "heading": f"The Role of {topic3.capitalize()}",
+                "content": f"{topic3.capitalize()} is closely related to both {topic1} and {topic2}. It provides the chemical basis for many biological reactions. Understanding {topic3} helps explain why organisms need specific nutrients.",
+                "key_points": [
+                    f"{topic3.capitalize()} supports biological reactions",
+                    f"Connected to {topic1} and {topic2}",
+                    "Explains nutrient requirements",
+                ],
+            },
+            {
+                "heading": "Review and Connections",
+                "content": f"All three topics -- {topic1}, {topic2}, and {topic3} -- are interconnected. Changes in one process can affect the others. For the assessment, focus on how these processes work together in living systems.",
+                "key_points": [
+                    "Topics are interconnected",
+                    "Changes propagate between systems",
+                    "Focus on integration for assessment",
+                ],
+            },
         ]
     elif material_type == "vocabulary":
         items = [
-            {"term": topic1.capitalize(), "definition": f"The biological process of {topic1} in living organisms.", "example": f"Plants use {topic1} to convert sunlight into energy.", "part_of_speech": "noun"},
-            {"term": topic2.capitalize(), "definition": f"A fundamental concept involving {topic2} in cellular biology.", "example": f"{topic2.capitalize()} occurs during cell growth.", "part_of_speech": "noun"},
-            {"term": topic3.capitalize(), "definition": f"The study and process of {topic3} in biological systems.", "example": f"{topic3.capitalize()} reactions occur in the mitochondria.", "part_of_speech": "noun"},
-            {"term": "Organism", "definition": "An individual living thing that can function independently.", "example": "A tree is a complex organism.", "part_of_speech": "noun"},
-            {"term": "Cellular", "definition": "Relating to or consisting of living cells.", "example": "Cellular processes keep organisms alive.", "part_of_speech": "adjective"},
-            {"term": "Metabolism", "definition": "The chemical processes that occur within a living organism to maintain life.", "example": f"Metabolism includes both {topic1} and {topic3}.", "part_of_speech": "noun"},
-            {"term": "Enzyme", "definition": "A substance produced by a living organism that acts as a catalyst.", "example": f"Enzymes speed up {topic3} reactions.", "part_of_speech": "noun"},
-            {"term": "Substrate", "definition": "The substance on which an enzyme acts.", "example": "The substrate binds to the enzyme's active site.", "part_of_speech": "noun"},
+            {
+                "term": topic1.capitalize(),
+                "definition": f"The biological process of {topic1} in living organisms.",
+                "example": f"Plants use {topic1} to convert sunlight into energy.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": topic2.capitalize(),
+                "definition": f"A fundamental concept involving {topic2} in cellular biology.",
+                "example": f"{topic2.capitalize()} occurs during cell growth.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": topic3.capitalize(),
+                "definition": f"The study and process of {topic3} in biological systems.",
+                "example": f"{topic3.capitalize()} reactions occur in the mitochondria.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": "Organism",
+                "definition": "An individual living thing that can function independently.",
+                "example": "A tree is a complex organism.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": "Cellular",
+                "definition": "Relating to or consisting of living cells.",
+                "example": "Cellular processes keep organisms alive.",
+                "part_of_speech": "adjective",
+            },
+            {
+                "term": "Metabolism",
+                "definition": "The chemical processes that occur within a living organism to maintain life.",
+                "example": f"Metabolism includes both {topic1} and {topic3}.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": "Enzyme",
+                "definition": "A substance produced by a living organism that acts as a catalyst.",
+                "example": f"Enzymes speed up {topic3} reactions.",
+                "part_of_speech": "noun",
+            },
+            {
+                "term": "Substrate",
+                "definition": "The substance on which an enzyme acts.",
+                "example": "The substrate binds to the enzyme's active site.",
+                "part_of_speech": "noun",
+            },
         ]
     elif material_type == "review_sheet":
         items = [
-            {"heading": f"Key Formula: {topic1.capitalize()}", "content": f"6CO2 + 6H2O -> C6H12O6 + 6O2 (simplified equation for {topic1})", "type": "formula"},
-            {"heading": f"Important Fact: {topic2.capitalize()}", "content": f"{topic2.capitalize()} is divided into distinct phases, each with specific characteristics and outcomes.", "type": "fact"},
-            {"heading": f"Core Concept: {topic3.capitalize()}", "content": f"{topic3.capitalize()} involves breaking down complex molecules into simpler ones, releasing energy in the process. This energy is stored as ATP.", "type": "concept"},
-            {"heading": "Key Dates and Discoveries", "content": f"The process of {topic1} was first described in detail in the early 1800s. Modern understanding has expanded significantly.", "type": "fact"},
-            {"heading": f"Comparison: {topic1.capitalize()} vs {topic3.capitalize()}", "content": f"{topic1.capitalize()} builds complex molecules (anabolic) while {topic3} breaks them down (catabolic). Both are essential for life.", "type": "concept"},
-            {"heading": "Quick Reference: Cell Structures", "content": f"Chloroplast: site of {topic1}. Mitochondria: site of {topic3}. Nucleus: controls {topic2}.", "type": "fact"},
+            {
+                "heading": f"Key Formula: {topic1.capitalize()}",
+                "content": f"6CO2 + 6H2O -> C6H12O6 + 6O2 (simplified equation for {topic1})",
+                "type": "formula",
+            },
+            {
+                "heading": f"Important Fact: {topic2.capitalize()}",
+                "content": f"{topic2.capitalize()} is divided into distinct phases, each with specific characteristics and outcomes.",
+                "type": "fact",
+            },
+            {
+                "heading": f"Core Concept: {topic3.capitalize()}",
+                "content": f"{topic3.capitalize()} involves breaking down complex molecules into simpler ones, releasing energy in the process. This energy is stored as ATP.",
+                "type": "concept",
+            },
+            {
+                "heading": "Key Dates and Discoveries",
+                "content": f"The process of {topic1} was first described in detail in the early 1800s. Modern understanding has expanded significantly.",
+                "type": "fact",
+            },
+            {
+                "heading": f"Comparison: {topic1.capitalize()} vs {topic3.capitalize()}",
+                "content": f"{topic1.capitalize()} builds complex molecules (anabolic) while {topic3} breaks them down (catabolic). Both are essential for life.",
+                "type": "concept",
+            },
+            {
+                "heading": "Quick Reference: Cell Structures",
+                "content": f"Chloroplast: site of {topic1}. Mitochondria: site of {topic3}. Nucleus: controls {topic2}.",
+                "type": "fact",
+            },
         ]
     else:
         items = [
-            {"front": f"What is {topic1}?", "back": f"A key concept in science.", "tags": [topic1]},
+            {"front": f"What is {topic1}?", "back": "A key concept in science.", "tags": [topic1]},
         ]
 
     return json.dumps(items, indent=2)
 
 
-def get_variant_response(questions_data: List[Dict], reading_level: str,
-                         context_keywords: List[str] = None) -> str:
+def get_variant_response(questions_data: List[Dict], reading_level: str, context_keywords: List[str] = None) -> str:
     """Generate mock variant response by modifying question text for reading level.
 
     Args:
@@ -370,8 +509,9 @@ def get_variant_response(questions_data: List[Dict], reading_level: str,
     return json.dumps(result, indent=2)
 
 
-def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
-                        context_keywords: List[str] = None) -> str:
+def get_rubric_response(
+    questions_data: List[Dict], style_profile: Dict = None, context_keywords: List[str] = None
+) -> str:
     """Generate mock rubric response with criteria and proficiency levels.
 
     Args:
@@ -398,10 +538,26 @@ def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
             "description": f"Demonstrates understanding of key {topic} concepts",
             "max_points": 10,
             "levels": [
-                {"level": 1, "label": "Beginning", "description": f"Shows minimal understanding of {topic} concepts. Unable to identify basic facts."},
-                {"level": 2, "label": "Developing", "description": f"Shows partial understanding of {topic} concepts. Can identify some basic facts."},
-                {"level": 3, "label": "Proficient", "description": f"Demonstrates solid understanding of {topic} concepts. Correctly applies knowledge."},
-                {"level": 4, "label": "Advanced", "description": f"Shows deep understanding of {topic} concepts. Makes connections across topics."},
+                {
+                    "level": 1,
+                    "label": "Beginning",
+                    "description": f"Shows minimal understanding of {topic} concepts. Unable to identify basic facts.",
+                },
+                {
+                    "level": 2,
+                    "label": "Developing",
+                    "description": f"Shows partial understanding of {topic} concepts. Can identify some basic facts.",
+                },
+                {
+                    "level": 3,
+                    "label": "Proficient",
+                    "description": f"Demonstrates solid understanding of {topic} concepts. Correctly applies knowledge.",
+                },
+                {
+                    "level": 4,
+                    "label": "Advanced",
+                    "description": f"Shows deep understanding of {topic} concepts. Makes connections across topics.",
+                },
             ],
         },
         {
@@ -409,10 +565,22 @@ def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
             "description": f"Uses appropriate scientific terminology related to {topic}",
             "max_points": 5,
             "levels": [
-                {"level": 1, "label": "Beginning", "description": "Rarely uses scientific terms or uses them incorrectly."},
-                {"level": 2, "label": "Developing", "description": "Sometimes uses scientific terms but with limited accuracy."},
+                {
+                    "level": 1,
+                    "label": "Beginning",
+                    "description": "Rarely uses scientific terms or uses them incorrectly.",
+                },
+                {
+                    "level": 2,
+                    "label": "Developing",
+                    "description": "Sometimes uses scientific terms but with limited accuracy.",
+                },
                 {"level": 3, "label": "Proficient", "description": "Consistently uses scientific terms accurately."},
-                {"level": 4, "label": "Advanced", "description": "Uses precise scientific vocabulary and explains terms in context."},
+                {
+                    "level": 4,
+                    "label": "Advanced",
+                    "description": "Uses precise scientific vocabulary and explains terms in context.",
+                },
             ],
         },
         {
@@ -421,9 +589,21 @@ def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
             "max_points": 10,
             "levels": [
                 {"level": 1, "label": "Beginning", "description": "Provides answers without reasoning or evidence."},
-                {"level": 2, "label": "Developing", "description": "Shows some reasoning but conclusions may be unsupported."},
-                {"level": 3, "label": "Proficient", "description": "Applies logical reasoning with supporting evidence."},
-                {"level": 4, "label": "Advanced", "description": "Demonstrates sophisticated analysis with multiple perspectives."},
+                {
+                    "level": 2,
+                    "label": "Developing",
+                    "description": "Shows some reasoning but conclusions may be unsupported.",
+                },
+                {
+                    "level": 3,
+                    "label": "Proficient",
+                    "description": "Applies logical reasoning with supporting evidence.",
+                },
+                {
+                    "level": 4,
+                    "label": "Advanced",
+                    "description": "Demonstrates sophisticated analysis with multiple perspectives.",
+                },
             ],
         },
         {
@@ -433,31 +613,52 @@ def get_rubric_response(questions_data: List[Dict], style_profile: Dict = None,
             "levels": [
                 {"level": 1, "label": "Beginning", "description": "Cannot apply concepts beyond memorized examples."},
                 {"level": 2, "label": "Developing", "description": "Can apply concepts in familiar contexts only."},
-                {"level": 3, "label": "Proficient", "description": "Successfully applies concepts to new but similar scenarios."},
-                {"level": 4, "label": "Advanced", "description": "Creatively applies concepts to novel and complex scenarios."},
+                {
+                    "level": 3,
+                    "label": "Proficient",
+                    "description": "Successfully applies concepts to new but similar scenarios.",
+                },
+                {
+                    "level": 4,
+                    "label": "Advanced",
+                    "description": "Creatively applies concepts to novel and complex scenarios.",
+                },
             ],
         },
     ]
 
     # Add a multiple-choice-specific criterion if MC questions exist
     if "multiple_choice" in q_types or "mc" in q_types:
-        criteria.append({
-            "criterion": "Multiple Choice Analysis",
-            "description": "Ability to evaluate options and eliminate distractors",
-            "max_points": 5,
-            "levels": [
-                {"level": 1, "label": "Beginning", "description": "Selects answers randomly without analysis."},
-                {"level": 2, "label": "Developing", "description": "Can eliminate one distractor but struggles with similar options."},
-                {"level": 3, "label": "Proficient", "description": "Correctly identifies the best answer by eliminating distractors."},
-                {"level": 4, "label": "Advanced", "description": "Explains why each distractor is incorrect and defends the correct choice."},
-            ],
-        })
+        criteria.append(
+            {
+                "criterion": "Multiple Choice Analysis",
+                "description": "Ability to evaluate options and eliminate distractors",
+                "max_points": 5,
+                "levels": [
+                    {"level": 1, "label": "Beginning", "description": "Selects answers randomly without analysis."},
+                    {
+                        "level": 2,
+                        "label": "Developing",
+                        "description": "Can eliminate one distractor but struggles with similar options.",
+                    },
+                    {
+                        "level": 3,
+                        "label": "Proficient",
+                        "description": "Correctly identifies the best answer by eliminating distractors.",
+                    },
+                    {
+                        "level": 4,
+                        "label": "Advanced",
+                        "description": "Explains why each distractor is incorrect and defends the correct choice.",
+                    },
+                ],
+            }
+        )
 
     return json.dumps(criteria, indent=2)
 
 
-def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
-                         max_suggestions: int = 5) -> str:
+def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None, max_suggestions: int = 5) -> str:
     """Generate mock re-teach suggestion response.
 
     Args:
@@ -477,25 +678,17 @@ def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
 
     suggestions = []
     activities_pool = [
-        ["Guided notes with visual organizers", "Think-pair-share discussion",
-         "Exit ticket quiz (3 questions)"],
-        ["Hands-on lab activity", "Jigsaw reading groups",
-         "Concept mapping exercise"],
-        ["Interactive simulation", "Gallery walk with peer feedback",
-         "Quick-write reflection"],
-        ["Station rotation with practice problems", "Vocabulary card sort",
-         "Diagram labeling activity"],
-        ["Video analysis with guided questions", "Role-play scenario",
-         "Graphic organizer completion"],
+        ["Guided notes with visual organizers", "Think-pair-share discussion", "Exit ticket quiz (3 questions)"],
+        ["Hands-on lab activity", "Jigsaw reading groups", "Concept mapping exercise"],
+        ["Interactive simulation", "Gallery walk with peer feedback", "Quick-write reflection"],
+        ["Station rotation with practice problems", "Vocabulary card sort", "Diagram labeling activity"],
+        ["Video analysis with guided questions", "Role-play scenario", "Graphic organizer completion"],
     ]
 
     resources_pool = [
-        ["Textbook Ch. 4, pp. 87-92", "Khan Academy video series",
-         "Teacher-created study guide"],
-        ["Interactive website simulation", "Printed graphic organizer template",
-         "Vocabulary flashcard set"],
-        ["Lab materials kit", "Supplemental reading passage",
-         "Practice worksheet (differentiated)"],
+        ["Textbook Ch. 4, pp. 87-92", "Khan Academy video series", "Teacher-created study guide"],
+        ["Interactive website simulation", "Printed graphic organizer template", "Vocabulary flashcard set"],
+        ["Lab materials kit", "Supplemental reading passage", "Practice worksheet (differentiated)"],
     ]
 
     for i, item in enumerate(items[:max_suggestions]):
@@ -505,8 +698,7 @@ def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
 
         target = min(actual + 0.20, 1.0)
 
-        priority_map = {"critical": "high", "concerning": "medium",
-                        "on_track": "low", "exceeding": "low"}
+        priority_map = {"critical": "high", "concerning": "medium", "on_track": "low", "exceeding": "low"}
 
         suggestion = {
             "topic": topic,
@@ -534,9 +726,12 @@ def get_reteach_response(gap_data: List[Dict], focus_topics: List[str] = None,
     return json.dumps(suggestions, indent=2)
 
 
-def get_lesson_plan_response(topics: List[str] = None, standards: List[str] = None,
-                              duration_minutes: int = 50,
-                              context_keywords: List[str] = None) -> str:
+def get_lesson_plan_response(
+    topics: List[str] = None,
+    standards: List[str] = None,
+    duration_minutes: int = 50,
+    context_keywords: List[str] = None,
+) -> str:
     """Generate mock lesson plan response with all required sections.
 
     Args:
@@ -628,8 +823,7 @@ def get_lesson_plan_response(topics: List[str] = None, standards: List[str] = No
     return json.dumps(plan, indent=2)
 
 
-def get_mock_response(prompt_parts: List[Any], json_mode: bool = False,
-                      agent_type: str = "generator") -> str:
+def get_mock_response(prompt_parts: List[Any], json_mode: bool = False, agent_type: str = "generator") -> str:
     """
     Main entry point for getting mock responses.
 

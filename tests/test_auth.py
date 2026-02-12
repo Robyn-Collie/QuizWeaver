@@ -3,8 +3,8 @@ Tests for auth hardening (Session 6, Phase A).
 """
 
 import os
-import json
 import tempfile
+
 import pytest
 
 from src.database import Base, Class, User, get_engine, get_session
@@ -26,6 +26,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -49,8 +50,10 @@ def app_with_user(app):
     """App fixture with a pre-created user."""
     with app.app_context():
         from src.database import get_session as db_get_session
+
         session = db_get_session(app.config["DB_ENGINE"])
         from src.web.auth import create_user
+
         create_user(session, "admin", "secret123", display_name="Admin User", role="admin")
         session.close()
     return app
@@ -74,6 +77,7 @@ def user_client(app_with_user):
 # TestUserModel
 # ============================================================
 
+
 class TestUserModel:
     """Test the User database model."""
 
@@ -81,6 +85,7 @@ class TestUserModel:
         """Users table is created by ORM."""
         engine = app.config["DB_ENGINE"]
         import sqlite3
+
         conn = sqlite3.connect(engine.url.database)
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
@@ -129,6 +134,7 @@ class TestUserModel:
 # TestAuthHelpers
 # ============================================================
 
+
 class TestAuthHelpers:
     """Test auth helper functions."""
 
@@ -137,6 +143,7 @@ class TestAuthHelpers:
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
             from src.web.auth import create_user
+
             user = create_user(session, "testhash", "mypassword")
             assert user is not None
             assert user.password_hash != "mypassword"
@@ -148,6 +155,7 @@ class TestAuthHelpers:
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
             from src.web.auth import create_user
+
             create_user(session, "dup", "pass1")
             result = create_user(session, "dup", "pass2")
             assert result is None
@@ -157,7 +165,8 @@ class TestAuthHelpers:
         """authenticate_user returns user for valid credentials."""
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
-            from src.web.auth import create_user, authenticate_user
+            from src.web.auth import authenticate_user, create_user
+
             create_user(session, "auth_test", "correct_pass")
             user = authenticate_user(session, "auth_test", "correct_pass")
             assert user is not None
@@ -168,7 +177,8 @@ class TestAuthHelpers:
         """authenticate_user returns None for wrong password."""
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
-            from src.web.auth import create_user, authenticate_user
+            from src.web.auth import authenticate_user, create_user
+
             create_user(session, "auth_inv", "correct")
             user = authenticate_user(session, "auth_inv", "wrong")
             assert user is None
@@ -179,6 +189,7 @@ class TestAuthHelpers:
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
             from src.web.auth import authenticate_user
+
             user = authenticate_user(session, "ghost", "pass")
             assert user is None
             session.close()
@@ -187,7 +198,8 @@ class TestAuthHelpers:
         """change_password works with correct old password."""
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
-            from src.web.auth import create_user, change_password, authenticate_user
+            from src.web.auth import authenticate_user, change_password, create_user
+
             user = create_user(session, "chpw", "oldpass")
             result = change_password(session, user.id, "oldpass", "newpass")
             assert result is True
@@ -201,6 +213,7 @@ class TestAuthHelpers:
 # ============================================================
 # TestLoginWithDB
 # ============================================================
+
 
 class TestLoginWithDB:
     """Test login when DB users exist."""
@@ -237,6 +250,7 @@ class TestLoginWithDB:
 # TestBackwardCompat
 # ============================================================
 
+
 class TestBackwardCompat:
     """Test config-based login when no DB users exist."""
 
@@ -255,6 +269,7 @@ class TestBackwardCompat:
 # TestSetupRoute
 # ============================================================
 
+
 class TestSetupRoute:
     """Test first-time setup route."""
 
@@ -266,12 +281,15 @@ class TestSetupRoute:
 
     def test_setup_creates_admin(self, client, app):
         """Setup creates admin user and logs in."""
-        resp = client.post("/setup", data={
-            "username": "newadmin",
-            "password": "pass123",
-            "confirm_password": "pass123",
-            "display_name": "New Admin",
-        })
+        resp = client.post(
+            "/setup",
+            data={
+                "username": "newadmin",
+                "password": "pass123",
+                "confirm_password": "pass123",
+                "display_name": "New Admin",
+            },
+        )
         assert resp.status_code == 303
 
         with client.session_transaction() as sess:
@@ -286,21 +304,27 @@ class TestSetupRoute:
 
     def test_setup_password_mismatch(self, client):
         """Setup rejects mismatched passwords."""
-        resp = client.post("/setup", data={
-            "username": "admin",
-            "password": "pass123",
-            "confirm_password": "pass456",
-        })
+        resp = client.post(
+            "/setup",
+            data={
+                "username": "admin",
+                "password": "pass123",
+                "confirm_password": "pass456",
+            },
+        )
         assert resp.status_code == 400
         assert b"do not match" in resp.data
 
     def test_setup_short_password(self, client):
         """Setup rejects passwords shorter than 6 characters."""
-        resp = client.post("/setup", data={
-            "username": "admin",
-            "password": "short",
-            "confirm_password": "short",
-        })
+        resp = client.post(
+            "/setup",
+            data={
+                "username": "admin",
+                "password": "short",
+                "confirm_password": "short",
+            },
+        )
         assert resp.status_code == 400
         assert b"at least 6" in resp.data
 
@@ -308,6 +332,7 @@ class TestSetupRoute:
 # ============================================================
 # TestChangePassword
 # ============================================================
+
 
 class TestChangePassword:
     """Test password change route."""
@@ -320,20 +345,26 @@ class TestChangePassword:
 
     def test_change_success(self, user_client):
         """Password change succeeds with correct current password."""
-        resp = user_client.post("/settings/password", data={
-            "current_password": "secret123",
-            "new_password": "newsecret456",
-            "confirm_password": "newsecret456",
-        })
+        resp = user_client.post(
+            "/settings/password",
+            data={
+                "current_password": "secret123",
+                "new_password": "newsecret456",
+                "confirm_password": "newsecret456",
+            },
+        )
         assert resp.status_code == 303
 
     def test_wrong_current_password(self, user_client):
         """Password change fails with wrong current password."""
-        resp = user_client.post("/settings/password", data={
-            "current_password": "wrongpass",
-            "new_password": "newsecret",
-            "confirm_password": "newsecret",
-        })
+        resp = user_client.post(
+            "/settings/password",
+            data={
+                "current_password": "wrongpass",
+                "new_password": "newsecret",
+                "confirm_password": "newsecret",
+            },
+        )
         assert resp.status_code == 200
         assert b"incorrect" in resp.data
 
@@ -342,6 +373,7 @@ class TestChangePassword:
 # TestGetUserCount
 # ============================================================
 
+
 class TestGetUserCount:
     """Test user count helper."""
 
@@ -349,7 +381,8 @@ class TestGetUserCount:
         """get_user_count returns correct count."""
         with app.app_context():
             session = get_session(app.config["DB_ENGINE"])
-            from src.web.auth import get_user_count, create_user
+            from src.web.auth import create_user, get_user_count
+
             assert get_user_count(session) == 0
             create_user(session, "u1", "p1")
             assert get_user_count(session) == 1

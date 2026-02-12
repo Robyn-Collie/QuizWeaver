@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 import yaml
 
 # Add src to path
@@ -10,7 +11,7 @@ from src.llm_provider import get_provider
 
 def load_config():
     config_path = os.path.join(os.path.dirname(__file__), "..", "config.yaml")
-    with open(config_path, "r") as f:
+    with open(config_path) as f:
         return yaml.safe_load(f)
 
 
@@ -26,9 +27,7 @@ def test_vertex_connection():
 
         # Ensure we are testing Vertex
         if llm_config.get("provider") != "vertex":
-            print(
-                "NOTE: Configured provider is not 'vertex'. This test is specifically for Vertex AI."
-            )
+            print("NOTE: Configured provider is not 'vertex'. This test is specifically for Vertex AI.")
             # We can force it for the test if we had credentials, but we rely on config.
 
         print("\nInitializing Provider...")
@@ -37,11 +36,7 @@ def test_vertex_connection():
 
         if type(provider).__name__ == "VertexAIProvider":
             print("\nSending test generation request...")
-            response = provider.generate(
-                [
-                    "Hello! Please respond with 'Connection Successful' if you receive this."
-                ]
-            )
+            response = provider.generate(["Hello! Please respond with 'Connection Successful' if you receive this."])
             print("\n--- Response from Vertex AI ---")
             print(response)
             print("-------------------------------")

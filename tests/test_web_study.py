@@ -11,8 +11,14 @@ import tempfile
 import pytest
 
 from src.database import (
-    Base, Class, Quiz, Question, StudySet, StudyCard,
-    get_engine, get_session,
+    Base,
+    Class,
+    Question,
+    Quiz,
+    StudyCard,
+    StudySet,
+    get_engine,
+    get_session,
 )
 
 
@@ -92,6 +98,7 @@ def app():
     engine.dispose()
 
     from src.web.app import create_app
+
     test_config = {
         "paths": {"database_file": db_path},
         "llm": {"provider": "mock"},
@@ -126,6 +133,7 @@ def anon_client(app):
 
 # --- Auth tests ---
 
+
 class TestStudyAuth:
     def test_study_list_requires_login(self, anon_client):
         resp = anon_client.get("/study")
@@ -141,6 +149,7 @@ class TestStudyAuth:
 
 
 # --- List route ---
+
 
 class TestStudyList:
     def test_list_page_loads(self, client):
@@ -160,6 +169,7 @@ class TestStudyList:
 
 # --- Generate route ---
 
+
 class TestStudyGenerate:
     def test_generate_form_loads(self, client):
         resp = client.get("/study/generate")
@@ -167,30 +177,42 @@ class TestStudyGenerate:
         assert b"Generate Study Material" in resp.data
 
     def test_generate_post_flashcard(self, client):
-        resp = client.post("/study/generate", data={
-            "class_id": "1",
-            "material_type": "flashcard",
-            "topic": "photosynthesis",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/study/generate",
+            data={
+                "class_id": "1",
+                "material_type": "flashcard",
+                "topic": "photosynthesis",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
     def test_generate_post_study_guide(self, client):
-        resp = client.post("/study/generate", data={
-            "class_id": "1",
-            "material_type": "study_guide",
-            "topic": "evolution",
-        }, follow_redirects=False)
+        resp = client.post(
+            "/study/generate",
+            data={
+                "class_id": "1",
+                "material_type": "study_guide",
+                "topic": "evolution",
+            },
+            follow_redirects=False,
+        )
         assert resp.status_code == 303
 
     def test_generate_requires_class_id(self, client):
-        resp = client.post("/study/generate", data={
-            "material_type": "flashcard",
-            "topic": "test",
-        })
+        resp = client.post(
+            "/study/generate",
+            data={
+                "material_type": "flashcard",
+                "topic": "test",
+            },
+        )
         assert resp.status_code == 400
 
 
 # --- Detail route ---
+
 
 class TestStudyDetail:
     def test_detail_page_loads(self, client):
@@ -209,6 +231,7 @@ class TestStudyDetail:
 
 
 # --- Export route ---
+
 
 class TestStudyExport:
     def test_export_tsv(self, client):
@@ -242,6 +265,7 @@ class TestStudyExport:
 
 # --- Delete API ---
 
+
 class TestStudyDelete:
     def test_delete_study_set(self, client):
         resp = client.delete("/api/study-sets/1")
@@ -255,6 +279,7 @@ class TestStudyDelete:
 
 
 # --- Class quizzes API ---
+
 
 class TestClassQuizzesAPI:
     def test_get_class_quizzes(self, client):

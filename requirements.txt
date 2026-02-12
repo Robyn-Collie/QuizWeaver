@@ -11,3 +11,6 @@ flask
 openai
 anthropic[vertex]
 gunicorn
+
+# Development tools (not required for production)
+# ruff - linter and formatter: pip install ruff
