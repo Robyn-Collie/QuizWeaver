@@ -21,7 +21,7 @@
         <label for="sol_standards_search">Standards (optional) <span class="help-tip" data-tip="Search for SOL standards by code or keyword. Pre-filled from class settings if available.">?</span></label>
         <div class="standards-picker">
             <input type="text" id="sol_standards_search" class="picker-input" placeholder="Type to search (e.g., SOL 7.1, fractions, reading)..." autocomplete="off">
-            <input type="hidden" id="sol_standards_val" name="sol_standards" value="{{ class_obj.standards|join(', ') if class_obj.standards else '' }}">
+            <input type="hidden" id="sol_standards_val" name="sol_standards" value="{{ class_obj.standards|ensure_list|join(', ') if class_obj.standards else '' }}">
             <div class="picker-hint">Search the standards database or type a custom code and press Enter.</div>
         </div>
         <div class="standards-chips" id="sol_standards_chips"></div>
@@ -275,7 +275,7 @@ initStandardsPicker({
     hiddenInputId: 'sol_standards_val',
     chipsContainerId: 'sol_standards_chips',
     apiUrl: '/api/standards/search',
-    initialValues: {{ (class_obj.standards if class_obj.standards else [])|tojson }}
+    initialValues: {{ (class_obj.standards|ensure_list if class_obj.standards else [])|tojson }}
 });
 </script>
 {% endblock %}

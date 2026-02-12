@@ -121,7 +121,7 @@ function toggleProviderFields() {
     // Show fields based on provider
     if (val === 'mock') {
         // No extra fields needed
-    } else if (val === 'gemini' || val === 'gemini-pro') {
+    } else if (val === 'gemini' || val === 'gemini-pro' || val === 'gemini-3-flash' || val === 'gemini-3-pro') {
         document.getElementById('fields-model').style.display = 'block';
         document.getElementById('fields-apikey').style.display = 'block';
     } else if (val === 'vertex') {

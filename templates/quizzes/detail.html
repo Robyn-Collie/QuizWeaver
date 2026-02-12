@@ -27,7 +27,7 @@
     {% if class_obj %}<p><strong>Class:</strong> <a href="/classes/{{ class_obj.id }}">{{ class_obj.name }}</a></p>{% endif %}
     <p><strong>Questions:</strong> <span id="question-count">{{ questions | length }}</span></p>
     {% if style_profile and style_profile.sol_standards is defined and style_profile.sol_standards %}
-    <p><strong>Standards:</strong> {{ style_profile.sol_standards|join(', ') }}</p>
+    <p><strong>Standards:</strong> {{ style_profile.sol_standards|ensure_list|join(', ') }}</p>
     {% endif %}
     {% if style_profile and style_profile.cognitive_framework is defined and style_profile.cognitive_framework %}
     <p><strong>Framework:</strong> {{ style_profile.cognitive_framework|capitalize }}</p>

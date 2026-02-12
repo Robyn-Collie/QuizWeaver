@@ -19,6 +19,10 @@ draft_preview.pdf
 # Exclude the local SQLite database file
 quiz_warehouse.db
 
+# --- E2E Test Scaffolding (temp files, never commit) ---
+test_server.py
+test_e2e_config.yaml
+
 # --- UAT Scaffolding (not yet functional) ---
 Audits/
 UAT_SYSTEM_OVERVIEW.md

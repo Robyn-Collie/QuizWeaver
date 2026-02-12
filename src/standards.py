@@ -291,6 +291,8 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
             continue
         standard = Standard(
             code=item["code"],
+            # standard_id mirrors code (legacy column from migration 001)
+            standard_id=item["code"],
             description=item["description"],
             subject=item["subject"],
             grade_band=item.get("grade_band"),

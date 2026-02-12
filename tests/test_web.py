@@ -854,6 +854,54 @@ class TestFlashMessages:
 
 
 # ============================================================
+# Generate Redirect and Provider Alias Tests
+# ============================================================
+
+
+class TestGenerateRedirect:
+    """Test that /generate redirects to the first class's generate page."""
+
+    def test_generate_redirects_to_class(self, client):
+        """/generate redirects to the first class's generate page."""
+        response = client.get("/generate", follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/classes/" in response.headers["Location"]
+        assert "/generate" in response.headers["Location"]
+
+    def test_generate_requires_login(self, anon_client):
+        """/generate requires authentication."""
+        response = anon_client.get("/generate", follow_redirects=False)
+        assert response.status_code in (302, 303)
+        assert "/login" in response.headers["Location"]
+
+
+class TestProviderAliasResolution:
+    """Test that provider aliases resolve correctly (regression test for gemini-3-pro bug)."""
+
+    def test_gemini_3_pro_not_aliased(self):
+        """gemini-3-pro should NOT be aliased to gemini-pro."""
+        from src.llm_provider import _resolve_provider_name
+        assert _resolve_provider_name("gemini-3-pro") == "gemini-3-pro"
+
+    def test_gemini_3_flash_not_aliased(self):
+        """gemini-3-flash should NOT be aliased."""
+        from src.llm_provider import _resolve_provider_name
+        assert _resolve_provider_name("gemini-3-flash") == "gemini-3-flash"
+
+    def test_gemini_3_pro_registry_has_correct_model(self):
+        """gemini-3-pro registry entry has gemini-3-pro-preview as default model."""
+        from src.llm_provider import PROVIDER_REGISTRY
+        assert "gemini-3-pro" in PROVIDER_REGISTRY
+        assert PROVIDER_REGISTRY["gemini-3-pro"]["default_model"] == "gemini-3-pro-preview"
+
+    def test_gemini_3_flash_registry_has_correct_model(self):
+        """gemini-3-flash registry entry has gemini-3-flash-preview as default model."""
+        from src.llm_provider import PROVIDER_REGISTRY
+        assert "gemini-3-flash" in PROVIDER_REGISTRY
+        assert PROVIDER_REGISTRY["gemini-3-flash"]["default_model"] == "gemini-3-flash-preview"
+
+
+# ============================================================
 # Task 14: Quiz History / Filtering Tests
 # ============================================================
 

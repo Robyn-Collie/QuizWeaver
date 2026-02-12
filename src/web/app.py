@@ -2,6 +2,7 @@
 Flask application factory for QuizWeaver web frontend.
 """
 
+import json
 import os
 from flask import Flask, g, send_from_directory
 
@@ -72,6 +73,28 @@ def create_app(config=None):
         """Make AI literacy tooltips available in all templates."""
         from src.web.tooltip_data import AI_TOOLTIPS
         return {"ai_tips": AI_TOOLTIPS}
+
+    @app.template_filter("ensure_list")
+    def ensure_list_filter(value):
+        """Ensure a value is a Python list.
+
+        Handles JSON columns in SQLite that may return a raw JSON string
+        instead of a parsed list. Used in templates before |join or |tojson.
+        """
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            try:
+                parsed = json.loads(value)
+                if isinstance(parsed, list):
+                    return parsed
+            except (json.JSONDecodeError, ValueError):
+                pass
+            # Comma-separated string fallback
+            return [s.strip() for s in value.split(",") if s.strip()]
+        return []
 
     register_routes(app)
 

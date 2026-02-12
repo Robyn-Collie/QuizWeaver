@@ -642,6 +642,19 @@ def register_routes(app):
         if not isinstance(style_profile, dict):
             style_profile = {}
 
+        # Ensure sol_standards is a list, not a JSON string
+        sol_val = style_profile.get("sol_standards")
+        if isinstance(sol_val, str):
+            try:
+                parsed = json.loads(sol_val)
+                if isinstance(parsed, list):
+                    style_profile["sol_standards"] = parsed
+                else:
+                    style_profile["sol_standards"] = [sol_val] if sol_val.strip() else []
+            except (json.JSONDecodeError, ValueError):
+                # Comma-separated string fallback
+                style_profile["sol_standards"] = [s.strip() for s in sol_val.split(",") if s.strip()]
+
         # Variant lineage info
         parent_quiz = None
         if quiz.parent_quiz_id:
@@ -716,6 +729,18 @@ def register_routes(app):
                 style_profile = {}
         if not isinstance(style_profile, dict):
             style_profile = {}
+
+        # Ensure sol_standards is a list, not a JSON string
+        sol_val = style_profile.get("sol_standards")
+        if isinstance(sol_val, str):
+            try:
+                parsed = json.loads(sol_val)
+                if isinstance(parsed, list):
+                    style_profile["sol_standards"] = parsed
+                else:
+                    style_profile["sol_standards"] = [sol_val] if sol_val.strip() else []
+            except (json.JSONDecodeError, ValueError):
+                style_profile["sol_standards"] = [s.strip() for s in sol_val.split(",") if s.strip()]
 
         # Sanitize title for filename
         safe_title = re.sub(r"[^\w\s\-]", "", quiz.title or "quiz")
@@ -971,6 +996,17 @@ def register_routes(app):
 
     # --- Quiz Generation ---
 
+    @app.route("/generate")
+    @login_required
+    def generate_redirect():
+        """Redirect /generate to the active class's generate page, or class list."""
+        session = _get_session()
+        classes = list_classes(session)
+        if classes:
+            return redirect(f"/classes/{classes[0]['id']}/generate")
+        flash("Create a class first before generating a quiz.", "info")
+        return redirect("/classes/new")
+
     @app.route("/classes/<int:class_id>/generate", methods=["GET", "POST"])
     @login_required
     def quiz_generate(class_id):
@@ -1131,6 +1167,23 @@ def register_routes(app):
             standard_sets=get_available_standard_sets(),
             current_standard_set=config.get("standard_set", "sol"),
         )
+
+    # --- API Audit Log (E2E testing/transparency) ---
+
+    @app.route("/api/audit-log")
+    @login_required
+    def api_audit_log():
+        """Return the API call audit log for transparency reporting."""
+        from src.llm_provider import get_api_audit_log
+        return jsonify(get_api_audit_log())
+
+    @app.route("/api/audit-log/clear", methods=["POST"])
+    @login_required
+    def clear_audit_log():
+        """Clear the API call audit log."""
+        from src.llm_provider import clear_api_audit_log
+        clear_api_audit_log()
+        return jsonify({"status": "cleared"})
 
     # --- Provider Setup Wizard ---
 
@@ -2393,6 +2446,7 @@ def register_routes(app):
     @login_required
     def standards_page():
         """Browse and search educational standards."""
+        config = current_app.config["APP_CONFIG"]
         session = _get_session()
 
         # Auto-load the configured standard set if table is empty
@@ -2450,6 +2504,7 @@ def register_routes(app):
     @login_required
     def api_standards_search():
         """JSON API for standards autocomplete search."""
+        config = current_app.config["APP_CONFIG"]
         session = _get_session()
 
         # Auto-load the configured standard set if table is empty

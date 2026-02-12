@@ -1,9 +1,49 @@
 from abc import ABC, abstractmethod
 import os
+import json
+import time
+import logging
 import mimetypes
 from PIL import Image as PILImage
 import io
 from typing import Any
+
+# API call audit log — captures exact payloads for transparency reporting
+_api_audit_log = []
+
+def get_api_audit_log():
+    """Return the API audit log and clear it."""
+    global _api_audit_log
+    log = list(_api_audit_log)
+    return log
+
+def clear_api_audit_log():
+    """Clear the API audit log."""
+    global _api_audit_log
+    _api_audit_log = []
+
+def _log_api_call(provider_name, model, prompt_summary, response_summary,
+                  input_tokens=0, output_tokens=0, duration_ms=0, error=None):
+    """Log an API call for audit purposes."""
+    entry = {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+        "provider": provider_name,
+        "model": model,
+        "prompt_char_count": len(prompt_summary),
+        "prompt_preview": prompt_summary[:500] + ("..." if len(prompt_summary) > 500 else ""),
+        "response_char_count": len(response_summary),
+        "response_preview": response_summary[:300] + ("..." if len(response_summary) > 300 else ""),
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "duration_ms": duration_ms,
+        "error": error,
+    }
+    _api_audit_log.append(entry)
+    logging.getLogger("quizweaver.api_audit").info(
+        f"[API CALL] {provider_name}/{model} | "
+        f"in={input_tokens} out={output_tokens} | {duration_ms}ms | "
+        f"prompt={len(prompt_summary)} chars"
+    )
 
 # Check if google-genai SDK is available (lazy import in provider classes)
 try:
@@ -84,6 +124,8 @@ class GeminiProvider(LLMProvider):
         Returns:
             Generated text response from the model, or empty JSON array on error
         """
+        start_time = time.time()
+        prompt_text = " ".join(str(p) for p in prompt_parts if isinstance(p, str))
         try:
             config = {}
             if json_mode:
@@ -95,21 +137,36 @@ class GeminiProvider(LLMProvider):
                 config=config if config else None,
             )
 
+            duration_ms = int((time.time() - start_time) * 1000)
+            input_tokens = 0
+            output_tokens = 0
+
             # Log cost if token metadata available
             try:
                 from src.cost_tracking import log_api_call
                 usage = getattr(response, 'usage_metadata', None)
                 if usage:
+                    input_tokens = getattr(usage, 'prompt_token_count', 0)
+                    output_tokens = getattr(usage, 'candidates_token_count', 0)
                     log_api_call(
                         "gemini", self._model_name,
-                        getattr(usage, 'prompt_token_count', 0),
-                        getattr(usage, 'candidates_token_count', 0),
+                        input_tokens, output_tokens,
                     )
             except Exception:
                 pass
 
-            return response.text
+            result_text = response.text
+            _log_api_call(
+                "gemini", self._model_name, prompt_text, result_text,
+                input_tokens, output_tokens, duration_ms
+            )
+            return result_text
         except Exception as e:
+            duration_ms = int((time.time() - start_time) * 1000)
+            _log_api_call(
+                "gemini", self._model_name, prompt_text, "",
+                0, 0, duration_ms, error=str(e)
+            )
             print(f"An error occurred with the Gemini provider: {e}")
             return "[]"
 
@@ -572,6 +629,20 @@ PROVIDER_REGISTRY = {
         "env_var": "GEMINI_API_KEY",
         "default_model": "gemini-2.5-pro",
     },
+    "gemini-3-flash": {
+        "label": "Google Gemini 3 Flash",
+        "description": "Latest generation fast model (preview)",
+        "category": "built-in",
+        "env_var": "GEMINI_API_KEY",
+        "default_model": "gemini-3-flash-preview",
+    },
+    "gemini-3-pro": {
+        "label": "Google Gemini 3 Pro",
+        "description": "Latest generation advanced model (preview)",
+        "category": "built-in",
+        "env_var": "GEMINI_API_KEY",
+        "default_model": "gemini-3-pro-preview",
+    },
     "vertex": {
         "label": "Google Vertex AI",
         "description": "Enterprise Gemini via Google Cloud",
@@ -611,7 +682,7 @@ PROVIDER_REGISTRY = {
 
 # Backward-compat aliases: old provider names → current names
 _PROVIDER_ALIASES = {
-    "gemini-3-pro": "gemini-pro",
+    # No aliases for gemini-3-flash / gemini-3-pro — they have their own registry entries
 }
 
 
@@ -725,7 +796,7 @@ def get_provider(config, web_mode=False):
     model_name = llm_config.get("model_name") or default_model
 
     # Check if using real provider and warn user
-    real_providers = ["gemini", "gemini-pro", "vertex", "anthropic", "vertex-anthropic", "openai", "openai-compatible"]
+    real_providers = ["gemini", "gemini-pro", "gemini-3-flash", "gemini-3-pro", "vertex", "anthropic", "vertex-anthropic", "openai", "openai-compatible"]
     if provider_name in real_providers:
         mode = llm_config.get("mode", "development")
         if mode == "development" and not web_mode:
@@ -746,7 +817,7 @@ def get_provider(config, web_mode=False):
 
     if provider_name == "mock":
         return MockLLMProvider()
-    elif provider_name in ("gemini", "gemini-pro"):
+    elif provider_name in ("gemini", "gemini-pro", "gemini-3-flash", "gemini-3-pro"):
         api_key = os.getenv("GEMINI_API_KEY") or llm_config.get("api_key", "")
         if not api_key:
             raise ValueError(

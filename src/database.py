@@ -366,6 +366,8 @@ class Standard(Base):
     """
     __tablename__ = "standards"
     id = Column(Integer, primary_key=True)
+    # Legacy column from migration 001; mirrors 'code' for backward compat
+    standard_id = Column(String, nullable=True)
     code = Column(String, unique=True, nullable=False)
     description = Column(Text, nullable=False)
     subject = Column(String, nullable=False)

@@ -28,9 +28,21 @@ function initStandardsPicker(opts) {
     dropdown.className = 'picker-dropdown';
     input.parentNode.appendChild(dropdown);
 
-    // Load initial values
-    if (opts.initialValues && opts.initialValues.length > 0) {
-        opts.initialValues.forEach(function(code) {
+    // Load initial values (handle both array and JSON string)
+    var initVals = opts.initialValues || [];
+    if (typeof initVals === 'string') {
+        try {
+            initVals = JSON.parse(initVals);
+        } catch (e) {
+            // Comma-separated string fallback
+            initVals = initVals.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+        }
+    }
+    if (!Array.isArray(initVals)) {
+        initVals = [];
+    }
+    if (initVals.length > 0) {
+        initVals.forEach(function(code) {
             if (code && code.trim()) {
                 addChip(code.trim());
             }
