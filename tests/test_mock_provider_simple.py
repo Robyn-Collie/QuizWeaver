@@ -67,7 +67,7 @@ def test_generator_response_schema():
     assert "type" in question, "Question should have type"
     assert "text" in question, "Question should have text"
     assert "points" in question, "Question should have points"
-    assert question["type"] in ["multiple_choice", "true_false"], "Invalid question type"
+    assert question["type"] in ["multiple_choice", "true_false", "ordering", "short_answer"], "Invalid question type"
     print("[PASS] Generator response schema is correct")
 
 

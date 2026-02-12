@@ -1006,18 +1006,22 @@ def register_routes(app):
             # Per-quiz provider override
             provider_override = request.form.get("provider", "").strip() or None
 
-            quiz = generate_quiz(
-                session,
-                class_id=class_id,
-                config=config,
-                num_questions=num_questions,
-                grade_level=grade_level,
-                sol_standards=sol_standards,
-                cognitive_framework=cognitive_framework,
-                cognitive_distribution=cognitive_distribution,
-                difficulty=difficulty,
-                provider_name=provider_override,
-            )
+            try:
+                quiz = generate_quiz(
+                    session,
+                    class_id=class_id,
+                    config=config,
+                    num_questions=num_questions,
+                    grade_level=grade_level,
+                    sol_standards=sol_standards,
+                    cognitive_framework=cognitive_framework,
+                    cognitive_distribution=cognitive_distribution,
+                    difficulty=difficulty,
+                    provider_name=provider_override,
+                )
+            except Exception as e:
+                quiz = None
+                flash(f"Quiz generation error: {e}", "error")
 
             if quiz:
                 flash("Quiz generated successfully.", "success")
@@ -1030,7 +1034,7 @@ def register_routes(app):
                     class_obj=class_obj,
                     providers=providers,
                     current_provider=current_provider,
-                    error="Quiz generation failed. Please try again.",
+                    error="Quiz generation failed. Check your provider settings and try again.",
                 )
 
         providers = get_provider_info(config)
@@ -1202,9 +1206,24 @@ def register_routes(app):
                 "latency_ms": elapsed_ms,
             })
         except Exception as e:
+            error_msg = str(e)
+            # Add helpful context for common errors
+            lower_msg = error_msg.lower()
+            if "401" in error_msg or "unauthorized" in lower_msg or "invalid" in lower_msg and "key" in lower_msg:
+                error_msg += " -- Check that your API key is correct and has not expired."
+            elif "403" in error_msg or "forbidden" in lower_msg:
+                error_msg += " -- Your API key may not have permission for this model. Check your account settings."
+            elif "404" in error_msg or "not found" in lower_msg:
+                error_msg += " -- The model name may be incorrect. Check the model name in your provider's documentation."
+            elif "429" in error_msg or "rate" in lower_msg or "quota" in lower_msg:
+                error_msg += " -- You've hit a rate limit or quota. Wait a moment and try again, or check your billing."
+            elif "timeout" in lower_msg or "timed out" in lower_msg:
+                error_msg += " -- The provider took too long to respond. Check your internet connection."
+            elif "connection" in lower_msg or "refused" in lower_msg:
+                error_msg += " -- Could not reach the provider. Check your internet connection and the API endpoint URL."
             return jsonify({
                 "success": False,
-                "message": str(e),
+                "message": error_msg,
                 "latency_ms": 0,
             })
         finally:
@@ -1287,16 +1306,20 @@ def register_routes(app):
                     error="Please select a class.",
                 ), 400
 
-            study_set = generate_study_material(
-                session,
-                class_id=class_id,
-                material_type=material_type,
-                config=config,
-                quiz_id=quiz_id,
-                topic=topic,
-                title=title,
-                provider_name=provider_override,
-            )
+            try:
+                study_set = generate_study_material(
+                    session,
+                    class_id=class_id,
+                    material_type=material_type,
+                    config=config,
+                    quiz_id=quiz_id,
+                    topic=topic,
+                    title=title,
+                    provider_name=provider_override,
+                )
+            except Exception as e:
+                study_set = None
+                flash(f"Study material generation error: {e}", "error")
 
             if study_set:
                 flash("Study material generated successfully.", "success")
@@ -1307,7 +1330,7 @@ def register_routes(app):
                     classes=classes,
                     providers=providers,
                     current_provider=current_provider,
-                    error="Generation failed. Please try again.",
+                    error="Generation failed. Check your provider settings and try again.",
                 ), 500
 
         return render_template(
@@ -1642,14 +1665,19 @@ def register_routes(app):
                     error="Please select a valid reading level.",
                 ), 400
 
-            variant = generate_variant(
-                session,
-                quiz_id=quiz_id,
-                reading_level=reading_level,
-                config=config,
-                title=title,
-                provider_name=provider_override,
-            )
+            try:
+                variant = generate_variant(
+                    session,
+                    quiz_id=quiz_id,
+                    reading_level=reading_level,
+                    config=config,
+                    title=title,
+                    provider_name=provider_override,
+                )
+            except Exception as e:
+                variant = None
+                flash(f"Variant generation error: {e}", "error")
+
             if variant:
                 flash("Variant generated successfully.", "success")
                 return redirect(url_for("quiz_detail", quiz_id=variant.id), code=303)
@@ -1660,7 +1688,7 @@ def register_routes(app):
                     reading_levels=READING_LEVELS,
                     providers=providers,
                     current_provider=current_provider,
-                    error="Variant generation failed. Please try again.",
+                    error="Variant generation failed. Check your provider settings and try again.",
                 ), 500
 
         return render_template(
@@ -1723,13 +1751,18 @@ def register_routes(app):
             title = request.form.get("title", "").strip() or None
             provider_override = request.form.get("provider", "").strip() or None
 
-            rubric = generate_rubric(
-                session,
-                quiz_id=quiz_id,
-                config=config,
-                title=title,
-                provider_name=provider_override,
-            )
+            try:
+                rubric = generate_rubric(
+                    session,
+                    quiz_id=quiz_id,
+                    config=config,
+                    title=title,
+                    provider_name=provider_override,
+                )
+            except Exception as e:
+                rubric = None
+                flash(f"Rubric generation error: {e}", "error")
+
             if rubric:
                 flash("Rubric generated successfully.", "success")
                 return redirect(url_for("rubric_detail", rubric_id=rubric.id), code=303)
@@ -1739,7 +1772,7 @@ def register_routes(app):
                     quiz=quiz,
                     providers=providers,
                     current_provider=current_provider,
-                    error="Rubric generation failed. Please try again.",
+                    error="Rubric generation failed. Check your provider settings and try again.",
                 ), 500
 
         return render_template(
@@ -2283,17 +2316,22 @@ def register_routes(app):
                 sol_standards = [s.strip() for s in sol_raw.split(",") if s.strip()] if sol_raw else None
                 difficulty = request.form.get("difficulty", 3, type=int)
 
-                result = generate_from_topics(
-                    session=session,
-                    class_id=class_id,
-                    topics=topics,
-                    output_type="quiz",
-                    config=config,
-                    num_questions=num_questions,
-                    sol_standards=sol_standards,
-                    difficulty=difficulty,
-                    title=title,
-                )
+                try:
+                    result = generate_from_topics(
+                        session=session,
+                        class_id=class_id,
+                        topics=topics,
+                        output_type="quiz",
+                        config=config,
+                        num_questions=num_questions,
+                        sol_standards=sol_standards,
+                        difficulty=difficulty,
+                        title=title,
+                    )
+                except Exception as e:
+                    result = None
+                    flash(f"Quiz generation error: {e}", "error")
+
                 if result:
                     flash("Quiz generated from topics!", "success")
                     return redirect(url_for("quiz_detail", quiz_id=result.id), code=303)
@@ -2302,17 +2340,22 @@ def register_routes(app):
                         "generate_topics.html",
                         classes=classes_list,
                         selected_class_id=class_id,
-                        error="Quiz generation failed. Please try again.",
+                        error="Quiz generation failed. Check your provider settings and try again.",
                     )
             else:
-                result = generate_from_topics(
-                    session=session,
-                    class_id=class_id,
-                    topics=topics,
-                    output_type=output_type,
-                    config=config,
-                    title=title,
-                )
+                try:
+                    result = generate_from_topics(
+                        session=session,
+                        class_id=class_id,
+                        topics=topics,
+                        output_type=output_type,
+                        config=config,
+                        title=title,
+                    )
+                except Exception as e:
+                    result = None
+                    flash(f"Generation error: {e}", "error")
+
                 if result:
                     flash(f"{output_type.replace('_', ' ').title()} generated from topics!", "success")
                     return redirect(url_for("study_detail", study_id=result.id), code=303)
@@ -2321,7 +2364,7 @@ def register_routes(app):
                         "generate_topics.html",
                         classes=classes_list,
                         selected_class_id=class_id,
-                        error="Generation failed. Please try again.",
+                        error="Generation failed. Check your provider settings and try again.",
                     )
 
         return render_template(
@@ -2550,16 +2593,20 @@ def register_routes(app):
             standards = [s.strip() for s in standards_str.split(",") if s.strip()] if standards_str else None
 
             from src.lesson_plan_generator import generate_lesson_plan
-            plan = generate_lesson_plan(
-                session,
-                class_id=class_id,
-                config=config,
-                topics=topics,
-                standards=standards,
-                duration_minutes=duration,
-                grade_level=grade_level,
-                provider_name=provider_override,
-            )
+            try:
+                plan = generate_lesson_plan(
+                    session,
+                    class_id=class_id,
+                    config=config,
+                    topics=topics,
+                    standards=standards,
+                    duration_minutes=duration,
+                    grade_level=grade_level,
+                    provider_name=provider_override,
+                )
+            except Exception as e:
+                plan = None
+                flash(f"Lesson plan generation error: {e}", "error")
 
             if plan:
                 flash("Lesson plan generated successfully.", "success")
@@ -2572,7 +2619,7 @@ def register_routes(app):
                     current_provider=current_provider,
                     prefill_topics=topics_str,
                     prefill_standards=standards_str,
-                    error="Generation failed. Please try again.",
+                    error="Generation failed. Check your provider settings and try again.",
                 ), 500
 
         return render_template(

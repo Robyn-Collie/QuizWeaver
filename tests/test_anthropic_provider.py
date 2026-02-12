@@ -240,7 +240,7 @@ class TestGetProviderFactory:
 
     def test_vertex_anthropic_error_on_missing_config(self):
         config = {"llm": {"provider": "vertex-anthropic", "mode": "production"}}
-        with pytest.raises(ValueError, match="vertex_project_id"):
+        with pytest.raises(ValueError, match="Project ID"):
             get_provider(config, web_mode=True)
 
 

@@ -8,8 +8,10 @@
 
 <form method="GET" class="form search-form">
     <div class="form-group form-group-inline">
-        <input type="text" name="search" value="{{ search }}" placeholder="Search questions..." style="max-width: 300px;">
-        <select name="type">
+        <label for="bank-search" class="sr-only">Search questions</label>
+        <input type="text" id="bank-search" name="search" value="{{ search }}" placeholder="Search questions..." style="max-width: 300px;">
+        <label for="bank-type" class="sr-only">Filter by question type</label>
+        <select id="bank-type" name="type">
             <option value="">All Types</option>
             <option value="mc" {% if q_type == 'mc' %}selected{% endif %}>Multiple Choice</option>
             <option value="tf" {% if q_type == 'tf' %}selected{% endif %}>True/False</option>
@@ -43,7 +45,7 @@
             from <a href="/quizzes/{{ q.quiz_id }}">{{ q.quiz_title }}</a>
         </span>
         <span class="question-actions">
-            <button class="btn btn-sm btn-outline btn-bank-remove" data-question-id="{{ q.id }}" title="Remove from bank">Remove</button>
+            <button class="btn btn-sm btn-outline btn-bank-remove" data-question-id="{{ q.id }}" title="Remove from bank" aria-label="Remove question from bank">Remove</button>
         </span>
     </div>
 

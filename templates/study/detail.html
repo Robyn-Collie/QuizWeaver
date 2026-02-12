@@ -32,10 +32,10 @@
 {# Reusable card action buttons macro #}
 {% macro card_actions(card, loop) %}
 <div class="card-actions">
-    <button class="btn btn-xs btn-outline card-edit-btn" title="Edit">Edit</button>
-    <button class="btn btn-xs btn-outline card-delete-btn" title="Delete">Delete</button>
-    <button class="btn btn-xs btn-outline card-move-up" title="Move up" {% if loop.first %}disabled{% endif %}>Up</button>
-    <button class="btn btn-xs btn-outline card-move-down" title="Move down" {% if loop.last %}disabled{% endif %}>Down</button>
+    <button class="btn btn-xs btn-outline card-edit-btn" title="Edit" aria-label="Edit card">Edit</button>
+    <button class="btn btn-xs btn-outline card-delete-btn" title="Delete" aria-label="Delete card">Delete</button>
+    <button class="btn btn-xs btn-outline card-move-up" title="Move up" aria-label="Move card up" {% if loop.first %}disabled{% endif %}>Up</button>
+    <button class="btn btn-xs btn-outline card-move-down" title="Move down" aria-label="Move card down" {% if loop.last %}disabled{% endif %}>Down</button>
 </div>
 {% endmacro %}
 
@@ -63,7 +63,7 @@
         <label>Image URL (optional)</label>
         <input type="url" class="edit-image-url" placeholder="https://example.com/image.png" value="{{ card.data.get('image_url', '') }}">
         {% if card.data.get('image_url') %}
-        <button class="btn btn-xs btn-outline btn-remove-image-url" type="button">Remove Image</button>
+        <button class="btn btn-xs btn-outline btn-remove-image-url" type="button" aria-label="Remove image URL">Remove Image</button>
         {% endif %}
     </div>
     <div class="edit-actions">
@@ -108,7 +108,7 @@
     {% for card in cards %}
     <div class="flip-card" data-card-id="{{ card.id }}">
         <div class="card-view-mode">
-            <div class="flip-card-inner" onclick="if(!this.closest('.editing'))this.parentElement.parentElement.classList.toggle('flipped')">
+            <div class="flip-card-inner" role="button" tabindex="0" aria-label="Flip card" onclick="if(!this.closest('.editing'))this.parentElement.parentElement.classList.toggle('flipped')" onkeydown="if((event.key==='Enter'||event.key===' ')&&!this.closest('.editing')){event.preventDefault();this.parentElement.parentElement.classList.toggle('flipped')}">
                 <div class="flip-card-front">
                     <span class="flip-card-number card-number">{{ loop.index }}</span>
                     <p class="card-front-text">{{ card.front }}</p>
@@ -199,10 +199,10 @@
             <td data-label="Part of Speech">{{ card.data.get('part_of_speech', '') }}</td>
             <td data-label="Actions">
                 <div class="card-actions card-actions-inline">
-                    <button class="btn btn-xs btn-outline card-edit-btn" title="Edit">Edit</button>
-                    <button class="btn btn-xs btn-outline card-delete-btn" title="Delete">Del</button>
-                    <button class="btn btn-xs btn-outline card-move-up" title="Move up" {% if loop.first %}disabled{% endif %}>Up</button>
-                    <button class="btn btn-xs btn-outline card-move-down" title="Move down" {% if loop.last %}disabled{% endif %}>Down</button>
+                    <button class="btn btn-xs btn-outline card-edit-btn" title="Edit" aria-label="Edit term">Edit</button>
+                    <button class="btn btn-xs btn-outline card-delete-btn" title="Delete" aria-label="Delete term">Del</button>
+                    <button class="btn btn-xs btn-outline card-move-up" title="Move up" aria-label="Move term up" {% if loop.first %}disabled{% endif %}>Up</button>
+                    <button class="btn btn-xs btn-outline card-move-down" title="Move down" aria-label="Move term down" {% if loop.last %}disabled{% endif %}>Down</button>
                 </div>
             </td>
         </tr>

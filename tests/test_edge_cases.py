@@ -222,7 +222,7 @@ class TestGetProviderFactory:
     def test_get_provider_unsupported(self):
         """Config with an unsupported provider name should raise ValueError."""
         config = {"llm": {"provider": "unsupported"}}
-        with pytest.raises(ValueError, match="Unsupported LLM provider"):
+        with pytest.raises(ValueError, match="Unsupported provider"):
             get_provider(config)
         print("[PASS] get_provider raises ValueError for unsupported provider")
 

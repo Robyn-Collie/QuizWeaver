@@ -7,7 +7,8 @@
     <button class="btn btn-sm btn-outline edit-title-btn" title="Edit title">Edit Title</button>
 </div>
 <div class="quiz-title-edit" style="display:none;" data-quiz-id="{{ quiz.id }}">
-    <input type="text" class="quiz-title-input" value="{{ quiz.title }}" />
+    <label for="quiz-title-input" class="sr-only">Quiz title</label>
+    <input type="text" id="quiz-title-input" class="quiz-title-input" value="{{ quiz.title }}" />
     <button class="btn btn-sm btn-primary save-title-btn">Save</button>
     <button class="btn btn-sm btn-secondary cancel-title-btn">Cancel</button>
 </div>
@@ -131,6 +132,7 @@
             <button class="btn btn-sm btn-outline btn-upload-image" title="Upload image" aria-label="Upload image">Image</button>
             <button class="btn btn-sm {% if q.saved_to_bank %}btn-secondary{% else %}btn-outline{% endif %} btn-bank-toggle"
                     title="{% if q.saved_to_bank %}Remove from Bank{% else %}Save to Bank{% endif %}"
+                    aria-label="{% if q.saved_to_bank %}Remove from question bank{% else %}Save to question bank{% endif %}"
                     data-saved="{{ 'true' if q.saved_to_bank else 'false' }}">
                 {% if q.saved_to_bank %}Banked{% else %}Bank{% endif %}
             </button>
@@ -147,7 +149,7 @@
         <div class="question-image-wrapper">
             <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
                  onerror="this.style.display='none'">
-            <button class="btn btn-sm btn-outline btn-remove-image">Remove Image</button>
+            <button class="btn btn-sm btn-outline btn-remove-image" aria-label="Remove question image">Remove Image</button>
         </div>
         {% elif q.data and q.data.image_description is defined and q.data.image_description %}
         <div class="image-placeholder">
@@ -259,7 +261,7 @@
                     <input type="radio" name="correct_{{ q.id }}" class="edit-correct-radio" value="{{ loop.index0 }}"
                            {% if q.data.correct_index is defined and loop.index0 == q.data.correct_index %}checked{% endif %}>
                     <input type="text" class="edit-option-text" value="{% if option is mapping %}{{ option.text }}{% else %}{{ option }}{% endif %}">
-                    <button class="btn btn-sm btn-outline btn-remove-option" title="Remove option">x</button>
+                    <button class="btn btn-sm btn-outline btn-remove-option" title="Remove option" aria-label="Remove option">x</button>
                 </div>
                 {% endfor %}
                 {% endif %}

@@ -147,7 +147,9 @@ class VertexAIProvider(LLMProvider):
             ImportError: If google-genai is not installed
         """
         if not _GENAI_AVAILABLE:
-            raise ImportError("google-genai is not installed or available.")
+            raise ImportError(
+                "The Google AI library is not installed. Run: pip install google-genai"
+            )
 
         from google import genai
         self.client = genai.Client(
@@ -368,7 +370,9 @@ class AnthropicProvider(LLMProvider):
             model_name: Name of the Claude model to use
         """
         if not _ANTHROPIC_AVAILABLE:
-            raise ImportError("anthropic package not installed.")
+            raise ImportError(
+                "The Anthropic library is not installed. Run: pip install anthropic"
+            )
         import anthropic
         self.client = anthropic.Anthropic(api_key=api_key)
         self._model_name = model_name
@@ -463,7 +467,9 @@ class VertexAnthropicProvider(LLMProvider):
             model_name: Name of the Claude model on Vertex AI
         """
         if not _ANTHROPIC_AVAILABLE:
-            raise ImportError("anthropic package not installed.")
+            raise ImportError(
+                "The Anthropic library is not installed. Run: pip install anthropic[vertex]"
+            )
         from anthropic import AnthropicVertex
         self.client = AnthropicVertex(project_id=project_id, region=location)
         self._model_name = model_name
@@ -744,7 +750,7 @@ def get_provider(config, web_mode=False):
         api_key = os.getenv("GEMINI_API_KEY") or llm_config.get("api_key", "")
         if not api_key:
             raise ValueError(
-                "GEMINI_API_KEY not set and no api_key in config."
+                "No Gemini API key found. Go to Settings > Setup Wizard to enter your API key, or set the GEMINI_API_KEY environment variable."
             )
         return GeminiProvider(
             api_key=api_key,
@@ -753,13 +759,13 @@ def get_provider(config, web_mode=False):
     elif provider_name == "vertex":
         if not _GENAI_AVAILABLE:
             raise ImportError(
-                "Vertex AI provider selected but google-genai is not installed."
+                "The Google AI library is not installed. Run: pip install google-genai"
             )
         project_id = llm_config.get("vertex_project_id")
         location = llm_config.get("vertex_location")
         if not project_id or not location:
             raise ValueError(
-                "Vertex AI project_id and location must be specified in config.yaml for Vertex provider."
+                "Vertex AI requires a Google Cloud Project ID and Region. Go to Settings to enter these, or use the Setup Wizard for step-by-step guidance."
             )
         return VertexAIProvider(
             project_id=project_id,
@@ -770,7 +776,7 @@ def get_provider(config, web_mode=False):
         api_key = os.getenv("ANTHROPIC_API_KEY") or llm_config.get("api_key", "")
         if not api_key:
             raise ValueError(
-                "ANTHROPIC_API_KEY not set and no api_key in config."
+                "No Anthropic API key found. Go to Settings > Setup Wizard to enter your API key, or set the ANTHROPIC_API_KEY environment variable."
             )
         return AnthropicProvider(
             api_key=api_key,
@@ -779,13 +785,13 @@ def get_provider(config, web_mode=False):
     elif provider_name == "vertex-anthropic":
         if not _ANTHROPIC_AVAILABLE:
             raise ImportError(
-                "anthropic package not installed."
+                "The Anthropic library is not installed. Run: pip install anthropic[vertex]"
             )
         project_id = llm_config.get("vertex_project_id")
         location = llm_config.get("vertex_location")
         if not project_id or not location:
             raise ValueError(
-                "vertex_project_id and vertex_location required for Vertex AI (Claude) provider."
+                "Vertex AI (Claude) requires a Google Cloud Project ID and Region. Go to Settings to enter these, or use the Setup Wizard for step-by-step guidance."
             )
         return VertexAnthropicProvider(
             project_id=project_id,
@@ -796,7 +802,7 @@ def get_provider(config, web_mode=False):
         api_key = os.getenv("OPENAI_API_KEY") or llm_config.get("api_key", "")
         if not api_key:
             raise ValueError(
-                "OPENAI_API_KEY is not set in the environment and no api_key in config for OpenAI provider."
+                "No OpenAI API key found. Go to Settings > Setup Wizard to enter your API key, or set the OPENAI_API_KEY environment variable."
             )
         return OpenAICompatibleProvider(
             api_key=api_key,
@@ -808,7 +814,7 @@ def get_provider(config, web_mode=False):
         base_url = llm_config.get("base_url", "")
         if not base_url:
             raise ValueError(
-                "base_url must be set in config.yaml llm section for openai-compatible provider."
+                "No API endpoint URL configured for your custom provider. Go to Settings and enter the Base URL (e.g., http://localhost:11434/v1 for Ollama)."
             )
         return OpenAICompatibleProvider(
             api_key=api_key or "no-key",
@@ -816,4 +822,6 @@ def get_provider(config, web_mode=False):
             model_name=model_name,
         )
     else:
-        raise ValueError(f"Unsupported LLM provider: {provider_name}")
+        raise ValueError(
+            f"Unsupported provider: '{provider_name}'. Go to Settings to choose a supported provider (Gemini, Anthropic, OpenAI, Vertex AI, or Mock)."
+        )

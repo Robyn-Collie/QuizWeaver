@@ -2857,11 +2857,17 @@ small.text-muted {
     }
 
     .nav-user-section {
+        display: none;
         width: 100%;
         justify-content: flex-start;
-        padding: 0.5rem 0;
+        padding: 0.75rem 1rem;
         border-top: 1px solid var(--border);
-        margin-top: 0.25rem;
+        margin-top: 0;
+        background: var(--surface);
+    }
+
+    .nav-user-section.open {
+        display: flex;
     }
 
     .container {
@@ -3904,6 +3910,13 @@ html {
     /* Stats grid small: 1 column */
     .stats-grid-sm {
         grid-template-columns: 1fr;
+    }
+
+    /* Data tables: horizontal scroll when wider than viewport */
+    .data-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

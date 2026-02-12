@@ -42,7 +42,7 @@
     <div class="lesson-plan-section" id="section-{{ section_key }}">
         <div class="section-header">
             <h2>{{ section_label }}</h2>
-            <button class="btn btn-xs btn-outline section-edit-btn" data-section="{{ section_key }}">Edit</button>
+            <button class="btn btn-xs btn-outline section-edit-btn" data-section="{{ section_key }}" aria-label="Edit {{ section_label }}">Edit</button>
         </div>
         <div class="section-view-mode">
             <p>{{ content if content else '(No content)' }}</p>
@@ -50,7 +50,8 @@
         <div class="section-edit-mode" style="display: none;">
             <form method="POST" action="/lesson-plans/{{ lesson_plan.id }}/edit">
                 <input type="hidden" name="section_key" value="{{ section_key }}">
-                <textarea name="section_content" rows="5" class="form-control">{{ content }}</textarea>
+                <label for="edit-{{ section_key }}" class="sr-only">{{ section_label }} content</label>
+                <textarea id="edit-{{ section_key }}" name="section_content" rows="5" class="form-control">{{ content }}</textarea>
                 <div class="edit-actions" style="margin-top: 0.5rem;">
                     <button type="submit" class="btn btn-sm btn-primary">Save</button>
                     <button type="button" class="btn btn-sm btn-secondary section-cancel-btn">Cancel</button>

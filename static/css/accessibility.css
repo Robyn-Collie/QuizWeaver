@@ -191,6 +191,19 @@ body.color-blind-mode .test-failure {
     outline-offset: 2px;
 }
 
+/* Screen-reader-only utility: visually hidden but accessible to assistive tech */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 
 /* ===== BL-032: Text-to-Speech Panel ===== */
 .tts-panel {
@@ -359,7 +372,12 @@ body.color-blind-mode .test-failure {
     gap: 0.5rem;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
+}
+
+@media (min-width: 481px) {
+    .a11y-toggle-item label {
+        white-space: nowrap;
+    }
 }
 
 .a11y-toggle-item input[type="checkbox"] {

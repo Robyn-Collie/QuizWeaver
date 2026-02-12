@@ -62,7 +62,7 @@ class TestMockProvider:
         assert "type" in question
         assert "text" in question
         assert "points" in question
-        assert question["type"] in ["multiple_choice", "true_false"]
+        assert question["type"] in ["multiple_choice", "true_false", "ordering", "short_answer"]
 
     def test_critic_response_schema(self):
         """Test that critic response matches expected schema."""

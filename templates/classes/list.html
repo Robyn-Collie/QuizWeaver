@@ -8,7 +8,7 @@
 </div>
 
 {% if classes %}
-<table class="data-table">
+<table class="data-table responsive-table">
     <thead>
         <tr>
             <th>ID</th>
@@ -22,12 +22,12 @@
     <tbody>
         {% for cls in classes %}
         <tr>
-            <td>{{ cls.id }}</td>
-            <td><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></td>
-            <td>{{ cls.grade_level or '' }}</td>
-            <td>{{ cls.subject or '' }}</td>
-            <td>{{ cls.lesson_count }}</td>
-            <td>{{ cls.quiz_count }}</td>
+            <td data-label="ID">{{ cls.id }}</td>
+            <td data-label="Name"><a href="/classes/{{ cls.id }}">{{ cls.name }}</a></td>
+            <td data-label="Grade">{{ cls.grade_level or '' }}</td>
+            <td data-label="Subject">{{ cls.subject or '' }}</td>
+            <td data-label="Lessons">{{ cls.lesson_count }}</td>
+            <td data-label="Quizzes">{{ cls.quiz_count }}</td>
         </tr>
         {% endfor %}
     </tbody>
