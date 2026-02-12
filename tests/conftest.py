@@ -18,7 +18,6 @@ import pytest
 from src.database import Base, Class, Question, Quiz, get_engine, get_session, init_db
 from src.migrations import run_migrations
 
-
 # ---------------------------------------------------------------------------
 # Core database fixtures
 # ---------------------------------------------------------------------------
