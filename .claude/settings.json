@@ -2,9 +2,16 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write",
-        "command": "python -m ruff check --fix \"$CLAUDE_FILE_PATH\" 2>nul & python -m ruff format \"$CLAUDE_FILE_PATH\" 2>nul",
-        "timeout": 10000
+        "matcher": {
+          "tools": ["Edit", "Write"]
+        },
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -m ruff check --fix \"$CLAUDE_FILE_PATH\" 2>nul & python -m ruff format \"$CLAUDE_FILE_PATH\" 2>nul",
+            "timeout": 10000
+          }
+        ]
       }
     ]
   }

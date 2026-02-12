@@ -105,7 +105,7 @@ def app():
     flask_app.config["TESTING"] = True
 
     # Patch save_config so settings POST doesn't overwrite real config.yaml
-    with patch("src.web.routes.save_config"):
+    with patch("src.web.blueprints.settings.save_config"):
         yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()

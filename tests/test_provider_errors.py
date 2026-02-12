@@ -215,7 +215,7 @@ class TestTestProviderErrorClassification:
 
     def test_401_error_adds_api_key_hint(self, client):
         """401 Unauthorized errors get a hint about checking the API key."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("HTTP 401 Unauthorized")
             response = client.post(
                 "/api/settings/test-provider",
@@ -229,7 +229,7 @@ class TestTestProviderErrorClassification:
 
     def test_403_error_adds_permission_hint(self, client):
         """403 Forbidden errors get a hint about permissions."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("HTTP 403 Forbidden")
             response = client.post(
                 "/api/settings/test-provider",
@@ -242,7 +242,7 @@ class TestTestProviderErrorClassification:
 
     def test_404_error_adds_model_hint(self, client):
         """404 Not Found errors get a hint about the model name."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("HTTP 404 Not Found")
             response = client.post(
                 "/api/settings/test-provider",
@@ -255,7 +255,7 @@ class TestTestProviderErrorClassification:
 
     def test_429_error_adds_rate_limit_hint(self, client):
         """429 rate limit errors get a hint about waiting or checking billing."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("HTTP 429 Too Many Requests")
             response = client.post(
                 "/api/settings/test-provider",
@@ -268,7 +268,7 @@ class TestTestProviderErrorClassification:
 
     def test_connection_error_adds_network_hint(self, client):
         """Connection errors get a hint about internet and endpoint URL."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("Connection refused")
             response = client.post(
                 "/api/settings/test-provider",
@@ -281,7 +281,7 @@ class TestTestProviderErrorClassification:
 
     def test_timeout_error_adds_timeout_hint(self, client):
         """Timeout errors get a hint about the provider being slow."""
-        with patch("src.web.routes.get_provider") as mock_gp:
+        with patch("src.web.blueprints.settings.get_provider") as mock_gp:
             mock_gp.side_effect = Exception("Request timed out")
             response = client.post(
                 "/api/settings/test-provider",
