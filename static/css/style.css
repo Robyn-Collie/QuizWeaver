@@ -4114,3 +4114,73 @@ html {
 }
 
 /* === END MOBILE RESPONSIVE === */
+
+/* Glass Box Transparency (BL-040, BL-041) */
+.glass-box-section {
+    margin: 1rem 0;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: #f6f8fa;
+}
+.glass-box-section summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+.glass-box-section summary:hover {
+    background: #eef1f5;
+}
+.glass-box-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 10px;
+    background: #ddf4ff;
+    color: #0969da;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+.glass-box-content {
+    padding: 0 1rem 1rem 1rem;
+}
+.glass-box-subsection {
+    margin-top: 1rem;
+}
+.glass-box-subsection h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #24292f;
+}
+.glass-box-params {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.glass-box-params li {
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+}
+.glass-box-note {
+    font-size: 0.85rem;
+    color: #57606a;
+    margin-bottom: 0.5rem;
+}
+.critic-entry {
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 0;
+    border-left: 3px solid #d0d7de;
+    background: #fff;
+    border-radius: 0 4px 4px 0;
+}
+.critic-entry.critic-approved {
+    border-left-color: #2da44e;
+}
+.critic-entry.critic-rejected {
+    border-left-color: #cf222e;
+}
+.critic-feedback {
+    font-size: 0.85rem;
+    color: #57606a;
+    margin: 0.25rem 0 0 0;
+    white-space: pre-wrap;
+}

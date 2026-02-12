@@ -188,6 +188,7 @@ class Quiz(Base):
     reading_level = Column(String)  # ell, below_grade, on_grade, advanced
     status = Column(String, default="pending")  # pending, generating, generated, failed, complete
     style_profile = Column(JSON)
+    generation_metadata = Column(Text)  # JSON: prompt summary, critic feedback, metrics
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

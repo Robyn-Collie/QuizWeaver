@@ -40,6 +40,76 @@
     {% endif %}
 </div>
 
+{# Glass Box: Generation Transparency (BL-040, BL-041) #}
+{% if generation_metadata %}
+<details class="glass-box-section">
+    <summary><strong>How This Quiz Was Generated</strong> <span class="glass-box-badge">Glass Box</span></summary>
+
+    <div class="glass-box-content">
+        {# BL-040: Prompt Summary #}
+        {% if generation_metadata.prompt_summary %}
+        <div class="glass-box-subsection">
+            <h3>Generation Parameters</h3>
+            <ul class="glass-box-params">
+                {% if generation_metadata.prompt_summary.grade_level %}
+                <li><strong>Grade Level:</strong> {{ generation_metadata.prompt_summary.grade_level }}</li>
+                {% endif %}
+                {% if generation_metadata.prompt_summary.num_questions %}
+                <li><strong>Questions Requested:</strong> {{ generation_metadata.prompt_summary.num_questions }}</li>
+                {% endif %}
+                {% if generation_metadata.prompt_summary.standards %}
+                <li><strong>Standards Targeted:</strong> {{ generation_metadata.prompt_summary.standards|join(', ') }}</li>
+                {% endif %}
+                {% if generation_metadata.prompt_summary.cognitive_framework %}
+                <li><strong>Cognitive Framework:</strong> {{ generation_metadata.prompt_summary.cognitive_framework|capitalize }}</li>
+                {% endif %}
+                {% if generation_metadata.prompt_summary.difficulty %}
+                <li><strong>Difficulty:</strong> {{ generation_metadata.prompt_summary.difficulty }}/5</li>
+                {% endif %}
+                {% if generation_metadata.prompt_summary.topics_from_lessons %}
+                <li><strong>Topics from Recent Lessons:</strong> {{ generation_metadata.prompt_summary.topics_from_lessons|join(', ') }}</li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {# BL-040: Pipeline Metrics #}
+        {% if generation_metadata.metrics %}
+        <div class="glass-box-subsection">
+            <h3>Pipeline Metrics</h3>
+            <ul class="glass-box-params">
+                <li><strong>Provider:</strong> {{ generation_metadata.provider or 'unknown' }}</li>
+                {% if generation_metadata.model %}
+                <li><strong>Model:</strong> {{ generation_metadata.model }}</li>
+                {% endif %}
+                <li><strong>LLM Calls:</strong> {{ generation_metadata.metrics.total_llm_calls }} ({{ generation_metadata.metrics.generator_calls }} generation, {{ generation_metadata.metrics.critic_calls }} review)</li>
+                <li><strong>Attempts:</strong> {{ generation_metadata.metrics.attempts }}</li>
+                <li><strong>Duration:</strong> {{ generation_metadata.metrics.duration_seconds }}s</li>
+                <li><strong>Final Status:</strong> {% if generation_metadata.metrics.approved %}<span class="status status-generated">Approved by critic</span>{% else %}<span class="status status-pending">Max retries reached</span>{% endif %}</li>
+            </ul>
+        </div>
+        {% endif %}
+
+        {# BL-041: Critic Feedback History #}
+        {% if generation_metadata.critic_history %}
+        <div class="glass-box-subsection">
+            <h3>Quality Review History</h3>
+            <p class="glass-box-note">The critic agent reviewed the generated questions for quality, accuracy, and alignment. Here is what happened:</p>
+            {% for entry in generation_metadata.critic_history %}
+            <div class="critic-entry critic-{{ entry.status|lower }}">
+                <strong>Attempt {{ entry.attempt }}:</strong>
+                <span class="status status-{% if entry.status == 'APPROVED' %}generated{% else %}failed{% endif %}">{{ entry.status }}</span>
+                {% if entry.feedback %}
+                <p class="critic-feedback">{{ entry.feedback[:500] }}{% if entry.feedback|length > 500 %}...{% endif %}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</details>
+{% endif %}
+
 {# Variant lineage #}
 {% if parent_quiz %}
 <div class="variant-lineage">

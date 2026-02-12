@@ -142,6 +142,16 @@ def quiz_detail(quiz_id):
             # Comma-separated string fallback
             style_profile["sol_standards"] = [s.strip() for s in sol_val.split(",") if s.strip()]
 
+    # Parse generation metadata for Glass Box display
+    generation_metadata = getattr(quiz, "generation_metadata", None)
+    if isinstance(generation_metadata, str):
+        try:
+            generation_metadata = json.loads(generation_metadata)
+        except (json.JSONDecodeError, ValueError):
+            generation_metadata = None
+    if not isinstance(generation_metadata, dict):
+        generation_metadata = None
+
     # Variant lineage info
     parent_quiz = None
     if quiz.parent_quiz_id:
@@ -158,6 +168,7 @@ def quiz_detail(quiz_id):
         questions=parsed_questions,
         class_obj=class_obj,
         style_profile=style_profile,
+        generation_metadata=generation_metadata,
         parent_quiz=parent_quiz,
         variant_count=variant_count,
         rubrics=rubrics,

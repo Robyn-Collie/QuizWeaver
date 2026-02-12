@@ -86,9 +86,9 @@ class TestAgents(unittest.TestCase):
         ]
 
         orch = Orchestrator(self.config)
-        result = orch.run(self.context)
+        questions, metadata = orch.run(self.context)
 
-        self.assertEqual(result[0]["revised"], True)
+        self.assertEqual(questions[0]["revised"], True)
         self.assertEqual(mock_gen_instance.generate.call_count, 2)
         self.assertEqual(mock_critic_instance.critique.call_count, 2)
 
@@ -309,9 +309,9 @@ class TestOrchestratorCostWarnings(unittest.TestCase):
         }
 
         orch = Orchestrator(config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
-        self.assertEqual(result, [])
+        self.assertEqual(questions, [])
         # Generator should never have been called
         MockGenerator.return_value.generate.assert_not_called()
 
@@ -336,9 +336,9 @@ class TestOrchestratorCostWarnings(unittest.TestCase):
         }
 
         orch = Orchestrator(config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(questions), 1)
         # Rate limit should NOT have been checked for mock
         mock_rate_limit.assert_not_called()
 
@@ -368,9 +368,9 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
 
         orch = Orchestrator(self.config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
-        self.assertEqual(len(result), 1)
+        self.assertEqual(len(questions), 1)
         self.assertEqual(mock_gen.generate.call_count, 2)
 
     @patch("src.agents.GeneratorAgent")
@@ -384,10 +384,10 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         mock_gen.generate.side_effect = RuntimeError("Persistent failure")
 
         orch = Orchestrator(self.config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
         # Should have given up after 2 consecutive errors
-        self.assertEqual(result, [])
+        self.assertEqual(questions, [])
         self.assertEqual(mock_gen.generate.call_count, 2)
 
     @patch("src.agents.GeneratorAgent")
@@ -402,11 +402,11 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         MockCritic.return_value.critique.side_effect = RuntimeError("Critic down")
 
         orch = Orchestrator(self.config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
         # Should return the draft even though critic failed
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["text"], "Q1")
+        self.assertEqual(len(questions), 1)
+        self.assertEqual(questions[0]["text"], "Q1")
 
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
@@ -431,10 +431,10 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         # Need 4 retries to test this path
         config = {**self.config, "agent_loop": {"max_retries": 4}}
         orch = Orchestrator(config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0]["text"], "Q2")
+        self.assertEqual(len(questions), 1)
+        self.assertEqual(questions[0]["text"], "Q2")
 
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
@@ -447,9 +447,9 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         mock_gen.generate.return_value = []  # Always empty
 
         orch = Orchestrator(self.config)
-        result = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test"})
 
-        self.assertEqual(result, [])
+        self.assertEqual(questions, [])
         # Should have tried twice before aborting
         self.assertEqual(mock_gen.generate.call_count, 2)
 

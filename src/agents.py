@@ -533,7 +533,7 @@ class Orchestrator:
         self.max_retries = config.get("agent_loop", {}).get("max_retries", 3)
         self.last_metrics = None
 
-    def run(self, context: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def run(self, context: Dict[str, Any]) -> tuple:
         """Run the generate-critique feedback loop until approval or max retries.
 
         Args:
@@ -541,11 +541,14 @@ class Orchestrator:
                     by the Generator agent (content, images, standards, etc.).
 
         Returns:
-            List of approved question dictionaries, or last draft if max retries reached.
-            Returns empty list if rate limits exceeded or too many consecutive errors.
+            Tuple of (questions, metadata) where questions is a list of approved
+            question dictionaries (or last draft if max retries reached, or empty
+            list on failure), and metadata is a dict with prompt_summary, metrics,
+            critic_history, provider, and model info.
         """
         feedback = None
         guidelines = get_qa_guidelines()
+        critic_history = []
 
         # Initialize metrics tracking
         metrics = AgentMetrics()
@@ -560,7 +563,7 @@ class Orchestrator:
                 print("   Aborting pipeline. Check cost report with 'costs' command.")
                 metrics.stop()
                 self.last_metrics = metrics
-                return []
+                return [], self._build_metadata(context, metrics, critic_history)
 
             estimate = estimate_pipeline_cost(self.config, self.max_retries)
             if estimate["estimated_max_cost"] > 0:
@@ -596,7 +599,7 @@ class Orchestrator:
                     print("   [Agent Loop] Too many consecutive errors. Aborting.")
                     metrics.stop()
                     self.last_metrics = metrics
-                    return []
+                    return [], self._build_metadata(context, metrics, critic_history)
                 # Brief pause before retry (skip in mock mode)
                 if provider_name != "mock":
                     time.sleep(min(2**consecutive_errors, 10))
@@ -610,7 +613,7 @@ class Orchestrator:
                     print("   [Agent Loop] Too many consecutive failures. Aborting.")
                     metrics.stop()
                     self.last_metrics = metrics
-                    return []
+                    return [], self._build_metadata(context, metrics, critic_history)
                 feedback = (
                     "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
                 )
@@ -645,14 +648,23 @@ class Orchestrator:
                 print(f"   [Agent Loop] Critic error: {e}. Skipping critique, returning draft.")
                 metrics.stop()
                 self.last_metrics = metrics
-                return questions
+                return questions, self._build_metadata(context, metrics, critic_history)
+
+            # Record critic feedback in history
+            critic_history.append(
+                {
+                    "attempt": attempt + 1,
+                    "status": critique_result["status"],
+                    "feedback": critique_result.get("feedback"),
+                }
+            )
 
             if critique_result["status"] == "APPROVED":
                 print("   [Agent Loop] Draft APPROVED.")
                 metrics.stop()
                 metrics.approved = True
                 self.last_metrics = metrics
-                return questions
+                return questions, self._build_metadata(context, metrics, critic_history)
 
             print(f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result['feedback'][:100]}...")
             feedback = critique_result["feedback"]
@@ -660,7 +672,52 @@ class Orchestrator:
         print("   [Agent Loop] Max retries reached. Returning last draft with warning.")
         metrics.stop()
         self.last_metrics = metrics
-        return questions
+        return questions, self._build_metadata(context, metrics, critic_history)
+
+    def _build_metadata(
+        self,
+        context: Dict[str, Any],
+        metrics: AgentMetrics,
+        critic_history: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Build the generation metadata dict for Glass Box transparency.
+
+        Args:
+            context: The generation context dict.
+            metrics: The AgentMetrics instance with pipeline stats.
+            critic_history: List of critic feedback entries.
+
+        Returns:
+            Dict with prompt_summary, metrics, critic_history, provider, and model.
+        """
+        # Extract topics from lesson logs if available
+        topics_from_lessons = []
+        for log in context.get("lesson_logs", []):
+            topics_from_lessons.extend(log.get("topics", []))
+        # Deduplicate while preserving order
+        seen = set()
+        unique_topics = []
+        for t in topics_from_lessons:
+            if t not in seen:
+                seen.add(t)
+                unique_topics.append(t)
+
+        prompt_summary = {
+            "grade_level": context.get("grade_level"),
+            "num_questions": context.get("num_questions"),
+            "standards": context.get("sol_standards", []),
+            "cognitive_framework": context.get("cognitive_framework"),
+            "difficulty": context.get("difficulty"),
+            "topics_from_lessons": unique_topics[:20],
+        }
+
+        return {
+            "prompt_summary": prompt_summary,
+            "metrics": metrics.report(),
+            "critic_history": critic_history,
+            "provider": self.config.get("llm", {}).get("provider", "unknown"),
+            "model": self.config.get("llm", {}).get("model"),
+        }
 
 
 def run_agentic_pipeline(config, context, class_id=None, web_mode=False):
@@ -673,7 +730,7 @@ def run_agentic_pipeline(config, context, class_id=None, web_mode=False):
         web_mode: If True, skip interactive input() approval gate (for web UI).
 
     Returns:
-        List of approved question dictionaries from the Orchestrator.
+        Tuple of (questions, metadata) from the Orchestrator.
     """
     # Enrich context with class data if class_id provided
     if class_id is not None:

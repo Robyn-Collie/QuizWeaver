@@ -131,7 +131,7 @@ def handle_generate(config, args):
         "sol_standards": sol_standards,
     }
 
-    questions = run_agentic_pipeline(config, context, class_id=class_id)
+    questions, _generation_metadata = run_agentic_pipeline(config, context, class_id=class_id)
 
     if not questions:
         print("Error: AI Agent failed to generate valid questions.")

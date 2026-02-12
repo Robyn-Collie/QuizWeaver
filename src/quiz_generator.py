@@ -127,8 +127,15 @@ def generate_quiz(
     }
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)
+    generation_metadata = None
     try:
-        questions_data = run_agentic_pipeline(run_config, context, class_id=class_id, web_mode=True)
+        pipeline_result = run_agentic_pipeline(run_config, context, class_id=class_id, web_mode=True)
+        # Unpack tuple (questions, metadata)
+        if isinstance(pipeline_result, tuple) and len(pipeline_result) == 2:
+            questions_data, generation_metadata = pipeline_result
+        else:
+            # Backward compat: old callers may return a plain list
+            questions_data = pipeline_result
     except Exception as e:
         logger.error("generate_quiz: pipeline crashed: %s", e)
         new_quiz.status = "failed"
@@ -155,6 +162,8 @@ def generate_quiz(
         session.add(question_record)
 
     new_quiz.status = "generated"
+    if generation_metadata:
+        new_quiz.generation_metadata = json.dumps(generation_metadata)
     session.commit()
 
     # Refresh to populate the questions relationship
