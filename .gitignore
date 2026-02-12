@@ -1,6 +1,7 @@
 # --- Local Environment ---
 .env
 .venv/
+.deps_installed
 
 # --- Python Cache ---
 __pycache__/

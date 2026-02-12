@@ -59,11 +59,11 @@ class TestSettingsAutofill:
         assert 'id="model_name"' in html
         assert 'autocomplete="off"' in html
 
-    def test_api_key_has_autocomplete_new_password(self, client):
+    def test_api_key_has_autocomplete_off(self, client):
         resp = client.get("/settings")
         html = resp.data.decode()
         assert 'id="api_key"' in html
-        assert 'autocomplete="new-password"' in html
+        assert 'autocomplete="off"' in html
 
     def test_base_url_has_autocomplete_off(self, client):
         resp = client.get("/settings")
@@ -77,12 +77,12 @@ class TestSettingsAutofill:
 class TestProviderWizardAutofill:
     """Verify autocomplete attributes on provider wizard page inputs."""
 
-    def test_wizard_api_key_has_autocomplete_new_password(self, client):
+    def test_wizard_api_key_has_autocomplete_off(self, client):
         resp = client.get("/settings/wizard")
         html = resp.data.decode()
         assert 'id="wizard_api_key"' in html
         wizard_key_section = html.split('id="wizard_api_key"')[1].split(">")[0]
-        assert 'autocomplete="new-password"' in wizard_key_section
+        assert 'autocomplete="off"' in wizard_key_section
 
     def test_wizard_model_has_autocomplete_off(self, client):
         resp = client.get("/settings/wizard")

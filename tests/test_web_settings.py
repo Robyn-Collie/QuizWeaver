@@ -362,8 +362,8 @@ class TestGetProviderInfo:
             assert openai_info["available"] is True
 
     def test_openai_available_with_config_key(self):
-        """OpenAI is available when api_key is in config."""
-        config = {"llm": {"api_key": "sk-from-config"}}
+        """OpenAI is available when api_key is in config and provider is openai."""
+        config = {"llm": {"provider": "openai", "api_key": "sk-from-config"}}
         with patch.dict(os.environ, {}, clear=True):
             os.environ.pop("OPENAI_API_KEY", None)
             info = get_provider_info(config)

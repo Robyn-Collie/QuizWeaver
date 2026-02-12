@@ -166,14 +166,14 @@
         <p class="ordering-instructions"><em>{{ q.data.instructions }}</em></p>
         {% endif %}
         <ol class="ordering-items">
-            {% for item in q.data.items %}
+            {% for item in q.data['items'] %}
             <li>{{ item }}</li>
             {% endfor %}
         </ol>
         <div class="question-answer">
             <strong>Correct Order:</strong>
             {% if q.data.correct_order is defined %}
-            {% for idx in q.data.correct_order %}{% if idx < q.data.items|length %}{% if not loop.first %} &rarr; {% endif %}{{ q.data.items[idx] }}{% endif %}{% endfor %}
+            {% for idx in q.data.correct_order %}{% if idx < q.data['items']|length %}{% if not loop.first %} &rarr; {% endif %}{{ q.data['items'][idx] }}{% endif %}{% endfor %}
             {% endif %}
         </div>
 
