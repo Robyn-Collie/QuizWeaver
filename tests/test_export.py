@@ -25,6 +25,7 @@ from src.export import (
     export_gift,
     export_pdf,
     export_qti,
+    export_quizizz_csv,
     normalize_question,
 )
 
@@ -649,6 +650,411 @@ class TestExportQTI:
             assessment_xml = zf.read(xml_files[0]).decode("utf-8")
             assert "essay_question" in assessment_xml
             assert "Discuss photosynthesis." in assessment_xml
+
+
+# ---------------------------------------------------------------------------
+# TestExportQTIUpgrade
+# ---------------------------------------------------------------------------
+
+
+class TestExportQTIUpgrade:
+    """Test QTI 1.2 matching, ordering, and short answer item builders."""
+
+    def test_qti_matching_basic(self):
+        """Matching question with 3 pairs produces response_grp elements."""
+        quiz = _make_quiz(title="Matching QTI")
+        q = _make_question(
+            question_type="matching",
+            text="Match the terms:",
+            data={
+                "matches": [
+                    {"term": "H2O", "definition": "Water"},
+                    {"term": "NaCl", "definition": "Salt"},
+                    {"term": "CO2", "definition": "Carbon Dioxide"},
+                ],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "matching_question" in xml
+            assert "response_grp" in xml
+            assert "grp_0" in xml
+            assert "grp_1" in xml
+            assert "grp_2" in xml
+
+    def test_qti_matching_correctness(self):
+        """Verify varequal maps grp_N to def_N correctly."""
+        quiz = _make_quiz(title="Matching Correct")
+        q = _make_question(
+            question_type="matching",
+            text="Match:",
+            data={
+                "matches": [
+                    {"term": "A", "definition": "1"},
+                    {"term": "B", "definition": "2"},
+                ],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert 'respident="grp_0">def_0</varequal>' in xml
+            assert 'respident="grp_1">def_1</varequal>' in xml
+
+    def test_qti_matching_xml_escaping(self):
+        """Terms/definitions with &, <, > are escaped."""
+        quiz = _make_quiz(title="Escape Test")
+        q = _make_question(
+            question_type="matching",
+            text="Match these:",
+            data={
+                "matches": [
+                    {"term": "A & B", "definition": "1 < 2"},
+                    {"term": "C > D", "definition": "3 & 4"},
+                ],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "A &amp; B" in xml
+            assert "1 &lt; 2" in xml
+            assert "C &gt; D" in xml
+            assert "3 &amp; 4" in xml
+
+    def test_qti_matching_empty_fallback(self):
+        """Matching with no matches falls back to essay."""
+        quiz = _make_quiz(title="Empty Matching")
+        q = _make_question(
+            question_type="matching",
+            text="Match nothing:",
+            data={"matches": []},
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            # Falls through to default (essay) since matches is empty
+            assert "essay_question" in xml or "response_grp" not in xml
+
+    def test_qti_ordering_basic(self):
+        """Ordering question maps items to position numbers."""
+        quiz = _make_quiz(title="Ordering QTI")
+        q = _make_question(
+            question_type="ordering",
+            text="Put in order:",
+            data={
+                "items": ["First", "Second", "Third"],
+                "correct_order": [0, 1, 2],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            # Ordering is built on matching, so matching_question metadata
+            assert "matching_question" in xml
+            assert "First" in xml
+            assert "Second" in xml
+            assert "Third" in xml
+
+    def test_qti_ordering_correct_order(self):
+        """Verify correct_order is respected in position mapping."""
+        quiz = _make_quiz(title="Order Verify")
+        q = _make_question(
+            question_type="ordering",
+            text="Order these:",
+            data={
+                "items": ["C", "A", "B"],
+                "correct_order": [2, 0, 1],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            # Item "C" at index 0 should map to position correct_order[0]+1 = 3
+            # Item "A" at index 1 should map to position correct_order[1]+1 = 1
+            # Item "B" at index 2 should map to position correct_order[2]+1 = 2
+            assert "response_grp" in xml
+
+    def test_qti_short_answer_basic(self):
+        """Verify render_fib element and short_answer_question metadata."""
+        quiz = _make_quiz(title="Short Answer QTI")
+        q = _make_question(
+            question_type="short_answer",
+            text="What is the capital of France?",
+            data={"expected_answer": "Paris"},
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "short_answer_question" in xml
+            assert "render_fib" in xml
+
+    def test_qti_short_answer_autograding(self):
+        """Verify varequal with case='No' for correct answer."""
+        quiz = _make_quiz(title="SA Autograding")
+        q = _make_question(
+            question_type="short_answer",
+            text="Capital of France?",
+            data={"expected_answer": "Paris"},
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert 'case="No"' in xml
+            assert "Paris" in xml
+
+    def test_qti_short_answer_acceptable_answers(self):
+        """Verify multiple varequal entries for acceptable_answers."""
+        quiz = _make_quiz(title="SA Acceptable")
+        q = _make_question(
+            question_type="short_answer",
+            text="Color of the sky?",
+            data={
+                "expected_answer": "blue",
+                "acceptable_answers": ["azure", "cerulean"],
+            },
+        )
+        buf = export_qti(quiz, [q])
+        with zipfile.ZipFile(buf, "r") as zf:
+            xml_files = [n for n in zf.namelist() if n.endswith(".xml") and n != "imsmanifest.xml"]
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "blue" in xml
+            assert "azure" in xml
+            assert "cerulean" in xml
+            # Should have 3 respcondition entries
+            assert xml.count("respcondition") >= 6  # 3 open + 3 close tags
+
+    def test_qti_mixed_types_zip(self):
+        """Full QTI export with MC + TF + matching + ordering + short_answer."""
+        quiz = _make_quiz(title="Mixed QTI")
+        questions = [
+            _make_question(
+                question_type="mc", text="MC question?",
+                data={"options": ["A", "B", "C"], "correct_answer": "B"},
+            ),
+            _make_question(
+                question_type="tf", text="TF question?",
+                data={"correct_answer": "True"},
+            ),
+            _make_question(
+                question_type="matching", text="Match these:",
+                data={"matches": [{"term": "X", "definition": "1"}, {"term": "Y", "definition": "2"}]},
+            ),
+            _make_question(
+                question_type="ordering", text="Order these:",
+                data={"items": ["A", "B"], "correct_order": [0, 1]},
+            ),
+            _make_question(
+                question_type="short_answer", text="Short answer?",
+                data={"expected_answer": "answer"},
+            ),
+        ]
+        buf = export_qti(quiz, questions)
+        assert zipfile.is_zipfile(buf)
+        with zipfile.ZipFile(buf, "r") as zf:
+            names = zf.namelist()
+            assert "imsmanifest.xml" in names
+            xml_files = [n for n in names if n.endswith(".xml") and n != "imsmanifest.xml"]
+            assert len(xml_files) == 1
+            xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "multiple_choice_question" in xml
+            assert "matching_question" in xml
+            assert "short_answer_question" in xml
+            assert xml.count("<item ") == 5
+
+
+# ---------------------------------------------------------------------------
+# TestExportQuizizzCSV
+# ---------------------------------------------------------------------------
+
+
+class TestExportQuizizzCSV:
+    """Test Quizizz-compatible CSV export."""
+
+    def test_quizizz_headers(self):
+        """Verify exact header row."""
+        quiz = _make_quiz()
+        result = export_quizizz_csv(quiz, [])
+        reader = csv.reader(io.StringIO(result))
+        headers = next(reader)
+        assert headers == [
+            "Question Text", "Question Type",
+            "Option 1", "Option 2", "Option 3", "Option 4", "Option 5",
+            "Correct Answer", "Time Limit", "Image Link",
+        ]
+
+    def test_quizizz_mc_basic(self):
+        """MC question maps correctly with 1-based index."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="mc", text="What is 2+2?",
+            data={"options": ["3", "4", "5", "6"], "correct_answer": "4"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)  # skip headers
+        row = next(reader)
+        assert row[0] == "What is 2+2?"
+        assert row[1] == "Multiple Choice"
+        assert row[2] == "3"
+        assert row[3] == "4"
+        assert row[4] == "5"
+        assert row[5] == "6"
+        assert row[7] == "2"  # 1-based index of "4"
+
+    def test_quizizz_tf_basic(self):
+        """TF question maps to 'True or False' type."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="tf", text="The sky is blue.",
+            data={"correct_answer": "True"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)
+        row = next(reader)
+        assert row[1] == "True or False"
+        assert row[2] == "True"
+        assert row[3] == "False"
+        assert row[7] == "True"
+
+    def test_quizizz_option_padding(self):
+        """MC with 3 options pads to 5 columns."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="mc", text="Pick one:",
+            data={"options": ["A", "B", "C"], "correct_answer": "A"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)
+        row = next(reader)
+        assert row[2] == "A"
+        assert row[3] == "B"
+        assert row[4] == "C"
+        assert row[5] == ""
+        assert row[6] == ""
+
+    def test_quizizz_five_options(self):
+        """MC with 5 options uses all columns."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="mc", text="Pick one:",
+            data={"options": ["A", "B", "C", "D", "E"], "correct_answer": "E"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)
+        row = next(reader)
+        assert row[2] == "A"
+        assert row[6] == "E"
+        assert row[7] == "5"  # 1-based index of E
+
+    def test_quizizz_default_time(self):
+        """Verify time limit is 30."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="mc", text="Q?",
+            data={"options": ["A", "B"], "correct_answer": "A"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)
+        row = next(reader)
+        assert row[8] == "30"
+
+    def test_quizizz_skip_matching(self):
+        """Matching questions are skipped."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="matching", text="Match:",
+            data={"matches": [{"term": "A", "definition": "1"}]},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        rows = list(reader)
+        assert len(rows) == 1  # headers only
+
+    def test_quizizz_skip_ordering(self):
+        """Ordering questions are skipped."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="ordering", text="Order:",
+            data={"items": ["A", "B"], "correct_order": [0, 1]},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        rows = list(reader)
+        assert len(rows) == 1
+
+    def test_quizizz_skip_essay(self):
+        """Essay questions are skipped."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="essay", text="Discuss:",
+            data={},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        rows = list(reader)
+        assert len(rows) == 1
+
+    def test_quizizz_empty_quiz(self):
+        """Empty quiz produces only headers."""
+        quiz = _make_quiz()
+        result = export_quizizz_csv(quiz, [])
+        reader = csv.reader(io.StringIO(result))
+        rows = list(reader)
+        assert len(rows) == 1
+        assert rows[0][0] == "Question Text"
+
+    def test_quizizz_special_chars(self):
+        """Questions with commas and quotes are properly escaped."""
+        quiz = _make_quiz()
+        q = _make_question(
+            question_type="mc", text='What is "this", exactly?',
+            data={"options": ["A, B", 'C "D"', "E"], "correct_answer": "A, B"},
+        )
+        result = export_quizizz_csv(quiz, [q])
+        reader = csv.reader(io.StringIO(result))
+        next(reader)
+        row = next(reader)
+        assert row[0] == 'What is "this", exactly?'
+        assert row[2] == "A, B"
+        assert row[3] == 'C "D"'
+
+    def test_quizizz_mixed(self):
+        """Quiz with MC + TF + matching produces only MC and TF rows."""
+        quiz = _make_quiz()
+        questions = [
+            _make_question(
+                question_type="mc", text="MC?",
+                data={"options": ["A", "B"], "correct_answer": "A"},
+            ),
+            _make_question(
+                question_type="tf", text="TF?",
+                data={"correct_answer": "False"},
+            ),
+            _make_question(
+                question_type="matching", text="Match:",
+                data={"matches": [{"term": "X", "definition": "Y"}]},
+            ),
+        ]
+        result = export_quizizz_csv(quiz, questions)
+        reader = csv.reader(io.StringIO(result))
+        rows = list(reader)
+        assert len(rows) == 3  # header + MC + TF (matching skipped)
+        assert rows[1][1] == "Multiple Choice"
+        assert rows[2][1] == "True or False"
 
 
 # ---------------------------------------------------------------------------

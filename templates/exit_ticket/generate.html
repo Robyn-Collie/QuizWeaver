@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Generate Exit Ticket - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Generate Exit Ticket</h1>
+
+<p class="subtitle">Create a quick check-for-understanding assessment (1-5 questions).</p>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="/exit-ticket/generate" class="form" id="exit-ticket-form">
+    <div class="form-group">
+        <label for="class_id">Class <span class="help-tip" data-tip="Select the class this exit ticket is for.">?</span></label>
+        <select id="class_id" name="class_id" required>
+            <option value="">-- Select a class --</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}">{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="lesson_log_id">Recent Lesson (optional) <span class="help-tip" data-tip="Base the exit ticket on a specific lesson. Select a class first to see lessons.">?</span></label>
+        <select id="lesson_log_id" name="lesson_log_id">
+            <option value="">-- None (use topic instead) --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="topic">Topic (optional) <span class="help-tip" data-tip="Free-text topic for the exit ticket. Used when no lesson is selected.">?</span></label>
+        <input type="text" id="topic" name="topic" placeholder="e.g., Photosynthesis, Chapter 5 review">
+    </div>
+
+    <div class="form-group">
+        <label for="num_questions">Number of Questions</label>
+        <select id="num_questions" name="num_questions">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3" selected>3 (recommended)</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="title">Title (optional)</label>
+        <input type="text" id="title" name="title" placeholder="Auto-generated if blank">
+    </div>
+
+    {% include "partials/provider_select.html" %}
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Generate Exit Ticket</button>
+        <a href="/study" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+// Load lessons when class changes
+document.getElementById('class_id').addEventListener('change', function() {
+    var classId = this.value;
+    var lessonSelect = document.getElementById('lesson_log_id');
+    lessonSelect.innerHTML = '<option value="">-- None (use topic instead) --</option>';
+
+    if (!classId) return;
+
+    fetch('/api/classes/' + classId + '/lessons')
+        .then(function(r) { return r.json(); })
+        .then(function(lessons) {
+            lessons.forEach(function(l) {
+                var opt = document.createElement('option');
+                opt.value = l.id;
+                opt.textContent = l.date + ' - ' + l.topics;
+                lessonSelect.appendChild(opt);
+            });
+        })
+        .catch(function() {});
+});
+</script>
+{% endblock %}

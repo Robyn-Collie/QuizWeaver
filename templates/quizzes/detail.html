@@ -21,6 +21,11 @@
 
 <div class="quiz-info">
     <p><strong>Status:</strong> <span class="status status-{{ quiz.status }}">{{ quiz.status }}</span></p>
+    {% if quiz.status == 'needs_review' %}
+    <div class="needs-review-warning">
+        <strong>Needs Review:</strong> This quiz was not approved by the quality reviewer. Please review each question carefully before use.
+    </div>
+    {% endif %}
     {% if quiz.reading_level %}
     <p><strong>Reading Level:</strong> <span class="reading-level-badge reading-level-{{ quiz.reading_level }}">{{ quiz.reading_level|replace('_', ' ')|title }}</span></p>
     {% endif %}
@@ -130,6 +135,7 @@
     <a href="/quizzes/{{ quiz.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
     <a href="/quizzes/{{ quiz.id }}/export/gift" class="btn btn-sm btn-outline">GIFT (Moodle)</a>
     <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
+    <a href="/quizzes/{{ quiz.id }}/export/quizizz" class="btn btn-sm btn-outline">Quizizz CSV</a>
     <a href="/quizzes/{{ quiz.id }}/export-template" class="btn btn-sm btn-outline">Export as Template</a>
 </div>
 

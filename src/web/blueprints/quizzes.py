@@ -22,7 +22,7 @@ from werkzeug.utils import secure_filename
 from src.classroom import get_class, list_classes
 from src.cost_tracking import check_budget, get_cost_summary, get_monthly_total
 from src.database import Question, Quiz, Rubric
-from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
+from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti, export_quizizz_csv
 from src.llm_provider import get_provider_info
 from src.quiz_generator import generate_quiz
 from src.variant_generator import READING_LEVELS
@@ -213,7 +213,7 @@ def class_quizzes(class_id):
 @login_required
 def quiz_export(quiz_id, format_name):
     """Download a quiz in the requested format (csv, docx, gift, pdf, qti)."""
-    if format_name not in ("csv", "docx", "gift", "pdf", "qti"):
+    if format_name not in ("csv", "docx", "gift", "pdf", "qti", "quizizz"):
         abort(404)
 
     session = _get_session()
@@ -290,6 +290,15 @@ def quiz_export(quiz_id, format_name):
             as_attachment=True,
             download_name=f"{safe_title}.qti.zip",
             mimetype="application/zip",
+        )
+    elif format_name == "quizizz":
+        csv_str = export_quizizz_csv(quiz, questions, style_profile)
+        buf = BytesIO(csv_str.encode("utf-8"))
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=f"{safe_title}_quizizz.csv",
+            mimetype="text/csv",
         )
 
 

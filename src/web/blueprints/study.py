@@ -19,6 +19,8 @@ from flask import (
 
 from src.classroom import get_class, list_classes
 from src.database import Quiz, StudyCard, StudySet
+from src.exit_ticket_generator import generate_exit_ticket
+from src.lesson_tracker import list_lessons
 from src.llm_provider import get_provider_info
 from src.study_export import (
     export_flashcards_csv,
@@ -238,6 +240,85 @@ def study_export(study_set_id, format_name):
             download_name=f"{safe_title}.docx",
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
+
+
+@study_bp.route("/exit-ticket/generate", methods=["GET", "POST"])
+@login_required
+def exit_ticket_generate():
+    """Generate an exit ticket (short formative assessment)."""
+    session = _get_session()
+    config = current_app.config["APP_CONFIG"]
+    classes = list_classes(session)
+    providers = get_provider_info(config)
+    current_provider = config.get("llm", {}).get("provider", "mock")
+
+    if request.method == "POST":
+        class_id = request.form.get("class_id", type=int)
+        lesson_log_id = request.form.get("lesson_log_id", type=int) or None
+        topic = request.form.get("topic", "").strip() or None
+        num_questions = request.form.get("num_questions", type=int) or 3
+        title = request.form.get("title", "").strip() or None
+        provider_override = request.form.get("provider", "").strip() or None
+
+        if not class_id:
+            return render_template(
+                "exit_ticket/generate.html",
+                classes=classes,
+                providers=providers,
+                current_provider=current_provider,
+                error="Please select a class.",
+            ), 400
+
+        try:
+            quiz = generate_exit_ticket(
+                session,
+                class_id=class_id,
+                config=config,
+                lesson_log_id=lesson_log_id,
+                topic=topic,
+                num_questions=num_questions,
+                title=title,
+                provider_name=provider_override,
+            )
+        except Exception as e:
+            quiz = None
+            flash(f"Exit ticket generation error: {e}", "error")
+
+        if quiz:
+            flash("Exit ticket generated successfully.", "success")
+            return redirect(url_for("quizzes.quiz_detail", quiz_id=quiz.id), code=303)
+        else:
+            return render_template(
+                "exit_ticket/generate.html",
+                classes=classes,
+                providers=providers,
+                current_provider=current_provider,
+                error="Generation failed. Check your provider settings and try again.",
+            ), 500
+
+    return render_template(
+        "exit_ticket/generate.html",
+        classes=classes,
+        providers=providers,
+        current_provider=current_provider,
+    )
+
+
+@study_bp.route("/api/classes/<int:class_id>/lessons")
+@login_required
+def api_class_lessons(class_id):
+    """Return recent lessons for a class as JSON (for exit ticket form)."""
+    session = _get_session()
+    lessons = list_lessons(session, class_id, filters={"last_days": 30})
+    result = []
+    for lesson in lessons:
+        result.append({
+            "id": lesson.id,
+            "topics": lesson.topics or "Untitled lesson",
+            "date": lesson.date.strftime("%b %d") if lesson.date else "",
+            "notes": (lesson.notes or "")[:100],
+        })
+    return jsonify(result)
 
 
 @study_bp.route("/api/study-sets/<int:study_set_id>", methods=["DELETE"])

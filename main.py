@@ -711,6 +711,10 @@ def main():
         from src.cli.topic_commands import handle_generate_topics
 
         handle_generate_topics(config, args)
+    elif args.command == "generate-exit-ticket":
+        from src.cli.study_commands import handle_generate_exit_ticket
+
+        handle_generate_exit_ticket(config, args)
 
 
 if __name__ == "__main__":

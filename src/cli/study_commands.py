@@ -31,6 +31,14 @@ def register_study_commands(subparsers):
     p.add_argument("--topic", type=str, help="Topic to generate about.")
     p.add_argument("--title", type=str, help="Title for the study set.")
 
+    # generate-exit-ticket
+    p = subparsers.add_parser("generate-exit-ticket", help="Generate an exit ticket.")
+    p.add_argument("--class", dest="class_id", type=int, help="Class ID.")
+    p.add_argument("--topic", type=str, help="Topic for the exit ticket.")
+    p.add_argument("--lesson", dest="lesson_log_id", type=int, help="Lesson log ID.")
+    p.add_argument("--count", dest="num_questions", type=int, default=3, help="Number of questions (1-5).")
+    p.add_argument("--title", type=str, help="Exit ticket title.")
+
     # export-study
     p = subparsers.add_parser("export-study", help="Export a study set to file.")
     p.add_argument("study_set_id", type=int, help="Study set ID to export.")
@@ -65,6 +73,35 @@ def handle_generate_study(config, args):
             print(f"   Cards: {card_count}")
         else:
             print("Error: Failed to generate study material.")
+    finally:
+        session.close()
+
+
+def handle_generate_exit_ticket(config, args):
+    """Generate an exit ticket."""
+    from src.exit_ticket_generator import generate_exit_ticket
+
+    engine, session = get_db_session(config)
+    try:
+        class_id = resolve_class_id(config, args, session)
+        quiz = generate_exit_ticket(
+            session=session,
+            class_id=class_id,
+            config=config,
+            lesson_log_id=getattr(args, "lesson_log_id", None),
+            topic=getattr(args, "topic", None),
+            num_questions=getattr(args, "num_questions", 3) or 3,
+            title=getattr(args, "title", None),
+        )
+        if quiz:
+            from src.database import Question
+
+            q_count = session.query(Question).filter_by(quiz_id=quiz.id).count()
+            print(f"[OK] Generated exit ticket: {quiz.title} (ID: {quiz.id})")
+            print(f"   Questions: {q_count}")
+            print(f"   Status: {quiz.status}")
+        else:
+            print("Error: Failed to generate exit ticket.")
     finally:
         session.close()
 

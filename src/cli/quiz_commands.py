@@ -6,7 +6,7 @@ import json
 
 from src.cli import get_db_session
 from src.database import Question, Quiz
-from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti
+from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti, export_quizizz_csv
 from src.export_utils import sanitize_filename
 
 
@@ -29,7 +29,7 @@ def register_quiz_commands(subparsers):
         "--format",
         dest="fmt",
         required=True,
-        choices=["csv", "docx", "gift", "pdf", "qti"],
+        choices=["csv", "docx", "gift", "pdf", "qti", "quizizz"],
         help="Export format.",
     )
     p.add_argument("--output", type=str, help="Output file path.")
@@ -171,6 +171,11 @@ def handle_export_quiz(config, args):
             out_path = args.output or f"{base_name}.qti.zip"
             with open(out_path, "wb") as f:
                 f.write(buf.read())
+        elif fmt == "quizizz":
+            content = export_quizizz_csv(quiz, questions, style_profile)
+            out_path = args.output or f"{base_name}_quizizz.csv"
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(content)
 
         print(f"[OK] Exported quiz to: {out_path}")
     finally:

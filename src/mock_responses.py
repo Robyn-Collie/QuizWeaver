@@ -207,19 +207,29 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
 
 
 def get_critic_response(prompt_parts: List[Any], iteration: int = 1) -> str:
-    """
-    Generate mock critic response (approval/feedback JSON).
+    """Generate mock critic response (approval/feedback JSON).
 
-    The critic agent reviews questions and provides feedback.
-    Alternates between approval and revision to test both paths.
+    .. deprecated::
+        Use the structured JSON format returned by ``get_mock_response()``
+        with ``agent_type="critic"`` instead.  This legacy function returns
+        lowercase status values that don't match the new ``"PASS"/"FAIL"``
+        per-question verdict format.
 
     Args:
         prompt_parts: The prompt context
         iteration: Which iteration (used to alternate responses)
 
     Returns:
-        JSON string with approval status and feedback
+        JSON string with approval status and feedback (legacy format).
     """
+    import warnings
+
+    warnings.warn(
+        "get_critic_response() is deprecated; use get_mock_response(agent_type='critic') "
+        "for the structured per-question verdict format.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
     # Alternate between approved and needs_revision for testing
     if iteration % 2 == 0:
         response = {
@@ -823,6 +833,118 @@ def get_lesson_plan_response(
     return json.dumps(plan, indent=2)
 
 
+def get_exit_ticket_response(num_questions: int = 3, context_keywords: List[str] = None) -> str:
+    """Generate mock exit ticket response (1-5 simple questions).
+
+    Args:
+        num_questions: Number of questions to generate (1-5).
+        context_keywords: Optional topic keywords.
+
+    Returns:
+        JSON string with array of exit ticket question objects.
+    """
+    if not context_keywords:
+        context_keywords = random.sample(SCIENCE_TOPICS, k=3)
+
+    num_questions = max(1, min(5, num_questions))
+    questions = []
+    types_cycle = ["multiple_choice", "true_false", "short_answer"]
+
+    for i in range(num_questions):
+        topic = context_keywords[i % len(context_keywords)]
+        q_type = types_cycle[i % len(types_cycle)]
+
+        if q_type == "multiple_choice":
+            question = {
+                "type": "multiple_choice",
+                "title": f"Question {i + 1}",
+                "text": f"What is the main purpose of {topic}?",
+                "points": 1,
+                "options": [
+                    f"To support {topic} processes",
+                    f"To inhibit {topic} reactions",
+                    f"To measure {topic} output",
+                    f"To prevent {topic} changes",
+                ],
+                "correct_index": 0,
+            }
+        elif q_type == "true_false":
+            question = {
+                "type": "true_false",
+                "title": f"Question {i + 1}",
+                "text": f"{topic.capitalize()} is essential for living organisms.",
+                "points": 1,
+                "options": ["True", "False"],
+                "correct_index": 0,
+            }
+        else:  # short_answer
+            question = {
+                "type": "short_answer",
+                "title": f"Question {i + 1}",
+                "text": f"Name one key component of {topic}.",
+                "points": 1,
+                "expected_answer": f"A component of {topic}",
+                "acceptable_answers": [topic, f"{topic} component"],
+            }
+
+        questions.append(question)
+
+    return json.dumps(questions, indent=2)
+
+
+def _get_structured_critic_response(prompt_parts: List[Any]) -> str:
+    """Return a structured per-question critic response in the new JSON format.
+
+    Uses a deterministic hash of the prompt to decide per-question verdicts,
+    giving roughly a 2/3 approval rate.  This lets tests exercise both the
+    approved and rejected paths without randomness.
+    """
+    # Try to figure out how many questions are in the draft
+    combined = " ".join(str(p) for p in prompt_parts)
+    num_questions = 5  # default
+    try:
+        # The quiz draft is embedded as JSON in the prompt
+        bracket_start = combined.rfind("[")
+        bracket_end = combined.rfind("]")
+        if bracket_start != -1 and bracket_end != -1:
+            snippet = combined[bracket_start : bracket_end + 1]
+            parsed = json.loads(snippet)
+            if isinstance(parsed, list):
+                num_questions = len(parsed)
+    except (json.JSONDecodeError, ValueError):
+        pass
+
+    verdicts = []
+    for i in range(num_questions):
+        # Deterministic: use hash of prompt + index to decide pass/fail
+        h = hash((str(prompt_parts)[:200], i)) % 3
+        if h == 0:
+            # ~1/3 fail
+            verdicts.append({
+                "index": i,
+                "verdict": "FAIL",
+                "issues": ["Mock critic: question wording could be clearer"],
+                "fact_check": "WARN",
+                "fact_check_notes": "Mock critic: unable to verify factual accuracy",
+                "suggestions": "Consider rephrasing for clarity",
+            })
+        else:
+            verdicts.append({
+                "index": i,
+                "verdict": "PASS",
+                "issues": [],
+                "fact_check": "PASS",
+                "fact_check_notes": "",
+                "suggestions": "",
+            })
+
+    response = {
+        "questions": verdicts,
+        "overall_notes": "Mock critic review complete.",
+    }
+    return json.dumps(response, indent=2)
+
+
 def get_mock_response(prompt_parts: List[Any], json_mode: bool = False, agent_type: str = "generator") -> str:
     """
     Main entry point for getting mock responses.
@@ -846,6 +968,14 @@ def get_mock_response(prompt_parts: List[Any], json_mode: bool = False, agent_ty
     if not context_keywords:
         context_keywords = random.sample(SCIENCE_TOPICS, k=3)
 
+    # Check for exit ticket regardless of json_mode
+    if "exit ticket" in combined_text or "exit_ticket" in combined_text:
+        import re
+
+        num_match = re.search(r"(\d+)\s+exit ticket", combined_text)
+        num_q = int(num_match.group(1)) if num_match else 3
+        return get_exit_ticket_response(num_q, context_keywords)
+
     # When json_mode is True the caller is the GeneratorAgent; honour
     # the default agent_type ("generator") instead of auto-detecting,
     # because generator prompts contain words like "style" that would
@@ -863,8 +993,6 @@ def get_mock_response(prompt_parts: List[Any], json_mode: bool = False, agent_ty
     if agent_type == "analyst":
         return get_analyst_response(prompt_parts)
     elif agent_type == "critic":
-        # Use hash of prompt to determine iteration (for determinism within a session)
-        iteration = hash(str(prompt_parts)) % 10
-        return get_critic_response(prompt_parts, iteration)
+        return _get_structured_critic_response(prompt_parts)
     else:  # generator
         return get_generator_response(prompt_parts, context_keywords)
