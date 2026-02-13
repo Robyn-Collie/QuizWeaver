@@ -35,6 +35,8 @@ def app():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()
@@ -252,17 +254,13 @@ class TestLoginWithDB:
 
 
 class TestBackwardCompat:
-    """Test config-based login when no DB users exist."""
+    """Test that login without DB users redirects to setup (SEC-004)."""
 
-    def test_config_login_valid(self, client):
-        """Config credentials work when no DB users."""
+    def test_no_users_login_redirects_to_setup(self, client):
+        """With no DB users, login POST redirects to setup wizard."""
         resp = client.post("/login", data={"username": "teacher", "password": "quizweaver"})
         assert resp.status_code == 303
-
-    def test_config_login_invalid(self, client):
-        """Invalid config credentials return 401."""
-        resp = client.post("/login", data={"username": "teacher", "password": "wrong"})
-        assert resp.status_code == 401
+        assert "/setup" in resp.headers.get("Location", "")
 
 
 # ============================================================
@@ -285,8 +283,8 @@ class TestSetupRoute:
             "/setup",
             data={
                 "username": "newadmin",
-                "password": "pass123",
-                "confirm_password": "pass123",
+                "password": "pass1234",
+                "confirm_password": "pass1234",
                 "display_name": "New Admin",
             },
         )
@@ -308,15 +306,15 @@ class TestSetupRoute:
             "/setup",
             data={
                 "username": "admin",
-                "password": "pass123",
-                "confirm_password": "pass456",
+                "password": "password1",
+                "confirm_password": "password2",
             },
         )
         assert resp.status_code == 400
         assert b"do not match" in resp.data
 
     def test_setup_short_password(self, client):
-        """Setup rejects passwords shorter than 6 characters."""
+        """Setup rejects passwords shorter than 8 characters."""
         resp = client.post(
             "/setup",
             data={
@@ -326,7 +324,7 @@ class TestSetupRoute:
             },
         )
         assert resp.status_code == 400
-        assert b"at least 6" in resp.data
+        assert b"at least 8" in resp.data
 
 
 # ============================================================

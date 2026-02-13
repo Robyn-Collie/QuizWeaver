@@ -8,6 +8,7 @@ pillow
 pytest
 pyyaml
 flask
+flask-wtf
 openai
 anthropic[vertex]
 gunicorn

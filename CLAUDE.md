@@ -401,6 +401,40 @@ Rules to prevent organizational debt. Established in Session 12 based on a full 
 - When adding a new web route for a feature, also add the CLI command
 - CLI output uses `[OK]`, `[PASS]`, `[FAIL]` markers (no emoji -- Windows compatibility)
 
+### Security (Established Session 14 — Security Audit)
+
+These rules are MANDATORY for all code changes. Violations caught in the Session 14 audit must never recur.
+
+#### CSRF Protection
+- Every `<form method="POST">` MUST include `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>` immediately after the opening tag
+- Every JavaScript `fetch()` or `XMLHttpRequest` that sends POST/PUT/DELETE MUST include the `X-CSRFToken` header from the `<meta name="csrf-token">` tag in base.html
+- Flask-WTF `CSRFProtect` is initialized in `src/web/app.py` — NEVER disable it except in test fixtures
+- When adding a new POST form template, ALWAYS add the CSRF token. No exceptions.
+
+#### Authentication & Sessions
+- NEVER add default/hardcoded credentials. The `/setup` wizard handles first-time registration
+- NEVER use `request.args.get("next")` without validating the URL is relative (use `_is_safe_url()` in auth.py)
+- After successful login, ALWAYS call `flask_session.clear()` before setting new session data (prevents session fixation)
+- After password change, ALWAYS clear the session and redirect to login
+- All routes that serve user content MUST have `@login_required` decorator
+- Logout MUST be POST-only (not GET) to prevent CSRF-based forced logout
+
+#### Secrets & Config
+- API keys go in `.env` ONLY — NEVER write them to `config.yaml` or any tracked file
+- Use `save_api_key_to_env()` from `config_utils.py` for persisting API keys
+- `config.yaml` is gitignored — track `config.yaml.example` with safe defaults instead
+- SECRET_KEY is auto-generated on first run and persisted to `.env` — NEVER hardcode a fallback
+- NEVER use `debug=True` in documentation examples or production code
+
+#### Route Security Checklist (for every new route)
+1. Add `@login_required` decorator
+2. If POST: add CSRF token to form template
+3. If accepting `next` or redirect URL: validate with `_is_safe_url()`
+4. If accepting file upload: use `secure_filename()` + extension allowlist
+5. If writing to disk: NEVER include user input in file paths without sanitization
+6. If returning errors: use generic messages, log details server-side
+7. Add a security test in `tests/test_security.py`
+
 ### Git Hygiene
 
 - Never commit binary files (PDFs, images, DOCX) -- add to `.gitignore`

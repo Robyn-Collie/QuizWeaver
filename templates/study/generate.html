@@ -9,6 +9,7 @@
 {% endif %}
 
 <form method="POST" action="/study/generate" class="form" id="study-generate-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="class_id">Class <span class="help-tip" data-tip="Select the class this study material is for.">?</span></label>
         <select id="class_id" name="class_id" required>

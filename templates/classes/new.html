@@ -9,6 +9,7 @@
 {% endif %}
 
 <form method="POST" action="/classes/new" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="name">Class Name (required) <span class="help-tip" data-tip="A unique name for your class or block period, e.g. '3rd Period Biology'">?</span></label>
         <input type="text" id="name" name="name" required placeholder="e.g., 7th Grade Science - Block A">

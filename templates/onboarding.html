@@ -43,6 +43,7 @@
             <p>Classes help QuizWeaver organize content by subject and grade level.</p>
 
             <form method="POST" id="onboarding-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="form-group">
                     <label for="class_name">Class Name</label>
                     <input type="text" id="class_name" name="class_name" placeholder="e.g., Period 3 Science" required>

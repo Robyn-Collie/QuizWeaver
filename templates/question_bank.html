@@ -101,7 +101,7 @@
             var card = this.closest('.bank-question');
             fetch('/api/question-bank/remove', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
                 body: JSON.stringify({ question_id: parseInt(qId, 10) }),
             })
             .then(function(r) { return r.json(); })

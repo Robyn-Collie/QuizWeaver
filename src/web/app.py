@@ -2,14 +2,58 @@
 Flask application factory for QuizWeaver web frontend.
 """
 
+import functools
 import json
 import os
+import secrets
 
-from flask import Flask, g, send_from_directory
+from flask import Flask, g, redirect, send_from_directory, url_for
+from flask import session as flask_session
+from flask_wtf.csrf import CSRFProtect
 
 from src.database import get_engine, init_db
 from src.migrations import run_migrations
 from src.web.routes import register_routes
+
+csrf = CSRFProtect()
+
+
+def _image_login_required(f):
+    """Login check for the image serving route (avoids circular import with blueprints)."""
+
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if not flask_session.get("logged_in"):
+            return redirect(url_for("auth.login"), code=303)
+        return f(*args, **kwargs)
+
+    return wrapper
+
+
+def _load_or_generate_secret_key(env_path):
+    """Load SECRET_KEY from .env or generate and persist a new one.
+
+    Ensures every installation gets a unique, cryptographically random key
+    without requiring teachers to configure it manually.
+    """
+    # Try to read existing key from .env
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("SECRET_KEY="):
+                    value = line.split("=", 1)[1].strip().strip("'\"")
+                    if value:
+                        return value
+
+    # Generate a new key and append to .env
+    new_key = secrets.token_hex(32)
+    try:
+        with open(env_path, "a") as f:
+            f.write(f"\nSECRET_KEY={new_key}\n")
+    except OSError:
+        pass  # Can't persist — use the generated key for this session only
+    return new_key
 
 
 def create_app(config=None):
@@ -39,8 +83,29 @@ def create_app(config=None):
             config = yaml.safe_load(f)
 
     app.config["APP_CONFIG"] = config
-    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
+
+    # SEC-003: Auto-generate SECRET_KEY if not set (never use a static default)
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        env_path = os.path.join(os.path.dirname(__file__), "..", "..", ".env")
+        env_path = os.path.abspath(env_path)
+        secret_key = _load_or_generate_secret_key(env_path)
+    app.config["SECRET_KEY"] = secret_key
+
     app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024  # 5 MB upload limit
+
+    # SEC-010: Session cookie hardening
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    # SESSION_COOKIE_SECURE = True only makes sense over HTTPS;
+    # local-first teachers typically use HTTP on localhost
+    if os.environ.get("FLASK_HTTPS"):
+        app.config["SESSION_COOKIE_SECURE"] = True
+
+    # SEC-001: CSRF protection on all POST/PUT/DELETE routes
+    # WTF_CSRF_ENABLED can be set to False by test fixtures that need to bypass CSRF.
+    # In production this is always True (Flask-WTF default).
+    csrf.init_app(app)
 
     # Environment variable overrides
     if os.environ.get("DATABASE_PATH"):
@@ -101,10 +166,11 @@ def create_app(config=None):
 
     register_routes(app)
 
-    # Serve generated quiz images
+    # SEC-007: Serve generated quiz images (requires login)
     generated_images_dir = os.path.abspath(config.get("paths", {}).get("generated_images_dir", "generated_images"))
 
-    @app.route("/generated_images/<path:filename>")
+    @app.route("/generated_images/<filename>")
+    @_image_login_required
     def serve_generated_image(filename):
         return send_from_directory(generated_images_dir, filename)
 

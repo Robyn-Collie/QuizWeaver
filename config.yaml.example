@@ -1,0 +1,9 @@
+# QuizWeaver Configuration
+# Copy this to config.yaml and customize.
+# API keys should go in .env (never in this file).
+paths:
+  database_file: quiz_warehouse.db
+llm:
+  provider: mock
+generation:
+  default_grade_level: 7th Grade

@@ -264,6 +264,8 @@ class TestExitTicketWebRoutes:
         app = create_app(config)
         app.config["TESTING"] = True
 
+        app.config["WTF_CSRF_ENABLED"] = False
+
         # Seed data AFTER create_app (migrations may reset tables)
         engine = app.config["DB_ENGINE"]
         session = get_session(engine)

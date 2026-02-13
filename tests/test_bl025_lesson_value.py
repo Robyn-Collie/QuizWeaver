@@ -36,6 +36,8 @@ def app():
     }
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
+
+    flask_app.config["WTF_CSRF_ENABLED"] = False
     flask_app.config["TEST_CLASS_ID"] = class_id
     yield flask_app
     flask_app.config["DB_ENGINE"].dispose()
@@ -49,7 +51,9 @@ def app():
 @pytest.fixture
 def client(app):
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
@@ -74,7 +78,8 @@ class TestLessonValueExplanation:
         resp = client.get(f"/classes/{class_id}/lessons/new")
         html = resp.data.decode()
         banner_pos = html.find("Why log lessons?")
-        form_pos = html.find('<form method="POST"')
+        form_pos = html.find(f'action="/classes/{class_id}/lessons/new"')
+        assert form_pos != -1, "Lesson form not found"
         assert banner_pos < form_pos, "Info banner should appear before the form"
 
 

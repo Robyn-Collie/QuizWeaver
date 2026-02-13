@@ -1,5 +1,6 @@
 # --- Local Environment ---
 .env
+config.yaml
 .venv/
 .deps_installed
 

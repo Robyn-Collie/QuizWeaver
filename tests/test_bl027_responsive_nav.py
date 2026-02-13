@@ -38,6 +38,8 @@ def app():
     }
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
+
+    flask_app.config["WTF_CSRF_ENABLED"] = False
     yield flask_app
     flask_app.config["DB_ENGINE"].dispose()
     os.close(db_fd)
@@ -50,7 +52,9 @@ def app():
 @pytest.fixture
 def client(app):
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
@@ -177,19 +181,19 @@ class TestNavUserSection:
         html = resp.data.decode()
         assert "nav-user-section" in html
 
-    def test_logout_link_present(self, client):
-        """Logout link is present."""
+    def test_logout_button_present(self, client):
+        """Logout button is present (POST form, not link)."""
         resp = client.get("/dashboard?skip_onboarding=1")
         html = resp.data.decode()
-        assert 'href="/logout"' in html
+        assert 'action="/logout"' in html
 
     def test_logout_outside_nav_links(self, client):
         """Logout is in the user section, not in the main nav-links."""
         resp = client.get("/dashboard?skip_onboarding=1")
         html = resp.data.decode()
-        # The logout link should appear after nav-user-section
+        # The logout form should appear after nav-user-section
         user_section_idx = html.find("nav-user-section")
-        logout_idx = html.find('href="/logout"')
+        logout_idx = html.find('action="/logout"')
         assert user_section_idx != -1
         assert logout_idx != -1
         assert logout_idx > user_section_idx

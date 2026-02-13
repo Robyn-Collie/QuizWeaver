@@ -25,6 +25,7 @@
             <td>{{ lesson.notes or '' }}</td>
             <td>
                 <form method="POST" action="/classes/{{ class_obj.id }}/lessons/{{ lesson.id }}/delete" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this lesson?')">Delete</button>
                 </form>
             </td>

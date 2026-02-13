@@ -352,7 +352,7 @@
 
         fetch('/api/settings/test-provider', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
             body: JSON.stringify(payload)
         })
         .then(function(r) { return r.json(); })
@@ -391,8 +391,10 @@
         formData.append('vertex_project_id', document.getElementById('wizard_project_id').value);
         formData.append('vertex_location', document.getElementById('wizard_location').value);
 
+        formData.append('csrf_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
         fetch('/settings', {
             method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
             body: formData,
             redirect: 'manual',
         })

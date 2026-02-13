@@ -53,7 +53,22 @@ def settings():
         if model_name:
             config["llm"]["model_name"] = model_name
         if api_key:
-            config["llm"]["api_key"] = api_key
+            # SEC-005: Never write API keys to config.yaml — use .env only
+            from src.web.config_utils import save_api_key_to_env
+
+            env_key_map = {
+                "gemini": "GEMINI_API_KEY",
+                "gemini-pro": "GEMINI_API_KEY",
+                "gemini-3-pro": "GEMINI_API_KEY",
+                "gemini-flash": "GEMINI_API_KEY",
+                "openai": "OPENAI_API_KEY",
+                "openai-compatible": "OPENAI_API_KEY",
+                "anthropic": "ANTHROPIC_API_KEY",
+            }
+            env_key = env_key_map.get(provider, "LLM_API_KEY")
+            save_api_key_to_env(env_key, api_key)
+            os.environ[env_key] = api_key  # Also set for current session
+            # Do NOT write api_key to config dict
         if base_url:
             config["llm"]["base_url"] = base_url
         elif provider not in ("openai-compatible",):
@@ -63,6 +78,9 @@ def settings():
             config["llm"]["vertex_project_id"] = vertex_project_id
         if vertex_location:
             config["llm"]["vertex_location"] = vertex_location
+
+        # Strip api_key from config before persisting (SEC-005)
+        config.get("llm", {}).pop("api_key", None)
 
         # Persist to config.yaml
         save_config(config)

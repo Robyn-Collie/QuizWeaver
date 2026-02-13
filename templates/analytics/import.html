@@ -28,6 +28,7 @@
 {% endif %}
 
 <form method="POST" enctype="multipart/form-data" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="csv_file">CSV File</label>
         <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">

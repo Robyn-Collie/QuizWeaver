@@ -9,6 +9,7 @@
 {% endif %}
 
 <form method="POST" action="/classes/{{ class_obj.id }}/edit" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="name">Class Name (required) <span class="help-tip" data-tip="A unique name for your class or block period">?</span></label>
         <input type="text" id="name" name="name" value="{{ class_obj.name }}" required>

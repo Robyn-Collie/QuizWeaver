@@ -190,6 +190,7 @@ def flask_app(db_path):
     }
     app = create_app(test_config)
     app.config["TESTING"] = True
+    app.config["WTF_CSRF_ENABLED"] = False  # Disable CSRF for non-security tests
 
     yield app
 

@@ -17,6 +17,7 @@
 {% endif %}
 
 <form method="POST" class="form" id="quiz-score-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="quiz_id">Select Quiz</label>
         <select id="quiz_id" name="quiz_id" required onchange="loadQuestions()">

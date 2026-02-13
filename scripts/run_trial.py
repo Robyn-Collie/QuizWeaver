@@ -12,7 +12,6 @@ Usage:
     python scripts/run_trial.py --help
 """
 
-import copy
 import os
 import shutil
 import subprocess
@@ -130,7 +129,7 @@ def main():
     model_label = args.model or args.provider
     output_dir = OUTPUT_BASE / model_label.replace("/", "_")
 
-    print(f"=== QuizWeaver Trial Run ===")
+    print("=== QuizWeaver Trial Run ===")
     print(f"Provider: {args.provider}")
     print(f"Model: {args.model or '(provider default)'}")
     print(f"Output: {output_dir}")
@@ -171,7 +170,7 @@ def main():
     # Write sample performance CSV
     sample_csv = output_dir / "sample_performance.csv"
     sample_csv.write_text(SAMPLE_CSV_TEMPLATE.strip())
-    print(f"  [OK] Wrote sample_performance.csv")
+    print("  [OK] Wrote sample_performance.csv")
 
     # Back up and modify config
     with open(CONFIG_PATH) as f:

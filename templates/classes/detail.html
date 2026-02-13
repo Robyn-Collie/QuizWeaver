@@ -17,6 +17,7 @@
     <a href="/classes/{{ class_obj.id }}/analytics" class="btn btn-primary">Performance Analytics</a>
     <a href="/classes/{{ class_obj.id }}/edit" class="btn btn-secondary">Edit Class</a>
     <form method="POST" action="/classes/{{ class_obj.id }}/delete" class="inline-form" onsubmit="return confirm('Delete this class? This cannot be undone.')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <button type="submit" class="btn btn-danger">Delete Class</button>
     </form>
 </div>

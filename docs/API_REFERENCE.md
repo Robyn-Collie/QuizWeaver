@@ -201,7 +201,7 @@ Show API cost tracking dashboard with current provider info and usage statistics
 ## Running the Server
 
 ```bash
-python -c "from src.web.app import create_app; create_app().run(debug=True)"
+python -c "from src.web.app import create_app; create_app().run(debug=False)"
 ```
 
 The server starts at http://localhost:5000.

@@ -7,15 +7,13 @@ BL-052: qa_guidelines.txt missing warning uses logging.debug, not print.
 """
 
 import json
-import logging
 from unittest.mock import MagicMock, patch
 
-from src.agents import Orchestrator, get_qa_guidelines
+from src.agents import get_qa_guidelines
 from src.classroom import create_class
 from src.database import Question, Quiz, get_engine, get_session
 from src.quiz_generator import generate_quiz
-from src.rubric_generator import _parse_criteria, generate_rubric
-
+from src.rubric_generator import generate_rubric
 
 # ---------------------------------------------------------------------------
 # Helpers

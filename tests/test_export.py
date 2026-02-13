@@ -1146,6 +1146,8 @@ def app():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()

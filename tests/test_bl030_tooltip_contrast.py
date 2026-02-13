@@ -23,6 +23,8 @@ def app():
     }
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
+
+    flask_app.config["WTF_CSRF_ENABLED"] = False
     yield flask_app
     flask_app.config["DB_ENGINE"].dispose()
     os.close(db_fd)
@@ -85,6 +87,8 @@ def test_dark_mode_tooltip_has_border():
 def test_tooltip_visible_on_help_page(app):
     """Help page should render without errors (tooltips present in HTML)."""
     client = app.test_client()
-    client.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with client.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     resp = client.get("/help")
     assert resp.status_code == 200

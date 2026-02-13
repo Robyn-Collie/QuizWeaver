@@ -115,6 +115,8 @@ def app():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     # Cleanup: dispose engine before removing file (Windows file locking)
@@ -130,7 +132,9 @@ def app():
 def client(app):
     """Create a logged-in test client (most tests need auth)."""
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
@@ -144,7 +148,9 @@ def anon_client(app):
 def auth_client(app):
     """Alias for logged-in client (used by auth tests)."""
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
@@ -662,21 +668,35 @@ class TestAuthentication:
         assert 'name="username"' in html
         assert 'name="password"' in html
 
-    def test_login_with_valid_credentials(self, anon_client):
+    def test_login_with_valid_credentials(self, app, anon_client):
         """Login with valid credentials redirects to dashboard."""
+        from src.web.auth import create_user
+
+        engine = app.config["DB_ENGINE"]
+        session = get_session(engine)
+        create_user(session, "teacher", "password1234", "Teacher")
+        session.close()
+
         response = anon_client.post(
             "/login",
             data={
                 "username": "teacher",
-                "password": "quizweaver",
+                "password": "password1234",
             },
             follow_redirects=False,
         )
         assert response.status_code in (302, 303)
         assert "/dashboard" in response.headers["Location"]
 
-    def test_login_with_invalid_credentials(self, anon_client):
+    def test_login_with_invalid_credentials(self, app, anon_client):
         """Login with bad credentials shows error."""
+        from src.web.auth import create_user
+
+        engine = app.config["DB_ENGINE"]
+        session = get_session(engine)
+        create_user(session, "teacher", "password1234", "Teacher")
+        session.close()
+
         response = anon_client.post(
             "/login",
             data={
@@ -689,8 +709,8 @@ class TestAuthentication:
         assert "invalid" in html.lower() or "incorrect" in html.lower()
 
     def test_logout_redirects_to_login(self, client):
-        """Logout clears session and redirects to login."""
-        response = client.get("/logout", follow_redirects=False)
+        """Logout clears session and redirects to login (POST-only)."""
+        response = client.post("/logout", follow_redirects=False)
         assert response.status_code in (302, 303)
         assert "/login" in response.headers["Location"]
 
@@ -1235,7 +1255,9 @@ class TestCognitiveFrameworkQuizDetail:
         session.commit()
 
         c = app.test_client()
-        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacher"
         response = c.get(f"/quizzes/{quiz.id}")
         html = response.data.decode()
         assert "cognitive-badge" in html
@@ -1265,7 +1287,9 @@ class TestCognitiveFrameworkQuizDetail:
         session.commit()
 
         c = app.test_client()
-        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacher"
         response = c.get(f"/quizzes/{quiz.id}")
         html = response.data.decode()
         assert "Dok" in html or "dok" in html.lower()
@@ -1275,7 +1299,9 @@ class TestCognitiveFrameworkQuizDetail:
     def test_quiz_detail_no_badge_without_cognitive(self, app):
         """Quiz detail should NOT show cognitive badge when data has no cognitive_level."""
         c = app.test_client()
-        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacher"
         # Use the existing quiz (id=1) which has no cognitive data
         response = c.get("/quizzes/1")
         html = response.data.decode()

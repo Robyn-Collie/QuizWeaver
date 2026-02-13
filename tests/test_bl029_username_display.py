@@ -23,6 +23,8 @@ def app():
     }
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
+
+    flask_app.config["WTF_CSRF_ENABLED"] = False
     yield flask_app
     flask_app.config["DB_ENGINE"].dispose()
     os.close(db_fd)
@@ -35,7 +37,10 @@ def app():
 @pytest.fixture
 def client(app):
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
+        sess["display_name"] = "Teacher"
     return c
 
 
@@ -95,7 +100,7 @@ def test_css_mobile_user_section():
 
 
 def test_logout_still_present(client):
-    """Logout link should still be present in the user section."""
+    """Logout button should still be present in the user section."""
     resp = client.get("/dashboard?skip_onboarding=1")
     html = resp.data.decode("utf-8")
-    assert "/logout" in html
+    assert "action=\"/logout\"" in html or "/logout" in html

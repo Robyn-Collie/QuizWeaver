@@ -104,6 +104,8 @@ def app():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     # Patch save_config so settings POST doesn't overwrite real config.yaml
     with patch("src.web.blueprints.settings.save_config"):
         yield flask_app
@@ -120,7 +122,9 @@ def app():
 def client(app):
     """Create a logged-in test client."""
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
@@ -154,7 +158,9 @@ class TestSettingsPage:
         assert b'value="mock"' in resp.data
 
     def test_settings_post_saves_provider(self, client, app):
-        """POST /settings updates the provider in config."""
+        """POST /settings updates the provider in config, API key goes to env."""
+        import os
+
         resp = client.post(
             "/settings",
             data={"provider": "openai", "model_name": "gpt-4o", "api_key": "sk-test123"},
@@ -164,7 +170,9 @@ class TestSettingsPage:
         config = app.config["APP_CONFIG"]
         assert config["llm"]["provider"] == "openai"
         assert config["llm"]["model_name"] == "gpt-4o"
-        assert config["llm"]["api_key"] == "sk-test123"
+        # API key is stored in env, not config (SEC-005)
+        assert "api_key" not in config.get("llm", {})
+        assert os.environ.get("OPENAI_API_KEY") == "sk-test123"
 
     def test_settings_post_saves_custom_provider(self, client, app):
         """POST /settings with openai-compatible saves base_url."""

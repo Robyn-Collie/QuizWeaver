@@ -57,6 +57,7 @@
     {% endif %}
 
     <form method="POST" class="form budget-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <div class="form-group form-group-inline">
             <label for="monthly_budget">Monthly Limit ($)</label>
             <input type="number" id="monthly_budget" name="monthly_budget"

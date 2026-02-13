@@ -403,6 +403,8 @@ class TestWebImageDisplay:
         }
         flask_app = create_app(test_config)
         flask_app.config["TESTING"] = True
+
+        flask_app.config["WTF_CSRF_ENABLED"] = False
         self._db_fd = db_fd
         self._db_path = db_path
 
@@ -418,7 +420,9 @@ class TestWebImageDisplay:
     @pytest.fixture
     def client(self, app):
         c = app.test_client()
-        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacher"
         return c
 
     def test_image_displayed_in_study_detail(self, client):
@@ -486,8 +490,12 @@ class TestWebImageDisplay:
         flask_app = create_app(test_config)
         flask_app.config["TESTING"] = True
 
+        flask_app.config["WTF_CSRF_ENABLED"] = False
+
         c = flask_app.test_client()
-        c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacher"
         resp = c.get("/study/1")
         assert resp.status_code == 200
         assert b"table-responsive" in resp.data

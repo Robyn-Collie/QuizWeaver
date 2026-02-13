@@ -194,7 +194,7 @@ Generated quizzes appear in the `Quiz_Output/` directory as:
 ### Starting the Server
 
 ```bash
-python -c "from src.web.app import create_app; create_app().run(debug=True)"
+python -c "from src.web.app import create_app; create_app().run(debug=False)"
 ```
 
 Open http://localhost:5000 in your browser.

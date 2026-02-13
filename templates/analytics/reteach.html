@@ -28,6 +28,7 @@
       data-loading-title="Generating Suggestions..."
       data-loading-message="Analyzing performance gaps and creating re-teach strategies. This may take 10-30 seconds."
       data-loading-btn-text="Generating...">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="focus_topics">Focus Topics (optional, comma-separated)</label>
         <input type="text" id="focus_topics" name="focus_topics"

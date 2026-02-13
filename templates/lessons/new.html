@@ -20,6 +20,7 @@
 </div>
 
 <form method="POST" action="/classes/{{ class_obj.id }}/lessons/new" class="form" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="lesson_date">Lesson Date</label>
         <input type="date" id="lesson_date" name="lesson_date" value="{{ today }}">

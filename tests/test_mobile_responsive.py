@@ -36,6 +36,8 @@ def app():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()
@@ -50,7 +52,9 @@ def app():
 def client(app):
     """Logged-in test client."""
     c = app.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 

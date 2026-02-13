@@ -5,6 +5,7 @@
 <h1>Settings</h1>
 
 <form method="POST" action="/settings" class="form settings-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <h2>LLM Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></h2>
     <p class="text-muted">Choose which language model generates your quizzes. Use Mock for free development, or connect a real provider.
         <a href="/settings/wizard">Use the setup wizard</a> for step-by-step guidance.</p>
@@ -175,7 +176,7 @@ function testProviderConnection() {
 
     fetch('/api/settings/test-provider', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
         body: JSON.stringify(payload)
     })
     .then(function(r) { return r.json(); })
@@ -208,6 +209,7 @@ toggleProviderFields();
 
 <!-- Standards Set Selection (BL-022) -->
 <form method="POST" action="/settings/standards" class="form settings-form" style="margin-top: 2rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <h2>Standards Set</h2>
     <p class="text-muted">Select which educational standards framework to use for alignment. Standards are rule-based data, not AI-generated.</p>
 

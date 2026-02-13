@@ -9,6 +9,7 @@
 {% endif %}
 
 <form method="POST" action="/classes/{{ class_obj.id }}/generate" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="num_questions">Number of Questions <span class="help-tip" data-tip="Number of questions to generate (1-50). Default is 20.">?</span></label>
         <input type="number" id="num_questions" name="num_questions" value="20" min="1" max="50" required>
@@ -237,6 +238,7 @@
         var formData = new FormData(form);
         fetch(form.action, {
             method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
             body: formData,
             redirect: 'follow',
         })

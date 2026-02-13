@@ -14,6 +14,7 @@
       data-loading-title="Generating Variant..."
       data-loading-message="Adapting questions to the selected reading level. This may take 10-30 seconds."
       data-loading-btn-text="Generating...">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label>Reading Level</label>
         <div class="reading-level-options">

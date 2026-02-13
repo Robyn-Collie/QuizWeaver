@@ -5,7 +5,7 @@ Covers BL-047 (short-answer normalization) and BL-048 (default points).
 
 import json
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 from src.question_regenerator import normalize_question_data
 

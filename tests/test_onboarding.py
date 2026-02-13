@@ -33,6 +33,8 @@ def app_empty():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()
@@ -74,6 +76,8 @@ def app_with_class():
     flask_app = create_app(test_config)
     flask_app.config["TESTING"] = True
 
+    flask_app.config["WTF_CSRF_ENABLED"] = False
+
     yield flask_app
 
     flask_app.config["DB_ENGINE"].dispose()
@@ -87,14 +91,18 @@ def app_with_class():
 @pytest.fixture
 def empty_client(app_empty):
     c = app_empty.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
 @pytest.fixture
 def existing_client(app_with_class):
     c = app_with_class.test_client()
-    c.post("/login", data={"username": "teacher", "password": "quizweaver"})
+    with c.session_transaction() as sess:
+        sess["logged_in"] = True
+        sess["username"] = "teacher"
     return c
 
 
