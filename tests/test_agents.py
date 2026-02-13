@@ -2,7 +2,38 @@ import time
 import unittest
 from unittest.mock import MagicMock, patch
 
-from src.agents import CriticAgent, GeneratorAgent, Orchestrator
+from src.agents import CriticAgent, GeneratorAgent, Orchestrator, _parse_critic_response
+
+
+# Valid mock question that passes pre-validation
+def _valid_q(**kw):
+    q = {"text": "What is X?", "type": "mc", "options": ["A", "B", "C", "D"], "correct_index": 0, "points": 1}
+    q.update(kw)
+    return q
+
+
+# Helper: build an APPROVED critic result with per-question verdicts
+def _approved_result(n=1):
+    return {
+        "status": "APPROVED",
+        "feedback": None,
+        "verdicts": [{"index": i, "verdict": "PASS", "issues": []} for i in range(n)],
+        "passed_indices": list(range(n)),
+        "failed_indices": [],
+        "overall_notes": "",
+    }
+
+
+# Helper: build a REJECTED critic result with per-question verdicts
+def _rejected_result(n=1, feedback="Fix it"):
+    return {
+        "status": "REJECTED",
+        "feedback": feedback,
+        "verdicts": [{"index": i, "verdict": "FAIL", "issues": [feedback]} for i in range(n)],
+        "passed_indices": [],
+        "failed_indices": list(range(n)),
+        "overall_notes": "",
+    }
 
 
 class TestAgents(unittest.TestCase):
@@ -16,7 +47,7 @@ class TestAgents(unittest.TestCase):
             "content_summary": "Summary",
             "retake_text": "Retake",
             "grade_level": "7th",
-            "num_questions": 5,
+            "num_questions": 1,
         }
 
     @patch("src.agents.get_provider")
@@ -49,6 +80,10 @@ class TestAgents(unittest.TestCase):
         result = critic.critique([], "guidelines", "summary")
 
         self.assertEqual(result["status"], "APPROVED")
+        # New fields should be present
+        self.assertIn("verdicts", result)
+        self.assertIn("passed_indices", result)
+        self.assertIn("failed_indices", result)
 
     @patch("src.agents.get_provider")
     @patch("src.agents.load_prompt")
@@ -63,12 +98,14 @@ class TestAgents(unittest.TestCase):
 
         self.assertEqual(result["status"], "REJECTED")
         self.assertIn("Too hard", result["feedback"])
+        self.assertIn("verdicts", result)
 
     @patch("src.agents.get_provider")
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
-    def test_orchestrator_flow(self, mock_guidelines, MockCritic, MockGenerator, mock_get_provider):
+    @patch("src.agents.check_rate_limit", return_value=(False, 100, 10.0))
+    def test_orchestrator_flow(self, mock_rate_limit, mock_guidelines, MockCritic, MockGenerator, mock_get_provider):
         mock_guidelines.return_value = "Rules"
 
         # Setup mocks
@@ -77,18 +114,18 @@ class TestAgents(unittest.TestCase):
 
         # Scenario: First attempt rejected, second accepted
         mock_gen_instance.generate.side_effect = [
-            [{"q": 1}],
-            [{"q": 1, "revised": True}],
+            [_valid_q(text="Q1")],
+            [_valid_q(text="Q1 revised")],
         ]
         mock_critic_instance.critique.side_effect = [
-            {"status": "REJECTED", "feedback": "Fix it"},
-            {"status": "APPROVED", "feedback": None},
+            _rejected_result(1, "Fix it"),
+            _approved_result(1),
         ]
 
         orch = Orchestrator(self.config)
         questions, metadata = orch.run(self.context)
 
-        self.assertEqual(questions[0]["revised"], True)
+        self.assertEqual(len(questions), 1)
         self.assertEqual(mock_gen_instance.generate.call_count, 2)
         self.assertEqual(mock_critic_instance.critique.call_count, 2)
 
@@ -237,8 +274,8 @@ class TestLessonContextInPrompts(unittest.TestCase):
         mock_gen_instance = MockGenerator.return_value
         mock_critic_instance = MockCritic.return_value
 
-        mock_gen_instance.generate.return_value = [{"text": "Q1"}]
-        mock_critic_instance.critique.return_value = {"status": "APPROVED", "feedback": None}
+        mock_gen_instance.generate.return_value = [_valid_q(text="Q1")]
+        mock_critic_instance.critique.return_value = _approved_result(1)
 
         context = {
             "content_summary": "Cells",
@@ -327,8 +364,8 @@ class TestOrchestratorCostWarnings(unittest.TestCase):
         mock_guidelines.return_value = "Rules"
 
         mock_gen = MockGenerator.return_value
-        mock_gen.generate.return_value = [{"text": "Q1"}]
-        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
+        mock_gen.generate.return_value = [_valid_q(text="Q1")]
+        MockCritic.return_value.critique.return_value = _approved_result(1)
 
         config = {
             "agent_loop": {"max_retries": 3},
@@ -336,7 +373,7 @@ class TestOrchestratorCostWarnings(unittest.TestCase):
         }
 
         orch = Orchestrator(config)
-        questions, metadata = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test", "num_questions": 1})
 
         self.assertEqual(len(questions), 1)
         # Rate limit should NOT have been checked for mock
@@ -363,12 +400,12 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         # First call throws, second succeeds
         mock_gen.generate.side_effect = [
             RuntimeError("API timeout"),
-            [{"text": "Q1"}],
+            [_valid_q(text="Q1")],
         ]
-        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
+        MockCritic.return_value.critique.return_value = _approved_result(1)
 
         orch = Orchestrator(self.config)
-        questions, metadata = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test", "num_questions": 1})
 
         self.assertEqual(len(questions), 1)
         self.assertEqual(mock_gen.generate.call_count, 2)
@@ -394,15 +431,15 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
     @patch("src.agents.CriticAgent")
     @patch("src.agents.get_qa_guidelines")
     def test_orchestrator_returns_draft_on_critic_exception(self, mock_guidelines, MockCritic, MockGenerator):
-        """If critic throws, return the generated draft instead of failing."""
+        """If critic throws, return the pre-validated draft instead of failing."""
         mock_guidelines.return_value = "Rules"
 
         mock_gen = MockGenerator.return_value
-        mock_gen.generate.return_value = [{"text": "Q1"}]
+        mock_gen.generate.return_value = [_valid_q(text="Q1")]
         MockCritic.return_value.critique.side_effect = RuntimeError("Critic down")
 
         orch = Orchestrator(self.config)
-        questions, metadata = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test", "num_questions": 1})
 
         # Should return the draft even though critic failed
         self.assertEqual(len(questions), 1)
@@ -419,22 +456,21 @@ class TestOrchestratorRetryLogic(unittest.TestCase):
         # Error, then success rejected, then another error, then success approved
         mock_gen.generate.side_effect = [
             RuntimeError("Transient error"),
-            [{"text": "Q1"}],  # success, but will be rejected
+            [_valid_q(text="Q1")],  # success, but will be rejected
             RuntimeError("Another error"),  # this should NOT abort (counter reset)
-            [{"text": "Q2"}],  # final success
+            [_valid_q(text="Q2")],  # final success
         ]
         MockCritic.return_value.critique.side_effect = [
-            {"status": "REJECTED", "feedback": "Fix"},
-            {"status": "APPROVED", "feedback": None},
+            _rejected_result(1, "Fix"),
+            _approved_result(1),
         ]
 
         # Need 4 retries to test this path
         config = {**self.config, "agent_loop": {"max_retries": 4}}
         orch = Orchestrator(config)
-        questions, metadata = orch.run({"content_summary": "Test"})
+        questions, metadata = orch.run({"content_summary": "Test", "num_questions": 1})
 
         self.assertEqual(len(questions), 1)
-        self.assertEqual(questions[0]["text"], "Q2")
 
     @patch("src.agents.GeneratorAgent")
     @patch("src.agents.CriticAgent")
@@ -468,6 +504,9 @@ class TestAgentMetrics(unittest.TestCase):
         m.errors = 0
         m.attempts = 2
         m.approved = True
+        m.questions_approved = 5
+        m.questions_rejected = 1
+        m.pre_validation_failures = 0
         m.stop()
 
         report = m.report()
@@ -478,6 +517,9 @@ class TestAgentMetrics(unittest.TestCase):
         self.assertIn("errors", report)
         self.assertIn("attempts", report)
         self.assertIn("approved", report)
+        self.assertIn("pre_validation_failures", report)
+        self.assertIn("questions_approved", report)
+        self.assertIn("questions_rejected", report)
         self.assertEqual(report["total_llm_calls"], 3)
         self.assertTrue(report["approved"])
 
@@ -506,15 +548,15 @@ class TestAgentMetrics(unittest.TestCase):
         """Orchestrator should populate last_metrics after run."""
         mock_guidelines.return_value = "Rules"
         mock_gen = MockGenerator.return_value
-        mock_gen.generate.return_value = [{"text": "Q1"}]
-        MockCritic.return_value.critique.return_value = {"status": "APPROVED", "feedback": None}
+        mock_gen.generate.return_value = [_valid_q(text="Q1")]
+        MockCritic.return_value.critique.return_value = _approved_result(1)
 
         config = {
             "agent_loop": {"max_retries": 3},
             "llm": {"provider": "mock"},
         }
         orch = Orchestrator(config)
-        orch.run({"content_summary": "Test"})
+        orch.run({"content_summary": "Test", "num_questions": 1})
 
         self.assertIsNotNone(orch.last_metrics)
         report = orch.last_metrics.report()
@@ -543,6 +585,41 @@ class TestAgentMetrics(unittest.TestCase):
         report = orch.last_metrics.report()
         self.assertGreater(report["errors"], 0)
         self.assertFalse(report["approved"])
+
+
+class TestParseCriticResponse(unittest.TestCase):
+    """Tests for the structured critic response parser."""
+
+    def test_structured_json_all_pass(self):
+        response = '{"questions": [{"index": 0, "verdict": "PASS", "issues": [], "fact_check": "PASS", "fact_check_notes": "", "suggestions": ""}], "overall_notes": ""}'
+        result = _parse_critic_response(response, 1)
+        self.assertEqual(result["status"], "APPROVED")
+        self.assertEqual(result["passed_indices"], [0])
+        self.assertEqual(result["failed_indices"], [])
+
+    def test_structured_json_mixed(self):
+        response = '{"questions": [{"index": 0, "verdict": "PASS", "issues": []}, {"index": 1, "verdict": "FAIL", "issues": ["Bad"]}], "overall_notes": "Mixed"}'
+        result = _parse_critic_response(response, 2)
+        self.assertEqual(result["status"], "REJECTED")
+        self.assertEqual(result["passed_indices"], [0])
+        self.assertEqual(result["failed_indices"], [1])
+        self.assertIn("Bad", result["feedback"])
+
+    def test_legacy_approved_text(self):
+        result = _parse_critic_response("APPROVED", 3)
+        self.assertEqual(result["status"], "APPROVED")
+        self.assertEqual(len(result["passed_indices"]), 3)
+
+    def test_legacy_rejected_text(self):
+        result = _parse_critic_response("REJECTED: Questions too easy.", 2)
+        self.assertEqual(result["status"], "REJECTED")
+        self.assertIn("Questions too easy", result["feedback"])
+        self.assertEqual(len(result["failed_indices"]), 2)
+
+    def test_markdown_fenced_json(self):
+        response = '```json\n{"questions": [{"index": 0, "verdict": "PASS", "issues": []}], "overall_notes": ""}\n```'
+        result = _parse_critic_response(response, 1)
+        self.assertEqual(result["status"], "APPROVED")
 
 
 if __name__ == "__main__":

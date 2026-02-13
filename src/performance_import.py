@@ -61,6 +61,16 @@ def validate_csv_row(row: Dict[str, str], row_num: int) -> Tuple[Optional[Dict],
     except ValueError:
         return None, f"Row {row_num}: invalid score '{score_raw}' (must be a number)"
 
+    # Support score/total format (e.g. score=8, total=10 -> 80%)
+    total_raw = (row.get("total") or "").strip()
+    if total_raw:
+        try:
+            total = float(total_raw)
+            if total > 0:
+                score = (score / total) * 100  # Convert to 0-100 scale
+        except ValueError:
+            return None, f"Row {row_num}: invalid total '{total_raw}' (must be a number)"
+
     if score < 0 or score > 100:
         return None, f"Row {row_num}: score {score} out of range (must be 0-100)"
 
@@ -117,6 +127,15 @@ def parse_performance_csv(csv_text: str) -> Tuple[List[Dict], List[str]]:
     errors = []
 
     reader = csv.DictReader(io.StringIO(csv_text))
+
+    # Warn about unrecognized columns
+    expected_cols = {"topic", "score", "date", "standard", "weak_areas", "sample_size", "total", "student_id"}
+    if reader.fieldnames:
+        unknown = set(reader.fieldnames) - expected_cols
+        # Filter out empty fieldnames (from trailing commas)
+        unknown = {c for c in unknown if c and c.strip()}
+        if unknown:
+            logger.warning("Ignoring unrecognized CSV columns: %s", ", ".join(sorted(unknown)))
 
     for i, raw_row in enumerate(reader, start=1):
         # Skip completely empty rows (check only named columns)

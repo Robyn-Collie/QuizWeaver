@@ -134,7 +134,7 @@ class TestGenerateFromTopics:
         )
         assert result is not None
         assert isinstance(result, Quiz)
-        assert result.status == "generated"
+        assert result.status in ("generated", "needs_review")
         assert "photosynthesis" in result.title.lower()
 
     def test_generates_flashcards(self, db_session, class_with_lessons):

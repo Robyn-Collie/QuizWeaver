@@ -67,16 +67,21 @@ class TestMockProvider:
         assert question["type"] in ["multiple_choice", "true_false", "ordering", "short_answer"]
 
     def test_critic_response_schema(self):
-        """Test that critic response matches expected schema."""
+        """Test that critic response matches structured per-question verdict schema."""
         prompt = ["Review these questions and provide feedback"]
         response = self.provider.generate(prompt, json_mode=False)
 
         data = json.loads(response)
 
-        # Check for required critic fields
-        assert "status" in data
-        assert "feedback" in data
-        assert data["status"] in ["approved", "needs_revision"]
+        # New structured critic format: per-question verdicts
+        assert "questions" in data
+        assert "overall_notes" in data
+        assert isinstance(data["questions"], list)
+        for verdict in data["questions"]:
+            assert "index" in verdict
+            assert "verdict" in verdict
+            assert verdict["verdict"] in ("PASS", "FAIL")
+            assert "fact_check" in verdict
 
     def test_mock_provider_no_external_calls(self):
         """Test that mock provider makes no external API calls."""

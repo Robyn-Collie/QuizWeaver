@@ -11,5 +11,12 @@ Rules:
 - Address any Critic Feedback from previous attempts
 - Align difficulty with assumed knowledge depth levels
 - Prioritize recently taught topics and areas of confusion
+- Use question types from the teacher's cognitive distribution if provided. If none specified, default to multiple choice.
+- Every question object MUST include a "type" field set to one of: "mc", "tf", "short_answer", "fill_in"
+- For mc questions: include "options" (list of 4 strings) and "correct_answer" (the correct option text)
+- For tf questions: include "is_true" (boolean) and "correct_answer" ("True" or "False")
+- For short_answer questions: include "expected_answer" (string) and optionally "acceptable_answers" (list)
+- For fill_in questions: use ___ in the "text" field, include "correct_answer" (the fill-in word/phrase)
+- Set "points" to a positive integer for each question (default: 1 point per question)
 
 Output: Clean JSON list of question objects.

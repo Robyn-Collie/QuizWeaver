@@ -55,14 +55,36 @@ def normalize_question_data(q: dict) -> dict:
             elif ans in q["options"]:
                 q["correct_index"] = q["options"].index(ans)
 
-    # Infer type if missing
+    # Map LLM-style question_type to internal type
+    if "type" not in q and "question_type" in q:
+        _type_map = {
+            "multiple choice": "mc",
+            "multiple_choice": "mc",
+            "true/false": "tf",
+            "true false": "tf",
+            "short answer": "short_answer",
+            "short_answer": "short_answer",
+            "fill in the blank": "fill_in_blank",
+            "fill_in_blank": "fill_in_blank",
+            "matching": "matching",
+            "essay": "essay",
+            "ordering": "ordering",
+        }
+        mapped = _type_map.get(q["question_type"].lower().strip())
+        if mapped:
+            q["type"] = mapped
+
+    # Infer type if still missing
     if "type" not in q:
         if "options" in q:
             q["type"] = "ma" if "correct_indices" in q else "mc"
         elif "is_true" in q:
             q["type"] = "tf"
         elif "text" in q:
-            q["type"] = "mc"
+            q["type"] = "short_answer"
+
+    if not q.get("points"):
+        q["points"] = 1
 
     return q
 

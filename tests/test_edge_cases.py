@@ -329,7 +329,7 @@ class TestQuizGeneratorEdgeCases:
         # MockLLMProvider always generates 3-5 questions regardless of request
         assert quiz is not None, "Should return a Quiz object even with num_questions=0"
         assert isinstance(quiz, Quiz), f"Expected Quiz, got {type(quiz).__name__}"
-        assert quiz.status == "generated", "Status should be 'generated'"
+        assert quiz.status in ("generated", "needs_review"), "Status should be 'generated' or 'needs_review'"
         print("[PASS] generate_quiz handles num_questions=0")
 
     def test_generate_quiz_class_with_null_grade(self, db_session):

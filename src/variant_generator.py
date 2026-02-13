@@ -48,6 +48,10 @@ def _load_source_questions(session, quiz_id):
             "correct_index": data.get("correct_index"),
             "correct_answer": data.get("correct_answer"),
             "image_ref": data.get("image_ref"),
+            "is_true": data.get("is_true"),
+            "expected_answer": data.get("expected_answer"),
+            "acceptable_answers": data.get("acceptable_answers", []),
+            "rubric_hint": data.get("rubric_hint", ""),
         }
         # Preserve cognitive fields
         for key in ("cognitive_level", "cognitive_framework", "cognitive_level_number"):
@@ -184,6 +188,16 @@ def generate_variant(
         points = q_data.get("points", 5)
         q_title = q_data.get("title", f"Question {idx + 1}")
 
+        # Fall back to source question answers if the LLM omitted them
+        if idx < len(source_questions):
+            src = source_questions[idx]
+            for answer_key in (
+                "correct_answer", "correct_index", "is_true",
+                "expected_answer", "acceptable_answers", "rubric_hint",
+            ):
+                if answer_key not in q_data and answer_key in src and src[answer_key]:
+                    q_data[answer_key] = src[answer_key]
+
         # Build data dict (preserve all fields except text/title)
         data_dict = {}
         for key in (
@@ -192,6 +206,10 @@ def generate_variant(
             "options",
             "correct_index",
             "correct_answer",
+            "is_true",
+            "expected_answer",
+            "acceptable_answers",
+            "rubric_hint",
             "image_ref",
             "cognitive_level",
             "cognitive_framework",

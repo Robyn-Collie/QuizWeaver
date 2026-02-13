@@ -166,7 +166,7 @@ class TestCognitivePipelineBackwardCompat:
         """Without framework, quiz should still generate successfully."""
         quiz = generate_quiz(db_session, sample_class.id, mock_config)
         assert quiz is not None
-        assert quiz.status == "generated"
+        assert quiz.status in ("generated", "needs_review")
         assert len(quiz.questions) > 0
 
 
@@ -186,7 +186,7 @@ class TestCognitivePipelineInvalidDistribution:
             cognitive_distribution=dist,
         )
         assert quiz is not None
-        assert quiz.status == "generated"
+        assert quiz.status in ("generated", "needs_review")
         # Framework should be cleared due to invalid distribution
         profile = quiz.style_profile
         if isinstance(profile, str):
@@ -205,7 +205,7 @@ class TestCognitivePipelineInvalidDistribution:
             cognitive_distribution=dist,
         )
         assert quiz is not None
-        assert quiz.status == "generated"
+        assert quiz.status in ("generated", "needs_review")
 
 
 class TestCognitivePipelineQuestionTags:

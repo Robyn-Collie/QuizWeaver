@@ -15,6 +15,11 @@ MODEL_PRICING = {
     "gemini-2.5-flash": {"input": 0.15, "output": 0.60},
     "gemini-2.0-flash-exp": {"input": 0.10, "output": 0.40},
     "gemini-1.5-pro": {"input": 3.50, "output": 10.50},
+    "gemini-2.5-pro": {"input": 1.25, "output": 10.00},
+    "gemini-3-flash-preview": {"input": 0.15, "output": 0.60},
+    "gemini-3-pro-preview": {"input": 1.25, "output": 10.00},
+    "claude-sonnet-4-20250514": {"input": 3.00, "output": 15.00},
+    "claude-haiku-4-5-20251001": {"input": 0.80, "output": 4.00},
 }
 
 DEFAULT_LOG_FILE = "api_costs.log"
@@ -239,7 +244,17 @@ def estimate_pipeline_cost(config: dict, max_retries: int = 3) -> Dict[str, Any]
     """
     llm_config = config.get("llm", {})
     provider = llm_config.get("provider", "mock")
-    model = llm_config.get("model_name", "gemini-1.5-flash")
+
+    # Look up the default model from provider registry
+    try:
+        from src.llm_provider import PROVIDER_REGISTRY
+
+        registry_default = PROVIDER_REGISTRY.get(provider, {}).get(
+            "default_model", "gemini-2.5-flash"
+        )
+    except ImportError:
+        registry_default = "gemini-2.5-flash"
+    model = llm_config.get("model_name") or registry_default
 
     if provider == "mock":
         return {

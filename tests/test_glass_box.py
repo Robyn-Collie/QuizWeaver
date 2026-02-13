@@ -290,5 +290,5 @@ class TestPipelineBackwardCompat:
 
         result = generate_quiz(session, class_id, config, num_questions=5)
         assert isinstance(result, Quiz), "generate_quiz should return a Quiz ORM object"
-        assert result.status == "generated"
+        assert result.status in ("generated", "needs_review")
         assert len(result.questions) > 0

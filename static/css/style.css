@@ -4184,3 +4184,17 @@ html {
     margin: 0.25rem 0 0 0;
     white-space: pre-wrap;
 }
+
+/* ===== Needs Review Warning (BL-050) ===== */
+.needs-review-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    color: #856404;
+}
+.status-needs_review {
+    background: #fff3cd;
+    color: #856404;
+}

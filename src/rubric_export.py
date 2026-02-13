@@ -14,6 +14,8 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
+from src.export_utils import pdf_wrap_text
+
 PROFICIENCY_LABELS = ["Beginning", "Developing", "Proficient", "Advanced"]
 
 
@@ -178,31 +180,10 @@ def export_rubric_pdf(rubric, criteria) -> io.BytesIO:
     c.drawCentredString(width / 2, y, rubric.title or "Rubric")
     y -= 30
 
-    # Column layout info
-    col_x = 50
-    col_widths = {
-        "criterion": 130,
-        "pts": 40,
-        "levels": (width - 50 - 130 - 40 - 50) / 4,  # Split remaining among 4 levels
-    }
+    # Stacked vertical layout — one block per criterion
+    left_margin = 50
+    max_text_width = width - 100  # 50px margins each side
 
-    # Draw header
-    c.setFont("Helvetica-Bold", 8)
-    x = col_x
-    c.drawString(x, y, "Criterion")
-    x += col_widths["criterion"]
-    c.drawString(x, y, "Pts")
-    x += col_widths["pts"]
-    for label in PROFICIENCY_LABELS:
-        c.drawString(x, y, label)
-        x += col_widths["levels"]
-    y -= 4
-
-    # Header line
-    c.line(col_x, y, width - 50, y)
-    y -= 14
-
-    # Draw each criterion
     for cr in criteria:
         levels = _parse_levels(cr)
         level_descs = {}
@@ -210,56 +191,49 @@ def export_rubric_pdf(rubric, criteria) -> io.BytesIO:
             label = lv.get("label", "")
             level_descs[label] = lv.get("description", "")
 
-        # Calculate needed height (rough estimate)
-        needed_height = 60
-        if y < needed_height + 50:
+        # Page break check (rough estimate: header + description + 4 levels)
+        if y < 160:
             c.showPage()
             y = height - 50
 
-        # Criterion name
-        c.setFont("Helvetica-Bold", 8)
-        x = col_x
-        c.drawString(x, y, (cr.criterion or "")[:30])
+        # Criterion name + points
+        c.setFont("Helvetica-Bold", 10)
+        pts_str = f" ({cr.max_points or 0} pts)" if cr.max_points else ""
+        y = pdf_wrap_text(c, f"{cr.criterion or 'Criterion'}{pts_str}", left_margin, y, max_text_width, height)
 
-        # Points
-        c.setFont("Helvetica", 8)
-        x = col_x + col_widths["criterion"]
-        c.drawString(x, y, str(cr.max_points or 0))
+        # Description
+        if cr.description:
+            c.setFont("Helvetica-Oblique", 8)
+            y = pdf_wrap_text(c, cr.description, left_margin + 10, y, max_text_width - 10, height)
+            y -= 4
 
-        # Level descriptions
-        x = col_x + col_widths["criterion"] + col_widths["pts"]
-        c.setFont("Helvetica", 7)
+        # Proficiency levels
         for label in PROFICIENCY_LABELS:
             desc = level_descs.get(label, "")
-            # Truncate long descriptions for PDF
-            if len(desc) > 50:
-                desc = desc[:47] + "..."
-            c.drawString(x, y, desc)
-            x += col_widths["levels"]
+            if not desc:
+                continue
+            if y < 60:
+                c.showPage()
+                y = height - 50
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(left_margin + 10, y, f"{label}:")
+            c.setFont("Helvetica", 8)
+            y = pdf_wrap_text(c, desc, left_margin + 80, y, max_text_width - 80, height)
 
-        # Description below criterion name
-        if cr.description:
-            y -= 12
-            c.setFont("Helvetica", 7)
-            desc_text = cr.description
-            if len(desc_text) > 80:
-                desc_text = desc_text[:77] + "..."
-            c.drawString(col_x + 5, y, desc_text)
-
-        y -= 18
+        y -= 8
         # Separator line
         c.setStrokeColorRGB(0.85, 0.85, 0.85)
-        c.line(col_x, y + 6, width - 50, y + 6)
+        c.line(left_margin, y + 4, width - 50, y + 4)
         c.setStrokeColorRGB(0, 0, 0)
+        y -= 8
 
     # Total
-    y -= 10
     if y < 60:
         c.showPage()
         y = height - 50
     total_pts = sum(cr.max_points or 0 for cr in criteria)
     c.setFont("Helvetica-Bold", 10)
-    c.drawString(col_x, y, f"Total Points: {total_pts}")
+    c.drawString(left_margin, y, f"Total Points: {total_pts}")
 
     c.save()
     buf.seek(0)

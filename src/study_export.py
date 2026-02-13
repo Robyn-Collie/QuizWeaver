@@ -182,8 +182,7 @@ def export_study_pdf(study_set, cards) -> io.BytesIO:
             y = height - 50
 
         if material_type == "flashcard":
-            _pdf_draw_flashcard(c, card, data, i, y, width, height)
-            y -= 60
+            y = _pdf_draw_flashcard(c, card, data, i, y, width, height)
         elif material_type == "study_guide":
             y = _pdf_draw_study_guide_section(c, card, data, y, width, height)
         elif material_type == "vocabulary":
@@ -191,8 +190,7 @@ def export_study_pdf(study_set, cards) -> io.BytesIO:
         elif material_type == "review_sheet":
             y = _pdf_draw_review_item(c, card, data, y, width, height)
         else:
-            _pdf_draw_flashcard(c, card, data, i, y, width, height)
-            y -= 60
+            y = _pdf_draw_flashcard(c, card, data, i, y, width, height)
 
     c.save()
     buf.seek(0)
@@ -202,19 +200,21 @@ def export_study_pdf(study_set, cards) -> io.BytesIO:
 def _pdf_draw_flashcard(c, card, data, index, y, width, height):
     """Draw a flashcard on the PDF."""
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(50, y, f"{index + 1}. {card.front or ''}")
+    y = _pdf_wrap_text(c, f"{index + 1}. {card.front or ''}", 50, y, width - 100, height)
     c.setFont("Helvetica", 10)
-    y_back = y - 16
-    c.drawString(70, y_back, card.back or "")
+    y = _pdf_wrap_text(c, card.back or "", 70, y, width - 120, height)
     tags = data.get("tags", [])
     if tags:
         c.setFont("Helvetica-Oblique", 8)
-        c.drawString(70, y_back - 14, f"Tags: {', '.join(str(t) for t in tags)}")
+        c.drawString(70, y, f"Tags: {', '.join(str(t) for t in tags)}")
+        y -= 14
     image_url = data.get("image_url", "")
     if image_url:
         c.setFont("Helvetica-Oblique", 7)
-        tag_offset = 14 if tags else 0
-        c.drawString(70, y_back - 14 - tag_offset, f"Image: {image_url}")
+        c.drawString(70, y, f"Image: {image_url}")
+        y -= 14
+    y -= 8  # Spacer between cards
+    return y
 
 
 def _pdf_draw_study_guide_section(c, card, data, y, width, height):
@@ -237,8 +237,7 @@ def _pdf_draw_study_guide_section(c, card, data, y, width, height):
             if y < 60:
                 c.showPage()
                 y = height - 50
-            c.drawString(70, y, f"- {point}")
-            y -= 13
+            y = _pdf_wrap_text(c, f"- {point}", 70, y, width - 130, height)
 
     y -= 12
     return y
@@ -249,18 +248,15 @@ def _pdf_draw_vocab_entry(c, card, data, index, y, width, height):
     c.setFont("Helvetica-Bold", 11)
     pos = data.get("part_of_speech", "")
     pos_str = f" ({pos})" if pos else ""
-    c.drawString(50, y, f"{index + 1}. {card.front or ''}{pos_str}")
-    y -= 16
+    y = _pdf_wrap_text(c, f"{index + 1}. {card.front or ''}{pos_str}", 50, y, width - 100, height)
 
     c.setFont("Helvetica", 10)
-    c.drawString(70, y, card.back or "")
-    y -= 14
+    y = _pdf_wrap_text(c, card.back or "", 70, y, width - 120, height)
 
     example = data.get("example", "")
     if example:
         c.setFont("Helvetica-Oblique", 9)
-        c.drawString(70, y, f"Example: {example}")
-        y -= 14
+        y = _pdf_wrap_text(c, f"Example: {example}", 70, y, width - 120, height)
 
     y -= 8
     return y

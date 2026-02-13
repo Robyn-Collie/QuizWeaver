@@ -1,13 +1,17 @@
 import json
+import logging
 import os
 import time
 from typing import Any, Dict, List, Optional
 
 from src.cognitive_frameworks import BLOOMS_LEVELS, DOK_LEVELS, get_framework
 from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
+from src.critic_validation import pre_validate_questions
 from src.database import Class, get_engine, get_session
 from src.lesson_tracker import get_assumed_knowledge, get_recent_lessons
 from src.llm_provider import get_provider
+
+logger = logging.getLogger(__name__)
 
 
 class AgentMetrics:
@@ -21,6 +25,10 @@ class AgentMetrics:
         self.errors = 0
         self.approved = False
         self.attempts = 0
+        # New granular tracking
+        self.pre_validation_failures = 0
+        self.questions_approved = 0
+        self.questions_rejected = 0
 
     def start(self):
         self.start_time = time.time()
@@ -47,6 +55,9 @@ class AgentMetrics:
             "errors": self.errors,
             "attempts": self.attempts,
             "approved": self.approved,
+            "pre_validation_failures": self.pre_validation_failures,
+            "questions_approved": self.questions_approved,
+            "questions_rejected": self.questions_rejected,
         }
 
 
@@ -78,7 +89,7 @@ def get_qa_guidelines() -> str:
         with open("qa_guidelines.txt") as f:
             return f.read()
     except FileNotFoundError:
-        print("Warning: qa_guidelines.txt not found.")
+        logger.debug("qa_guidelines.txt not found, using empty guidelines")
         return ""
 
 
@@ -149,71 +160,10 @@ class GeneratorAgent:
             feedback_section = f"\n**CRITICAL FEEDBACK FROM PREVIOUS ATTEMPT:**\n{feedback}\nYou must revise your output to address this feedback.\n"
 
         # Build class context section
-        class_context_section = ""
-        lesson_logs = context.get("lesson_logs", [])
-        assumed_knowledge = context.get("assumed_knowledge", {})
-        if lesson_logs or assumed_knowledge:
-            class_context_section = "**Class Context:**\n"
-            if lesson_logs:
-                class_context_section += "Recent lessons taught to this class:\n"
-                for log in lesson_logs[:10]:
-                    topics = log.get("topics", [])
-                    class_context_section += (
-                        f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
-                    )
-            if assumed_knowledge:
-                class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
-                for topic, data in assumed_knowledge.items():
-                    depth = data.get("depth", 1)
-                    label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
-                        depth, "unknown"
-                    )
-                    class_context_section += f"- {topic}: depth {depth} ({label})\n"
+        class_context_section = _build_class_context_section(context)
 
         # Build cognitive framework section
-        cognitive_section = ""
-        cognitive_framework = context.get("cognitive_framework")
-        cognitive_distribution = context.get("cognitive_distribution")
-        difficulty = context.get("difficulty", 3)
-        if cognitive_framework:
-            levels = get_framework(cognitive_framework)
-            framework_label = "Bloom's Taxonomy" if cognitive_framework == "blooms" else "Webb's DOK"
-            cognitive_section = f"**Cognitive Framework: {framework_label}**\n"
-            cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
-            if cognitive_distribution and levels:
-                cognitive_section += "MANDATORY distribution by cognitive level (you MUST follow this exactly):\n"
-                for lvl in levels:
-                    num = lvl["number"]
-                    entry = cognitive_distribution.get(str(num)) or cognitive_distribution.get(num)
-                    if entry is None:
-                        continue
-                    if isinstance(entry, dict):
-                        count = entry.get("count", 0)
-                        types = entry.get("types", [])
-                    else:
-                        count = int(entry)
-                        types = []
-                    if count > 0:
-                        if types and len(types) > 0:
-                            # Compute exact per-type counts via round-robin
-                            type_counts = {}
-                            for i in range(count):
-                                t = types[i % len(types)]
-                                type_counts[t] = type_counts.get(t, 0) + 1
-                            type_breakdown = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
-                            cognitive_section += (
-                                f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
-                            )
-                        else:
-                            cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, type: any\n"
-                cognitive_section += (
-                    "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
-                )
-                cognitive_section += 'Each question MUST have a "type" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n'
-            cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
-            cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
-            cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
-            cognitive_section += '- "cognitive_level_number": the level number (integer)\n'
+        cognitive_section = _build_cognitive_section(context)
 
         # Prepare base prompt text
         prompt_text = self.base_prompt.replace("{grade_level}", str(grade_level))
@@ -364,27 +314,39 @@ The teacher will add or generate the actual image later. Do NOT include "image" 
                         if "cognitive_level_number" not in q:
                             q["cognitive_level_number"] = dok_names[level_name.lower()]["number"]
 
+                # Map LLM-style question_type to internal type
+                if "type" not in q and "question_type" in q:
+                    _type_map = {
+                        "multiple choice": "mc",
+                        "multiple_choice": "mc",
+                        "true/false": "tf",
+                        "true false": "tf",
+                        "short answer": "short_answer",
+                        "short_answer": "short_answer",
+                        "fill in the blank": "fill_in_blank",
+                        "fill_in_blank": "fill_in_blank",
+                        "matching": "matching",
+                        "essay": "essay",
+                        "ordering": "ordering",
+                    }
+                    mapped = _type_map.get(q["question_type"].lower().strip())
+                    if mapped:
+                        q["type"] = mapped
+
                 if "type" not in q:
-                    # Try to infer type
+                    # Try to infer type from structure
                     if "options" in q:
-                        # Check if multiple correct answers (list of indices or boolean flags?)
-                        # The prompt example for MC has "correct_index": 2
-                        # If the model produces "correct_indices", it might be MA.
                         if "correct_indices" in q:
                             q["type"] = "ma"
                         else:
                             q["type"] = "mc"
                     elif "is_true" in q:
                         q["type"] = "tf"
-                    else:
-                        # Default or skip? LetS skip to be safe, or default to essay/mc?
-                        # If we return it, we must ensure downstream can handle it.
-                        print(f'Warning: Question missing "type" and cannot infer: {q}')
-                        # Attempt to default to mc if text exists
-                        if "text" in q:
-                            q["type"] = "mc"
-                            if "options" not in q:
-                                q["options"] = ["True", "False"]  # Fallback
+                    elif "text" in q:
+                        q["type"] = "short_answer"
+
+                if not q.get("points"):
+                    q["points"] = 1
                 valid_questions.append(q)
 
             return valid_questions
@@ -416,59 +378,35 @@ class CriticAgent:
         content_summary: str,
         class_context: Optional[Dict[str, Any]] = None,
         cognitive_config: Optional[Dict[str, Any]] = None,
+        teacher_config: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Critique generated questions for quality, alignment, and appropriateness.
+
+        Returns a structured result with per-question verdicts.
 
         Args:
             questions: List of question dictionaries to review.
             guidelines: QA guidelines text from qa_guidelines.txt.
             content_summary: Original lesson content summary for reference.
-            class_context: Optional dictionary containing:
-                - lesson_logs: Recent lessons taught to the class
-                - assumed_knowledge: Student knowledge depth by topic
+            class_context: Optional dict with lesson_logs and assumed_knowledge.
+            cognitive_config: Optional dict with cognitive_framework and distribution.
+            teacher_config: Optional dict with allowed_types etc.
 
         Returns:
-            Dictionary with critique result:
-            - status: "APPROVED" if questions pass, "REJECTED" if revisions needed
-            - feedback: None if approved, or feedback text explaining issues
+            Dictionary with:
+            - status: "APPROVED" if all pass, "REJECTED" if any fail
+            - feedback: Combined feedback text (None if all approved)
+            - verdicts: List of per-question verdict dicts
+            - passed_indices: List of indices that passed
+            - failed_indices: List of indices that failed
+            - overall_notes: General observations
         """
         prompt_text = self.base_prompt
 
         # Build cognitive validation section for critic
         cognitive_validation_section = ""
         if cognitive_config:
-            framework = cognitive_config.get("cognitive_framework")
-            distribution = cognitive_config.get("cognitive_distribution")
-            difficulty = cognitive_config.get("difficulty", 3)
-            if framework:
-                levels = get_framework(framework)
-                framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
-                cognitive_validation_section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
-                cognitive_validation_section += "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
-                cognitive_validation_section += f"- Target difficulty: {difficulty}/5\n"
-                if distribution and levels:
-                    cognitive_validation_section += "- Verify distribution matches targets:\n"
-                    for lvl in levels:
-                        num = lvl["number"]
-                        entry = distribution.get(str(num)) or distribution.get(num)
-                        if entry is None:
-                            continue
-                        if isinstance(entry, dict):
-                            count = entry.get("count", 0)
-                            types = entry.get("types", [])
-                        else:
-                            count = int(entry)
-                            types = []
-                        if count > 0:
-                            cognitive_validation_section += f"  - Level {num} ({lvl['name']}): {count} questions\n"
-                            if types:
-                                type_counts = {}
-                                for i in range(count):
-                                    t = types[i % len(types)]
-                                    type_counts[t] = type_counts.get(t, 0) + 1
-                                type_req = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
-                                cognitive_validation_section += f"    REQUIRED question types: {type_req}\n"
-                    cognitive_validation_section += "- CRITICAL: Verify each level's question types EXACTLY match the required counts above. If a level requires 1x mc, 1x tf, 1x fill_in_blank, there must be exactly those types. Flag any mismatch as a FAIL.\n"
+            cognitive_validation_section = _build_cognitive_validation_section(cognitive_config)
         prompt_text = prompt_text.replace("{cognitive_section}", cognitive_validation_section)
 
         questions_json = json.dumps(questions, indent=2)
@@ -508,12 +446,101 @@ class CriticAgent:
 **Quiz Draft:**
 {questions_json}
 """
-        response_text = self.provider.generate([full_prompt], json_mode=False)
+        response_text = self.provider.generate([full_prompt], json_mode=True)
 
-        if "APPROVED" in response_text:
-            return {"status": "APPROVED", "feedback": None}
+        return _parse_critic_response(response_text, len(questions))
 
-        return {"status": "REJECTED", "feedback": response_text}
+
+def _parse_critic_response(response_text: str, num_questions: int) -> Dict[str, Any]:
+    """Parse the critic's response into a structured result.
+
+    Tries structured JSON first, falls back to legacy ``"APPROVED" in text``
+    detection for backward compatibility with providers that don't support
+    JSON mode or return free-text.
+
+    Args:
+        response_text: Raw LLM response string.
+        num_questions: Expected number of questions (for fallback).
+
+    Returns:
+        Structured dict with status, feedback, verdicts, indices, overall_notes.
+    """
+    # Try structured JSON parse
+    try:
+        cleaned = response_text.strip()
+        # Strip markdown fences
+        if cleaned.startswith("```"):
+            lines = cleaned.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            cleaned = "\n".join(lines)
+
+        # Find the JSON object
+        brace_start = cleaned.find("{")
+        brace_end = cleaned.rfind("}")
+        if brace_start != -1 and brace_end != -1:
+            cleaned = cleaned[brace_start : brace_end + 1]
+
+        data = json.loads(cleaned)
+
+        if isinstance(data, dict) and "questions" in data:
+            verdicts = data["questions"]
+            passed = []
+            failed = []
+            feedback_parts = []
+
+            for v in verdicts:
+                idx = v.get("index", 0)
+                verdict = str(v.get("verdict", "")).upper()
+                if verdict == "PASS":
+                    passed.append(idx)
+                else:
+                    failed.append(idx)
+                    issues = v.get("issues", [])
+                    if issues:
+                        feedback_parts.append(f"Q{idx}: {'; '.join(issues)}")
+                    fact = v.get("fact_check", "PASS")
+                    if fact in ("WARN", "FAIL"):
+                        notes = v.get("fact_check_notes", "")
+                        feedback_parts.append(f"Q{idx} fact-check {fact}: {notes}")
+
+            overall = data.get("overall_notes", "")
+            status = "APPROVED" if len(failed) == 0 else "REJECTED"
+            feedback_text = "\n".join(feedback_parts) if feedback_parts else None
+
+            return {
+                "status": status,
+                "feedback": feedback_text,
+                "verdicts": verdicts,
+                "passed_indices": passed,
+                "failed_indices": failed,
+                "overall_notes": overall,
+            }
+
+    except (json.JSONDecodeError, KeyError, TypeError):
+        pass  # Fall through to legacy detection
+
+    # Legacy fallback: plain-text "APPROVED" detection
+    if "APPROVED" in response_text.upper():
+        return {
+            "status": "APPROVED",
+            "feedback": None,
+            "verdicts": [{"index": i, "verdict": "PASS", "issues": []} for i in range(num_questions)],
+            "passed_indices": list(range(num_questions)),
+            "failed_indices": [],
+            "overall_notes": "",
+        }
+
+    return {
+        "status": "REJECTED",
+        "feedback": response_text,
+        "verdicts": [{"index": i, "verdict": "FAIL", "issues": ["Rejected by critic"]} for i in range(num_questions)],
+        "passed_indices": [],
+        "failed_indices": list(range(num_questions)),
+        "overall_notes": "",
+    }
 
 
 class Orchestrator:
@@ -526,25 +553,38 @@ class Orchestrator:
             web_mode: If True, skip interactive input() approval gate (for web UI).
         """
         self.config = config
-        # Create provider once to avoid duplicate approval prompts
+        # Create generator provider
         provider = get_provider(config, web_mode=web_mode)
         self.generator = GeneratorAgent(config, provider=provider)
-        self.critic = CriticAgent(config, provider=provider)
+
+        # Build critic config — may use a separate provider
+        critic_config = _build_critic_config(config)
+        if critic_config is config:
+            # Same config, share the provider
+            self.critic = CriticAgent(config, provider=provider)
+        else:
+            # Separate critic config — let CriticAgent create its own provider
+            self.critic = CriticAgent(critic_config)
+
         self.max_retries = config.get("agent_loop", {}).get("max_retries", 3)
         self.last_metrics = None
 
     def run(self, context: Dict[str, Any]) -> tuple:
-        """Run the generate-critique feedback loop until approval or max retries.
+        """Run the generate-critique feedback loop with per-question granularity.
+
+        New flow per attempt:
+        1. Generate questions
+        2. Pre-validate (deterministic) — remove structurally invalid questions
+        3. LLM critique — get per-question verdicts
+        4. Keep passed questions in accumulator
+        5. If enough approved, stop early
+        6. Otherwise regenerate only the still-needed count
 
         Args:
-            context: Generation context dictionary containing all parameters needed
-                    by the Generator agent (content, images, standards, etc.).
+            context: Generation context dictionary.
 
         Returns:
-            Tuple of (questions, metadata) where questions is a list of approved
-            question dictionaries (or last draft if max retries reached, or empty
-            list on failure), and metadata is a dict with prompt_summary, metrics,
-            critic_history, provider, and model info.
+            Tuple of (questions, metadata).
         """
         feedback = None
         guidelines = get_qa_guidelines()
@@ -553,6 +593,10 @@ class Orchestrator:
         # Initialize metrics tracking
         metrics = AgentMetrics()
         metrics.start()
+
+        # Extract teacher config for pre-validator
+        teacher_config = _extract_teacher_config(context)
+        target_count = max(context.get("num_questions", 10), 1)
 
         # Check rate limits before starting (skip for mock provider)
         provider_name = self.config.get("llm", {}).get("provider", "mock")
@@ -577,16 +621,24 @@ class Orchestrator:
                         f"cover worst-case cost (${estimate['estimated_max_cost']:.4f})"
                     )
 
-        questions = []
+        approved_questions: List[Dict[str, Any]] = []
         consecutive_errors = 0
         max_errors = 2  # Abort after this many consecutive transient failures
 
         for attempt in range(self.max_retries):
-            print(f"   [Agent Loop] Attempt {attempt + 1}/{self.max_retries}...")
+            still_needed = max(target_count - len(approved_questions), 0)
+            if still_needed == 0:
+                break
+
+            print(f"   [Agent Loop] Attempt {attempt + 1}/{self.max_retries} (need {still_needed} more questions)...")
+
+            # Update context for partial regeneration
+            gen_context = dict(context)
+            gen_context["num_questions"] = still_needed
 
             # Generate with error handling
             try:
-                questions = self.generator.generate(context, feedback)
+                questions = self.generator.generate(gen_context, feedback)
                 metrics.generator_calls += 1
                 metrics.attempts += 1
             except Exception as e:
@@ -599,7 +651,9 @@ class Orchestrator:
                     print("   [Agent Loop] Too many consecutive errors. Aborting.")
                     metrics.stop()
                     self.last_metrics = metrics
-                    return [], self._build_metadata(context, metrics, critic_history)
+                    # Return whatever we have so far
+                    final = approved_questions if approved_questions else []
+                    return final, self._build_metadata(context, metrics, critic_history)
                 # Brief pause before retry (skip in mock mode)
                 if provider_name != "mock":
                     time.sleep(min(2**consecutive_errors, 10))
@@ -613,7 +667,8 @@ class Orchestrator:
                     print("   [Agent Loop] Too many consecutive failures. Aborting.")
                     metrics.stop()
                     self.last_metrics = metrics
-                    return [], self._build_metadata(context, metrics, critic_history)
+                    final = approved_questions if approved_questions else []
+                    return final, self._build_metadata(context, metrics, critic_history)
                 feedback = (
                     "Your previous response was empty or invalid JSON. Please generate a valid JSON list of questions."
                 )
@@ -622,7 +677,29 @@ class Orchestrator:
             # Reset error counter on successful generation
             consecutive_errors = 0
 
-            # Critique with error handling
+            # --- Step 2: Pre-validate (deterministic) ---
+            pre_results = pre_validate_questions(questions, teacher_config)
+            structurally_valid = []
+            pre_fail_feedback = []
+            for r in pre_results:
+                if r["passed"]:
+                    structurally_valid.append(questions[r["index"]])
+                else:
+                    metrics.pre_validation_failures += 1
+                    pre_fail_feedback.append(f"Q{r['index']}: {'; '.join(r['issues'])}")
+
+            if pre_fail_feedback:
+                print(f"   [Agent Loop] Pre-validation removed {len(pre_fail_feedback)} question(s)")
+
+            if not structurally_valid:
+                feedback = (
+                    "All questions failed structural validation:\n"
+                    + "\n".join(pre_fail_feedback)
+                    + "\nPlease fix and regenerate."
+                )
+                continue
+
+            # --- Step 3: LLM critique ---
             print("   [Agent Loop] Critiquing draft...")
             content_summary = context.get("content_summary", "")
             class_context = {
@@ -637,18 +714,33 @@ class Orchestrator:
 
             try:
                 critique_result = self.critic.critique(
-                    questions,
+                    structurally_valid,
                     guidelines,
                     content_summary,
                     class_context=class_context,
                     cognitive_config=cognitive_config,
+                    teacher_config=teacher_config,
                 )
                 metrics.critic_calls += 1
             except Exception as e:
-                print(f"   [Agent Loop] Critic error: {e}. Skipping critique, returning draft.")
+                print(f"   [Agent Loop] Critic error: {e}. Accepting pre-validated draft.")
+                # On critic failure, accept all structurally-valid questions
+                approved_questions.extend(structurally_valid)
+                metrics.questions_approved += len(structurally_valid)
                 metrics.stop()
                 self.last_metrics = metrics
-                return questions, self._build_metadata(context, metrics, critic_history)
+                final = approved_questions[:target_count]
+                return final, self._build_metadata(context, metrics, critic_history)
+
+            # --- Step 4: Collect passed questions ---
+            passed_indices = critique_result.get("passed_indices", [])
+            failed_indices = critique_result.get("failed_indices", [])
+
+            for idx in passed_indices:
+                if idx < len(structurally_valid):
+                    approved_questions.append(structurally_valid[idx])
+                    metrics.questions_approved += 1
+            metrics.questions_rejected += len(failed_indices)
 
             # Record critic feedback in history
             critic_history.append(
@@ -656,23 +748,48 @@ class Orchestrator:
                     "attempt": attempt + 1,
                     "status": critique_result["status"],
                     "feedback": critique_result.get("feedback"),
+                    "passed_count": len(passed_indices),
+                    "failed_count": len(failed_indices),
+                    "verdicts": critique_result.get("verdicts", []),
                 }
             )
 
-            if critique_result["status"] == "APPROVED":
-                print("   [Agent Loop] Draft APPROVED.")
+            if len(approved_questions) >= target_count:
+                print(f"   [Agent Loop] Collected {len(approved_questions)} approved questions. Done.")
                 metrics.stop()
                 metrics.approved = True
                 self.last_metrics = metrics
-                return questions, self._build_metadata(context, metrics, critic_history)
+                final = approved_questions[:target_count]
+                return final, self._build_metadata(context, metrics, critic_history)
 
-            print(f"   [Agent Loop] Draft REJECTED. Feedback: {critique_result['feedback'][:100]}...")
-            feedback = critique_result["feedback"]
+            # Build specific feedback for next attempt
+            feedback_parts = []
+            if critique_result.get("feedback"):
+                feedback_parts.append(critique_result["feedback"])
+            if pre_fail_feedback:
+                feedback_parts.append("Pre-validation failures:\n" + "\n".join(pre_fail_feedback))
+            feedback_parts.append(
+                f"You need to generate {target_count - len(approved_questions)} more questions. "
+                f"Previously approved questions are kept; generate only NEW replacement questions."
+            )
+            feedback = "\n\n".join(feedback_parts)
 
-        print("   [Agent Loop] Max retries reached. Returning last draft with warning.")
+            print(
+                f"   [Agent Loop] {len(passed_indices)} passed, {len(failed_indices)} failed. "
+                f"Total approved: {len(approved_questions)}/{target_count}"
+            )
+
+        # Max retries reached
+        if approved_questions:
+            print(f"   [Agent Loop] Max retries reached. Returning {len(approved_questions)} approved questions.")
+        else:
+            print("   [Agent Loop] Max retries reached. Returning last draft with warning.")
+
         metrics.stop()
+        metrics.approved = len(approved_questions) >= target_count
         self.last_metrics = metrics
-        return questions, self._build_metadata(context, metrics, critic_history)
+        final = approved_questions[:target_count] if approved_questions else questions if 'questions' in dir() else []
+        return final, self._build_metadata(context, metrics, critic_history)
 
     def _build_metadata(
         self,
@@ -688,7 +805,8 @@ class Orchestrator:
             critic_history: List of critic feedback entries.
 
         Returns:
-            Dict with prompt_summary, metrics, critic_history, provider, and model.
+            Dict with prompt_summary, metrics, critic_history, provider, model,
+            and optional critic_provider / critic_model.
         """
         # Extract topics from lesson logs if available
         topics_from_lessons = []
@@ -711,13 +829,182 @@ class Orchestrator:
             "topics_from_lessons": unique_topics[:20],
         }
 
-        return {
+        result = {
             "prompt_summary": prompt_summary,
             "metrics": metrics.report(),
             "critic_history": critic_history,
             "provider": self.config.get("llm", {}).get("provider", "unknown"),
             "model": self.config.get("llm", {}).get("model"),
         }
+
+        # Add critic provider info if it differs
+        critic_cfg = self.config.get("llm", {}).get("critic", {})
+        if critic_cfg and critic_cfg.get("provider"):
+            result["critic_provider"] = critic_cfg["provider"]
+            result["critic_model"] = critic_cfg.get("model_name")
+
+        return result
+
+
+# ------------------------------------------------------------------
+# Helper functions (extracted from class methods for reuse)
+# ------------------------------------------------------------------
+
+
+def _build_class_context_section(context: Dict[str, Any]) -> str:
+    """Build the class context section for generator/critic prompts."""
+    class_context_section = ""
+    lesson_logs = context.get("lesson_logs", [])
+    assumed_knowledge = context.get("assumed_knowledge", {})
+    if lesson_logs or assumed_knowledge:
+        class_context_section = "**Class Context:**\n"
+        if lesson_logs:
+            class_context_section += "Recent lessons taught to this class:\n"
+            for log in lesson_logs[:10]:
+                topics = log.get("topics", [])
+                class_context_section += (
+                    f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                )
+        if assumed_knowledge:
+            class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
+            for topic, data in assumed_knowledge.items():
+                depth = data.get("depth", 1)
+                label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
+                    depth, "unknown"
+                )
+                class_context_section += f"- {topic}: depth {depth} ({label})\n"
+    return class_context_section
+
+
+def _build_cognitive_section(context: Dict[str, Any]) -> str:
+    """Build the cognitive framework section for the generator prompt."""
+    cognitive_section = ""
+    cognitive_framework = context.get("cognitive_framework")
+    cognitive_distribution = context.get("cognitive_distribution")
+    difficulty = context.get("difficulty", 3)
+    if cognitive_framework:
+        levels = get_framework(cognitive_framework)
+        framework_label = "Bloom's Taxonomy" if cognitive_framework == "blooms" else "Webb's DOK"
+        cognitive_section = f"**Cognitive Framework: {framework_label}**\n"
+        cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
+        if cognitive_distribution and levels:
+            cognitive_section += "MANDATORY distribution by cognitive level (you MUST follow this exactly):\n"
+            for lvl in levels:
+                num = lvl["number"]
+                entry = cognitive_distribution.get(str(num)) or cognitive_distribution.get(num)
+                if entry is None:
+                    continue
+                if isinstance(entry, dict):
+                    count = entry.get("count", 0)
+                    types = entry.get("types", [])
+                else:
+                    count = int(entry)
+                    types = []
+                if count > 0:
+                    if types and len(types) > 0:
+                        # Compute exact per-type counts via round-robin
+                        type_counts = {}
+                        for i in range(count):
+                            t = types[i % len(types)]
+                            type_counts[t] = type_counts.get(t, 0) + 1
+                        type_breakdown = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
+                        cognitive_section += (
+                            f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
+                        )
+                    else:
+                        cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, type: any\n"
+            cognitive_section += (
+                "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
+            )
+            cognitive_section += 'Each question MUST have a "type" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n'
+        cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
+        cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
+        cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
+        cognitive_section += '- "cognitive_level_number": the level number (integer)\n'
+    return cognitive_section
+
+
+def _build_cognitive_validation_section(cognitive_config: Dict[str, Any]) -> str:
+    """Build the cognitive validation section for the critic prompt."""
+    section = ""
+    framework = cognitive_config.get("cognitive_framework")
+    distribution = cognitive_config.get("cognitive_distribution")
+    difficulty = cognitive_config.get("difficulty", 3)
+    if framework:
+        levels = get_framework(framework)
+        framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
+        section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
+        section += "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
+        section += f"- Target difficulty: {difficulty}/5\n"
+        if distribution and levels:
+            section += "- Verify distribution matches targets:\n"
+            for lvl in levels:
+                num = lvl["number"]
+                entry = distribution.get(str(num)) or distribution.get(num)
+                if entry is None:
+                    continue
+                if isinstance(entry, dict):
+                    count = entry.get("count", 0)
+                    types = entry.get("types", [])
+                else:
+                    count = int(entry)
+                    types = []
+                if count > 0:
+                    section += f"  - Level {num} ({lvl['name']}): {count} questions\n"
+                    if types:
+                        type_counts = {}
+                        for i in range(count):
+                            t = types[i % len(types)]
+                            type_counts[t] = type_counts.get(t, 0) + 1
+                        type_req = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
+                        section += f"    REQUIRED question types: {type_req}\n"
+            section += "- CRITICAL: Verify each level's question types EXACTLY match the required counts above. If a level requires 1x mc, 1x tf, 1x fill_in_blank, there must be exactly those types. Flag any mismatch as a FAIL.\n"
+    return section
+
+
+def _build_critic_config(config: Dict[str, Any]) -> Dict[str, Any]:
+    """Build a config dict for the critic agent.
+
+    If ``config["llm"]["critic"]["provider"]`` is set, returns a new config
+    dict with critic-specific LLM settings.  Otherwise returns the same
+    config object (shared provider).
+    """
+    critic_section = config.get("llm", {}).get("critic", {})
+    if not critic_section:
+        return config
+    critic_provider = critic_section.get("provider")
+    if not critic_provider:
+        return config
+
+    # Build a separate config for the critic
+    import copy
+    critic_config = copy.deepcopy(config)
+    critic_config["llm"]["provider"] = critic_provider
+    if critic_section.get("model_name"):
+        critic_config["llm"]["model"] = critic_section["model_name"]
+    return critic_config
+
+
+def _extract_teacher_config(context: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Extract teacher configuration from the generation context.
+
+    Pulls ``allowed_types`` from the cognitive distribution if type constraints
+    are specified per-level.
+    """
+    distribution = context.get("cognitive_distribution")
+    if not distribution:
+        return None
+
+    allowed = set()
+    for _key, entry in distribution.items():
+        if isinstance(entry, dict):
+            types = entry.get("types", [])
+            for t in types:
+                allowed.add(t)
+
+    if allowed:
+        return {"allowed_types": list(allowed)}
+    return None
 
 
 def run_agentic_pipeline(config, context, class_id=None, web_mode=False):

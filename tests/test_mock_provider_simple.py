@@ -72,16 +72,21 @@ def test_generator_response_schema():
 
 
 def test_critic_response_schema():
-    """Test that critic response matches expected schema."""
+    """Test that critic response matches structured per-question verdict schema."""
     provider = MockLLMProvider()
     prompt = ["Review these questions and provide feedback"]
     response = provider.generate(prompt, json_mode=False)
 
     data = json.loads(response)
 
-    assert "status" in data, "Critic response should have status"
-    assert "feedback" in data, "Critic response should have feedback"
-    assert data["status"] in ["approved", "needs_revision"], "Invalid status"
+    assert "questions" in data, "Critic response should have questions array"
+    assert "overall_notes" in data, "Critic response should have overall_notes"
+    assert isinstance(data["questions"], list), "questions should be a list"
+    for verdict in data["questions"]:
+        assert "index" in verdict, "Each verdict should have index"
+        assert "verdict" in verdict, "Each verdict should have verdict"
+        assert verdict["verdict"] in ("PASS", "FAIL"), "Invalid verdict"
+        assert "fact_check" in verdict, "Each verdict should have fact_check"
     print("[PASS] Critic response schema is correct")
 
 

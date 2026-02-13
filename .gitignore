@@ -22,6 +22,10 @@ Retake/
 # --- Database ---
 # Exclude the local SQLite database file
 quiz_warehouse.db
+trial_run.db
+
+# --- Trial Run Outputs ---
+trial_run_outputs/
 
 # --- Logs ---
 api_costs.log

@@ -98,6 +98,7 @@ def generate_quiz(
         "cognitive_distribution": validated_distribution,
         "difficulty": difficulty,
         "provider": run_config.get("llm", {}).get("provider", "mock"),
+        "model": run_config.get("llm", {}).get("model"),
     }
 
     # Create quiz record with status "generating"
@@ -161,7 +162,13 @@ def generate_quiz(
         )
         session.add(question_record)
 
-    new_quiz.status = "generated"
+    # Check if critic approved the quiz
+    critic_approved = True
+    if generation_metadata and isinstance(generation_metadata, dict):
+        metrics = generation_metadata.get("metrics", {})
+        critic_approved = metrics.get("approved", True)
+
+    new_quiz.status = "generated" if critic_approved else "needs_review"
     if generation_metadata:
         new_quiz.generation_metadata = json.dumps(generation_metadata)
     session.commit()

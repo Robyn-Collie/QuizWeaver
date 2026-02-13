@@ -159,29 +159,38 @@ def generate_rubric(
         f"  each with: level (1-4), label, description\n"
     )
 
-    # Get LLM response
-    try:
-        provider_name = config.get("llm", {}).get("provider", "mock")
-        if provider_name == "mock":
-            from src.mock_responses import SCIENCE_TOPICS, get_rubric_response
+    # Get LLM response with retry logic (BL-049)
+    criteria_data = None
+    max_attempts = 2
+    prov_name = config.get("llm", {}).get("provider", "mock")
 
-            context_lower = prompt.lower()
-            keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
-            response_text = get_rubric_response(q_data_list, style_profile, keywords or None)
-        else:
-            from src.llm_provider import get_provider
+    for _attempt in range(max_attempts):
+        try:
+            if prov_name == "mock":
+                from src.mock_responses import SCIENCE_TOPICS, get_rubric_response
 
-            provider = get_provider(config, web_mode=True)
-            response_text = provider.generate([prompt], json_mode=True)
+                context_lower = prompt.lower()
+                keywords = [t for t in SCIENCE_TOPICS if t in context_lower]
+                response_text = get_rubric_response(q_data_list, style_profile, keywords or None)
+            else:
+                from src.llm_provider import get_provider
 
-    except Exception as e:
-        logger.error("generate_rubric: LLM call failed: %s", e)
-        rubric.status = "failed"
-        session.commit()
-        return None
+                provider = get_provider(config, web_mode=True)
+                response_text = provider.generate([prompt], json_mode=True)
 
-    # Parse response
-    criteria_data = _parse_criteria(response_text)
+        except Exception as e:
+            logger.error("generate_rubric: LLM call failed (attempt %d): %s", _attempt + 1, e)
+            if _attempt == max_attempts - 1:
+                rubric.status = "failed"
+                session.commit()
+                return None
+            continue
+
+        criteria_data = _parse_criteria(response_text)
+        if criteria_data:
+            break
+        logger.warning("generate_rubric: parse failed (attempt %d), retrying...", _attempt + 1)
+
     if not criteria_data:
         rubric.status = "failed"
         session.commit()
