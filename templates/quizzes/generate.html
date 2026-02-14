@@ -67,7 +67,7 @@
 
     {% if providers is defined and providers %}
     <div class="form-group">
-        <label for="provider">AI Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></label>
+        <label for="provider">LLM Provider <span class="help-tip" data-tip="{{ ai_tips.provider_selection }}">?</span></label>
         <select id="provider" name="provider">
             <option value="">Use default ({{ current_provider|default('mock') }})</option>
             {% for p in providers %}
@@ -100,10 +100,10 @@
                 <span class="step-label">Loading class context</span>
                 <span class="step-desc">Retrieving lesson history and assumed knowledge</span>
             </li>
-            <li id="step-2" data-desc="Establishing a connection to the selected AI model">
+            <li id="step-2" data-desc="Establishing a connection to the selected language model">
                 <span class="step-icon step-pending"></span>
-                <span class="step-label">Connecting to AI provider</span>
-                <span class="step-desc">Sending prompt to <strong id="provider-name-display">your AI model</strong></span>
+                <span class="step-label">Connecting to language model</span>
+                <span class="step-desc">Sending prompt to <strong id="provider-name-display">your language model</strong></span>
             </li>
             <li id="step-3" data-desc="The Generator Agent is crafting questions matched to your grade level, standards, and cognitive framework">
                 <span class="step-icon step-pending"></span>
@@ -227,10 +227,10 @@
         // Update hint after a while so user knows it's still working
         if (!isMock) {
             timers.push(setTimeout(function() {
-                if (!finished) hintEl.textContent = 'Still working... real AI providers can take up to 2 minutes for large quizzes.';
+                if (!finished) hintEl.textContent = 'Still working... language model providers can take up to 2 minutes for large quizzes.';
             }, 20000));
             timers.push(setTimeout(function() {
-                if (!finished) hintEl.textContent = 'Almost there... the AI is reviewing and refining your questions.';
+                if (!finished) hintEl.textContent = 'Almost there... the critic agent is reviewing and refining your questions.';
             }, 45000));
         }
 

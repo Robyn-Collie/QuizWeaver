@@ -883,6 +883,27 @@ a:hover {
     color: var(--success);
 }
 
+.matching-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 0.75rem;
+}
+.matching-table th, .matching-table td {
+    border: 1px solid var(--border);
+    padding: 0.4rem 0.75rem;
+    text-align: left;
+}
+.matching-table th {
+    background: var(--muted-bg, #f5f5f5);
+    font-weight: 600;
+}
+.matching-columns {
+    display: flex;
+    gap: 2rem;
+    margin: 0.5rem 0;
+}
+.matching-col { flex: 1; }
+
 .tf-answer {
     display: flex;
     gap: 0.75rem;

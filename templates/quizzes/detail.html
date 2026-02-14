@@ -238,7 +238,37 @@
         </div>
         {% endif %}
 
-        {% if q.data and q.data.question_type is defined and q.data.question_type == 'ordering' %}
+        {% if q.type == 'matching' or (q.data and q.data.question_type is defined and q.data.question_type == 'matching') %}
+        {# --- Matching question display --- #}
+        {% set matches = q.data.matches if q.data.matches is defined else [] %}
+        {% if matches %}
+        <table class="matching-table">
+            <thead>
+                <tr><th>Term</th><th>Definition</th></tr>
+            </thead>
+            <tbody>
+                {% for m in matches %}
+                <tr>
+                    <td>{{ m.term }}</td>
+                    <td>{{ m.definition }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% elif q.data.prompt_items is defined and q.data.response_items is defined %}
+        <div class="matching-columns">
+            <div class="matching-col">
+                <strong>Terms:</strong>
+                <ol>{% for item in q.data.prompt_items %}<li>{{ item }}</li>{% endfor %}</ol>
+            </div>
+            <div class="matching-col">
+                <strong>Definitions:</strong>
+                <ol type="A">{% for item in q.data.response_items %}<li>{{ item }}</li>{% endfor %}</ol>
+            </div>
+        </div>
+        {% endif %}
+
+        {% elif q.data and q.data.question_type is defined and q.data.question_type == 'ordering' %}
         {# --- Ordering question display --- #}
         {% if q.data.instructions is defined and q.data.instructions %}
         <p class="ordering-instructions"><em>{{ q.data.instructions }}</em></p>

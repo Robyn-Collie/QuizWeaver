@@ -870,12 +870,25 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
             c.drawString(70, y, "_" * 60)
             y -= 14
     elif nq["type"] == "matching" and nq["matches"]:
+        # List terms with blanks
         for m in nq["matches"]:
             if y < 60:
                 c.showPage()
                 y = page_height - 50
             c.drawString(70, y, f"{m['term']}  ->  _______________")
             y -= 14
+        # List definitions as a word bank (shuffled)
+        import random as _rng_m
+        definitions = [m["definition"] for m in nq["matches"]]
+        _rng_m.Random(nq["number"]).shuffle(definitions)
+        y -= 4
+        if y < 60:
+            c.showPage()
+            y = page_height - 50
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(70, y, "Choices: " + "  |  ".join(definitions))
+        c.setFont("Helvetica", 10)
+        y -= 14
 
     y -= 10  # Spacer between questions
     return y

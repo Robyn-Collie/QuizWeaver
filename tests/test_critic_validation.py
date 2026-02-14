@@ -121,6 +121,8 @@ class TestCommonFields:
                 q["correct_order"] = [0, 1]
             elif t == "ma":
                 q.update({"options": ["A", "B"], "correct_indices": [0]})
+            elif t == "matching":
+                q["matches"] = [{"term": "A", "definition": "1"}, {"term": "B", "definition": "2"}]
             results = pre_validate_questions([q])
             assert results[0]["passed"] is True, f"Type '{t}' should pass: {results[0]['issues']}"
 
@@ -234,6 +236,60 @@ class TestOtherTypeValidation:
         del q["correct_order"]
         results = pre_validate_questions([q])
         assert results[0]["passed"] is False
+
+    def test_matching_valid(self):
+        q = {
+            "type": "matching",
+            "text": "Match the term to its definition.",
+            "points": 1,
+            "matches": [
+                {"term": "H2O", "definition": "Water"},
+                {"term": "NaCl", "definition": "Salt"},
+            ],
+        }
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is True
+
+    def test_matching_missing_matches(self):
+        q = {"type": "matching", "text": "Match terms.", "points": 1}
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is False
+        assert any("matches" in i.lower() or "missing" in i.lower() for i in results[0]["issues"])
+
+    def test_matching_empty_matches(self):
+        q = {"type": "matching", "text": "Match terms.", "points": 1, "matches": []}
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is False
+
+    def test_matching_one_pair_insufficient(self):
+        q = {
+            "type": "matching", "text": "Match.", "points": 1,
+            "matches": [{"term": "A", "definition": "B"}],
+        }
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is False
+        assert any("at least 2" in i for i in results[0]["issues"])
+
+    def test_matching_missing_term_in_pair(self):
+        q = {
+            "type": "matching", "text": "Match.", "points": 1,
+            "matches": [
+                {"term": "A", "definition": "B"},
+                {"term": "", "definition": "D"},
+            ],
+        }
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is False
+
+    def test_matching_prompt_response_alternate_shape(self):
+        """Alternate data shape with prompt_items/response_items."""
+        q = {
+            "type": "matching", "text": "Match.", "points": 1,
+            "prompt_items": ["A", "B", "C"],
+            "response_items": ["1", "2", "3"],
+        }
+        results = pre_validate_questions([q])
+        assert results[0]["passed"] is True
 
 
 # ---------------------------------------------------------------------------

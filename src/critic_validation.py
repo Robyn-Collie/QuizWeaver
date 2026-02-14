@@ -112,7 +112,9 @@ def _check_type_specific(q: Dict[str, Any], issues: List[str], fact_warnings: Li
         _check_fill_in(q, issues)
     elif qtype == "ordering":
         _check_ordering(q, issues)
-    # essay and matching: no additional structural requirements beyond common
+    elif qtype == "matching":
+        _check_matching(q, issues)
+    # essay: no additional structural requirements beyond common
 
 
 def _check_mc(q: Dict[str, Any], issues: List[str], fact_warnings: List[str]) -> None:
@@ -198,3 +200,30 @@ def _check_ordering(q: Dict[str, Any], issues: List[str]) -> None:
     co = q.get("correct_order")
     if not isinstance(co, list):
         issues.append("Ordering question missing 'correct_order' list")
+
+
+def _check_matching(q: Dict[str, Any], issues: List[str]) -> None:
+    """Matching: must have matches list with term/definition pairs."""
+    matches = q.get("matches")
+    # Also check alternate data shapes (prompt_items/response_items)
+    prompt_items = q.get("prompt_items")
+    response_items = q.get("response_items")
+
+    if matches and isinstance(matches, list):
+        if len(matches) < 2:
+            issues.append("Matching question needs at least 2 pairs")
+        for i, m in enumerate(matches):
+            if not isinstance(m, dict):
+                issues.append(f"Match pair {i} is not a dict")
+            elif not m.get("term") or not m.get("definition"):
+                issues.append(f"Match pair {i} missing 'term' or 'definition'")
+    elif prompt_items and response_items:
+        if not isinstance(prompt_items, list) or len(prompt_items) < 2:
+            issues.append("Matching question needs at least 2 prompt_items")
+        if not isinstance(response_items, list) or len(response_items) < 2:
+            issues.append("Matching question needs at least 2 response_items")
+    else:
+        issues.append(
+            "Matching question missing 'matches' list (expected [{term, definition}, ...]) "
+            "or 'prompt_items'/'response_items' lists"
+        )

@@ -9,6 +9,10 @@ For every question, check:
 - TF statements are definitively true or false (not debatable)
 - Short-answer expected_answer is reasonable
 - Fill-in-the-blank has a clear single correct answer
+- Matching questions have complete term/definition pairs (a student must be able to match them)
+- Ordering questions have a clear, defensible correct order
+- ANSWERABILITY: Every question must be answerable from the information given. If a matching question has no match pairs, or an ordering question has no items, FAIL it.
+- COMPLETENESS: Every question must include all data a student needs to answer it. Missing options, missing match pairs, or missing answer blanks are structural failures.
 - If class context provided: question aligns with taught lessons
 - Flag topics NOT in assumed knowledge
 - Difficulty matches knowledge depth levels

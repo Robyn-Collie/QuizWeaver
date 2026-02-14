@@ -1,6 +1,6 @@
 {% if providers is defined and providers %}
 <div class="form-group">
-    <label for="provider">AI Provider <span class="help-tip" data-tip="Choose which AI model to use for this generation. Default uses your global setting from Settings page.">?</span></label>
+    <label for="provider">LLM Provider <span class="help-tip" data-tip="Choose which language model to use for this generation. Default uses your global setting from Settings page.">?</span></label>
     <select id="provider" name="provider">
         <option value="">Use default ({{ current_provider|default('mock') }})</option>
         {% for p in providers %}
