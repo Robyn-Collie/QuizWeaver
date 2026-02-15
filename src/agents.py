@@ -5,11 +5,11 @@ import time
 from typing import Any, Dict, List, Optional
 
 from src.cognitive_frameworks import BLOOMS_LEVELS, DOK_LEVELS, get_framework
-from src.cost_tracking import check_rate_limit, estimate_pipeline_cost
+from src.cost_tracking import check_rate_limit, estimate_cost, estimate_pipeline_cost, estimate_tokens
 from src.critic_validation import pre_validate_questions
 from src.database import Class, get_engine, get_session
 from src.lesson_tracker import get_assumed_knowledge, get_recent_lessons
-from src.llm_provider import get_provider
+from src.llm_provider import get_api_audit_log, get_provider
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +29,9 @@ class AgentMetrics:
         self.pre_validation_failures = 0
         self.questions_approved = 0
         self.questions_rejected = 0
+        # Token usage tracking
+        self.input_tokens = 0
+        self.output_tokens = 0
 
     def start(self):
         self.start_time = time.time()
@@ -58,6 +61,9 @@ class AgentMetrics:
             "pre_validation_failures": self.pre_validation_failures,
             "questions_approved": self.questions_approved,
             "questions_rejected": self.questions_rejected,
+            "input_tokens": self.input_tokens,
+            "output_tokens": self.output_tokens,
+            "total_tokens": self.input_tokens + self.output_tokens,
         }
 
 
@@ -638,7 +644,9 @@ class Orchestrator:
 
             # Generate with error handling
             try:
+                audit_before = len(get_api_audit_log())
                 questions = self.generator.generate(gen_context, feedback)
+                _accumulate_tokens(metrics, audit_before)
                 metrics.generator_calls += 1
                 metrics.attempts += 1
             except Exception as e:
@@ -713,6 +721,7 @@ class Orchestrator:
             }
 
             try:
+                audit_before = len(get_api_audit_log())
                 critique_result = self.critic.critique(
                     structurally_valid,
                     guidelines,
@@ -721,6 +730,7 @@ class Orchestrator:
                     cognitive_config=cognitive_config,
                     teacher_config=teacher_config,
                 )
+                _accumulate_tokens(metrics, audit_before)
                 metrics.critic_calls += 1
             except Exception as e:
                 print(f"   [Agent Loop] Critic error: {e}. Accepting pre-validated draft.")
@@ -829,12 +839,37 @@ class Orchestrator:
             "topics_from_lessons": unique_topics[:20],
         }
 
+        provider_name = self.config.get("llm", {}).get("provider", "unknown")
+        model_name = self.config.get("llm", {}).get("model")
+
+        # Calculate estimated cost from token usage
+        report = metrics.report()
+        estimated_cost = 0.0
+        if model_name and report["total_tokens"] > 0:
+            estimated_cost = estimate_cost(
+                model_name, report["input_tokens"], report["output_tokens"]
+            )
+        elif report["total_tokens"] > 0:
+            # Fallback: use default pricing
+            estimated_cost = estimate_cost(
+                "unknown", report["input_tokens"], report["output_tokens"]
+            )
+
+        token_usage = {
+            "input_tokens": report["input_tokens"],
+            "output_tokens": report["output_tokens"],
+            "total_tokens": report["total_tokens"],
+            "estimated_cost": round(estimated_cost, 6),
+            "is_mock": provider_name == "mock",
+        }
+
         result = {
             "prompt_summary": prompt_summary,
-            "metrics": metrics.report(),
+            "metrics": report,
             "critic_history": critic_history,
-            "provider": self.config.get("llm", {}).get("provider", "unknown"),
-            "model": self.config.get("llm", {}).get("model"),
+            "provider": provider_name,
+            "model": model_name,
+            "token_usage": token_usage,
         }
 
         # Add critic provider info if it differs
@@ -849,6 +884,28 @@ class Orchestrator:
 # ------------------------------------------------------------------
 # Helper functions (extracted from class methods for reuse)
 # ------------------------------------------------------------------
+
+
+def _accumulate_tokens(metrics: AgentMetrics, audit_log_len_before: int) -> None:
+    """Sum token counts from new audit log entries added since *audit_log_len_before*.
+
+    For mock providers the audit log is empty, so this estimates tokens from
+    prompt/response character counts instead.
+    """
+    audit_log = get_api_audit_log()
+    new_entries = audit_log[audit_log_len_before:]
+    for entry in new_entries:
+        in_tok = entry.get("input_tokens", 0)
+        out_tok = entry.get("output_tokens", 0)
+        if in_tok or out_tok:
+            metrics.input_tokens += in_tok
+            metrics.output_tokens += out_tok
+        else:
+            # Estimate from character counts when provider doesn't report tokens
+            prompt_chars = len(entry.get("prompt_preview", ""))
+            response_chars = entry.get("response_char_count", 0)
+            metrics.input_tokens += estimate_tokens("x" * prompt_chars)
+            metrics.output_tokens += estimate_tokens("x" * response_chars)
 
 
 def _build_class_context_section(context: Dict[str, Any]) -> str:

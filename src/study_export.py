@@ -14,7 +14,7 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text, sanitize_filename
+from src.export_utils import pdf_wrap_text, sanitize_csv_cell, sanitize_filename
 
 
 def _parse_card_data(card) -> dict:
@@ -94,14 +94,22 @@ def export_flashcards_csv(study_set, cards) -> str:
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             tags = ", ".join(data.get("tags", []))
-            writer.writerow([i + 1, card.front or "", card.back or "", tags, data.get("image_url", "")])
+            writer.writerow([
+                i + 1, sanitize_csv_cell(card.front or ""),
+                sanitize_csv_cell(card.back or ""), sanitize_csv_cell(tags),
+                data.get("image_url", ""),
+            ])
 
     elif material_type == "study_guide":
         writer.writerow(["#", "Heading", "Content", "Key Points", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
             key_points = "; ".join(data.get("key_points", []))
-            writer.writerow([i + 1, card.front or "", card.back or "", key_points, data.get("image_url", "")])
+            writer.writerow([
+                i + 1, sanitize_csv_cell(card.front or ""),
+                sanitize_csv_cell(card.back or ""), sanitize_csv_cell(key_points),
+                data.get("image_url", ""),
+            ])
 
     elif material_type == "vocabulary":
         writer.writerow(["#", "Term", "Definition", "Example", "Part of Speech", "Image URL"])
@@ -110,10 +118,10 @@ def export_flashcards_csv(study_set, cards) -> str:
             writer.writerow(
                 [
                     i + 1,
-                    card.front or "",
-                    card.back or "",
-                    data.get("example", ""),
-                    data.get("part_of_speech", ""),
+                    sanitize_csv_cell(card.front or ""),
+                    sanitize_csv_cell(card.back or ""),
+                    sanitize_csv_cell(data.get("example", "")),
+                    sanitize_csv_cell(data.get("part_of_speech", "")),
                     data.get("image_url", ""),
                 ]
             )
@@ -125,9 +133,9 @@ def export_flashcards_csv(study_set, cards) -> str:
             writer.writerow(
                 [
                     i + 1,
-                    card.front or "",
-                    card.back or "",
-                    data.get("type", ""),
+                    sanitize_csv_cell(card.front or ""),
+                    sanitize_csv_cell(card.back or ""),
+                    sanitize_csv_cell(data.get("type", "")),
                     data.get("image_url", ""),
                 ]
             )
@@ -135,7 +143,10 @@ def export_flashcards_csv(study_set, cards) -> str:
         writer.writerow(["#", "Front", "Back", "Image URL"])
         for i, card in enumerate(cards):
             data = _parse_card_data(card)
-            writer.writerow([i + 1, card.front or "", card.back or "", data.get("image_url", "")])
+            writer.writerow([
+                i + 1, sanitize_csv_cell(card.front or ""),
+                sanitize_csv_cell(card.back or ""), data.get("image_url", ""),
+            ])
 
     return output.getvalue()
 

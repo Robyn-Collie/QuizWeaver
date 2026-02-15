@@ -4,8 +4,8 @@
 {% block content %}
 <div class="wizard-container">
     <div class="wizard-header">
-        <h1>Connect an AI Provider</h1>
-        <p class="text-muted">Follow these steps to set up real AI-powered quiz generation. You can always change your provider later in <a href="/settings">Settings</a>.</p>
+        <h1>Connect an LLM Provider</h1>
+        <p class="text-muted">Follow these steps to set up real language-model-powered quiz generation. You can always change your provider later in <a href="/settings">Settings</a>.</p>
     </div>
 
     <div class="wizard-progress">
@@ -32,7 +32,7 @@
 
     <!-- Step 1: Choose Provider -->
     <div class="wizard-panel" id="wizard-step-1">
-        <h2>Which AI provider would you like to use?</h2>
+        <h2>Which LLM provider would you like to use?</h2>
         <p>Each provider has different capabilities and pricing. You can always switch later.</p>
 
         <div class="wizard-provider-cards">
@@ -49,7 +49,7 @@
                 <input type="radio" name="wizard_provider" value="openai">
                 <div class="wizard-card-body">
                     <strong>OpenAI (GPT-4o)</strong>
-                    <p>Industry-standard AI models. Requires paid account.</p>
+                    <p>Industry-standard language models. Requires paid account.</p>
                     <small>Estimated cost: ~$0.02-0.10 per quiz</small>
                 </div>
             </label>
@@ -84,14 +84,14 @@
                 <div class="wizard-card-body">
                     <strong>Local Model (Ollama)</strong>
                     <span class="wizard-badge wizard-badge-privacy">Most Private</span>
-                    <p>Run AI on your own computer. Free, but requires setup.</p>
+                    <p>Run a language model on your own computer. Free, but requires setup.</p>
                     <small>Cost: Free (uses your hardware)</small>
                 </div>
             </label>
         </div>
 
         <div class="info-box" style="margin-top: 1rem;">
-            <strong>What is an API key?</strong> An API key is like a password that lets QuizWeaver talk to an AI service. It is stored only on your computer and never shared with anyone. <a href="/help#understanding-ai">Learn more</a>
+            <strong>What is an API key?</strong> An API key is like a password that lets QuizWeaver talk to an LLM service. It is stored only on your computer and never shared with anyone. <a href="/help#understanding-ai">Learn more</a>
         </div>
 
         <div class="wizard-nav">
@@ -239,9 +239,9 @@
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <h2>Provider Connected</h2>
-            <p id="wizard-success-msg">Your AI provider is ready. Quizzes will now be generated using real AI, customized to your lesson content.</p>
+            <p id="wizard-success-msg">Your LLM provider is ready. Quizzes will now be generated using a real language model, customized to your lesson content.</p>
             <div class="info-box" style="text-align: left; margin-top: 1.5rem;">
-                <strong>Remember:</strong> AI-generated content is always a draft. Review every quiz, study material, and rubric for accuracy before sharing with students.
+                <strong>Remember:</strong> LLM-generated content is always a draft. Review every quiz, study material, and rubric for accuracy before sharing with students.
             </div>
             <div class="wizard-nav" style="justify-content: center; margin-top: 1.5rem;">
                 <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>

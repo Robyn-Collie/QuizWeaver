@@ -195,11 +195,11 @@ class TestLessonPrivacyNotice:
         html = response.data.decode()
         assert "student names" in html.lower() or "personally identifying" in html.lower()
 
-    def test_privacy_mentions_ai_provider(self, client):
-        """Privacy notice mentions data is sent to AI provider."""
+    def test_privacy_mentions_llm_provider(self, client):
+        """Privacy notice mentions data is sent to LLM provider."""
         response = client.get("/classes/1/lessons/new")
         html = response.data.decode()
-        assert "AI provider" in html
+        assert "LLM provider" in html
 
     def test_privacy_links_to_help(self, client):
         """Privacy notice links to help page."""
@@ -209,10 +209,10 @@ class TestLessonPrivacyNotice:
 
 
 class TestQuizAIBanner:
-    """Test AI-generated banner on quiz detail page."""
+    """Test LLM-generated banner on quiz detail page."""
 
     def test_banner_present(self, client):
-        """AI notice banner appears on quiz detail."""
+        """LLM notice banner appears on quiz detail."""
         response = client.get("/quizzes/1")
         html = response.data.decode()
         assert "ai-notice" in html
@@ -223,11 +223,11 @@ class TestQuizAIBanner:
         html = response.data.decode()
         assert "review" in html.lower()
 
-    def test_banner_mentions_ai_generated(self, client):
-        """Banner identifies content as AI-generated."""
+    def test_banner_mentions_llm_generated(self, client):
+        """Banner identifies content as LLM-generated."""
         response = client.get("/quizzes/1")
         html = response.data.decode()
-        assert "AI-Generated" in html
+        assert "LLM-Generated" in html
 
     def test_banner_links_to_help(self, client):
         """Banner links to help page."""
@@ -237,19 +237,19 @@ class TestQuizAIBanner:
 
 
 class TestStudyAIBanner:
-    """Test AI-generated banner on study material detail page."""
+    """Test LLM-generated banner on study material detail page."""
 
     def test_banner_present(self, client):
-        """AI notice banner appears on study detail."""
+        """LLM notice banner appears on study detail."""
         response = client.get("/study/1")
         html = response.data.decode()
         assert "ai-notice" in html
 
-    def test_banner_mentions_ai_generated(self, client):
-        """Banner identifies content as AI-generated."""
+    def test_banner_mentions_llm_generated(self, client):
+        """Banner identifies content as LLM-generated."""
         response = client.get("/study/1")
         html = response.data.decode()
-        assert "AI-Generated" in html
+        assert "LLM-Generated" in html
 
     def test_banner_links_to_help(self, client):
         """Banner links to help page."""
@@ -259,19 +259,19 @@ class TestStudyAIBanner:
 
 
 class TestRubricAIBanner:
-    """Test AI-generated banner on rubric detail page."""
+    """Test LLM-generated banner on rubric detail page."""
 
     def test_banner_present(self, client):
-        """AI notice banner appears on rubric detail."""
+        """LLM notice banner appears on rubric detail."""
         response = client.get("/rubrics/1")
         html = response.data.decode()
         assert "ai-notice" in html
 
-    def test_banner_mentions_ai_generated(self, client):
-        """Banner identifies content as AI-generated."""
+    def test_banner_mentions_llm_generated(self, client):
+        """Banner identifies content as LLM-generated."""
         response = client.get("/rubrics/1")
         html = response.data.decode()
-        assert "AI-Generated" in html
+        assert "LLM-Generated" in html
 
     def test_banner_mentions_review(self, client):
         """Banner tells teacher to review criteria."""
@@ -281,10 +281,10 @@ class TestRubricAIBanner:
 
 
 class TestReteachAIBanner:
-    """Test AI-generated banner on re-teach suggestions page."""
+    """Test LLM-generated banner on re-teach suggestions page."""
 
     def test_banner_after_generation(self, client):
-        """AI notice appears after generating suggestions."""
+        """LLM notice appears after generating suggestions."""
         response = client.post(
             "/classes/1/analytics/reteach",
             data={"focus_topics": "algebra", "max_suggestions": "3"},
@@ -304,8 +304,8 @@ class TestReteachAIBanner:
         assert "professional judgment" in html.lower()
 
     def test_no_banner_before_generation(self, client):
-        """AI notice does not appear before suggestions are generated."""
+        """LLM notice does not appear before suggestions are generated."""
         response = client.get("/classes/1/analytics/reteach")
         html = response.data.decode()
         # The ai-notice should not be there when no suggestions exist yet
-        assert "AI-Generated Content" not in html or "suggestions" not in html.lower()
+        assert "LLM-Generated Content" not in html or "suggestions" not in html.lower()

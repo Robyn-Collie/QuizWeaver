@@ -8,6 +8,27 @@ and study_export.py to avoid code duplication.
 import re
 
 
+def sanitize_csv_cell(value):
+    """Prevent CSV formula injection by escaping dangerous prefixes.
+
+    Spreadsheet applications (Excel, Google Sheets, LibreOffice Calc) can
+    interpret cells starting with =, +, -, @, tab, or carriage return as
+    formulas, which may execute arbitrary commands. This function prefixes
+    such cells with a single quote to neutralize them.
+
+    Args:
+        value: The cell value to sanitize. Non-string values are returned as-is.
+
+    Returns:
+        The sanitized cell value.
+    """
+    if not isinstance(value, str):
+        return value
+    if value and value[0] in ('=', '+', '-', '@', '\t', '\r'):
+        return "'" + value
+    return value
+
+
 def sanitize_filename(title: str, default: str = "export") -> str:
     """Sanitize a title for use as a filename.
 

@@ -52,6 +52,10 @@
 
     {% include "partials/provider_select.html" %}
 
+    <div id="cost-estimate" class="cost-estimate-box" style="display:none" role="status" aria-live="polite">
+        <span id="cost-estimate-text"></span>
+    </div>
+
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Generate Exit Ticket</button>
         <a href="/study" class="btn btn-secondary">Cancel</a>
@@ -59,6 +63,53 @@
 </form>
 
 <script>
+// Cost estimate updater
+(function() {
+    var estimateBox = document.getElementById('cost-estimate');
+    var estimateText = document.getElementById('cost-estimate-text');
+    var providerSelect = document.getElementById('provider');
+    var numSelect = document.getElementById('num_questions');
+    var debounceTimer = null;
+
+    function updateEstimate() {
+        var provider = (providerSelect && providerSelect.value) ? providerSelect.value : '';
+        var numQuestions = numSelect ? numSelect.value : 3;
+        var url = '/api/estimate-cost?num_questions=' + encodeURIComponent(numQuestions);
+        if (provider) url += '&provider=' + encodeURIComponent(provider);
+
+        fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.is_mock) {
+                    estimateText.textContent = 'Free (mock mode)';
+                    estimateBox.className = 'cost-estimate-box cost-estimate-free';
+                } else {
+                    var text = 'Estimated cost: ' + data.estimated_cost;
+                    if (data.estimated_tokens) {
+                        text += ' (~' + data.estimated_tokens.toLocaleString() + ' tokens)';
+                    }
+                    estimateText.textContent = text;
+                    estimateBox.className = 'cost-estimate-box cost-estimate-normal';
+                }
+                estimateBox.style.display = 'block';
+            })
+            .catch(function() {
+                estimateBox.style.display = 'none';
+            });
+    }
+
+    function debouncedUpdate() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(updateEstimate, 300);
+    }
+
+    if (providerSelect) providerSelect.addEventListener('change', debouncedUpdate);
+    if (numSelect) numSelect.addEventListener('change', debouncedUpdate);
+
+    // Initial fetch on page load
+    updateEstimate();
+})();
+
 // Load lessons when class changes
 document.getElementById('class_id').addEventListener('change', function() {
     var classId = this.value;

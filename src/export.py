@@ -20,7 +20,7 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import sanitize_filename
+from src.export_utils import sanitize_csv_cell, sanitize_filename
 
 # Type normalization map: long form -> short form
 TYPE_MAP = {
@@ -227,9 +227,9 @@ def export_csv(quiz, questions, style_profile: Optional[dict] = None) -> str:
             [
                 nq["number"],
                 nq["type"],
-                nq["text"],
-                options_str,
-                nq["correct_answer"],
+                sanitize_csv_cell(nq["text"]),
+                sanitize_csv_cell(options_str),
+                sanitize_csv_cell(nq["correct_answer"]),
                 nq["points"],
                 nq["cognitive_level"] or "",
                 nq["cognitive_framework"] or "",
@@ -310,14 +310,16 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
                 correct_answer = nq["correct_answer"]
 
             writer.writerow([
-                nq["text"], "Multiple Choice",
-                options[0], options[1], options[2], options[3], options[4],
-                correct_answer, 30, "",
+                sanitize_csv_cell(nq["text"]), "Multiple Choice",
+                sanitize_csv_cell(options[0]), sanitize_csv_cell(options[1]),
+                sanitize_csv_cell(options[2]), sanitize_csv_cell(options[3]),
+                sanitize_csv_cell(options[4]),
+                sanitize_csv_cell(correct_answer), 30, "",
             ])
 
         elif q_type == "tf":
             writer.writerow([
-                nq["text"], "True or False",
+                sanitize_csv_cell(nq["text"]), "True or False",
                 "True", "False", "", "", "",
                 nq["correct_answer"] or "True", 30, "",
             ])

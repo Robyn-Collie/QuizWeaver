@@ -705,6 +705,33 @@ a:hover {
     font-weight: 500;
 }
 
+/* ===== Cost Estimate Box ===== */
+.cost-estimate-box {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.cost-estimate-free {
+    background: var(--success-light);
+    color: #2d7a54;
+    border: 1px solid rgba(45, 122, 84, 0.2);
+}
+.cost-estimate-normal {
+    background: var(--secondary-light);
+    color: var(--secondary-dark);
+    border: 1px solid rgba(42, 157, 143, 0.2);
+}
+.cost-estimate-warning {
+    background: var(--accent-light);
+    color: #8a6d00;
+    border: 1px solid rgba(233, 196, 106, 0.4);
+}
+.cost-estimate-warning::before {
+    content: "\26A0 ";
+}
+
 /* ===== AI Notices ===== */
 .ai-notice {
     background: var(--accent-light);
@@ -4185,6 +4212,12 @@ html {
     font-size: 0.85rem;
     color: #57606a;
     margin-bottom: 0.5rem;
+}
+.cost-mock-notice {
+    font-size: 0.95rem;
+    color: #1a7f37;
+    font-weight: 600;
+    margin: 0.5rem 0;
 }
 .critic-entry {
     padding: 0.5rem 0.75rem;

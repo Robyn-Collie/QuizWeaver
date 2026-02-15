@@ -20,7 +20,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 
 from src.classroom import get_class, list_classes
-from src.cost_tracking import check_budget, get_cost_summary, get_monthly_total
+from src.cost_tracking import check_budget, estimate_pipeline_cost, get_cost_summary, get_monthly_total
 from src.database import Question, Quiz, Rubric
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti, export_quizizz_csv
 from src.llm_provider import get_provider_info
@@ -614,6 +614,61 @@ def quiz_generate(class_id):
         providers=providers,
         current_provider=current_provider,
     )
+
+
+# --- Cost Estimate API ---
+
+
+@quizzes_bp.route("/api/estimate-cost")
+@login_required
+def estimate_cost():
+    """Return estimated cost for quiz generation based on form parameters."""
+    config = current_app.config["APP_CONFIG"]
+
+    # Allow provider override from query param; fall back to config default
+    provider_param = request.args.get("provider", "").strip()
+    num_questions = request.args.get("num_questions", 10, type=int)
+    num_questions = max(1, min(num_questions, 50))
+
+    # Build a temporary config with the requested provider
+    estimate_config = dict(config)
+    estimate_config["llm"] = dict(config.get("llm", {}))
+    if provider_param:
+        estimate_config["llm"]["provider"] = provider_param
+
+    try:
+        pipeline = estimate_pipeline_cost(estimate_config)
+    except Exception:
+        return jsonify({"estimated_cost": "$0.00", "error": "Could not calculate estimate"})
+
+    is_mock = pipeline["provider"] == "mock"
+
+    if is_mock:
+        return jsonify({
+            "estimated_cost": "$0.00",
+            "estimated_tokens": 0,
+            "model": "mock",
+            "is_mock": True,
+            "message": "Mock mode -- no API costs",
+        })
+
+    # Scale estimate by question count (base estimate assumes ~10 questions)
+    scale_factor = num_questions / 10.0
+    base_cost = pipeline["estimated_max_cost"]
+    scaled_cost = base_cost * scale_factor
+
+    # Estimate tokens: ~200 input + ~100 output per question, times pipeline calls
+    estimated_tokens = int((200 + 100) * num_questions * pipeline["max_calls"])
+
+    return jsonify({
+        "estimated_cost": f"${scaled_cost:.4f}",
+        "estimated_cost_raw": round(scaled_cost, 6),
+        "estimated_tokens": estimated_tokens,
+        "model": pipeline["model"],
+        "provider": pipeline["provider"],
+        "is_mock": False,
+        "max_calls": pipeline["max_calls"],
+    })
 
 
 # --- Costs ---

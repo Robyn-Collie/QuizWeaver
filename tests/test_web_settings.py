@@ -226,7 +226,7 @@ class TestGenerateProviderDropdown:
         resp = client.get("/classes/1/generate")
         assert resp.status_code == 200
         assert b'name="provider"' in resp.data
-        assert b"AI Provider" in resp.data
+        assert b"LLM Provider" in resp.data
 
     def test_generate_form_shows_available_providers(self, client):
         """Generate form lists providers with availability status."""

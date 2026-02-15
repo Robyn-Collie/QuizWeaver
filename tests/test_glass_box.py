@@ -292,3 +292,183 @@ class TestPipelineBackwardCompat:
         assert isinstance(result, Quiz), "generate_quiz should return a Quiz ORM object"
         assert result.status in ("generated", "needs_review")
         assert len(result.questions) > 0
+
+
+# ---------------------------------------------------------------------------
+# BL-042: Token usage and estimated cost in generation metadata
+# ---------------------------------------------------------------------------
+
+
+class TestTokenUsageInMetadata:
+    """Verify token_usage dict is included in generation_metadata."""
+
+    def test_metadata_includes_token_usage(self, db_session):
+        """generation_metadata has a token_usage dict with expected keys."""
+        session, db_path = db_session
+        config = _make_config(db_path)
+        class_id = _seed_class(session)
+
+        quiz = generate_quiz(session, class_id, config, num_questions=5)
+        assert quiz is not None
+        metadata = json.loads(quiz.generation_metadata)
+        assert "token_usage" in metadata, "metadata should contain token_usage"
+
+        tu = metadata["token_usage"]
+        assert "input_tokens" in tu
+        assert "output_tokens" in tu
+        assert "total_tokens" in tu
+        assert "estimated_cost" in tu
+        assert "is_mock" in tu
+
+    def test_mock_provider_is_mock_flag(self, db_session):
+        """Mock provider sets is_mock=True in token_usage."""
+        session, db_path = db_session
+        config = _make_config(db_path)
+        class_id = _seed_class(session)
+
+        quiz = generate_quiz(session, class_id, config, num_questions=5)
+        metadata = json.loads(quiz.generation_metadata)
+        assert metadata["token_usage"]["is_mock"] is True
+
+    def test_metrics_include_token_fields(self, db_session):
+        """metrics dict includes input_tokens, output_tokens, total_tokens."""
+        session, db_path = db_session
+        config = _make_config(db_path)
+        class_id = _seed_class(session)
+
+        quiz = generate_quiz(session, class_id, config, num_questions=5)
+        metadata = json.loads(quiz.generation_metadata)
+        m = metadata["metrics"]
+        assert "input_tokens" in m
+        assert "output_tokens" in m
+        assert "total_tokens" in m
+        assert m["total_tokens"] == m["input_tokens"] + m["output_tokens"]
+
+
+# ---------------------------------------------------------------------------
+# BL-042: Cost display on quiz detail page
+# ---------------------------------------------------------------------------
+
+
+class TestCostDisplayOnDetailPage:
+    """Verify the Generation Cost section renders in the quiz detail template."""
+
+    def test_cost_section_renders_with_token_usage(self, flask_app):
+        """Quiz detail page shows Generation Cost section when token_usage present."""
+        db_path = flask_app.config["APP_CONFIG"]["paths"]["database_file"]
+        engine = get_engine(db_path)
+        session = get_session(engine)
+
+        metadata = {
+            "prompt_summary": {"grade_level": "7th Grade", "num_questions": 10},
+            "metrics": {
+                "duration_seconds": 2.1,
+                "generator_calls": 2,
+                "critic_calls": 2,
+                "total_llm_calls": 4,
+                "errors": 0,
+                "attempts": 2,
+                "approved": True,
+                "input_tokens": 5000,
+                "output_tokens": 2000,
+                "total_tokens": 7000,
+            },
+            "critic_history": [],
+            "provider": "gemini",
+            "model": "gemini-2.5-flash",
+            "token_usage": {
+                "input_tokens": 5000,
+                "output_tokens": 2000,
+                "total_tokens": 7000,
+                "estimated_cost": 0.0020,
+                "is_mock": False,
+            },
+        }
+
+        quiz = Quiz(
+            title="Cost Display Quiz",
+            class_id=1,
+            status="generated",
+            style_profile=json.dumps({"provider": "gemini"}),
+            generation_metadata=json.dumps(metadata),
+        )
+        session.add(quiz)
+        session.commit()
+        quiz_id = quiz.id
+        session.close()
+        engine.dispose()
+
+        with flask_app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess["logged_in"] = True
+                sess["username"] = "teacher"
+            resp = client.get(f"/quizzes/{quiz_id}?skip_onboarding=1")
+            assert resp.status_code == 200
+            html = resp.data.decode()
+            assert "Generation Cost" in html
+            assert "5,000" in html  # input tokens formatted
+            assert "2,000" in html  # output tokens formatted
+            assert "7,000" in html  # total tokens formatted
+            assert "$0.0020" in html  # estimated cost
+
+    def test_mock_cost_shows_zero(self, flask_app):
+        """Mock provider shows $0.00 notice instead of token details."""
+        db_path = flask_app.config["APP_CONFIG"]["paths"]["database_file"]
+        engine = get_engine(db_path)
+        session = get_session(engine)
+
+        metadata = {
+            "prompt_summary": {"grade_level": "7th Grade", "num_questions": 5},
+            "metrics": {
+                "duration_seconds": 0.5,
+                "generator_calls": 1,
+                "critic_calls": 1,
+                "total_llm_calls": 2,
+                "errors": 0,
+                "attempts": 1,
+                "approved": False,
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+            },
+            "critic_history": [],
+            "provider": "mock",
+            "model": None,
+            "token_usage": {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "estimated_cost": 0.0,
+                "is_mock": True,
+            },
+        }
+
+        quiz = Quiz(
+            title="Mock Cost Quiz",
+            class_id=1,
+            status="generated",
+            style_profile=json.dumps({"provider": "mock"}),
+            generation_metadata=json.dumps(metadata),
+        )
+        session.add(quiz)
+        session.commit()
+        quiz_id = quiz.id
+        session.close()
+        engine.dispose()
+
+        with flask_app.test_client() as client:
+            with client.session_transaction() as sess:
+                sess["logged_in"] = True
+                sess["username"] = "teacher"
+            resp = client.get(f"/quizzes/{quiz_id}?skip_onboarding=1")
+            assert resp.status_code == 200
+            html = resp.data.decode()
+            assert "Generation Cost" in html
+            assert "$0.00 (mock mode" in html
+
+    def test_no_cost_section_without_metadata(self, flask_client):
+        """Old quizzes without generation_metadata show no cost section."""
+        resp = flask_client.get("/quizzes/1?skip_onboarding=1")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Generation Cost" not in html

@@ -14,7 +14,7 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text
+from src.export_utils import pdf_wrap_text, sanitize_csv_cell
 
 PROFICIENCY_LABELS = ["Beginning", "Developing", "Proficient", "Advanced"]
 
@@ -64,12 +64,12 @@ def export_rubric_csv(rubric, criteria) -> str:
             level_descs[label] = lv.get("description", "")
 
         row = [
-            c.criterion or "",
-            c.description or "",
+            sanitize_csv_cell(c.criterion or ""),
+            sanitize_csv_cell(c.description or ""),
             c.max_points or 0,
         ]
         for label in PROFICIENCY_LABELS:
-            row.append(level_descs.get(label, ""))
+            row.append(sanitize_csv_cell(level_descs.get(label, "")))
         writer.writerow(row)
 
     return output.getvalue()

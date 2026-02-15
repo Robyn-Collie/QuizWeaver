@@ -6,7 +6,7 @@
 
 <div class="help-toc info-box">
     <strong>On this page:</strong>
-    <a href="#understanding-ai">Understanding AI</a> |
+    <a href="#understanding-ai">Understanding Language Models</a> |
     <a href="#workflow">Workflow Overview</a> |
     <a href="#classes">Managing Classes</a> |
     <a href="#lessons">Logging Lessons</a> |
@@ -17,29 +17,29 @@
 </div>
 
 <section class="help-section" id="understanding-ai">
-    <h2>Understanding AI in QuizWeaver</h2>
-    <p>You do not need to be a tech expert to use AI responsibly. This section explains how QuizWeaver uses AI, what it can and cannot do, and how you stay in control.</p>
+    <h2>Understanding Language Models in QuizWeaver</h2>
+    <p>You do not need to be a tech expert to use language models responsibly. This section explains how QuizWeaver uses language models, what they can and cannot do, and how you stay in control.</p>
 
     <div class="help-accordion" id="aiLiteracyAccordion">
 
         <div class="help-accordion-item" data-accordion="ai-literacy">
-            <button class="help-accordion-toggle" aria-expanded="false">What is generative AI?</button>
+            <button class="help-accordion-toggle" aria-expanded="false">What is a generative language model?</button>
             <div class="help-accordion-body">
-                <p>Generative AI is a type of software that creates new text based on patterns it learned from large amounts of existing text. When QuizWeaver generates a quiz, it sends information about your lessons to an AI model, which produces draft questions as output.</p>
-                <p>Think of it like this: <strong>your lesson content goes in, the AI model processes it, and draft questions come out.</strong> The AI does not "understand" your lessons the way you do &mdash; it predicts what good quiz questions would look like based on the patterns it has seen.</p>
+                <p>A generative language model (often called an LLM, or large language model) is a type of software that creates new text based on patterns it learned from large amounts of existing text. When QuizWeaver generates a quiz, it sends information about your lessons to a language model, which produces draft questions as output.</p>
+                <p>Think of it like this: <strong>your lesson content goes in, the language model processes it, and draft questions come out.</strong> The model does not "understand" your lessons the way you do &mdash; it predicts what good quiz questions would look like based on the patterns it has seen.</p>
             </div>
         </div>
 
         <div class="help-accordion-item" data-accordion="ai-literacy">
             <button class="help-accordion-toggle" aria-expanded="false">Why does human review matter?</button>
             <div class="help-accordion-body">
-                <p>AI-generated content is a <strong>draft, not a deliverable</strong>. AI models can produce content that sounds confident but is inaccurate, incomplete, or biased. This is sometimes called "hallucination."</p>
+                <p>LLM-generated content is a <strong>draft, not a deliverable</strong>. Language models can produce content that sounds confident but is inaccurate, incomplete, or biased. This is sometimes called "hallucination."</p>
                 <ul>
-                    <li><strong>Accuracy</strong> &mdash; The AI may include facts that are wrong or slightly off. You know your content best.</li>
-                    <li><strong>Bias</strong> &mdash; AI models reflect patterns from their training data, which may include cultural or demographic biases.</li>
+                    <li><strong>Accuracy</strong> &mdash; The model may include facts that are wrong or slightly off. You know your content best.</li>
+                    <li><strong>Bias</strong> &mdash; Language models reflect patterns from their training data, which may include cultural or demographic biases.</li>
                     <li><strong>Appropriateness</strong> &mdash; Only you know what is suitable for your specific students and classroom context.</li>
                 </ul>
-                <p>QuizWeaver is designed so you can edit, regenerate, or discard any AI-generated question before it reaches your students.</p>
+                <p>QuizWeaver is designed so you can edit, regenerate, or discard any LLM-generated question before it reaches your students.</p>
             </div>
         </div>
 
@@ -51,23 +51,23 @@
                     <li><strong>Which lessons</strong> informed the quiz &mdash; the assumed knowledge panel on each class page</li>
                     <li><strong>Which standards</strong> were targeted &mdash; SOL alignment shown on quiz detail pages</li>
                     <li><strong>Which cognitive framework</strong> was used &mdash; Bloom's Taxonomy or Webb's DOK levels on each question</li>
-                    <li><strong>What the AI was asked to do</strong> &mdash; the generation parameters (question count, difficulty, grade level) are visible on every quiz</li>
+                    <li><strong>What the language model was asked to do</strong> &mdash; the generation parameters (question count, difficulty, grade level) are visible on every quiz</li>
                 </ul>
-                <p>This transparency helps you evaluate whether the AI output meets your teaching goals.</p>
+                <p>This transparency helps you evaluate whether the generated output meets your teaching goals.</p>
             </div>
         </div>
 
         <div class="help-accordion-item" data-accordion="ai-literacy">
-            <button class="help-accordion-toggle" aria-expanded="false">Rules the AI must follow (deterministic layers)</button>
+            <button class="help-accordion-toggle" aria-expanded="false">Rules the language model must follow (deterministic layers)</button>
             <div class="help-accordion-body">
-                <p>Not everything in QuizWeaver is AI-generated. Important educational constraints are enforced by <strong>rules, not AI</strong>:</p>
+                <p>Not everything in QuizWeaver is LLM-generated. Important educational constraints are enforced by <strong>rules, not the language model</strong>:</p>
                 <ul>
-                    <li><strong>Bloom's Taxonomy / Webb's DOK</strong> &mdash; Cognitive level distribution is calculated by rules, not guessed by the AI</li>
+                    <li><strong>Bloom's Taxonomy / Webb's DOK</strong> &mdash; Cognitive level distribution is calculated by rules, not guessed by the language model</li>
                     <li><strong>Rubric criteria</strong> &mdash; Proficiency levels (Beginning, Developing, Proficient, Advanced) follow a fixed structure</li>
                     <li><strong>Question type distribution</strong> &mdash; The mix of multiple-choice, short answer, and other types follows your settings</li>
-                    <li><strong>Standards alignment</strong> &mdash; SOL standards are matched using your input, not AI interpretation</li>
+                    <li><strong>Standards alignment</strong> &mdash; SOL standards are matched using your input, not language model interpretation</li>
                 </ul>
-                <p>This means the AI operates within boundaries you control. It generates content, but the structure comes from well-established educational frameworks.</p>
+                <p>This means the language model operates within boundaries you control. It generates content, but the structure comes from well-established educational frameworks.</p>
             </div>
         </div>
 
@@ -77,17 +77,17 @@
                 <p>QuizWeaver is designed with <strong>privacy by default</strong>:</p>
                 <ul>
                     <li><strong>Your database is local</strong> &mdash; All classes, lessons, quizzes, and performance data are stored on your computer (or server) in a SQLite database. Nothing is sent to a cloud database.</li>
-                    <li><strong>What is sent to the AI</strong> &mdash; When generating a quiz with a real provider, QuizWeaver sends your lesson summaries and topic lists to the AI model. No student names, grades, or personally identifiable information (PII) is ever included.</li>
+                    <li><strong>What is sent to the language model</strong> &mdash; When generating a quiz with a real provider, QuizWeaver sends your lesson summaries and topic lists to the language model. No student names, grades, or personally identifiable information (PII) is ever included.</li>
                     <li><strong>Mock mode sends nothing</strong> &mdash; When using the default Mock provider, no data leaves your computer at all. It is completely offline.</li>
                 </ul>
-                <p>You always control whether a real AI provider is connected. By default, QuizWeaver runs in Mock mode with no external data sharing.</p>
+                <p>You always control whether a real LLM provider is connected. By default, QuizWeaver runs in Mock mode with no external data sharing.</p>
             </div>
         </div>
 
         <div class="help-accordion-item" data-accordion="ai-literacy">
-            <button class="help-accordion-toggle" aria-expanded="false">Understanding AI costs</button>
+            <button class="help-accordion-toggle" aria-expanded="false">Understanding language model costs</button>
             <div class="help-accordion-body">
-                <p>AI providers charge based on <strong>tokens</strong> &mdash; small units of text (roughly one token per word). When QuizWeaver sends your lesson content to the AI and receives questions back, both the input and output are measured in tokens.</p>
+                <p>LLM providers charge based on <strong>tokens</strong> &mdash; small units of text (roughly one token per word). When QuizWeaver sends your lesson content to the language model and receives questions back, both the input and output are measured in tokens.</p>
                 <ul>
                     <li><strong>Mock mode is free</strong> &mdash; The default provider generates placeholder content at zero cost. Use this to explore QuizWeaver before connecting a real provider.</li>
                     <li><strong>Real providers have costs</strong> &mdash; Google Gemini, OpenAI, and other providers charge per token. QuizWeaver tracks all costs on the <a href="/costs">Costs page</a>.</li>
@@ -175,7 +175,7 @@
         <dd>Optionally target specific standards. Enter as comma-separated values (e.g., "SOL 7.1, SOL 7.2").</dd>
 
         <dt>Mock vs Real provider</dt>
-        <dd>By default, QuizWeaver uses <strong>Mock mode</strong>, which is a demo/testing mode that returns pre-written placeholder content. Mock-generated quizzes are <em>not</em> customized to your lessons &mdash; they use generic sample questions so you can explore the interface at zero cost. To generate real, lesson-aligned quizzes, <a href="/settings">configure a real AI provider</a> in Settings.</dd>
+        <dd>By default, QuizWeaver uses <strong>Mock mode</strong>, which is a demo/testing mode that returns pre-written placeholder content. Mock-generated quizzes are <em>not</em> customized to your lessons &mdash; they use generic sample questions so you can explore the interface at zero cost. To generate real, lesson-aligned quizzes, <a href="/settings">configure a real LLM provider</a> in Settings.</dd>
 
         <dt>Quiz status</dt>
         <dd><span class="status status-generated">generated</span> = ready to review,
@@ -186,7 +186,7 @@
 
 <section class="help-section" id="provider-setup">
     <h2>Provider Setup</h2>
-    <p>To generate quizzes customized to your lessons, connect a real AI provider. QuizWeaver supports several options:</p>
+    <p>To generate quizzes customized to your lessons, connect a real LLM provider. QuizWeaver supports several options:</p>
     <dl class="help-dl">
         <dt>Google Gemini</dt>
         <dd>Get a free API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Enter the key in <a href="/settings">Settings</a> and select the Gemini provider.</dd>

@@ -61,24 +61,24 @@ class TestAILiteracySection:
     """Test the Understanding AI in QuizWeaver section."""
 
     def test_section_exists(self, client):
-        """The AI literacy section is present on the help page."""
+        """The language model literacy section is present on the help page."""
         response = client.get("/help")
         html = response.data.decode()
         assert "understanding-ai" in html
-        assert "Understanding AI in QuizWeaver" in html
+        assert "Understanding Language Models in QuizWeaver" in html
 
     def test_toc_link_exists(self, client):
-        """Table of contents includes link to AI literacy section."""
+        """Table of contents includes link to language model literacy section."""
         response = client.get("/help")
         html = response.data.decode()
         assert 'href="#understanding-ai"' in html
-        assert "Understanding AI" in html
+        assert "Understanding Language Models" in html
 
-    def test_generative_ai_explanation(self, client):
-        """Section explains what generative AI is."""
+    def test_generative_language_model_explanation(self, client):
+        """Section explains what a generative language model is."""
         response = client.get("/help")
         html = response.data.decode()
-        assert "What is generative AI" in html
+        assert "What is a generative language model" in html
         assert "patterns" in html.lower()
 
     def test_human_review_explanation(self, client):
@@ -113,7 +113,7 @@ class TestAILiteracySection:
         assert "PII" in html or "personally identifiable" in html.lower()
 
     def test_cost_explanation(self, client):
-        """Section explains AI costs and tokens."""
+        """Section explains language model costs and tokens."""
         response = client.get("/help")
         html = response.data.decode()
         assert "token" in html.lower()
@@ -156,7 +156,7 @@ class TestAILiteracySection:
         assert 'rel="noopener"' in html
 
     def test_six_accordion_items(self, client):
-        """There are exactly six accordion items for the six AI topics."""
+        """There are exactly six accordion items for the six language model topics."""
         response = client.get("/help")
         html = response.data.decode()
         count = html.count('data-accordion="ai-literacy"')

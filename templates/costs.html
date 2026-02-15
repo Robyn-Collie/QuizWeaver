@@ -6,7 +6,7 @@
 
 {% if budget.enabled and budget.exceeded %}
 <div class="alert alert-error">
-    <strong>Budget Exceeded:</strong> You have spent ${{ "%.4f"|format(budget.spent) }} of your ${{ "%.2f"|format(budget.budget) }} monthly budget. Real AI generation will fall back to mock provider until next month or until you increase your budget.
+    <strong>Budget Exceeded:</strong> You have spent ${{ "%.4f"|format(budget.spent) }} of your ${{ "%.2f"|format(budget.budget) }} monthly budget. Real LLM generation will fall back to mock provider until next month or until you increase your budget.
 </div>
 {% elif budget.enabled and budget.warning %}
 <div class="alert alert-warning">

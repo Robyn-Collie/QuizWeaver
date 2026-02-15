@@ -211,7 +211,7 @@ class TestLessonPlanDetail:
 
     def test_detail_shows_ai_draft_banner(self, client):
         resp = client.get("/lesson-plans/1")
-        assert b"AI-generated draft" in resp.data
+        assert b"LLM-generated draft" in resp.data
 
     def test_detail_not_found(self, client):
         resp = client.get("/lesson-plans/9999")
