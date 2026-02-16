@@ -152,10 +152,10 @@ class TestStandardsSearchAPI:
         assert "strand" in result
 
     def test_search_limits_results(self, client):
-        # Should return at most 20 results
+        # Should return at most 50 results
         resp = client.get("/api/standards/search?q=SOL")
         data = resp.get_json()
-        assert len(data["results"]) <= 20
+        assert len(data["results"]) <= 50
 
     def test_search_requires_login(self, app):
         client = app.test_client()

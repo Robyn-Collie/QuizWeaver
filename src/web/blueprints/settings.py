@@ -327,6 +327,8 @@ def api_standards_search():
         grade_band=grade_band or None,
         standard_set=standard_set or None,
     )
+    total_results = len(results)
+    limited = results[:50]
     return jsonify(
         {
             "results": [
@@ -339,8 +341,10 @@ def api_standards_search():
                     "strand": std.strand,
                     "standard_set": std.standard_set or "sol",
                 }
-                for std in results[:20]  # Limit autocomplete results
-            ]
+                for std in limited
+            ],
+            "total": total_results,
+            "truncated": total_results > 50,
         }
     )
 

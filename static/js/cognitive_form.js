@@ -58,15 +58,12 @@ function computeDefaultCounts(framework, total) {
     return counts;
 }
 
-const QUESTION_TYPES = ["mc", "tf", "fill_in_blank", "short_answer", "matching", "essay"];
-const QUESTION_TYPE_LABELS = {
-    "mc": "MC", "tf": "T/F", "fill_in_blank": "Fill-in",
-    "short_answer": "Short Ans", "matching": "Match", "essay": "Essay"
-};
-
 const DIFFICULTY_LABELS = {
-    1: "1 - Easy", 2: "2 - Below Average", 3: "3 - Moderate",
-    4: "4 - Challenging", 5: "5 - Expert"
+    1: "1 - Basic recall",
+    2: "2 - Below grade level",
+    3: "3 - Grade-level application",
+    4: "4 - Challenging analysis",
+    5: "5 - Evaluation and synthesis"
 };
 
 (function() {
@@ -161,25 +158,6 @@ const DIFFICULTY_LABELS = {
             tdCount.appendChild(countInput);
             tr.appendChild(tdCount);
 
-            // Question types cell
-            var tdTypes = document.createElement("td");
-            var typesDiv = document.createElement("div");
-            typesDiv.className = "type-checkboxes";
-            QUESTION_TYPES.forEach(function(qtype) {
-                var lbl = document.createElement("label");
-                var cb = document.createElement("input");
-                cb.type = "checkbox";
-                cb.className = "type-cb";
-                cb.setAttribute("data-level", level.number);
-                cb.value = qtype;
-                if (qtype === "mc") cb.checked = true;
-                lbl.appendChild(cb);
-                lbl.appendChild(document.createTextNode(" " + QUESTION_TYPE_LABELS[qtype]));
-                typesDiv.appendChild(lbl);
-            });
-            tdTypes.appendChild(typesDiv);
-            tr.appendChild(tdTypes);
-
             tbody.appendChild(tr);
         });
         updateTotal();
@@ -241,7 +219,7 @@ const DIFFICULTY_LABELS = {
         difficultyLabel.textContent = DIFFICULTY_LABELS[parseInt(this.value)] || this.value;
     });
 
-    // Form submit handler
+    // Form submit handler — serialize cognitive distribution
     form.addEventListener("submit", function(e) {
         var framework = hiddenFramework.value;
 
@@ -265,17 +243,12 @@ const DIFFICULTY_LABELS = {
             return;
         }
 
-        // Serialize distribution as JSON
+        // Serialize distribution as JSON — counts only, no per-level types
         var distribution = {};
         inputs.forEach(function(input) {
             var level = input.getAttribute("data-level");
             var count = parseInt(input.value) || 0;
-            var types = [];
-            var checkboxes = document.querySelectorAll('.type-cb[data-level="' + level + '"]');
-            checkboxes.forEach(function(cb) {
-                if (cb.checked) types.push(cb.value);
-            });
-            distribution[level] = {count: count, types: types};
+            distribution[level] = {count: count};
         });
 
         hiddenDistribution.value = JSON.stringify(distribution);

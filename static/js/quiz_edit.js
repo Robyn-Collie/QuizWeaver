@@ -7,6 +7,11 @@
 
   // --- Helpers ---
 
+  function getCsrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute("content") : "";
+  }
+
   function apiCall(url, options) {
     return fetch(url, options).then(function (r) {
       return r.json().then(function (data) {
@@ -18,7 +23,7 @@
   function jsonPut(url, body) {
     return apiCall(url, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
       body: JSON.stringify(body),
     });
   }
@@ -26,13 +31,13 @@
   function jsonPost(url, body) {
     return apiCall(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-CSRFToken": getCsrfToken() },
       body: JSON.stringify(body),
     });
   }
 
   function jsonDelete(url) {
-    return apiCall(url, { method: "DELETE" });
+    return apiCall(url, { method: "DELETE", headers: { "X-CSRFToken": getCsrfToken() } });
   }
 
   function renumberQuestions() {
@@ -251,6 +256,19 @@
       return;
     }
 
+    // Clear suggested image description
+    if (btn.classList.contains("btn-clear-image-desc")) {
+      jsonDelete("/api/questions/" + questionId + "/image-description").then(
+        function (res) {
+          if (res.data.ok) {
+            var placeholder = card.querySelector(".image-placeholder");
+            if (placeholder) placeholder.remove();
+          }
+        }
+      );
+      return;
+    }
+
     // Regen button -> show panel
     if (btn.classList.contains("btn-regen-question")) {
       card.querySelector(".question-view-mode").style.display = "none";
@@ -269,6 +287,7 @@
     // Submit regen
     if (btn.classList.contains("btn-regen-submit")) {
       var notes = card.querySelector(".regen-notes").value.trim();
+      card.classList.add("regenerating");
       if (window.QWLoading) {
         window.QWLoading.setBtnLoading(btn, "Regenerating...");
       } else {
@@ -278,6 +297,7 @@
       jsonPost("/api/questions/" + questionId + "/regenerate", {
         teacher_notes: notes,
       }).then(function (res) {
+        card.classList.remove("regenerating");
         if (window.QWLoading) {
           window.QWLoading.resetBtn(btn);
         } else {
@@ -339,6 +359,7 @@
 
     fetch("/api/questions/" + questionId + "/image", {
       method: "POST",
+      headers: { "X-CSRFToken": getCsrfToken() },
       body: formData,
     })
       .then(function (r) {

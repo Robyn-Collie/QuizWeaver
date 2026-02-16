@@ -212,7 +212,11 @@ def class_quizzes(class_id):
 @quizzes_bp.route("/quizzes/<int:quiz_id>/export/<format_name>")
 @login_required
 def quiz_export(quiz_id, format_name):
-    """Download a quiz in the requested format (csv, docx, gift, pdf, qti)."""
+    """Download a quiz in the requested format (csv, docx, gift, pdf, qti).
+
+    Pass ``?student=1`` to get a student-friendly export (no answers
+    highlighted, no cognitive levels, no answer key inline).
+    """
     if format_name not in ("csv", "docx", "gift", "pdf", "qti", "quizizz"):
         abort(404)
 
@@ -222,6 +226,8 @@ def quiz_export(quiz_id, format_name):
         abort(404)
 
     questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
+
+    student_mode = request.args.get("student") == "1"
 
     # Parse style_profile
     style_profile = quiz.style_profile
@@ -248,22 +254,23 @@ def quiz_export(quiz_id, format_name):
     # Sanitize title for filename
     safe_title = re.sub(r"[^\w\s\-]", "", quiz.title or "quiz")
     safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "quiz"
+    suffix = "_student" if student_mode else ""
 
     if format_name == "csv":
-        csv_str = export_csv(quiz, questions, style_profile)
+        csv_str = export_csv(quiz, questions, style_profile, student_mode=student_mode)
         buf = BytesIO(csv_str.encode("utf-8"))
         return send_file(
             buf,
             as_attachment=True,
-            download_name=f"{safe_title}.csv",
+            download_name=f"{safe_title}{suffix}.csv",
             mimetype="text/csv",
         )
     elif format_name == "docx":
-        buf = export_docx(quiz, questions, style_profile)
+        buf = export_docx(quiz, questions, style_profile, student_mode=student_mode)
         return send_file(
             buf,
             as_attachment=True,
-            download_name=f"{safe_title}.docx",
+            download_name=f"{safe_title}{suffix}.docx",
             mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
     elif format_name == "gift":
@@ -276,11 +283,11 @@ def quiz_export(quiz_id, format_name):
             mimetype="text/plain",
         )
     elif format_name == "pdf":
-        buf = export_pdf(quiz, questions, style_profile)
+        buf = export_pdf(quiz, questions, style_profile, student_mode=student_mode)
         return send_file(
             buf,
             as_attachment=True,
-            download_name=f"{safe_title}.pdf",
+            download_name=f"{safe_title}{suffix}.pdf",
             mimetype="application/pdf",
         )
     elif format_name == "qti":
@@ -492,6 +499,31 @@ def api_question_image_remove(question_id):
     return jsonify({"ok": True})
 
 
+@quizzes_bp.route("/api/questions/<int:question_id>/image-description", methods=["DELETE"])
+@login_required
+def api_question_image_description_remove(question_id):
+    """Clear the image_description field from a question's data."""
+    session = _get_session()
+    question = session.query(Question).filter_by(id=question_id).first()
+    if not question:
+        return jsonify({"ok": False, "error": "Question not found"}), 404
+
+    q_data = question.data
+    if isinstance(q_data, str):
+        q_data = json.loads(q_data)
+    if not isinstance(q_data, dict):
+        q_data = {}
+    q_data.pop("image_description", None)
+
+    question.data = q_data
+    from sqlalchemy.orm.attributes import flag_modified
+
+    flag_modified(question, "data")
+    session.commit()
+
+    return jsonify({"ok": True})
+
+
 @quizzes_bp.route("/api/questions/<int:question_id>/regenerate", methods=["POST"])
 @login_required
 def api_question_regenerate(question_id):
@@ -561,6 +593,15 @@ def quiz_generate(class_id):
         sol_raw = request.form.get("sol_standards", "").strip()
         sol_standards = [s.strip() for s in sol_raw.split(",") if s.strip()] if sol_raw else None
 
+        # Parse topics and content text (F1 + F3)
+        topics = request.form.get("topics", "").strip()
+        content_text = request.form.get("content_text", "").strip()
+
+        # Parse independent question types (F6)
+        question_types = request.form.getlist("question_types")
+        if not question_types:
+            question_types = ["mc", "tf"]  # sensible default
+
         # Parse cognitive framework fields
         cognitive_framework = request.form.get("cognitive_framework", "").strip() or None
         cognitive_distribution = None
@@ -587,6 +628,9 @@ def quiz_generate(class_id):
                 cognitive_distribution=cognitive_distribution,
                 difficulty=difficulty,
                 provider_name=provider_override,
+                topics=topics,
+                content_text=content_text,
+                question_types=question_types,
             )
         except Exception as e:
             quiz = None

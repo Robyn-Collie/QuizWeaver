@@ -106,14 +106,21 @@ function initStandardsPicker(opts) {
                 dropdownResults = (data.results || []).filter(function(item) {
                     return selected.indexOf(item.code) === -1;
                 });
+                lastTruncated = data.truncated || false;
+                lastTotal = data.total || dropdownResults.length;
                 highlightIndex = -1;
                 renderDropdown();
             })
             .catch(function() {
                 dropdownResults = [];
+                lastTruncated = false;
+                lastTotal = 0;
                 renderDropdown();
             });
     }
+
+    var lastTruncated = false;
+    var lastTotal = 0;
 
     function renderDropdown() {
         dropdown.innerHTML = '';
@@ -137,6 +144,12 @@ function initStandardsPicker(opts) {
             });
             dropdown.appendChild(option);
         });
+        if (lastTruncated) {
+            var truncMsg = document.createElement('div');
+            truncMsg.className = 'picker-truncated';
+            truncMsg.textContent = 'Showing first 50 of ' + lastTotal + ' results \u2014 refine your search for more.';
+            dropdown.appendChild(truncMsg);
+        }
         dropdown.classList.add('open');
     }
 

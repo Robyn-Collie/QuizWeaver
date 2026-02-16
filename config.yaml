@@ -1,5 +1,5 @@
 paths:
-  database_file: C:\Users\andre\AppData\Local\Temp\tmpsibaliqq.db
+  database_file: quiz_warehouse.db
 llm:
   provider: mock
 generation:

@@ -34,6 +34,9 @@ def generate_quiz(
     cognitive_distribution: Optional[dict] = None,
     difficulty: int = 3,
     provider_name: Optional[str] = None,
+    topics: str = "",
+    content_text: str = "",
+    question_types: Optional[List[str]] = None,
 ) -> Optional[Quiz]:
     """
     Generate a quiz for a given class using the agentic pipeline.
@@ -51,6 +54,9 @@ def generate_quiz(
         difficulty: Difficulty level 1-5 (default 3)
         provider_name: Override provider (e.g., "openai", "mock"). If None,
                        uses config default.
+        topics: Comma-separated topics string (e.g., "cell transport, osmosis")
+        content_text: Free-text content/instructions for quiz generation
+        question_types: List of allowed question types (e.g., ["mc", "tf", "short_answer"])
 
     Returns:
         A Quiz ORM object with questions attached, or None on failure
@@ -90,6 +96,7 @@ def generate_quiz(
             validated_distribution = None
 
     # Build style profile
+    resolved_question_types = question_types or ["mc", "tf"]
     style_profile = {
         "grade_level": resolved_grade,
         "sol_standards": resolved_sol,
@@ -99,6 +106,8 @@ def generate_quiz(
         "difficulty": difficulty,
         "provider": run_config.get("llm", {}).get("provider", "mock"),
         "model": run_config.get("llm", {}).get("model"),
+        "topics": topics,
+        "question_types": resolved_question_types,
     }
 
     # Create quiz record with status "generating"
@@ -112,9 +121,18 @@ def generate_quiz(
     session.add(new_quiz)
     session.commit()
 
+    # Build content_summary from user-provided topics + content_text
+    content_parts = []
+    if content_text:
+        content_parts.append(content_text)
+    if topics:
+        content_parts.append(f"Topics: {topics}")
+    content_summary = "\n\n".join(content_parts)
+
     # Build generation context
     context = {
-        "content_summary": "",
+        "content_summary": content_summary,
+        "user_provided_content": bool(content_text or topics),
         "structured_data": [],
         "retake_text": "",
         "num_questions": num_questions,
@@ -126,6 +144,9 @@ def generate_quiz(
         "cognitive_distribution": validated_distribution,
         "difficulty": difficulty,
     }
+    # Only include question_types in context when explicitly provided
+    if question_types:
+        context["question_types"] = resolved_question_types
 
     # Run the agentic pipeline (enriches context with class lessons/knowledge)
     generation_metadata = None

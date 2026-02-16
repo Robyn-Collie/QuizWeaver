@@ -147,10 +147,17 @@
 
 <div class="export-actions">
     <button class="btn-print" onclick="window.print()">Print</button>
-    <span class="export-label">Export:</span>
+
+    <span class="export-label">Teacher Copy (with answers):</span>
     <a href="/quizzes/{{ quiz.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
     <a href="/quizzes/{{ quiz.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
     <a href="/quizzes/{{ quiz.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
+
+    <span class="export-label">Student Copy (no answers):</span>
+    <a href="/quizzes/{{ quiz.id }}/export/docx?student=1" class="btn btn-sm btn-outline">Word</a>
+    <a href="/quizzes/{{ quiz.id }}/export/pdf?student=1" class="btn btn-sm btn-outline">PDF</a>
+
+    <span class="export-label">LMS Import:</span>
     <a href="/quizzes/{{ quiz.id }}/export/gift" class="btn btn-sm btn-outline">GIFT (Moodle)</a>
     <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
     <a href="/quizzes/{{ quiz.id }}/export/quizizz" class="btn btn-sm btn-outline">Quizizz CSV</a>
@@ -248,6 +255,7 @@
         {% elif q.data and q.data.image_description is defined and q.data.image_description %}
         <div class="image-placeholder">
             <strong>Suggested image:</strong> {{ q.data.image_description }}
+            <button class="btn-clear-image-desc" title="Remove suggested image" aria-label="Remove suggested image description">&times;</button>
         </div>
         {% elif q.data and q.data.image is defined and q.data.image %}
         <div class="question-image-external" data-src="{{ q.data.image }}">
@@ -337,6 +345,13 @@
             {% endif %}
             {% endfor %}
         </ul>
+        {% endif %}
+
+        {# Word bank for fill-in questions #}
+        {% if q.data and q.data.word_bank is defined and q.data.word_bank %}
+        <div class="word-bank">
+            <strong>Word Bank:</strong> {{ q.data.word_bank|join(', ') }}
+        </div>
         {% endif %}
 
         {% if q.data %}

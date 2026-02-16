@@ -107,6 +107,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "expected_answer": expected_answer,
         "acceptable_answers": acceptable_answers,
         "rubric_hint": rubric_hint,
+        "word_bank": data.get("word_bank"),
         "points": question_obj.points or data.get("points", 0),
         "cognitive_level": data.get("cognitive_level"),
         "cognitive_framework": data.get("cognitive_framework"),
@@ -192,13 +193,16 @@ def _sanitize_filename(title: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def export_csv(quiz, questions, style_profile: Optional[dict] = None) -> str:
+def export_csv(
+    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
+) -> str:
     """Export quiz questions to CSV format.
 
     Args:
         quiz: Quiz ORM object.
         questions: List of Question ORM objects.
         style_profile: Parsed style profile dict (optional).
+        student_mode: If True, omit correct answer and cognitive columns.
 
     Returns:
         CSV string with headers and question rows.
@@ -207,34 +211,48 @@ def export_csv(quiz, questions, style_profile: Optional[dict] = None) -> str:
     writer = csv.writer(output)
 
     # Header row
-    writer.writerow(
-        [
-            "#",
-            "Type",
-            "Question",
-            "Options",
-            "Correct Answer",
-            "Points",
-            "Cognitive Level",
-            "Framework",
-        ]
-    )
+    if student_mode:
+        writer.writerow(["#", "Type", "Question", "Options", "Points"])
+    else:
+        writer.writerow(
+            [
+                "#",
+                "Type",
+                "Question",
+                "Options",
+                "Correct Answer",
+                "Points",
+                "Cognitive Level",
+                "Framework",
+            ]
+        )
 
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         options_str = _format_options_csv(nq)
-        writer.writerow(
-            [
-                nq["number"],
-                nq["type"],
-                sanitize_csv_cell(nq["text"]),
-                sanitize_csv_cell(options_str),
-                sanitize_csv_cell(nq["correct_answer"]),
-                nq["points"],
-                nq["cognitive_level"] or "",
-                nq["cognitive_framework"] or "",
-            ]
-        )
+        if student_mode:
+            writer.writerow(
+                [
+                    nq["number"],
+                    nq["type"],
+                    sanitize_csv_cell(nq["text"]),
+                    sanitize_csv_cell(options_str),
+                    nq["points"],
+                ]
+            )
+        else:
+            writer.writerow(
+                [
+                    nq["number"],
+                    nq["type"],
+                    sanitize_csv_cell(nq["text"]),
+                    sanitize_csv_cell(options_str),
+                    sanitize_csv_cell(nq["correct_answer"]),
+                    nq["points"],
+                    nq["cognitive_level"] or "",
+                    nq["cognitive_framework"] or "",
+                ]
+            )
 
     return output.getvalue()
 
@@ -339,13 +357,18 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
 # ---------------------------------------------------------------------------
 
 
-def export_docx(quiz, questions, style_profile: Optional[dict] = None) -> io.BytesIO:
+def export_docx(
+    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
+) -> io.BytesIO:
     """Export quiz to a Word document.
 
     Args:
         quiz: Quiz ORM object.
         questions: List of Question ORM objects.
         style_profile: Parsed style profile dict (optional).
+        student_mode: If True, suppress correct-answer highlighting,
+            cognitive levels, image descriptions, and move answer key
+            to a separate page without inline hints.
 
     Returns:
         BytesIO buffer containing the .docx file.
@@ -359,8 +382,12 @@ def export_docx(quiz, questions, style_profile: Optional[dict] = None) -> io.Byt
     title = doc.add_heading(quiz.title or "Quiz", level=1)
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    # Info block
-    _add_docx_info(doc, quiz, style_profile)
+    # Info block (skip provider/generated-by in student mode)
+    _add_docx_info(doc, quiz, style_profile, student_mode=student_mode)
+
+    # Name / Date line for student copies
+    if student_mode:
+        doc.add_paragraph("Name: ____________________________  Date: ____________")
 
     # Questions section
     doc.add_heading("Questions", level=2)
@@ -369,12 +396,13 @@ def export_docx(quiz, questions, style_profile: Optional[dict] = None) -> io.Byt
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        _add_docx_question(doc, nq)
+        _add_docx_question(doc, nq, student_mode=student_mode)
 
-    # Answer key (new page)
-    doc.add_page_break()
-    doc.add_heading("Answer Key", level=2)
-    _add_docx_answer_key(doc, normalized)
+    # Answer key (new page) — only in teacher mode
+    if not student_mode:
+        doc.add_page_break()
+        doc.add_heading("Answer Key", level=2)
+        _add_docx_answer_key(doc, normalized)
 
     # Save to buffer
     buf = io.BytesIO()
@@ -383,7 +411,7 @@ def export_docx(quiz, questions, style_profile: Optional[dict] = None) -> io.Byt
     return buf
 
 
-def _add_docx_info(doc, quiz, style_profile: dict):
+def _add_docx_info(doc, quiz, style_profile: dict, student_mode: bool = False):
     """Add quiz metadata info block to the document."""
     info_lines = []
 
@@ -393,19 +421,20 @@ def _add_docx_info(doc, quiz, style_profile: dict):
             sol = ", ".join(sol)
         info_lines.append(f"Standards: {sol}")
 
-    framework = style_profile.get("cognitive_framework")
-    if framework:
-        info_lines.append(f"Framework: {framework.capitalize()}")
+    if not student_mode:
+        framework = style_profile.get("cognitive_framework")
+        if framework:
+            info_lines.append(f"Framework: {framework.capitalize()}")
 
-    difficulty = style_profile.get("difficulty")
-    if difficulty:
-        info_lines.append(f"Difficulty: {difficulty}/5")
+        difficulty = style_profile.get("difficulty")
+        if difficulty:
+            info_lines.append(f"Difficulty: {difficulty}/5")
 
-    provider = style_profile.get("provider")
-    model = style_profile.get("model")
-    if provider:
-        generated_by = model if model else provider
-        info_lines.append(f"Generated by: {generated_by}")
+        provider = style_profile.get("provider")
+        model = style_profile.get("model")
+        if provider:
+            generated_by = model if model else provider
+            info_lines.append(f"Generated by: {generated_by}")
 
     created = getattr(quiz, "created_at", None)
     if created:
@@ -420,13 +449,13 @@ def _add_docx_info(doc, quiz, style_profile: dict):
             p.style.font.size = Pt(10)
 
 
-def _add_docx_question(doc, nq: dict):
+def _add_docx_question(doc, nq: dict, student_mode: bool = False):
     """Add a single question to the Word document."""
     # Question header: "1. [MC] (5 pts) - Remember"
     header_parts = [f"{nq['number']}."]
     header_parts.append(f"[{nq['type'].upper()}]")
     header_parts.append(f"({nq['points']} pts)")
-    if nq["cognitive_level"]:
+    if nq["cognitive_level"] and not student_mode:
         header_parts.append(f"- {nq['cognitive_level']}")
 
     p = doc.add_paragraph()
@@ -437,15 +466,29 @@ def _add_docx_question(doc, nq: dict):
     # Question text
     doc.add_paragraph(nq["text"])
 
+    # Image description — teacher mode only
+    if not student_mode and nq.get("image_description"):
+        p = doc.add_paragraph()
+        run = p.add_run(f"Suggested image: {nq['image_description']}")
+        run.italic = True
+        run.font.size = Pt(9)
+
     # Answer area based on type
     if nq["type"] == "mc":
-        _add_docx_mc_options(doc, nq)
+        _add_docx_mc_options(doc, nq, student_mode=student_mode)
     elif nq["type"] == "tf":
-        _add_docx_tf_options(doc, nq)
+        _add_docx_tf_options(doc, nq, student_mode=student_mode)
     elif nq["type"] in ("fill_in",):
-        doc.add_paragraph("Answer: ____________________")
+        doc.add_paragraph("Answer: " + "_" * 40)
+        # Word bank if available
+        word_bank = nq.get("word_bank")
+        if word_bank:
+            p = doc.add_paragraph()
+            run = p.add_run("Word Bank: " + ", ".join(word_bank))
+            run.italic = True
+            run.font.size = Pt(10)
     elif nq["type"] == "short_answer":
-        if nq.get("rubric_hint"):
+        if nq.get("rubric_hint") and not student_mode:
             p = doc.add_paragraph()
             run = p.add_run(f"(Hint: {nq['rubric_hint']})")
             run.italic = True
@@ -464,24 +507,31 @@ def _add_docx_question(doc, nq: dict):
     doc.add_paragraph("")
 
 
-def _add_docx_mc_options(doc, nq: dict):
-    """Add multiple choice options with correct answer bolded."""
+def _add_docx_mc_options(doc, nq: dict, student_mode: bool = False):
+    """Add multiple choice options with A/B/C/D lettering.
+
+    In teacher mode the correct answer is bolded.
+    In student mode all options render identically.
+    """
     letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     for j, opt in enumerate(nq["options"]):
         letter = letters[j] if j < len(letters) else str(j)
-        p = doc.add_paragraph(style="List Bullet")
-        text = f"{letter}. {opt}"
+        p = doc.add_paragraph()
+        text = f"    {letter}. {opt}"
         run = p.add_run(text)
-        if str(opt) == nq["correct_answer"]:
+        if not student_mode and str(opt) == nq["correct_answer"]:
             run.bold = True
 
 
-def _add_docx_tf_options(doc, nq: dict):
-    """Add True/False options with correct bolded."""
-    for val in ["True", "False"]:
-        p = doc.add_paragraph(style="List Bullet")
-        run = p.add_run(val)
-        if val == nq["correct_answer"]:
+def _add_docx_tf_options(doc, nq: dict, student_mode: bool = False):
+    """Add True/False options with A/B lettering.
+
+    In teacher mode the correct answer is bolded.
+    """
+    for opt_letter, val in [("A", "True"), ("B", "False")]:
+        p = doc.add_paragraph()
+        run = p.add_run(f"    {opt_letter}. {val}")
+        if not student_mode and val == nq["correct_answer"]:
             run.bold = True
 
 
@@ -689,13 +739,17 @@ def _gift_essay(title: str, text: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def export_pdf(quiz, questions, style_profile: Optional[dict] = None) -> io.BytesIO:
+def export_pdf(
+    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
+) -> io.BytesIO:
     """Export quiz to a PDF document.
 
     Args:
         quiz: Quiz ORM object.
         questions: List of Question ORM objects.
         style_profile: Parsed style profile dict (optional).
+        student_mode: If True, suppress correct-answer info inline,
+            cognitive levels, image descriptions, and omit answer key.
 
     Returns:
         BytesIO buffer containing the PDF file.
@@ -716,10 +770,18 @@ def export_pdf(quiz, questions, style_profile: Optional[dict] = None) -> io.Byte
 
     # Info block
     c.setFont("Helvetica", 10)
-    info_lines = _pdf_info_lines(quiz, style_profile)
+    info_lines = _pdf_info_lines(quiz, style_profile, student_mode=student_mode)
     for line in info_lines:
         c.drawCentredString(width / 2, y, line)
         y -= 14
+
+    # Name / Date line for student copies
+    if student_mode:
+        y -= 10
+        c.setFont("Helvetica", 11)
+        c.drawString(50, y, "Name: ____________________________  Date: ____________")
+        y -= 14
+
     y -= 20
 
     # --- Questions ---
@@ -731,32 +793,33 @@ def export_pdf(quiz, questions, style_profile: Optional[dict] = None) -> io.Byte
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        y = _pdf_draw_question(c, nq, y, width, height)
+        y = _pdf_draw_question(c, nq, y, width, height, student_mode=student_mode)
 
-    # --- Answer Key (new page) ---
-    c.showPage()
-    y = height - 50
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, y, "Answer Key")
-    y -= 24
+    # --- Answer Key (new page) — teacher mode only ---
+    if not student_mode:
+        c.showPage()
+        y = height - 50
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, y, "Answer Key")
+        y -= 24
 
-    c.setFont("Helvetica", 10)
-    for nq in normalized:
-        if y < 60:
-            c.showPage()
-            y = height - 50
-        answer = _pdf_answer_text(nq)
-        c.setFont("Helvetica-Bold", 10)
-        c.drawString(50, y, f"{nq['number']}.")
         c.setFont("Helvetica", 10)
-        y = _pdf_draw_wrapped_text(c, answer, 72, y, width - 122, height)
+        for nq in normalized:
+            if y < 60:
+                c.showPage()
+                y = height - 50
+            answer = _pdf_answer_text(nq)
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(50, y, f"{nq['number']}.")
+            c.setFont("Helvetica", 10)
+            y = _pdf_draw_wrapped_text(c, answer, 72, y, width - 122, height)
 
     c.save()
     buf.seek(0)
     return buf
 
 
-def _pdf_info_lines(quiz, style_profile: dict) -> List[str]:
+def _pdf_info_lines(quiz, style_profile: dict, student_mode: bool = False) -> List[str]:
     """Build info lines for the PDF title area."""
     lines = []
     sol = style_profile.get("sol_standards")
@@ -765,19 +828,20 @@ def _pdf_info_lines(quiz, style_profile: dict) -> List[str]:
             sol = ", ".join(sol)
         lines.append(f"Standards: {sol}")
 
-    framework = style_profile.get("cognitive_framework")
-    if framework:
-        lines.append(f"Framework: {framework.capitalize()}")
+    if not student_mode:
+        framework = style_profile.get("cognitive_framework")
+        if framework:
+            lines.append(f"Framework: {framework.capitalize()}")
 
-    difficulty = style_profile.get("difficulty")
-    if difficulty:
-        lines.append(f"Difficulty: {difficulty}/5")
+        difficulty = style_profile.get("difficulty")
+        if difficulty:
+            lines.append(f"Difficulty: {difficulty}/5")
 
-    provider = style_profile.get("provider")
-    model = style_profile.get("model")
-    if provider:
-        generated_by = model if model else provider
-        lines.append(f"Generated by: {generated_by}")
+        provider = style_profile.get("provider")
+        model = style_profile.get("model")
+        if provider:
+            generated_by = model if model else provider
+            lines.append(f"Generated by: {generated_by}")
 
     created = getattr(quiz, "created_at", None)
     if created:
@@ -789,7 +853,9 @@ def _pdf_info_lines(quiz, style_profile: dict) -> List[str]:
     return lines
 
 
-def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: float) -> float:
+def _pdf_draw_question(
+    c, nq: dict, y: float, page_width: float, page_height: float, student_mode: bool = False
+) -> float:
     """Draw a single question on the PDF canvas. Returns new y position."""
     # Check for page break
     if y < 120:
@@ -800,7 +866,7 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
     header_parts = [f"{nq['number']}."]
     header_parts.append(f"[{nq['type'].upper()}]")
     header_parts.append(f"({nq['points']} pts)")
-    if nq["cognitive_level"]:
+    if nq["cognitive_level"] and not student_mode:
         header_parts.append(f"- {nq['cognitive_level']}")
 
     c.setFont("Helvetica-Bold", 11)
@@ -811,8 +877,8 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
     c.setFont("Helvetica", 10)
     y = _pdf_draw_wrapped_text(c, nq["text"], 50, y, page_width - 100, page_height)
 
-    # Image description if present
-    if nq.get("image_description"):
+    # Image description — teacher mode only
+    if nq.get("image_description") and not student_mode:
         c.setFont("Helvetica-Oblique", 9)
         y = _pdf_draw_wrapped_text(c, f"[Image: {nq['image_description']}]", 60, y, page_width - 120, page_height)
         c.setFont("Helvetica", 10)
@@ -828,17 +894,25 @@ def _pdf_draw_question(c, nq: dict, y: float, page_width: float, page_height: fl
             c.drawString(70, y, f"{letter_label}. {opt}")
             y -= 14
     elif nq["type"] == "tf":
-        for val in ["True", "False"]:
+        for opt_letter, val in [("A", "True"), ("B", "False")]:
             if y < 60:
                 c.showPage()
                 y = page_height - 50
-            c.drawString(70, y, f"o  {val}")
+            c.drawString(70, y, f"{opt_letter}. {val}")
             y -= 14
     elif nq["type"] in ("fill_in",):
-        c.drawString(70, y, "Answer: ____________________")
+        # Wider blanks for fill-in questions
+        c.drawString(70, y, "Answer: " + "_" * 40)
         y -= 14
+        # Word bank if available
+        word_bank = nq.get("word_bank")
+        if word_bank:
+            c.setFont("Helvetica-Oblique", 10)
+            c.drawString(70, y, "Word Bank: " + ", ".join(word_bank))
+            c.setFont("Helvetica", 10)
+            y -= 14
     elif nq["type"] == "short_answer":
-        if nq.get("rubric_hint"):
+        if nq.get("rubric_hint") and not student_mode:
             c.setFont("Helvetica-Oblique", 9)
             c.drawString(70, y, f"(Hint: {nq['rubric_hint']})")
             y -= 14

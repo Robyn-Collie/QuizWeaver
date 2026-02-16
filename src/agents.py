@@ -837,6 +837,8 @@ class Orchestrator:
             "cognitive_framework": context.get("cognitive_framework"),
             "difficulty": context.get("difficulty"),
             "topics_from_lessons": unique_topics[:20],
+            "user_provided_content": context.get("user_provided_content", False),
+            "question_types": context.get("question_types", []),
         }
 
         provider_name = self.config.get("llm", {}).get("provider", "unknown")
@@ -909,28 +911,47 @@ def _accumulate_tokens(metrics: AgentMetrics, audit_log_len_before: int) -> None
 
 
 def _build_class_context_section(context: Dict[str, Any]) -> str:
-    """Build the class context section for generator/critic prompts."""
-    class_context_section = ""
+    """Build the class context section for generator/critic prompts.
+
+    If the teacher provided explicit content (topics or content_text), that
+    takes priority. Lesson logs are included as supplementary context but
+    the prompt makes clear the user-provided content is authoritative.
+    """
+    parts = []
+
+    # User-provided content takes priority
+    user_provided = context.get("user_provided_content", False)
+    content_summary = context.get("content_summary", "")
+    if user_provided and content_summary:
+        parts.append(
+            "**Teacher-Provided Content (PRIMARY -- generate questions ONLY about this):**\n"
+            + content_summary
+        )
+
     lesson_logs = context.get("lesson_logs", [])
     assumed_knowledge = context.get("assumed_knowledge", {})
     if lesson_logs or assumed_knowledge:
-        class_context_section = "**Class Context:**\n"
+        if user_provided:
+            parts.append("**Supplementary Class Context (for background only, do NOT go beyond the teacher's content above):**")
+        else:
+            parts.append("**Class Context:**")
         if lesson_logs:
-            class_context_section += "Recent lessons taught to this class:\n"
+            parts.append("Recent lessons taught to this class:")
             for log in lesson_logs[:10]:
                 topics = log.get("topics", [])
-                class_context_section += (
-                    f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}\n"
+                parts.append(
+                    f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}"
                 )
         if assumed_knowledge:
-            class_context_section += "\nAssumed student knowledge (topic: depth 1-5):\n"
+            parts.append("\nAssumed student knowledge (topic: depth 1-5):")
             for topic, data in assumed_knowledge.items():
                 depth = data.get("depth", 1)
                 label = {1: "introduced", 2: "reinforced", 3: "practiced", 4: "mastered", 5: "expert"}.get(
                     depth, "unknown"
                 )
-                class_context_section += f"- {topic}: depth {depth} ({label})\n"
-    return class_context_section
+                parts.append(f"- {topic}: depth {depth} ({label})")
+
+    return "\n".join(parts)
 
 
 def _build_cognitive_section(context: Dict[str, Any]) -> str:
@@ -939,10 +960,28 @@ def _build_cognitive_section(context: Dict[str, Any]) -> str:
     cognitive_framework = context.get("cognitive_framework")
     cognitive_distribution = context.get("cognitive_distribution")
     difficulty = context.get("difficulty", 3)
+    question_types = context.get("question_types", [])
+
+    # Question types section (independent of cognitive framework)
+    if question_types:
+        type_labels = {
+            "mc": "Multiple Choice",
+            "tf": "True/False",
+            "fill_in_blank": "Fill in the Blank",
+            "short_answer": "Short Answer",
+            "matching": "Matching",
+            "ordering": "Ordering",
+            "essay": "Essay",
+        }
+        type_names = [type_labels.get(t, t) for t in question_types]
+        cognitive_section += f"**Allowed Question Types:** {', '.join(type_names)}\n"
+        cognitive_section += f"Use ONLY these question types: {', '.join(question_types)}\n"
+        cognitive_section += "Distribute them across questions as appropriate for the content.\n\n"
+
     if cognitive_framework:
         levels = get_framework(cognitive_framework)
         framework_label = "Bloom's Taxonomy" if cognitive_framework == "blooms" else "Webb's DOK"
-        cognitive_section = f"**Cognitive Framework: {framework_label}**\n"
+        cognitive_section += f"**Cognitive Framework: {framework_label}**\n"
         cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
         if cognitive_distribution and levels:
             cognitive_section += "MANDATORY distribution by cognitive level (you MUST follow this exactly):\n"
@@ -953,27 +992,10 @@ def _build_cognitive_section(context: Dict[str, Any]) -> str:
                     continue
                 if isinstance(entry, dict):
                     count = entry.get("count", 0)
-                    types = entry.get("types", [])
                 else:
                     count = int(entry)
-                    types = []
                 if count > 0:
-                    if types and len(types) > 0:
-                        # Compute exact per-type counts via round-robin
-                        type_counts = {}
-                        for i in range(count):
-                            t = types[i % len(types)]
-                            type_counts[t] = type_counts.get(t, 0) + 1
-                        type_breakdown = ", ".join(f"{c}x {t}" for t, c in type_counts.items())
-                        cognitive_section += (
-                            f"- Level {num} ({lvl['name']}): {count} questions — REQUIRED types: {type_breakdown}\n"
-                        )
-                    else:
-                        cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions, type: any\n"
-            cognitive_section += (
-                "\nThe question type distribution above is a HARD REQUIREMENT from the teacher, not a suggestion.\n"
-            )
-            cognitive_section += 'Each question MUST have a "type" field matching one of: mc, tf, fill_in_blank, short_answer, matching, essay\n'
+                    cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions\n"
         cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
         cognitive_section += '- "cognitive_level": the level name (e.g., "Remember", "Analyze")\n'
         cognitive_section += f'- "cognitive_framework": "{cognitive_framework}"\n'
@@ -1045,9 +1067,16 @@ def _build_critic_config(config: Dict[str, Any]) -> Dict[str, Any]:
 def _extract_teacher_config(context: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Extract teacher configuration from the generation context.
 
-    Pulls ``allowed_types`` from the cognitive distribution if type constraints
-    are specified per-level.
+    Pulls ``allowed_types`` from the context's question_types list (independent
+    of cognitive distribution), falling back to per-level types from the
+    cognitive distribution for backward compatibility.
     """
+    # Prefer the independent question_types list
+    question_types = context.get("question_types")
+    if question_types:
+        return {"allowed_types": list(question_types)}
+
+    # Backward compat: pull from cognitive distribution if per-level types exist
     distribution = context.get("cognitive_distribution")
     if not distribution:
         return None

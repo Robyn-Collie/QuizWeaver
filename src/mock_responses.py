@@ -131,6 +131,7 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "true_false",
                 "ordering",
                 "short_answer",
+                "fill_in",
             ]
         )
 
@@ -175,6 +176,20 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "items": steps,
                 "correct_order": [0, 1, 2, 3],
                 "instructions": "Arrange the following steps in the correct order.",
+                "image_ref": None,
+            }
+        elif q_type == "fill_in":
+            distractors = ["osmosis", "diffusion", "fermentation"]
+            word_bank = [topic] + distractors[:3]
+            random.shuffle(word_bank)
+            question = {
+                "type": "fill_in",
+                "question_type": "fill_in",
+                "title": f"Question {i + 1}",
+                "text": "The process of ___ converts light energy into chemical energy in plants.",
+                "points": 5,
+                "correct_answer": topic,
+                "word_bank": word_bank,
                 "image_ref": None,
             }
         else:  # short_answer
