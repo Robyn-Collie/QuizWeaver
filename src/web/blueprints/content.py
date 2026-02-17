@@ -19,7 +19,7 @@ from flask import (
 
 from src.classroom import get_class, list_classes
 from src.database import Question, Quiz, Rubric, RubricCriterion
-from src.llm_provider import get_provider_info
+from src.llm_provider import ProviderError, get_provider_info
 from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubric_pdf
 from src.rubric_generator import generate_rubric
 from src.topic_generator import generate_from_topics, search_topics
@@ -159,29 +159,41 @@ def quiz_generate_variant(quiz_id):
                 title=title,
                 provider_name=provider_override,
             )
+        except ProviderError as pe:
+            variant = None
+            flash(pe.user_message, "error")
         except Exception as e:
             variant = None
             flash(f"Variant generation error: {e}", "error")
 
         if variant:
+            # Remember last-used provider for quiz tasks (variants are quizzes)
+            if provider_override:
+                config.setdefault("last_provider", {})["quiz"] = provider_override
+                from src.web.config_utils import save_config
+                save_config(config)
             flash("Variant generated successfully.", "success")
             return redirect(url_for("quizzes.quiz_detail", quiz_id=variant.id), code=303)
         else:
+            last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
             return render_template(
                 "quizzes/generate_variant.html",
                 quiz=quiz,
                 reading_levels=READING_LEVELS,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_quiz_provider,
                 error="Variant generation failed. Check your provider settings and try again.",
             ), 500
 
+    last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
     return render_template(
         "quizzes/generate_variant.html",
         quiz=quiz,
         reading_levels=READING_LEVELS,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_quiz_provider,
     )
 
 
@@ -244,27 +256,39 @@ def quiz_generate_rubric(quiz_id):
                 title=title,
                 provider_name=provider_override,
             )
+        except ProviderError as pe:
+            rubric = None
+            flash(pe.user_message, "error")
         except Exception as e:
             rubric = None
             flash(f"Rubric generation error: {e}", "error")
 
         if rubric:
+            # Remember last-used provider for rubric generation
+            if provider_override:
+                config.setdefault("last_provider", {})["rubric"] = provider_override
+                from src.web.config_utils import save_config
+                save_config(config)
             flash("Rubric generated successfully.", "success")
             return redirect(url_for("content.rubric_detail", rubric_id=rubric.id), code=303)
         else:
+            last_rubric_provider = config.get("last_provider", {}).get("rubric", "")
             return render_template(
                 "quizzes/generate_rubric.html",
                 quiz=quiz,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_rubric_provider,
                 error="Rubric generation failed. Check your provider settings and try again.",
             ), 500
 
+    last_rubric_provider = config.get("last_provider", {}).get("rubric", "")
     return render_template(
         "quizzes/generate_rubric.html",
         quiz=quiz,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_rubric_provider,
     )
 
 
@@ -434,6 +458,9 @@ def generate_from_topics_page():
                     difficulty=difficulty,
                     title=title,
                 )
+            except ProviderError as pe:
+                result = None
+                flash(pe.user_message, "error")
             except Exception as e:
                 result = None
                 flash(f"Quiz generation error: {e}", "error")
@@ -458,6 +485,9 @@ def generate_from_topics_page():
                     config=config,
                     title=title,
                 )
+            except ProviderError as pe:
+                result = None
+                flash(pe.user_message, "error")
             except Exception as e:
                 result = None
                 flash(f"Generation error: {e}", "error")
@@ -597,29 +627,41 @@ def lesson_plan_generate():
                 grade_level=grade_level,
                 provider_name=provider_override,
             )
+        except ProviderError as pe:
+            plan = None
+            flash(pe.user_message, "error")
         except Exception as e:
             plan = None
             flash(f"Lesson plan generation error: {e}", "error")
 
         if plan:
+            # Remember last-used provider for lesson plans
+            if provider_override:
+                config.setdefault("last_provider", {})["lesson_plan"] = provider_override
+                from src.web.config_utils import save_config
+                save_config(config)
             flash("Lesson plan generated successfully.", "success")
             return redirect(url_for("content.lesson_plan_detail", plan_id=plan.id), code=303)
         else:
+            last_lp_provider = config.get("last_provider", {}).get("lesson_plan", "")
             return render_template(
                 "lesson_plans/generate.html",
                 classes=classes,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_lp_provider,
                 prefill_topics=topics_str,
                 prefill_standards=standards_str,
                 error="Generation failed. Check your provider settings and try again.",
             ), 500
 
+    last_lp_provider = config.get("last_provider", {}).get("lesson_plan", "")
     return render_template(
         "lesson_plans/generate.html",
         classes=classes,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_lp_provider,
         prefill_topics=prefill_topics,
         prefill_standards=prefill_standards,
         selected_class_id=selected_class_id,

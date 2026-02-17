@@ -124,12 +124,14 @@ class TestAnthropicProviderGenerate:
         call_kwargs = mock_client.messages.create.call_args.kwargs
         assert "system" not in call_kwargs
 
-    def test_generate_error_returns_empty_json(self):
+    def test_generate_error_raises_provider_error(self):
+        from src.llm_provider import ProviderError
+
         provider, mock_client = self._make_provider()
         mock_client.messages.create.side_effect = Exception("API error")
 
-        result = provider.generate(["Hi"])
-        assert result == "[]"
+        with pytest.raises(ProviderError):
+            provider.generate(["Hi"])
 
     def test_generate_logs_cost(self):
         provider, mock_client = self._make_provider()

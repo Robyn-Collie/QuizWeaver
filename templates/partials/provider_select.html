@@ -4,7 +4,7 @@
     <select id="provider" name="provider">
         <option value="">Use default ({{ current_provider|default('mock') }})</option>
         {% for p in providers %}
-        <option value="{{ p.key }}" {% if not p.available %}disabled{% endif %}>
+        <option value="{{ p.key }}" {% if not p.available %}disabled{% endif %} {% if last_provider is defined and last_provider == p.key %}selected{% endif %}>
             {{ p.label }}{% if not p.available %} (not configured){% endif %}
         </option>
         {% endfor %}

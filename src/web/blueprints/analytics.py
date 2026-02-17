@@ -20,7 +20,7 @@ from flask import (
 from src.classroom import get_class
 from src.database import PerformanceData, Question, Quiz
 from src.lesson_tracker import get_assumed_knowledge
-from src.llm_provider import get_provider_info
+from src.llm_provider import ProviderError, get_provider_info
 from src.performance_analytics import (
     compute_gap_analysis,
     get_class_summary,
@@ -311,24 +311,40 @@ def analytics_reteach(class_id):
         max_suggestions = int(request.form.get("max_suggestions", 5))
         provider_override = request.form.get("provider", "").strip() or None
 
-        suggestions = generate_reteach_suggestions(
-            session,
-            class_id,
-            config,
-            focus_topics=focus_topics,
-            max_suggestions=max_suggestions,
-            provider_name=provider_override,
-        )
+        try:
+            suggestions = generate_reteach_suggestions(
+                session,
+                class_id,
+                config,
+                focus_topics=focus_topics,
+                max_suggestions=max_suggestions,
+                provider_name=provider_override,
+            )
+        except ProviderError as pe:
+            suggestions = None
+            flash(pe.user_message, "error")
+        except Exception as e:
+            suggestions = None
+            flash(f"Reteach suggestion error: {e}", "error")
+
         if suggestions is None:
+            last_reteach_provider = config.get("last_provider", {}).get("reteach", "")
             return render_template(
                 "analytics/reteach.html",
                 class_obj=class_obj,
                 gap_summary=gap_summary,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_reteach_provider,
                 error="Failed to generate suggestions. Please try again.",
             ), 500
 
+        if provider_override:
+            config.setdefault("last_provider", {})["reteach"] = provider_override
+            from src.web.config_utils import save_config
+            save_config(config)
+
+    last_reteach_provider = config.get("last_provider", {}).get("reteach", "")
     return render_template(
         "analytics/reteach.html",
         class_obj=class_obj,
@@ -336,6 +352,7 @@ def analytics_reteach(class_id):
         suggestions=suggestions,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_reteach_provider,
     )
 
 

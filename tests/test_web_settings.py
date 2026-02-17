@@ -485,8 +485,10 @@ class TestOpenAICompatibleProvider:
             assert content[0]["type"] == "text"
             assert content[1]["type"] == "image_url"
 
-    def test_generate_returns_empty_on_error(self):
-        """generate() returns '[]' on API errors."""
+    def test_generate_raises_provider_error_on_error(self):
+        """generate() raises ProviderError on API errors."""
+        from src.llm_provider import ProviderError
+
         with patch("openai.OpenAI") as MockOpenAI:
             mock_client = MagicMock()
             mock_client.chat.completions.create.side_effect = Exception("API Error")
@@ -497,8 +499,8 @@ class TestOpenAICompatibleProvider:
                 base_url="https://api.openai.com/v1",
                 model_name="gpt-4o",
             )
-            result = provider.generate(["test"])
-            assert result == "[]"
+            with pytest.raises(ProviderError):
+                provider.generate(["test"])
 
     def test_prepare_image_context_returns_base64(self):
         """prepare_image_context() returns a base64 data URL dict."""

@@ -13,7 +13,7 @@ from flask import (
     url_for,
 )
 
-from src.llm_provider import get_provider, get_provider_info
+from src.llm_provider import ProviderError, get_provider, get_provider_info
 from src.standards import (
     STANDARD_SETS,
     ensure_standard_set_loaded,
@@ -59,6 +59,7 @@ def settings():
             env_key_map = {
                 "gemini": "GEMINI_API_KEY",
                 "gemini-pro": "GEMINI_API_KEY",
+                "gemini-3-flash": "GEMINI_API_KEY",
                 "gemini-3-pro": "GEMINI_API_KEY",
                 "gemini-flash": "GEMINI_API_KEY",
                 "openai": "OPENAI_API_KEY",
@@ -183,7 +184,7 @@ def test_provider():
     # Temporarily set env var for providers that need it
     old_env = {}
     try:
-        if provider_name in ("gemini", "gemini-pro", "gemini-3-pro") and api_key:
+        if provider_name in ("gemini", "gemini-pro", "gemini-3-flash", "gemini-3-pro") and api_key:
             old_env["GEMINI_API_KEY"] = os.environ.get("GEMINI_API_KEY")
             os.environ["GEMINI_API_KEY"] = api_key
         elif provider_name == "openai" and api_key:
@@ -205,11 +206,20 @@ def test_provider():
                 "latency_ms": elapsed_ms,
             }
         )
+    except ProviderError as pe:
+        return jsonify(
+            {
+                "success": False,
+                "message": pe.user_message,
+                "error_code": pe.error_code,
+                "latency_ms": 0,
+            }
+        )
     except Exception as e:
         error_msg = str(e)
         # Add helpful context for common errors
         lower_msg = error_msg.lower()
-        if "401" in error_msg or "unauthorized" in lower_msg or "invalid" in lower_msg and "key" in lower_msg:
+        if "401" in error_msg or "unauthorized" in lower_msg or ("invalid" in lower_msg and "key" in lower_msg):
             error_msg += " -- Check that your API key is correct and has not expired."
         elif "403" in error_msg or "forbidden" in lower_msg:
             error_msg += " -- Your API key may not have permission for this model. Check your account settings."

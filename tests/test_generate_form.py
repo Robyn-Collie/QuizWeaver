@@ -328,8 +328,9 @@ class TestPipelineWiring:
 
     def test_generate_quiz_accepts_topics(self):
         """generate_quiz() accepts topics parameter."""
-        from src.quiz_generator import generate_quiz
         import inspect
+
+        from src.quiz_generator import generate_quiz
 
         sig = inspect.signature(generate_quiz)
         assert "topics" in sig.parameters

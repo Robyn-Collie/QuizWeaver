@@ -104,7 +104,7 @@ class TestCsrfInQuizEditJs:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         assert "function getCsrfToken()" in content
 
@@ -113,7 +113,7 @@ class TestCsrfInQuizEditJs:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         # Find the jsonPut function and check it has CSRF
         put_idx = content.index("function jsonPut")
@@ -126,7 +126,7 @@ class TestCsrfInQuizEditJs:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         post_idx = content.index("function jsonPost")
         post_block = content[post_idx : post_idx + 300]
@@ -138,7 +138,7 @@ class TestCsrfInQuizEditJs:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         del_idx = content.index("function jsonDelete")
         del_block = content[del_idx : del_idx + 200]
@@ -150,7 +150,7 @@ class TestCsrfInQuizEditJs:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         # Find the image upload POST section (formData-based, in change handler)
         upload_idx = content.index("formData.append")
@@ -169,7 +169,7 @@ class TestRegenSpinner:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         assert 'card.classList.add("regenerating")' in content
 
@@ -178,7 +178,7 @@ class TestRegenSpinner:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         assert 'card.classList.remove("regenerating")' in content
 
@@ -187,7 +187,7 @@ class TestRegenSpinner:
         css_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "css", "style.css"
         )
-        with open(css_path, "r") as f:
+        with open(css_path) as f:
             content = f.read()
         assert ".question-card.regenerating" in content
         assert "regen-pulse" in content
@@ -223,7 +223,7 @@ class TestDeleteImageDescription:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "quizzes", "detail.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "btn-clear-image-desc" in content
 
@@ -232,7 +232,7 @@ class TestDeleteImageDescription:
         js_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "js", "quiz_edit.js"
         )
-        with open(js_path, "r") as f:
+        with open(js_path) as f:
             content = f.read()
         assert "btn-clear-image-desc" in content
         assert "/image-description" in content
@@ -256,7 +256,7 @@ class TestStandardsOptional:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "classes", "new.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "Standards (optional)" in content
 
@@ -265,7 +265,7 @@ class TestStandardsOptional:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "classes", "new.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "select specific standards when generating quizzes" in content
 
@@ -274,7 +274,7 @@ class TestStandardsOptional:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "classes", "edit.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "Standards (optional)" in content
 
@@ -283,7 +283,7 @@ class TestStandardsOptional:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "classes", "edit.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "select specific standards when generating quizzes" in content
 
@@ -311,7 +311,7 @@ class TestLessonLoggingGuidance:
         template_path = os.path.join(
             os.path.dirname(__file__), "..", "templates", "quizzes", "generate.html"
         )
-        with open(template_path, "r") as f:
+        with open(template_path) as f:
             content = f.read()
         assert "Lesson logging is optional" in content
 
@@ -326,6 +326,6 @@ class TestLessonLoggingGuidance:
         css_path = os.path.join(
             os.path.dirname(__file__), "..", "static", "css", "style.css"
         )
-        with open(css_path, "r") as f:
+        with open(css_path) as f:
             content = f.read()
         assert ".info-tip" in content

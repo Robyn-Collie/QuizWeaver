@@ -23,7 +23,7 @@ from src.classroom import get_class, list_classes
 from src.cost_tracking import check_budget, estimate_pipeline_cost, get_cost_summary, get_monthly_total
 from src.database import Question, Quiz, Rubric
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti, export_quizizz_csv
-from src.llm_provider import get_provider_info
+from src.llm_provider import ProviderError, get_provider_info
 from src.quiz_generator import generate_quiz
 from src.variant_generator import READING_LEVELS
 from src.web.blueprints.helpers import ALLOWED_IMAGE_EXTENSIONS, _get_session, login_required
@@ -632,31 +632,42 @@ def quiz_generate(class_id):
                 content_text=content_text,
                 question_types=question_types,
             )
+        except ProviderError as pe:
+            quiz = None
+            flash(pe.user_message, "error")
         except Exception as e:
             quiz = None
             flash(f"Quiz generation error: {e}", "error")
 
         if quiz:
+            # Remember last-used provider for quiz generation
+            if provider_override:
+                config.setdefault("last_provider", {})["quiz"] = provider_override
+                save_config(config)
             flash("Quiz generated successfully.", "success")
             return redirect(url_for("quizzes.quiz_detail", quiz_id=quiz.id), code=303)
         else:
             providers = get_provider_info(config)
             current_provider = config.get("llm", {}).get("provider", "mock")
+            last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
             return render_template(
                 "quizzes/generate.html",
                 class_obj=class_obj,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_quiz_provider,
                 error="Quiz generation failed. Check your provider settings and try again.",
             )
 
     providers = get_provider_info(config)
     current_provider = config.get("llm", {}).get("provider", "mock")
+    last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
     return render_template(
         "quizzes/generate.html",
         class_obj=class_obj,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_quiz_provider,
     )
 
 

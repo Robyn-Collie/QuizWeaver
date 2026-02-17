@@ -21,7 +21,7 @@ from src.classroom import get_class, list_classes
 from src.database import Quiz, StudyCard, StudySet
 from src.exit_ticket_generator import generate_exit_ticket
 from src.lesson_tracker import list_lessons
-from src.llm_provider import get_provider_info
+from src.llm_provider import ProviderError, get_provider_info
 from src.study_export import (
     export_flashcards_csv,
     export_flashcards_tsv,
@@ -118,27 +118,39 @@ def study_generate():
                 title=title,
                 provider_name=provider_override,
             )
+        except ProviderError as pe:
+            study_set = None
+            flash(pe.user_message, "error")
         except Exception as e:
             study_set = None
             flash(f"Study material generation error: {e}", "error")
 
         if study_set:
+            # Remember last-used provider for study material generation
+            if provider_override:
+                config.setdefault("last_provider", {})["study"] = provider_override
+                from src.web.config_utils import save_config
+                save_config(config)
             flash("Study material generated successfully.", "success")
             return redirect(url_for("study.study_detail", study_set_id=study_set.id), code=303)
         else:
+            last_study_provider = config.get("last_provider", {}).get("study", "")
             return render_template(
                 "study/generate.html",
                 classes=classes,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_study_provider,
                 error="Generation failed. Check your provider settings and try again.",
             ), 500
 
+    last_study_provider = config.get("last_provider", {}).get("study", "")
     return render_template(
         "study/generate.html",
         classes=classes,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_study_provider,
     )
 
 
@@ -280,27 +292,39 @@ def exit_ticket_generate():
                 title=title,
                 provider_name=provider_override,
             )
+        except ProviderError as pe:
+            quiz = None
+            flash(pe.user_message, "error")
         except Exception as e:
             quiz = None
             flash(f"Exit ticket generation error: {e}", "error")
 
         if quiz:
+            # Remember last-used provider for exit tickets (shares quiz task type)
+            if provider_override:
+                config.setdefault("last_provider", {})["quiz"] = provider_override
+                from src.web.config_utils import save_config
+                save_config(config)
             flash("Exit ticket generated successfully.", "success")
             return redirect(url_for("quizzes.quiz_detail", quiz_id=quiz.id), code=303)
         else:
+            last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
             return render_template(
                 "exit_ticket/generate.html",
                 classes=classes,
                 providers=providers,
                 current_provider=current_provider,
+                last_provider=last_quiz_provider,
                 error="Generation failed. Check your provider settings and try again.",
             ), 500
 
+    last_quiz_provider = config.get("last_provider", {}).get("quiz", "")
     return render_template(
         "exit_ticket/generate.html",
         classes=classes,
         providers=providers,
         current_provider=current_provider,
+        last_provider=last_quiz_provider,
     )
 
 

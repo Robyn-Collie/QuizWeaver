@@ -19,6 +19,7 @@ from src.agents import run_agentic_pipeline
 from src.classroom import get_class
 from src.cognitive_frameworks import validate_distribution
 from src.database import Question, Quiz
+from src.llm_provider import ProviderError
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,11 @@ def generate_quiz(
         else:
             # Backward compat: old callers may return a plain list
             questions_data = pipeline_result
+    except ProviderError:
+        # Let ProviderError propagate to the caller with its user_message intact
+        new_quiz.status = "failed"
+        session.commit()
+        raise
     except Exception as e:
         logger.error("generate_quiz: pipeline crashed: %s", e)
         new_quiz.status = "failed"

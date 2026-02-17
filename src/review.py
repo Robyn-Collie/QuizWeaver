@@ -1,6 +1,6 @@
 import os
 
-from src.output import generate_pdf_preview
+from src.export import generate_pdf_preview
 
 
 def clear_screen():

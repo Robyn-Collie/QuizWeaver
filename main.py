@@ -9,12 +9,12 @@ from src.agents import run_agentic_pipeline
 from src.classroom import create_class, get_class, list_classes, set_active_class
 from src.cost_tracking import format_cost_report, get_cost_summary
 from src.database import Asset, Lesson, Question, Quiz, get_engine, get_session, init_db
+from src.export import create_qti_package, generate_pdf_preview
 from src.image_gen import generate_image
 
 # Import from our new library structure
 from src.ingestion import get_retake_analysis, ingest_content
 from src.lesson_tracker import get_assumed_knowledge, list_lessons, log_lesson
-from src.output import create_qti_package, generate_pdf_preview
 from src.review import interactive_review
 
 

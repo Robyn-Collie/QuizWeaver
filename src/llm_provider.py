@@ -63,6 +63,88 @@ except ImportError:
     _ANTHROPIC_AVAILABLE = False
 
 
+class ProviderError(Exception):
+    """Raised when an LLM provider fails with a user-understandable error.
+
+    Attributes:
+        user_message: A plain-English message suitable for displaying to teachers
+            via flash() or CLI output. Always includes actionable guidance.
+        provider_name: Which provider triggered the error (e.g., "gemini").
+        error_code: Optional HTTP status or error classification for programmatic use.
+    """
+
+    def __init__(self, user_message: str, provider_name: str = "", error_code: str = ""):
+        self.user_message = user_message
+        self.provider_name = provider_name
+        self.error_code = error_code
+        super().__init__(user_message)
+
+
+def _classify_provider_error(e: Exception, provider_name: str) -> ProviderError:
+    """Convert a raw provider exception into a ProviderError with actionable guidance."""
+    msg = str(e)
+    lower = msg.lower()
+
+    if "401" in msg or "unauthorized" in lower or ("invalid" in lower and "key" in lower):
+        return ProviderError(
+            f"Authentication failed for {provider_name}. Your API key may be incorrect or expired. "
+            "Go to Settings > Setup Wizard to update it.",
+            provider_name=provider_name,
+            error_code="auth",
+        )
+    if "403" in msg or "forbidden" in lower or "permission" in lower:
+        return ProviderError(
+            f"Access denied by {provider_name}. Your API key may not have permission for this model. "
+            "Check your provider account settings or try a different model.",
+            provider_name=provider_name,
+            error_code="permission",
+        )
+    if "404" in msg or "not found" in lower:
+        return ProviderError(
+            f"Model not found on {provider_name}. The model name may be incorrect or unavailable in your region. "
+            "Go to Settings to check the model name.",
+            provider_name=provider_name,
+            error_code="not_found",
+        )
+    if "429" in msg or "rate" in lower or "quota" in lower or "resource" in lower and "exhaust" in lower:
+        return ProviderError(
+            f"Rate limit or quota exceeded on {provider_name}. Wait a moment and try again, "
+            "or check your billing/quota at your provider's dashboard.",
+            provider_name=provider_name,
+            error_code="rate_limit",
+        )
+    if "timeout" in lower or "timed out" in lower or "deadline" in lower:
+        return ProviderError(
+            f"{provider_name} took too long to respond. Check your internet connection and try again. "
+            "For large quizzes, consider reducing the question count.",
+            provider_name=provider_name,
+            error_code="timeout",
+        )
+    if "connection" in lower or "refused" in lower or "unreachable" in lower or "dns" in lower:
+        return ProviderError(
+            f"Could not connect to {provider_name}. Check your internet connection. "
+            "If using a local provider (Ollama), make sure it is running.",
+            provider_name=provider_name,
+            error_code="connection",
+        )
+    if "billing" in lower or "payment" in lower:
+        return ProviderError(
+            f"Billing issue with {provider_name}. Check that your account has an active payment method "
+            "and sufficient credits.",
+            provider_name=provider_name,
+            error_code="billing",
+        )
+
+    # Fallback: include the raw error but wrap it in guidance
+    return ProviderError(
+        f"{provider_name} error: {msg}. "
+        "If this persists, try switching to a different provider in Settings, "
+        "or use Mock mode for cost-free testing.",
+        provider_name=provider_name,
+        error_code="unknown",
+    )
+
+
 class LLMProvider(ABC):
     """
     Abstract base class for a generic LLM provider.
@@ -171,8 +253,7 @@ class GeminiProvider(LLMProvider):
         except Exception as e:
             duration_ms = int((time.time() - start_time) * 1000)
             _log_api_call("gemini", self._model_name, prompt_text, "", 0, 0, duration_ms, error=str(e))
-            print(f"An error occurred with the Gemini provider: {e}")
-            return "[]"
+            raise _classify_provider_error(e, "Gemini") from e
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
@@ -252,8 +333,7 @@ class VertexAIProvider(LLMProvider):
 
             return response.text
         except Exception as e:
-            print(f"An error occurred with the Vertex AI provider: {e}")
-            return "{}"
+            raise _classify_provider_error(e, "Vertex AI") from e
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
@@ -388,8 +468,7 @@ class OpenAICompatibleProvider(LLMProvider):
 
             return response.choices[0].message.content
         except Exception as e:
-            print(f"An error occurred with the OpenAI-compatible provider: {e}")
-            return "[]"
+            raise _classify_provider_error(e, "OpenAI-compatible") from e
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
@@ -479,8 +558,7 @@ class AnthropicProvider(LLMProvider):
 
             return response.content[0].text
         except Exception as e:
-            print(f"An error occurred with the Anthropic provider: {e}")
-            return "[]"
+            raise _classify_provider_error(e, "Anthropic") from e
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
@@ -577,8 +655,7 @@ class VertexAnthropicProvider(LLMProvider):
 
             return response.content[0].text
         except Exception as e:
-            print(f"An error occurred with the Vertex AI (Claude) provider: {e}")
-            return "[]"
+            raise _classify_provider_error(e, "Vertex AI (Claude)") from e
 
     def prepare_image_context(self, image_path: str) -> Any:
         """
