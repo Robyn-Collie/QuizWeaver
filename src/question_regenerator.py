@@ -66,6 +66,8 @@ def normalize_question_data(q: dict) -> dict:
             "short_answer": "short_answer",
             "fill in the blank": "fill_in_blank",
             "fill_in_blank": "fill_in_blank",
+            "fill_in blank": "fill_in_blank",
+            "fill-in-the-blank": "fill_in_blank",
             "matching": "matching",
             "essay": "essay",
             "ordering": "ordering",
@@ -158,8 +160,14 @@ Return a JSON object with these fields:
 Return ONLY the JSON object, no markdown.
 """
 
+    # Use the same provider that generated the quiz (not the config default)
+    quiz_provider = style_profile.get("provider")
+    regen_config = config
+    if quiz_provider and quiz_provider != "mock":
+        regen_config = {**config, "llm": {**config.get("llm", {}), "provider": quiz_provider}}
+
     try:
-        provider = get_provider(config, web_mode=True)
+        provider = get_provider(regen_config, web_mode=True)
         response_text = provider.generate([prompt], json_mode=True)
     except Exception as e:
         logger.error("regenerate_question: LLM call failed: %s", e)

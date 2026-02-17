@@ -28,6 +28,7 @@ TYPE_MAP = {
     "true_false": "tf",
     "short_answer": "short_answer",
     "fill_in": "fill_in",
+    "fill_in_blank": "fill_in",
     "fill_in_the_blank": "fill_in",
     "matching": "matching",
     "ordering": "ordering",
