@@ -318,10 +318,11 @@
         {% if q.data and q.data.blanks is defined and q.data.blanks %}
         <div class="cloze-question">
             <p class="cloze-text">
-                {% set cloze_display = q.text %}
+                {% set cloze_display = q.text|e %}
                 {% for blank in q.data.blanks %}
-                {% set placeholder = '{{' ~ blank.id ~ '}}' %}
-                {% set underline = '<span class="cloze-blank" data-blank-id="' ~ blank.id ~ '">________<sub>(' ~ blank.id ~ ')</sub></span>' %}
+                {% set safe_id = blank.id|e %}
+                {% set placeholder = '{{' ~ safe_id ~ '}}' %}
+                {% set underline = '<span class="cloze-blank" data-blank-id="' ~ safe_id ~ '">________<sub>(' ~ safe_id ~ ')</sub></span>' %}
                 {% set cloze_display = cloze_display|replace(placeholder, underline) %}
                 {% endfor %}
                 {{ cloze_display|safe }}

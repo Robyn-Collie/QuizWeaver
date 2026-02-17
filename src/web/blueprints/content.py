@@ -24,7 +24,7 @@ from src.rubric_export import export_rubric_csv, export_rubric_docx, export_rubr
 from src.rubric_generator import generate_rubric
 from src.topic_generator import generate_from_topics, search_topics
 from src.variant_generator import READING_LEVELS, generate_variant
-from src.web.blueprints.helpers import _get_session, login_required
+from src.web.blueprints.helpers import _get_session, flash_generation_error, login_required
 
 content_bp = Blueprint("content", __name__)
 
@@ -164,7 +164,7 @@ def quiz_generate_variant(quiz_id):
             flash(pe.user_message, "error")
         except Exception as e:
             variant = None
-            flash(f"Variant generation error: {e}", "error")
+            flash_generation_error("Variant generation", e)
 
         if variant:
             # Remember last-used provider for quiz tasks (variants are quizzes)
@@ -262,7 +262,7 @@ def quiz_generate_rubric(quiz_id):
             flash(pe.user_message, "error")
         except Exception as e:
             rubric = None
-            flash(f"Rubric generation error: {e}", "error")
+            flash_generation_error("Rubric generation", e)
 
         if rubric:
             # Remember last-used provider for rubric generation
@@ -465,7 +465,7 @@ def generate_from_topics_page():
                 flash(pe.user_message, "error")
             except Exception as e:
                 result = None
-                flash(f"Quiz generation error: {e}", "error")
+                flash_generation_error("Quiz generation", e)
 
             if result:
                 flash("Quiz generated from topics!", "success")
@@ -492,7 +492,7 @@ def generate_from_topics_page():
                 flash(pe.user_message, "error")
             except Exception as e:
                 result = None
-                flash(f"Generation error: {e}", "error")
+                flash_generation_error("Content generation", e)
 
             if result:
                 flash(f"{output_type.replace('_', ' ').title()} generated from topics!", "success")
@@ -634,7 +634,7 @@ def lesson_plan_generate():
             flash(pe.user_message, "error")
         except Exception as e:
             plan = None
-            flash(f"Lesson plan generation error: {e}", "error")
+            flash_generation_error("Lesson plan generation", e)
 
         if plan:
             # Remember last-used provider for lesson plans

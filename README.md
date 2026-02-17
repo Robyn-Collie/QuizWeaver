@@ -10,7 +10,7 @@ QuizWeaver helps teachers generate curriculum-aligned quizzes, study materials, 
 
 The industry calls tools like this "AI-powered." We think that term overpromises and under-explains. Here's what QuizWeaver actually does:
 
-- **Language models** (like Google Gemini, OpenAI GPT, or local models via Ollama) generate draft text — quiz questions, study materials, lesson plans. This is statistical text generation, not understanding or reasoning.
+- **Language models** (like Google Gemini, Anthropic Claude, OpenAI GPT, or local models via Ollama) generate draft text — quiz questions, study materials, lesson plans. This is statistical text generation, not understanding or reasoning.
 - **Deterministic, rule-based systems** handle everything that needs to be reliable: standards alignment, cognitive frameworks (Bloom's Taxonomy, Webb's DOK), reading-level bands, and assessment blueprints. These are lookup tables, formulas, and constraints — not language models.
 - **Teachers** review, edit, and approve all output before it reaches students. The language model is a drafting tool, not an authority.
 
@@ -51,9 +51,11 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 
 ### Assessment Generation
 - **Quiz Generation** -- Multi-agent LLM pipeline (Generator + Critic) produces draft questions aligned to your taught content
-- **Cognitive Frameworks** -- Bloom's Taxonomy and Webb's DOK with configurable distribution across cognitive levels
+- **10 Question Types** -- Multiple choice, true/false, short answer, fill-in-blank, ordering, matching, essay, multiple-answer (select all that apply), stimulus/passage-based question groups, and cloze (fill-in-multiple-blanks)
+- **Cognitive Frameworks** -- Bloom's Taxonomy and Webb's DOK with configurable distribution across cognitive levels (question types are independent of Bloom's levels)
 - **Standards Alignment** -- Multi-state standards (SOL, CCSS ELA, CCSS Math, NGSS, TEKS) with searchable picker
-- **Topic-Based Generation** -- Generate quizzes from specific topics without a source quiz
+- **Topic-Based Generation** -- Generate quizzes from topics or pasted content (enduring understandings, objectives) without a source quiz
+- **Exit Tickets** -- Quick 1-5 question formative assessments for end-of-class checks
 - **Question Bank** -- Save and reuse favorite questions across quizzes
 
 ### Study Materials
@@ -66,6 +68,8 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 - **Reading-Level Variants** -- ELL, below grade, on grade, and advanced versions of any quiz
 - **Rubric Generation** -- Standards-aligned rubrics with proficiency levels (Beginning through Advanced)
 - **Scaffolded Content** -- Adjusted complexity while maintaining assessment rigor
+- **Word Bank** -- Fill-in-blank questions include a word bank for supported guessing
+- **Assessment Blueprints** -- 5 built-in templates (quick check, unit test, midterm, final, standardized practice) with Lexile and Flesch-Kincaid readability metrics
 
 ### Performance Analytics
 - **Gap Analysis** -- Compare assumed knowledge (from lessons) to actual performance
@@ -74,11 +78,14 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 - **Re-teach Suggestions** -- LLM-generated recommendations based on identified gaps
 
 ### Export Formats
-- **PDF** -- Print-ready quizzes and study materials
+- **PDF** -- Print-ready quizzes and study materials with text wrapping
 - **DOCX** -- Editable Word documents with answer keys
 - **CSV** -- Spreadsheet-compatible data export
-- **GIFT** -- Moodle-compatible quiz import format
+- **GIFT** -- Moodle-compatible quiz import format (including native cloze support)
+- **QTI** -- Canvas-compatible import packages (matching, ordering, short answer, multiple-answer, stimulus, cloze)
+- **Quizizz CSV** -- Direct import to Quizizz for gamified review
 - **TSV** -- Anki-compatible flashcard export
+- **Student-Facing Mode** -- Export PDF, DOCX, or CSV without answers, Bloom's levels, or provider info; A/B/C/D lettering; answer key on a separate page
 
 ### Lesson Planning
 - **Lesson Plan Generator** -- 10-section plans with differentiation, teach-assess loop, and formative checkpoints
@@ -99,7 +106,11 @@ QuizWeaver is built on research-backed principles for responsible use of languag
 - **Text-to-Speech** -- Client-side Web Speech API for quiz question read-aloud
 - **Mobile Responsive** -- Touch-friendly (44px targets), 4 breakpoints, responsive tables
 
-### AI Literacy & Transparency
+### AI Literacy & Transparency (Glass Box)
+- **Prompt Summary** -- After generation, teachers can see exactly what prompt was sent to the language model and what context was included
+- **Critic Feedback** -- When the quality critic rejects questions, rejection reasons are shown so teachers understand why
+- **Per-Quiz Cost Display** -- Token usage and estimated cost shown on each quiz's detail page
+- **Pre-Generation Estimate** -- Before generating, the form shows an estimated cost based on the selected provider and question count
 - **Contextual Tooltips** -- Inline explanations of language model concepts throughout the UI
 - **Confidence Banners** -- Every LLM-generated output is labeled as a draft requiring review
 - **Privacy Notices** -- Clear disclosure of what data is sent to language model providers
@@ -137,7 +148,7 @@ Open http://localhost:5000 -- the onboarding wizard will guide you through creat
 ### Run Tests
 
 ```bash
-python -m pytest       # 1381 tests, all passing
+python -m pytest       # 2261 tests, all passing
 ```
 
 ### Docker
@@ -188,15 +199,15 @@ Classroom  Lesson    Standards
     |         |         |
     +----+----+---------+
          |
-    Quiz Generator / Study Generator / Variant Generator / Rubric Generator
+    Quiz Generator / Study Generator / Exit Ticket / Variant Generator / Rubric Generator
          |
     Agentic Pipeline (Generator + Critic)
          |
     LLM Provider (Mock | Gemini | Anthropic | OpenAI | Ollama | Vertex AI)
          |
-    Cost Tracking
+    Cost Tracking (per-action, per-provider, budget thresholds)
          |
-    Export (PDF | DOCX | CSV | GIFT | TSV)
+    Export (PDF | DOCX | CSV | GIFT | QTI | Quizizz | TSV)
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full system diagram.
@@ -230,7 +241,9 @@ QuizWeaver/
 │   ├── performance_import.py  # CSV upload and quiz score entry
 │   ├── performance_analytics.py # Gap analysis, trends, mastery tracking
 │   ├── reteach_generator.py   # LLM-generated re-teach suggestions
-│   ├── export.py              # CSV, DOCX, GIFT export
+│   ├── exit_ticket_generator.py # Quick formative assessments (1-5 questions)
+│   ├── critic_validation.py   # Structured validation rules for critic agent
+│   ├── export.py              # CSV, DOCX, GIFT, PDF, QTI, Quizizz export
 │   ├── study_export.py        # Flashcard TSV/CSV, study material PDF/DOCX
 │   ├── rubric_export.py       # Rubric CSV, DOCX, PDF
 │   ├── database.py            # SQLAlchemy ORM models
@@ -239,15 +252,24 @@ QuizWeaver/
 │   ├── mock_responses.py      # Fabricated LLM responses for development
 │   └── web/
 │       ├── app.py             # Flask application factory
-│       ├── routes.py          # Web route handlers
+│       ├── routes.py          # Thin shim (delegates to blueprints)
 │       ├── auth.py            # User authentication
 │       ├── config_utils.py    # Configuration save helper
-│       └── tooltip_data.py    # LLM literacy tooltip content
+│       ├── tooltip_data.py    # LLM literacy tooltip content
+│       └── blueprints/        # 8 Flask blueprints (69+ routes)
+│           ├── auth.py        # Login, logout, setup (5 routes)
+│           ├── main.py        # Dashboard, onboarding, help (5 routes)
+│           ├── classes.py     # Class CRUD, lessons (8 routes)
+│           ├── quizzes.py     # Quiz list/detail/export/generate, costs (13 routes)
+│           ├── study.py       # Study materials, exit tickets (8+ routes)
+│           ├── analytics.py   # Performance analytics, import (10 routes)
+│           ├── settings.py    # Provider config, standards (8 routes)
+│           └── content.py     # Variants, rubrics, lesson plans, templates (12 routes)
 │
-├── tests/                     # 1381 tests (pytest)
+├── tests/                     # 2261 tests (pytest)
 ├── templates/                 # Jinja2 HTML templates
 ├── static/                    # CSS, JavaScript, static assets
-├── migrations/                # SQL migration scripts (001-009)
+├── migrations/                # SQL migration scripts (001-010)
 ├── data/                      # Standards database (sol_standards.json)
 ├── prompts/                   # Agent system prompts
 ├── docs/
@@ -256,6 +278,9 @@ QuizWeaver/
 │   ├── COMPETITIVE_ANALYSIS.md # EdTech landscape research
 │   ├── COST_STRATEGY.md       # Cost control approach
 │   ├── INSTALLATION.md        # Step-by-step setup guide for teachers
+│   ├── USER_GUIDE.md          # Feature walkthrough for teachers
+│   ├── API_REFERENCE.md       # API endpoint documentation
+│   ├── SECURITY_AUDIT.md      # Security findings and remediations
 │   ├── DEMO_SCRIPT.md         # Demo walkthrough script
 │   ├── DEMO_VIDEO_SCRIPT.md   # Demo video narration
 │   ├── WORKSHOP_SLIDES.md     # Workshop presentation outline
@@ -281,9 +306,12 @@ QuizWeaver/
 | `/quizzes/<id>` | Quiz detail with inline editing |
 | `/study/generate` | Generate study materials (flashcards, guides, vocabulary, review sheets) |
 | `/study` | Browse study materials |
+| `/exit-ticket/generate` | Generate quick formative assessments (1-5 questions) |
 | `/question-bank` | Save, browse, and search favorite questions |
 | `/standards` | Browse and search standards database |
 | `/analytics` | Performance analytics and gap analysis |
+| `/lesson-plans` | Browse and generate lesson plans |
+| `/quiz-templates` | Import and export quiz templates |
 | `/costs` | API cost tracking with budget thresholds |
 | `/settings` | LLM provider configuration and testing |
 | `/settings/wizard` | Guided provider setup with LLM literacy context |
@@ -303,13 +331,13 @@ QuizWeaver/
 
 ### Database
 
-9 migration scripts, idempotent (safe to run multiple times):
+10 migration scripts, idempotent (safe to run multiple times):
 
 | Table | Purpose |
 |-------|---------|
 | `classes` | Teacher classes/blocks |
 | `lesson_logs` | Lessons taught per class |
-| `quizzes` | Generated quizzes (with variant/parent tracking) |
+| `quizzes` | Generated quizzes (with variant/parent tracking, generation metadata for Glass Box) |
 | `questions` | Individual quiz questions |
 | `rubrics` / `rubric_criteria` | Standards-aligned rubrics |
 | `performance_data` | Anonymized student performance |
@@ -331,7 +359,7 @@ Key contribution guidelines:
 - All LLM-generated content must be labeled as drafts requiring teacher review
 - No feature may send student work to cloud language model providers
 - New LLM features must work with MockLLMProvider at zero cost
-- Test coverage is required (1381 tests currently passing)
+- Test coverage is required (2261 tests currently passing)
 
 ---
 

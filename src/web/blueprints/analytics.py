@@ -33,7 +33,7 @@ from src.performance_import import (
     import_quiz_scores,
 )
 from src.reteach_generator import generate_reteach_suggestions
-from src.web.blueprints.helpers import _get_session, login_required
+from src.web.blueprints.helpers import _get_session, flash_generation_error, login_required
 
 analytics_bp = Blueprint("analytics", __name__)
 
@@ -308,7 +308,10 @@ def analytics_reteach(class_id):
     if request.method == "POST":
         focus_raw = request.form.get("focus_topics", "").strip()
         focus_topics = [t.strip() for t in focus_raw.split(",") if t.strip()] if focus_raw else None
-        max_suggestions = int(request.form.get("max_suggestions", 5))
+        try:
+            max_suggestions = max(1, min(int(request.form.get("max_suggestions", 5)), 20))
+        except (ValueError, TypeError):
+            max_suggestions = 5
         provider_override = request.form.get("provider", "").strip() or None
 
         try:
@@ -325,7 +328,7 @@ def analytics_reteach(class_id):
             flash(pe.user_message, "error")
         except Exception as e:
             suggestions = None
-            flash(f"Reteach suggestion error: {e}", "error")
+            flash_generation_error("Reteach suggestion", e)
 
         if suggestions is None:
             last_reteach_provider = config.get("last_provider", {}).get("reteach", "")

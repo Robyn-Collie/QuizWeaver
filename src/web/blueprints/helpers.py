@@ -1,11 +1,14 @@
 """Shared utilities for QuizWeaver blueprint modules."""
 
 import functools
+import logging
 
-from flask import current_app, g, redirect, request, url_for
+from flask import current_app, flash, g, redirect, request, url_for
 from flask import session as flask_session
 
 from src.database import get_session
+
+logger = logging.getLogger(__name__)
 
 # Default credentials for backward-compatible config-based auth
 DEFAULT_USERNAME = "teacher"
@@ -20,6 +23,19 @@ def _get_session():
         engine = current_app.config["DB_ENGINE"]
         g.db_session = get_session(engine)
     return g.db_session
+
+
+def flash_generation_error(task_label, exception):
+    """Log the full exception and flash a safe, generic error message.
+
+    Prevents leaking internal details (file paths, SQL, tracebacks) to the UI
+    while still logging the full error for debugging.
+    """
+    logger.exception("%s failed: %s", task_label, exception)
+    flash(
+        f"{task_label} failed. Check your provider settings and try again.",
+        "error",
+    )
 
 
 def login_required(f):

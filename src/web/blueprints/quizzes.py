@@ -26,7 +26,7 @@ from src.export import export_csv, export_docx, export_gift, export_pdf, export_
 from src.llm_provider import ProviderError, get_provider_info
 from src.quiz_generator import generate_quiz
 from src.variant_generator import READING_LEVELS
-from src.web.blueprints.helpers import ALLOWED_IMAGE_EXTENSIONS, _get_session, login_required
+from src.web.blueprints.helpers import ALLOWED_IMAGE_EXTENSIONS, _get_session, flash_generation_error, login_required
 from src.web.config_utils import save_config
 
 quizzes_bp = Blueprint("quizzes", __name__)
@@ -588,7 +588,10 @@ def quiz_generate(class_id):
     config = current_app.config["APP_CONFIG"]
 
     if request.method == "POST":
-        num_questions = int(request.form.get("num_questions", 20))
+        try:
+            num_questions = max(1, min(int(request.form.get("num_questions", 20)), 100))
+        except (ValueError, TypeError):
+            num_questions = 20
         grade_level = request.form.get("grade_level", "").strip() or None
         sol_raw = request.form.get("sol_standards", "").strip()
         sol_standards = [s.strip() for s in sol_raw.split(",") if s.strip()] if sol_raw else None
@@ -611,7 +614,10 @@ def quiz_generate(class_id):
                 cognitive_distribution = json.loads(dist_raw)
             except (json.JSONDecodeError, ValueError):
                 cognitive_distribution = None
-        difficulty = int(request.form.get("difficulty", 3))
+        try:
+            difficulty = max(1, min(int(request.form.get("difficulty", 3)), 5))
+        except (ValueError, TypeError):
+            difficulty = 3
 
         # Per-quiz provider override
         provider_override = request.form.get("provider", "").strip() or None
@@ -637,7 +643,7 @@ def quiz_generate(class_id):
             flash(pe.user_message, "error")
         except Exception as e:
             quiz = None
-            flash(f"Quiz generation error: {e}", "error")
+            flash_generation_error("Quiz generation", e)
 
         if quiz:
             # Remember last-used provider for quiz generation

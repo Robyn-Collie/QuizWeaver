@@ -29,7 +29,7 @@ from src.study_export import (
     export_study_pdf,
 )
 from src.study_generator import generate_study_material
-from src.web.blueprints.helpers import _get_session, login_required
+from src.web.blueprints.helpers import _get_session, flash_generation_error, login_required
 
 study_bp = Blueprint("study", __name__)
 
@@ -123,7 +123,7 @@ def study_generate():
             flash(pe.user_message, "error")
         except Exception as e:
             study_set = None
-            flash(f"Study material generation error: {e}", "error")
+            flash_generation_error("Study material generation", e)
 
         if study_set:
             # Remember last-used provider for study material generation
@@ -298,7 +298,7 @@ def exit_ticket_generate():
             flash(pe.user_message, "error")
         except Exception as e:
             quiz = None
-            flash(f"Exit ticket generation error: {e}", "error")
+            flash_generation_error("Exit ticket generation", e)
 
         if quiz:
             # Remember last-used provider for exit tickets (shares quiz task type)

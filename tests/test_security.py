@@ -272,3 +272,164 @@ class TestSessionCookieFlags:
     def test_httponly(self, secure_app):
         """Session cookie should have HttpOnly flag."""
         assert secure_app.config["SESSION_COOKIE_HTTPONLY"] is True
+
+
+class TestErrorMessageSanitization:
+    """SEC-013: Error messages should not leak internal details."""
+
+    def test_flash_generation_error_hides_exception(self):
+        """flash_generation_error should flash a generic message, not the raw exception."""
+        from unittest.mock import patch
+
+        # Create a fake Flask app context for flash() to work
+        from flask import Flask
+
+        from src.web.blueprints.helpers import flash_generation_error
+
+        app = Flask(__name__)
+        app.config["SECRET_KEY"] = "test"
+        with app.test_request_context():
+            with patch("src.web.blueprints.helpers.flash") as mock_flash:
+                try:
+                    raise RuntimeError("/home/user/.secret/internal_path: connection failed")
+                except RuntimeError as e:
+                    flash_generation_error("Quiz generation", e)
+
+                mock_flash.assert_called_once()
+                msg = mock_flash.call_args[0][0]
+                # The generic message should NOT contain the internal path
+                assert "/home/user" not in msg
+                assert "internal_path" not in msg
+                # It should contain the task label
+                assert "Quiz generation" in msg
+
+    def test_quiz_generate_invalid_num_questions(self, csrf_client):
+        """Non-numeric num_questions should not crash the server."""
+        from unittest.mock import patch
+
+        with patch("src.web.blueprints.quizzes.generate_quiz") as mock_gen:
+            mock_gen.return_value = None
+            resp = csrf_client.post(
+                "/classes/1/generate",
+                data={
+                    "num_questions": "not_a_number",
+                    "grade_level": "7th Grade",
+                },
+            )
+            # Should NOT return 500 (would indicate unhandled ValueError)
+            assert resp.status_code != 500
+
+    def test_quiz_generate_clamps_num_questions(self, csrf_client):
+        """Extreme num_questions values should be clamped."""
+        from unittest.mock import patch
+
+        with (
+            patch("src.web.blueprints.quizzes.generate_quiz") as mock_gen,
+            patch("src.web.blueprints.quizzes.get_class") as mock_class,
+        ):
+            mock_class.return_value = type("C", (), {"name": "Test", "id": 1})()
+            mock_gen.return_value = None
+            # Submit absurdly large value
+            resp = csrf_client.post(
+                "/classes/1/generate",
+                data={
+                    "num_questions": "99999",
+                    "grade_level": "7th Grade",
+                },
+            )
+            assert resp.status_code != 500
+            # Verify the clamped value was passed (max 100)
+            if mock_gen.called:
+                call_kwargs = mock_gen.call_args[1]
+                assert call_kwargs.get("num_questions", 0) <= 100
+
+
+class TestClozeXSSSanitization:
+    """SEC-014: Cloze question display should escape LLM-generated text."""
+
+    def test_cloze_text_html_escaped(self, csrf_client):
+        """Cloze question text with HTML should be escaped before rendering."""
+        # Get a session and create a quiz with a cloze question containing HTML
+
+        from src.database import Question, Quiz, get_session
+
+        with csrf_client.application.test_request_context():
+            engine = csrf_client.application.config["DB_ENGINE"]
+            session = get_session(engine)
+
+            # Create a class first
+            from src.classroom import create_class
+
+            cls = create_class(session, "Test Class", "7th", "Science")
+
+            quiz = Quiz(
+                title="Test Cloze Quiz",
+                class_id=cls.id,
+                status="generated",
+            )
+            session.add(quiz)
+            session.flush()
+
+            import json
+
+            malicious_text = '<script>alert("xss")</script> The answer is {{1}}.'
+            q = Question(
+                quiz_id=quiz.id,
+                question_type="cloze",
+                title="Cloze Q",
+                text=malicious_text,
+                points=1,
+                sort_order=0,
+                data=json.dumps(
+                    {
+                        "type": "cloze",
+                        "blanks": [{"id": "1", "answer": "test"}],
+                    }
+                ),
+            )
+            session.add(q)
+            session.commit()
+            quiz_id = quiz.id
+            session.close()
+
+        resp = csrf_client.get(f"/quizzes/{quiz_id}")
+        assert resp.status_code == 200
+        # The injected script payload should NOT appear unescaped
+        assert b'<script>alert("xss")</script>' not in resp.data
+        # The escaped version should appear instead
+        assert b"&lt;script&gt;" in resp.data or b"cloze-blank" in resp.data
+
+
+class TestRouteAuthentication:
+    """Verify all data-modifying routes require authentication."""
+
+    def test_unauthenticated_post_redirects_to_login(self, secure_app_with_user):
+        """POST to protected routes without login should redirect to login."""
+        secure_app_with_user.config["WTF_CSRF_ENABLED"] = False
+        client = secure_app_with_user.test_client()
+
+        protected_post_routes = [
+            "/classes/new",
+            "/classes/1/edit",
+            "/classes/1/delete",
+            "/classes/1/lessons/new",
+            "/settings",
+            "/onboarding",
+        ]
+        for route in protected_post_routes:
+            resp = client.post(route, data={"name": "test"})
+            assert resp.status_code == 303, f"Route {route} should redirect, got {resp.status_code}"
+            location = resp.headers.get("Location", "")
+            assert "/login" in location, f"Route {route} should redirect to login, got {location}"
+
+    def test_unauthenticated_api_redirects(self, secure_app_with_user):
+        """API endpoints should also require authentication."""
+        client = secure_app_with_user.test_client()
+        api_routes = [
+            "/api/stats",
+            "/api/audit-log",
+            "/api/estimate-cost",
+        ]
+        for route in api_routes:
+            resp = client.get(route)
+            assert resp.status_code == 303, f"API {route} should redirect, got {resp.status_code}"
