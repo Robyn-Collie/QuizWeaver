@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 # Recognised question type identifiers (internal canonical forms)
-VALID_TYPES = {"mc", "tf", "short_answer", "fill_in_blank", "matching", "essay", "ordering", "ma", "stimulus"}
+VALID_TYPES = {"mc", "tf", "short_answer", "fill_in_blank", "matching", "essay", "ordering", "ma", "stimulus", "cloze"}
 
 
 def pre_validate_questions(
@@ -118,6 +118,8 @@ def _check_type_specific(q: Dict[str, Any], issues: List[str], fact_warnings: Li
         _check_matching(q, issues)
     elif qtype == "stimulus":
         _check_stimulus(q, issues)
+    elif qtype == "cloze":
+        _check_cloze(q, issues)
     # essay: no additional structural requirements beyond common
 
 
@@ -227,6 +229,43 @@ def _check_matching(q: Dict[str, Any], issues: List[str]) -> None:
             "Matching question missing 'matches' list (expected [{term, definition}, ...]) "
             "or 'prompt_items'/'response_items' lists"
         )
+
+
+def _check_cloze(q: Dict[str, Any], issues: List[str]) -> None:
+    """Cloze: must have 'blanks' list with id/answer, and text with matching {{id}} placeholders."""
+    blanks = q.get("blanks")
+    if not isinstance(blanks, list) or len(blanks) == 0:
+        issues.append("Cloze question missing 'blanks' list (expected [{id, answer}, ...])")
+        return
+
+    text = str(q.get("text", ""))
+    blank_ids = set()
+    for bi, blank in enumerate(blanks):
+        if not isinstance(blank, dict):
+            issues.append(f"Blank {bi} is not a dict")
+            continue
+        b_id = blank.get("id")
+        if b_id is None:
+            issues.append(f"Blank {bi} missing 'id'")
+        else:
+            blank_ids.add(str(b_id))
+        b_answer = blank.get("answer")
+        if not b_answer or not str(b_answer).strip():
+            issues.append(f"Blank {bi} missing 'answer'")
+
+    # Check that text contains {{id}} placeholders matching blank ids
+    import re
+
+    placeholder_ids = set(re.findall(r"\{\{(\d+)\}\}", text))
+    if blank_ids and not placeholder_ids:
+        issues.append("Cloze text has no {{id}} placeholders matching blanks")
+    elif blank_ids != placeholder_ids:
+        missing = blank_ids - placeholder_ids
+        extra = placeholder_ids - blank_ids
+        if missing:
+            issues.append(f"Cloze text missing placeholders for blank ids: {sorted(missing)}")
+        if extra:
+            issues.append(f"Cloze text has placeholders not in blanks: {sorted(extra)}")
 
 
 def _check_stimulus(q: Dict[str, Any], issues: List[str]) -> None:

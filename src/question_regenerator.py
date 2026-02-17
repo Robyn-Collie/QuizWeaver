@@ -78,6 +78,9 @@ def normalize_question_data(q: dict) -> dict:
             "stimulus": "stimulus",
             "stimulus/passage": "stimulus",
             "passage": "stimulus",
+            "cloze": "cloze",
+            "fill in multiple blanks": "cloze",
+            "fill_in_multiple_blanks": "cloze",
         }
         mapped = _type_map.get(q["question_type"].lower().strip())
         if mapped:

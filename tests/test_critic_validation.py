@@ -127,6 +127,9 @@ class TestCommonFields:
             elif t == "stimulus":
                 q["stimulus_text"] = "A passage about cells."
                 q["sub_questions"] = [{"type": "mc", "text": "Q?", "points": 1}]
+            elif t == "cloze":
+                q["text"] = "The {{1}} is {{2}}."
+                q["blanks"] = [{"id": 1, "answer": "sky"}, {"id": 2, "answer": "blue"}]
             results = pre_validate_questions([q])
             assert results[0]["passed"] is True, f"Type '{t}' should pass: {results[0]['issues']}"
 

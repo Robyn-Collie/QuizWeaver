@@ -36,6 +36,8 @@ TYPE_MAP = {
     "ordering": "ordering",
     "essay": "essay",
     "stimulus": "stimulus",
+    "cloze": "cloze",
+    "fill_in_multiple_blanks": "cloze",
 }
 
 
@@ -78,6 +80,9 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
     if q_type == "ma" and correct_indices and options:
         # For ma, correct_answer is a comma-separated list of correct option texts
         correct_answer = ", ".join(str(options[idx]) for idx in correct_indices if 0 <= idx < len(options))
+    elif q_type == "cloze" and data.get("blanks"):
+        # For cloze, correct_answer is a semicolon-separated list of blank answers
+        correct_answer = "; ".join(b.get("answer", "") for b in data["blanks"] if isinstance(b, dict))
     else:
         correct_answer = _resolve_correct_answer(data, options, q_type)
 
@@ -120,6 +125,8 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         # Stimulus fields
         "stimulus_text": data.get("stimulus_text", ""),
         "sub_questions": data.get("sub_questions", []),
+        # Cloze fields
+        "blanks": data.get("blanks", []),
     }
 
 
@@ -265,6 +272,15 @@ def export_csv(quiz, questions, style_profile: Optional[dict] = None, student_mo
 
 def _format_options_csv(nq: dict) -> str:
     """Format options for CSV column."""
+    if nq["type"] == "cloze" and nq.get("blanks"):
+        parts = []
+        for b in nq["blanks"]:
+            b_id = b.get("id", "?")
+            answer = b.get("answer", "")
+            alts = b.get("alternatives", [])
+            alt_str = f" (also: {', '.join(alts)})" if alts else ""
+            parts.append(f"Blank {b_id}: {answer}{alt_str}")
+        return " | ".join(parts)
     if nq["type"] == "stimulus" and nq.get("sub_questions"):
         parts = []
         for si, sq in enumerate(nq["sub_questions"], 1):
@@ -544,6 +560,8 @@ def _add_docx_question(doc, nq: dict, student_mode: bool = False):
         _add_docx_matching(doc, nq)
     elif nq["type"] == "stimulus":
         _add_docx_stimulus(doc, nq, student_mode=student_mode)
+    elif nq["type"] == "cloze":
+        _add_docx_cloze(doc, nq, student_mode=student_mode)
 
     # Spacer
     doc.add_paragraph("")
@@ -682,6 +700,43 @@ def _add_docx_stimulus(doc, nq: dict, student_mode: bool = False):
             doc.add_paragraph("      " + "_" * 40)
 
 
+def _add_docx_cloze(doc, nq: dict, student_mode: bool = False):
+    """Add a cloze question: show text with numbered blanks."""
+    import re
+
+    text = nq.get("text", "")
+    blanks = nq.get("blanks", [])
+    blank_map = {str(b.get("id", "")): b for b in blanks if isinstance(b, dict)}
+
+    # Replace {{id}} with numbered underlines for student view, or filled answers for teacher
+    def replace_blank(match):
+        b_id = match.group(1)
+        blank = blank_map.get(b_id, {})
+        if student_mode:
+            return f"________({b_id})"
+        else:
+            answer = blank.get("answer", "___")
+            return f"[{answer}]({b_id})"
+
+    display_text = re.sub(r"\{\{(\d+)\}\}", replace_blank, text)
+    doc.add_paragraph(display_text)
+
+    # Show answer key below in teacher mode
+    if not student_mode and blanks:
+        p = doc.add_paragraph()
+        run = p.add_run("Answers: ")
+        run.bold = True
+        run.font.size = Pt(9)
+        parts = []
+        for b in blanks:
+            b_id = b.get("id", "?")
+            answer = b.get("answer", "")
+            alts = b.get("alternatives", [])
+            alt_str = f" (also: {', '.join(alts)})" if alts else ""
+            parts.append(f"({b_id}) {answer}{alt_str}")
+        p.add_run("  ".join(parts)).font.size = Pt(9)
+
+
 def _add_docx_answer_key(doc, normalized: list):
     """Add answer key section listing all correct answers."""
     for nq in normalized:
@@ -709,6 +764,15 @@ def _add_docx_answer_key(doc, normalized: list):
             if alts:
                 parts.append(f"(also: {', '.join(alts)})")
             answer_text = " ".join(parts)
+        elif nq["type"] == "cloze" and nq.get("blanks"):
+            parts = []
+            for b in nq["blanks"]:
+                b_id = b.get("id", "?")
+                answer = b.get("answer", "")
+                alts = b.get("alternatives", [])
+                alt_str = f" (also: {', '.join(alts)})" if alts else ""
+                parts.append(f"({b_id}) {answer}{alt_str}")
+            answer_text = "; ".join(parts)
         elif nq["type"] == "stimulus" and nq.get("sub_questions"):
             sub_answers = []
             for si, sq in enumerate(nq["sub_questions"]):
@@ -788,6 +852,8 @@ def _format_gift_question(nq: dict) -> str:
         return _gift_essay(title, escaped_text)
     elif nq["type"] == "stimulus":
         return _gift_stimulus(title, escaped_text, nq)
+    elif nq["type"] == "cloze":
+        return _gift_cloze(title, nq)
     else:
         # Default: treat as short answer
         return _gift_short(title, escaped_text, nq)
@@ -896,6 +962,33 @@ def _gift_ordering(title: str, text: str, nq: dict) -> str:
             parts.append(f"  ={item} -> {pos + 1}")
     parts.append("}")
     return "\n".join(parts)
+
+
+def _gift_cloze(title: str, nq: dict) -> str:
+    """Format cloze question in Moodle's native CLOZE/embedded answer format.
+
+    Moodle CLOZE format replaces blanks with {:SHORTANSWER:=answer~=alt1~=alt2}
+    """
+    import re
+
+    text = nq.get("text", "")
+    blanks = nq.get("blanks", [])
+    blank_map = {str(b.get("id", "")): b for b in blanks if isinstance(b, dict)}
+
+    def replace_blank(match):
+        b_id = match.group(1)
+        blank = blank_map.get(b_id, {})
+        answer = _escape_gift(blank.get("answer", ""))
+        alts = blank.get("alternatives", [])
+        parts = [f"={answer}"]
+        for alt in alts:
+            parts.append(f"={_escape_gift(alt)}")
+        return "{:SHORTANSWER:" + "~".join(parts) + "}"
+
+    cloze_text = re.sub(r"\{\{(\d+)\}\}", replace_blank, text)
+    # Escape remaining GIFT chars in the non-blank portions
+    # (but NOT the {:SHORTANSWER:...} blocks we just inserted)
+    return f"::{title}:: {cloze_text}"
 
 
 def _gift_essay(title: str, text: str) -> str:
@@ -1204,6 +1297,21 @@ def _pdf_draw_question(
         c.drawString(70, y, "Choices: " + "  |  ".join(definitions))
         c.setFont("Helvetica", 10)
         y -= 14
+    elif nq["type"] == "cloze" and nq.get("blanks"):
+        import re as _re_cloze
+
+        cloze_text = nq.get("text", "")
+        blank_map = {str(b.get("id", "")): b for b in nq["blanks"] if isinstance(b, dict)}
+
+        def _cloze_replace(m):
+            b_id = m.group(1)
+            if student_mode:
+                return f"________({b_id})"
+            blank = blank_map.get(b_id, {})
+            return f"[{blank.get('answer', '___')}]({b_id})"
+
+        display = _re_cloze.sub(r"\{\{(\d+)\}\}", _cloze_replace, cloze_text)
+        y = _pdf_draw_wrapped_text(c, display, 70, y, page_width - 120, page_height)
     elif nq["type"] == "stimulus":
         # Draw passage
         stimulus_text = nq.get("stimulus_text", "")
@@ -1303,6 +1411,15 @@ def _pdf_answer_text(nq: dict) -> str:
         if alts:
             parts.append(f"(also: {', '.join(alts)})")
         return " ".join(p for p in parts if p)
+    if nq["type"] == "cloze" and nq.get("blanks"):
+        parts = []
+        for b in nq["blanks"]:
+            b_id = b.get("id", "?")
+            answer = b.get("answer", "")
+            alts = b.get("alternatives", [])
+            alt_str = f" (also: {', '.join(alts)})" if alts else ""
+            parts.append(f"({b_id}) {answer}{alt_str}")
+        return "; ".join(parts)
     if nq["type"] == "stimulus" and nq.get("sub_questions"):
         sub_answers = []
         for si, sq in enumerate(nq["sub_questions"]):
@@ -1763,6 +1880,74 @@ def _qti_stimulus_items(ident: str, nq: dict) -> str:
     return "\n".join(items)
 
 
+def _qti_cloze_items(ident: str, nq: dict) -> str:
+    """Build QTI items for a cloze question.
+
+    QTI 1.2 represents fill-in-multiple-blanks as separate response_str entries
+    with render_fib. We emit one item with multiple response fields.
+    """
+    import re
+
+    points = nq["points"] or 1
+    blanks = nq.get("blanks", [])
+
+    # Build a display text replacing {{id}} with [blank id]
+    display_text = re.sub(r"\{\{(\d+)\}\}", r"[blank \1]", nq.get("text", ""))
+    display_text = _xml_escape(display_text)
+
+    # Build response fields and conditions for each blank
+    response_strs = ""
+    conditions = ""
+    per_blank_points = round(points / max(len(blanks), 1), 2)
+
+    for blank in blanks:
+        b_id = blank.get("id", 0)
+        answer = _xml_escape(blank.get("answer", ""))
+        alts = blank.get("alternatives", [])
+
+        response_strs += f"""          <response_str ident="response_{b_id}" rcardinality="Single">
+            <render_fib><response_label ident="answer_{b_id}"/></render_fib>
+          </response_str>
+"""
+        # Primary answer condition
+        conditions += (
+            f'          <respcondition continue="No">\n'
+            f'            <conditionvar><varequal respident="response_{b_id}" case="No">{answer}</varequal></conditionvar>\n'
+            f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
+            f"          </respcondition>\n"
+        )
+        # Alternative answer conditions
+        for alt in alts:
+            alt_escaped = _xml_escape(alt)
+            conditions += (
+                f'          <respcondition continue="No">\n'
+                f'            <conditionvar><varequal respident="response_{b_id}" case="No">{alt_escaped}</varequal></conditionvar>\n'
+                f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
+                f"          </respcondition>\n"
+            )
+
+    return f"""      <item ident="{ident}" title="Q{nq["number"]}">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>fill_in_multiple_blanks_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>{points}</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material><mattext texttype="text/html">{display_text}</mattext></material>
+{response_strs}        </presentation>
+        <resprocessing>
+          <outcomes><decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/></outcomes>
+{conditions}        </resprocessing>
+      </item>"""
+
+
 def export_qti(quiz, questions) -> io.BytesIO:
     """Export quiz as a QTI 1.2 ZIP package (Canvas-compatible).
 
@@ -1800,6 +1985,8 @@ def export_qti(quiz, questions) -> io.BytesIO:
             item_parts.append(_qti_essay_item(ident, nq))
         elif nq["type"] == "stimulus":
             item_parts.append(_qti_stimulus_items(ident, nq))
+        elif nq["type"] == "cloze":
+            item_parts.append(_qti_cloze_items(ident, nq))
         else:
             # Default: MC if options exist, else essay
             if nq["options"]:

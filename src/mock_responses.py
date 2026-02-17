@@ -134,10 +134,29 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "fill_in",
                 "multiple_answer",
                 "stimulus",
+                "cloze",
             ]
         )
 
-        if q_type == "stimulus":
+        if q_type == "cloze":
+            topic2 = context_keywords[(i + 1) % len(context_keywords)]
+            topic3 = context_keywords[(i + 2) % len(context_keywords)]
+            question = {
+                "type": "cloze",
+                "title": f"Question {i + 1}",
+                "text": (
+                    "The {{1}} is a fundamental process in biology. "
+                    "During {{2}}, organisms convert {{3}} into usable energy."
+                ),
+                "blanks": [
+                    {"id": 1, "answer": topic, "alternatives": [f"{topic} process"]},
+                    {"id": 2, "answer": topic2, "alternatives": []},
+                    {"id": 3, "answer": topic3, "alternatives": [f"raw {topic3}"]},
+                ],
+                "points": 3,
+                "image_ref": None,
+            }
+        elif q_type == "stimulus":
             # Stimulus: shared passage with 2-3 sub-questions
             topic2 = context_keywords[(i + 1) % len(context_keywords)]
             question = {

@@ -4411,3 +4411,40 @@ html {
 .sub-question-text {
     margin: 4px 0 8px 0;
 }
+
+/* ===== Cloze Questions (BL-067) ===== */
+.cloze-question {
+    margin: 8px 0;
+}
+.cloze-text {
+    line-height: 2;
+    font-size: 1.05em;
+}
+.cloze-blank {
+    display: inline-block;
+    border-bottom: 2px solid var(--primary, #e76f51);
+    min-width: 80px;
+    text-align: center;
+    color: var(--text-muted, #6b7f8d);
+    font-family: monospace;
+    margin: 0 2px;
+    padding: 0 4px;
+}
+.cloze-blank sub {
+    font-size: 0.7em;
+    color: var(--text-muted, #999);
+}
+.cloze-answers {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: var(--success-light, #ecfdf3);
+    border-radius: var(--radius-sm, 8px);
+    font-size: 0.9em;
+}
+.cloze-answer-item {
+    display: inline;
+}
+.cloze-alts {
+    color: var(--text-muted, #6b7f8d);
+    font-size: 0.85em;
+}

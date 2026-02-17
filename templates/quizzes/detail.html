@@ -313,6 +313,34 @@
         </div>
         {% endif %}
 
+        {% elif q.type == 'cloze' or (q.data and q.data.type is defined and q.data.type == 'cloze') %}
+        {# --- Cloze question display --- #}
+        {% if q.data and q.data.blanks is defined and q.data.blanks %}
+        <div class="cloze-question">
+            <p class="cloze-text">
+                {% set cloze_display = q.text %}
+                {% for blank in q.data.blanks %}
+                {% set placeholder = '{{' ~ blank.id ~ '}}' %}
+                {% set underline = '<span class="cloze-blank" data-blank-id="' ~ blank.id ~ '">________<sub>(' ~ blank.id ~ ')</sub></span>' %}
+                {% set cloze_display = cloze_display|replace(placeholder, underline) %}
+                {% endfor %}
+                {{ cloze_display|safe }}
+            </p>
+            <div class="cloze-answers">
+                <strong>Answers:</strong>
+                {% for blank in q.data.blanks %}
+                <span class="cloze-answer-item">
+                    ({{ blank.id }}) {{ blank.answer }}
+                    {% if blank.alternatives is defined and blank.alternatives %}
+                    <em class="cloze-alts">(also: {{ blank.alternatives|join(', ') }})</em>
+                    {% endif %}
+                </span>
+                {% if not loop.last %} | {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         {% elif q.type == 'matching' or (q.data and q.data.question_type is defined and q.data.question_type == 'matching') %}
         {# --- Matching question display --- #}
         {% set matches = q.data.matches if q.data.matches is defined else [] %}
@@ -456,6 +484,7 @@
                     <option value="matching" {% if q.type == 'matching' %}selected{% endif %}>Matching</option>
                     <option value="essay" {% if q.type == 'essay' %}selected{% endif %}>Essay</option>
                     <option value="stimulus" {% if q.type == 'stimulus' %}selected{% endif %}>Stimulus / Passage</option>
+                    <option value="cloze" {% if q.type == 'cloze' %}selected{% endif %}>Cloze (Fill Multiple Blanks)</option>
                 </select>
             </div>
         </div>
