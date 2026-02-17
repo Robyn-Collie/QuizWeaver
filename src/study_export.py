@@ -6,7 +6,6 @@ Exports study sets to TSV (Anki-compatible), CSV, PDF, and DOCX formats.
 
 import csv
 import io
-import json
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -14,20 +13,12 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text, sanitize_csv_cell, sanitize_filename
+from src.export_utils import parse_json_field, pdf_wrap_text, sanitize_csv_cell, sanitize_filename
 
 
 def _parse_card_data(card) -> dict:
     """Parse the JSON data field from a StudyCard."""
-    data = card.data
-    if isinstance(data, str):
-        try:
-            return json.loads(data)
-        except (json.JSONDecodeError, ValueError):
-            return {}
-    if isinstance(data, dict):
-        return data
-    return {}
+    return parse_json_field(card.data)
 
 
 def _sanitize_filename(title: str) -> str:

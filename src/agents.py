@@ -4,12 +4,12 @@ import os
 import time
 from typing import Any, Dict, List, Optional
 
-from src.cognitive_frameworks import BLOOMS_LEVELS, DOK_LEVELS, get_framework
+from src.cognitive_frameworks import BLOOMS_LEVELS, DOK_LEVELS, FRAMEWORK_BLOOMS, get_framework
 from src.cost_tracking import check_rate_limit, estimate_cost, estimate_pipeline_cost, estimate_tokens
 from src.critic_validation import pre_validate_questions
 from src.database import Class, get_engine, get_session
 from src.lesson_tracker import get_assumed_knowledge, get_recent_lessons
-from src.llm_provider import get_api_audit_log, get_provider
+from src.llm_provider import PROVIDER_MOCK, get_api_audit_log, get_provider
 
 logger = logging.getLogger(__name__)
 
@@ -858,7 +858,7 @@ class Orchestrator:
             "output_tokens": report["output_tokens"],
             "total_tokens": report["total_tokens"],
             "estimated_cost": round(estimated_cost, 6),
-            "is_mock": provider_name == "mock",
+            "is_mock": provider_name == PROVIDER_MOCK,
         }
 
         result = {
@@ -975,7 +975,7 @@ def _build_cognitive_section(context: Dict[str, Any]) -> str:
 
     if cognitive_framework:
         levels = get_framework(cognitive_framework)
-        framework_label = "Bloom's Taxonomy" if cognitive_framework == "blooms" else "Webb's DOK"
+        framework_label = "Bloom's Taxonomy" if cognitive_framework == FRAMEWORK_BLOOMS else "Webb's DOK"
         cognitive_section += f"**Cognitive Framework: {framework_label}**\n"
         cognitive_section += f"Difficulty Level: {difficulty}/5\n\n"
         if cognitive_distribution and levels:
@@ -1003,7 +1003,7 @@ def _build_cognitive_validation_section(cognitive_config: Dict[str, Any]) -> str
     difficulty = cognitive_config.get("difficulty", 3)
     if framework:
         levels = get_framework(framework)
-        framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
+        framework_label = "Bloom's Taxonomy" if framework == FRAMEWORK_BLOOMS else "Webb's DOK"
         section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
         section += (
             "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"

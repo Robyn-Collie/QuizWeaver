@@ -5,7 +5,6 @@ Exports lesson plans to PDF and DOCX (Word) formats.
 """
 
 import io
-import json
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -13,7 +12,7 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text, sanitize_filename
+from src.export_utils import parse_json_field, pdf_wrap_text, sanitize_filename
 
 SECTION_LABELS = {
     "learning_objectives": "Learning Objectives",
@@ -44,15 +43,7 @@ SECTION_ORDER = [
 
 def _parse_plan_data(lesson_plan) -> dict:
     """Parse the JSON plan_data field from a LessonPlan."""
-    data = lesson_plan.plan_data
-    if isinstance(data, str):
-        try:
-            return json.loads(data)
-        except (json.JSONDecodeError, ValueError):
-            return {}
-    if isinstance(data, dict):
-        return data
-    return {}
+    return parse_json_field(lesson_plan.plan_data)
 
 
 def _sanitize_filename(title: str) -> str:

@@ -5,6 +5,14 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any
 
+# Provider name constants
+PROVIDER_MOCK = "mock"
+PROVIDER_GEMINI = "gemini"
+PROVIDER_VERTEX = "vertex"
+PROVIDER_ANTHROPIC = "anthropic"
+PROVIDER_VERTEX_ANTHROPIC = "vertex-anthropic"
+PROVIDER_OPENAI = "openai-compatible"
+
 # API call audit log — captures exact payloads for transparency reporting
 _api_audit_log = []
 

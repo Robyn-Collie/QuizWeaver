@@ -6,7 +6,7 @@ import unittest
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text, sanitize_filename
+from src.export_utils import parse_json_field, pdf_wrap_text, sanitize_filename
 
 
 class TestSanitizeFilename(unittest.TestCase):
@@ -92,6 +92,72 @@ class TestPdfWrapText(unittest.TestCase):
         c, _ = self._make_canvas()
         y = pdf_wrap_text(c, "Test text", 50, 500, 400, 792)
         assert isinstance(y, (int, float))
+
+
+class TestParseJsonField(unittest.TestCase):
+    """Tests for parse_json_field()."""
+
+    def test_string_json_dict(self):
+        result = parse_json_field('{"key": "value"}')
+        assert result == {"key": "value"}
+
+    def test_string_json_list(self):
+        result = parse_json_field("[1, 2, 3]")
+        assert result == [1, 2, 3]
+
+    def test_dict_passthrough(self):
+        d = {"a": 1, "b": 2}
+        result = parse_json_field(d)
+        assert result is d
+
+    def test_list_passthrough(self):
+        lst = [1, 2, 3]
+        result = parse_json_field(lst)
+        assert result is lst
+
+    def test_none_returns_default_dict(self):
+        result = parse_json_field(None)
+        assert result == {}
+
+    def test_none_returns_custom_fallback(self):
+        result = parse_json_field(None, fallback=[])
+        assert result == []
+
+    def test_invalid_json_string_returns_fallback(self):
+        result = parse_json_field("not valid json {{{")
+        assert result == {}
+
+    def test_invalid_json_with_custom_fallback(self):
+        result = parse_json_field("broken", fallback={"default": True})
+        assert result == {"default": True}
+
+    def test_empty_string_returns_fallback(self):
+        result = parse_json_field("")
+        assert result == {}
+
+    def test_nested_objects(self):
+        nested = '{"outer": {"inner": [1, 2, {"deep": true}]}}'
+        result = parse_json_field(nested)
+        assert result == {"outer": {"inner": [1, 2, {"deep": True}]}}
+
+    def test_integer_returns_fallback(self):
+        result = parse_json_field(42)
+        assert result == {}
+
+    def test_boolean_returns_fallback(self):
+        result = parse_json_field(True)
+        assert result == {}
+
+    def test_list_fallback_for_levels(self):
+        """Simulates rubric criterion levels parsing."""
+        result = parse_json_field(None, fallback=[])
+        assert result == []
+        result = parse_json_field('[{"label": "A"}]', fallback=[])
+        assert result == [{"label": "A"}]
+
+    def test_string_with_whitespace_only(self):
+        result = parse_json_field("   ")
+        assert result == {}
 
 
 if __name__ == "__main__":

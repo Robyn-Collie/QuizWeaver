@@ -6,6 +6,9 @@ supported question types, and validation utilities for distributing
 questions across cognitive levels.
 """
 
+FRAMEWORK_BLOOMS = "blooms"
+FRAMEWORK_DOK = "dok"
+
 BLOOMS_LEVELS = [
     {"number": 1, "name": "Remember", "description": "Recall facts and basic concepts", "color": "#8B5CF6"},
     {"number": 2, "name": "Understand", "description": "Explain ideas or concepts", "color": "#3B82F6"},
@@ -42,9 +45,9 @@ QUESTION_TYPES = ["mc", "tf", "fill_in_blank", "short_answer", "matching", "essa
 
 def get_framework(name):
     """Return the level list for a named framework, or None if unknown."""
-    if name == "blooms":
+    if name == FRAMEWORK_BLOOMS:
         return BLOOMS_LEVELS
-    if name == "dok":
+    if name == FRAMEWORK_DOK:
         return DOK_LEVELS
     return None
 

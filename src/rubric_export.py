@@ -6,7 +6,6 @@ Exports rubrics to PDF, DOCX (Word), and CSV formats.
 
 import csv
 import io
-import json
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -14,22 +13,14 @@ from docx.shared import Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
-from src.export_utils import pdf_wrap_text, sanitize_csv_cell
+from src.export_utils import parse_json_field, pdf_wrap_text, sanitize_csv_cell
 
 PROFICIENCY_LABELS = ["Beginning", "Developing", "Proficient", "Advanced"]
 
 
 def _parse_levels(criterion) -> list:
     """Parse the levels JSON field from a RubricCriterion."""
-    levels = criterion.levels
-    if isinstance(levels, str):
-        try:
-            return json.loads(levels)
-        except (json.JSONDecodeError, ValueError):
-            return []
-    if isinstance(levels, list):
-        return levels
-    return []
+    return parse_json_field(criterion.levels, fallback=[])
 
 
 # ---------------------------------------------------------------------------

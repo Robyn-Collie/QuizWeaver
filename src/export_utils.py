@@ -5,7 +5,31 @@ Provides common helpers used across export.py, lesson_plan_export.py,
 and study_export.py to avoid code duplication.
 """
 
+import json
 import re
+
+
+def parse_json_field(field, fallback=None):
+    """Parse a JSON field that may be a string, dict, list, or None.
+
+    Args:
+        field: The raw field value (string, dict, list, or None).
+        fallback: Value to return when parsing fails or field is None.
+            Defaults to an empty dict.
+
+    Returns:
+        Parsed value (dict or list), or the fallback.
+    """
+    if fallback is None:
+        fallback = {}
+    if isinstance(field, str):
+        try:
+            return json.loads(field)
+        except (json.JSONDecodeError, ValueError):
+            return fallback
+    if isinstance(field, (dict, list)):
+        return field
+    return fallback
 
 
 def sanitize_csv_cell(value):

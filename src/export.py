@@ -8,7 +8,6 @@ mock vs real LLM providers.
 
 import csv
 import io
-import json
 import os
 import uuid
 import zipfile
@@ -22,7 +21,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
 
-from src.export_utils import sanitize_csv_cell, sanitize_filename
+from src.export_utils import parse_json_field, sanitize_csv_cell, sanitize_filename
 
 # Type normalization map: long form -> short form
 TYPE_MAP = {
@@ -57,12 +56,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         Normalized dict with consistent field names.
     """
     # Parse data field if stored as JSON string
-    data = question_obj.data
-    if isinstance(data, str):
-        try:
-            data = json.loads(data)
-        except (json.JSONDecodeError, ValueError):
-            data = {}
+    data = parse_json_field(question_obj.data)
     if not isinstance(data, dict):
         data = {}
 
