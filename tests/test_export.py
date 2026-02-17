@@ -838,23 +838,28 @@ class TestExportQTIUpgrade:
         quiz = _make_quiz(title="Mixed QTI")
         questions = [
             _make_question(
-                question_type="mc", text="MC question?",
+                question_type="mc",
+                text="MC question?",
                 data={"options": ["A", "B", "C"], "correct_answer": "B"},
             ),
             _make_question(
-                question_type="tf", text="TF question?",
+                question_type="tf",
+                text="TF question?",
                 data={"correct_answer": "True"},
             ),
             _make_question(
-                question_type="matching", text="Match these:",
+                question_type="matching",
+                text="Match these:",
                 data={"matches": [{"term": "X", "definition": "1"}, {"term": "Y", "definition": "2"}]},
             ),
             _make_question(
-                question_type="ordering", text="Order these:",
+                question_type="ordering",
+                text="Order these:",
                 data={"items": ["A", "B"], "correct_order": [0, 1]},
             ),
             _make_question(
-                question_type="short_answer", text="Short answer?",
+                question_type="short_answer",
+                text="Short answer?",
                 data={"expected_answer": "answer"},
             ),
         ]
@@ -887,16 +892,24 @@ class TestExportQuizizzCSV:
         reader = csv.reader(io.StringIO(result))
         headers = next(reader)
         assert headers == [
-            "Question Text", "Question Type",
-            "Option 1", "Option 2", "Option 3", "Option 4", "Option 5",
-            "Correct Answer", "Time Limit", "Image Link",
+            "Question Text",
+            "Question Type",
+            "Option 1",
+            "Option 2",
+            "Option 3",
+            "Option 4",
+            "Option 5",
+            "Correct Answer",
+            "Time Limit",
+            "Image Link",
         ]
 
     def test_quizizz_mc_basic(self):
         """MC question maps correctly with 1-based index."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="mc", text="What is 2+2?",
+            question_type="mc",
+            text="What is 2+2?",
             data={"options": ["3", "4", "5", "6"], "correct_answer": "4"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -915,7 +928,8 @@ class TestExportQuizizzCSV:
         """TF question maps to 'True or False' type."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="tf", text="The sky is blue.",
+            question_type="tf",
+            text="The sky is blue.",
             data={"correct_answer": "True"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -931,7 +945,8 @@ class TestExportQuizizzCSV:
         """MC with 3 options pads to 5 columns."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="mc", text="Pick one:",
+            question_type="mc",
+            text="Pick one:",
             data={"options": ["A", "B", "C"], "correct_answer": "A"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -948,7 +963,8 @@ class TestExportQuizizzCSV:
         """MC with 5 options uses all columns."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="mc", text="Pick one:",
+            question_type="mc",
+            text="Pick one:",
             data={"options": ["A", "B", "C", "D", "E"], "correct_answer": "E"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -963,7 +979,8 @@ class TestExportQuizizzCSV:
         """Verify time limit is 30."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="mc", text="Q?",
+            question_type="mc",
+            text="Q?",
             data={"options": ["A", "B"], "correct_answer": "A"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -976,7 +993,8 @@ class TestExportQuizizzCSV:
         """Matching questions are skipped."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="matching", text="Match:",
+            question_type="matching",
+            text="Match:",
             data={"matches": [{"term": "A", "definition": "1"}]},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -988,7 +1006,8 @@ class TestExportQuizizzCSV:
         """Ordering questions are skipped."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="ordering", text="Order:",
+            question_type="ordering",
+            text="Order:",
             data={"items": ["A", "B"], "correct_order": [0, 1]},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -1000,7 +1019,8 @@ class TestExportQuizizzCSV:
         """Essay questions are skipped."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="essay", text="Discuss:",
+            question_type="essay",
+            text="Discuss:",
             data={},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -1021,7 +1041,8 @@ class TestExportQuizizzCSV:
         """Questions with commas and quotes are properly escaped."""
         quiz = _make_quiz()
         q = _make_question(
-            question_type="mc", text='What is "this", exactly?',
+            question_type="mc",
+            text='What is "this", exactly?',
             data={"options": ["A, B", 'C "D"', "E"], "correct_answer": "A, B"},
         )
         result = export_quizizz_csv(quiz, [q])
@@ -1037,15 +1058,18 @@ class TestExportQuizizzCSV:
         quiz = _make_quiz()
         questions = [
             _make_question(
-                question_type="mc", text="MC?",
+                question_type="mc",
+                text="MC?",
                 data={"options": ["A", "B"], "correct_answer": "A"},
             ),
             _make_question(
-                question_type="tf", text="TF?",
+                question_type="tf",
+                text="TF?",
                 data={"correct_answer": "False"},
             ),
             _make_question(
-                question_type="matching", text="Match:",
+                question_type="matching",
+                text="Match:",
                 data={"matches": [{"term": "X", "definition": "Y"}]},
             ),
         ]

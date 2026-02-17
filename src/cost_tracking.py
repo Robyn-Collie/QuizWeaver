@@ -249,9 +249,7 @@ def estimate_pipeline_cost(config: dict, max_retries: int = 3) -> Dict[str, Any]
     try:
         from src.llm_provider import PROVIDER_REGISTRY
 
-        registry_default = PROVIDER_REGISTRY.get(provider, {}).get(
-            "default_model", "gemini-2.5-flash"
-        )
+        registry_default = PROVIDER_REGISTRY.get(provider, {}).get("default_model", "gemini-2.5-flash")
     except ImportError:
         registry_default = "gemini-2.5-flash"
     model = llm_config.get("model_name") or registry_default

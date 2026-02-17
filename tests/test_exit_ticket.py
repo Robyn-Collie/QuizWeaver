@@ -59,9 +59,7 @@ class TestExitTicketGenerator:
     def test_generate_from_topic(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        quiz = generate_exit_ticket(
-            db_session, class_id=1, config=mock_config, topic="Photosynthesis"
-        )
+        quiz = generate_exit_ticket(db_session, class_id=1, config=mock_config, topic="Photosynthesis")
         assert quiz is not None
         assert quiz.status == "generated"
         assert "Exit Ticket" in quiz.title
@@ -69,9 +67,7 @@ class TestExitTicketGenerator:
     def test_generate_from_lesson_log(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        quiz = generate_exit_ticket(
-            db_session, class_id=1, config=mock_config, lesson_log_id=1
-        )
+        quiz = generate_exit_ticket(db_session, class_id=1, config=mock_config, lesson_log_id=1)
         assert quiz is not None
         assert quiz.status == "generated"
         assert "Photosynthesis" in quiz.title
@@ -79,9 +75,7 @@ class TestExitTicketGenerator:
     def test_generate_default_count(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        quiz = generate_exit_ticket(
-            db_session, class_id=1, config=mock_config, topic="Cells"
-        )
+        quiz = generate_exit_ticket(db_session, class_id=1, config=mock_config, topic="Cells")
         questions = db_session.query(Question).filter_by(quiz_id=quiz.id).all()
         assert len(questions) <= 3
 
@@ -126,26 +120,20 @@ class TestExitTicketGenerator:
     def test_invalid_class_returns_none(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        result = generate_exit_ticket(
-            db_session, class_id=999, config=mock_config, topic="Cells"
-        )
+        result = generate_exit_ticket(db_session, class_id=999, config=mock_config, topic="Cells")
         assert result is None
 
     def test_exit_ticket_style_profile(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        quiz = generate_exit_ticket(
-            db_session, class_id=1, config=mock_config, topic="Cells"
-        )
+        quiz = generate_exit_ticket(db_session, class_id=1, config=mock_config, topic="Cells")
         sp = json.loads(quiz.style_profile) if isinstance(quiz.style_profile, str) else quiz.style_profile
         assert sp["exit_ticket"] is True
 
     def test_points_default_to_one(self, db_session, mock_config):
         from src.exit_ticket_generator import generate_exit_ticket
 
-        quiz = generate_exit_ticket(
-            db_session, class_id=1, config=mock_config, topic="Cells"
-        )
+        quiz = generate_exit_ticket(db_session, class_id=1, config=mock_config, topic="Cells")
         questions = db_session.query(Question).filter_by(quiz_id=quiz.id).all()
         for q in questions:
             assert q.points == 1

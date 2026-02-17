@@ -342,6 +342,7 @@ def analytics_reteach(class_id):
         if provider_override:
             config.setdefault("last_provider", {})["reteach"] = provider_override
             from src.web.config_utils import save_config
+
             save_config(config)
 
     last_reteach_provider = config.get("last_provider", {}).get("reteach", "")

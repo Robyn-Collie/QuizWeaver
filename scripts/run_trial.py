@@ -115,8 +115,11 @@ def main():
     parser = argparse.ArgumentParser(description="QuizWeaver trial run")
     parser.add_argument("--provider", default="gemini", help="LLM provider (default: gemini)")
     parser.add_argument("--model", default=None, help="Model name (e.g., gemini-2.5-flash)")
-    parser.add_argument("--topics", default="cell structure,organelles,photosynthesis,cellular respiration,plant vs animal cells",
-                        help="Comma-separated topics for quiz generation")
+    parser.add_argument(
+        "--topics",
+        default="cell structure,organelles,photosynthesis,cellular respiration,plant vs animal cells",
+        help="Comma-separated topics for quiz generation",
+    )
     parser.add_argument("--count", type=int, default=10, help="Number of quiz questions (default: 10)")
     parser.add_argument("--grade", default="7th Grade", help="Grade level (default: 7th Grade)")
     parser.add_argument("--clean", action="store_true", help="Clean previous trial data before running")
@@ -138,14 +141,12 @@ def main():
     print()
 
     # Check API key
-    if args.provider == "gemini":
-        if not os.getenv("GEMINI_API_KEY"):
-            print("[ERROR] GEMINI_API_KEY not set in .env")
-            sys.exit(1)
-    elif args.provider == "anthropic":
-        if not os.getenv("ANTHROPIC_API_KEY"):
-            print("[ERROR] ANTHROPIC_API_KEY not set in .env")
-            sys.exit(1)
+    if args.provider == "gemini" and not os.getenv("GEMINI_API_KEY"):
+        print("[ERROR] GEMINI_API_KEY not set in .env")
+        sys.exit(1)
+    elif args.provider == "anthropic" and not os.getenv("ANTHROPIC_API_KEY"):
+        print("[ERROR] ANTHROPIC_API_KEY not set in .env")
+        sys.exit(1)
 
     # ---- Setup ----
     print("--- Setup ---")
@@ -212,28 +213,47 @@ def _run_trial(args, output_dir, model_label):
 
     # ---- Class & Lesson Setup ----
     print("--- Class & Lesson Setup ---")
-    ok, out = run("Create class", [
-        "new-class", "--name", "7th Grade Life Science - Trial",
-        "--grade", args.grade, "--subject", "Life Science"
-    ], output_dir)
+    ok, out = run(
+        "Create class",
+        ["new-class", "--name", "7th Grade Life Science - Trial", "--grade", args.grade, "--subject", "Life Science"],
+        output_dir,
+    )
     class_id = extract_id(out) or "1"
 
-    run("Log lesson", [
-        "log-lesson", "--class", class_id,
-        "--topics", args.topics,
-        "--text", "Cell Biology Unit: cell structure, organelles, photosynthesis, cellular respiration",
-        "--notes", "Covered cell structure, organelles, photosynthesis, cellular respiration"
-    ], output_dir)
+    run(
+        "Log lesson",
+        [
+            "log-lesson",
+            "--class",
+            class_id,
+            "--topics",
+            args.topics,
+            "--text",
+            "Cell Biology Unit: cell structure, organelles, photosynthesis, cellular respiration",
+            "--notes",
+            "Covered cell structure, organelles, photosynthesis, cellular respiration",
+        ],
+        output_dir,
+    )
     print()
 
     # ---- Quiz Generation ----
     print("--- Quiz Generation ---")
-    ok, out = run("Generate quiz from topics", [
-        "generate-topics", "--class", class_id,
-        "--topics", args.topics,
-        "--count", str(args.count),
-        "--title", f"Cell Biology Quiz ({model_label})"
-    ], output_dir)
+    ok, out = run(
+        "Generate quiz from topics",
+        [
+            "generate-topics",
+            "--class",
+            class_id,
+            "--topics",
+            args.topics,
+            "--count",
+            str(args.count),
+            "--title",
+            f"Cell Biology Quiz ({model_label})",
+        ],
+        output_dir,
+    )
     quiz_id = extract_id(out) or "1"
     print()
 
@@ -242,21 +262,31 @@ def _run_trial(args, output_dir, model_label):
     for fmt in ["csv", "docx", "gift", "pdf", "qti"]:
         ext = "gift.txt" if fmt == "gift" else ("qti.zip" if fmt == "qti" else fmt)
         outfile = f"quiz.{ext}"
-        run(f"Export quiz ({fmt})", [
-            "export-quiz", quiz_id, "--format", fmt,
-            "--output", str(output_dir / outfile)
-        ], output_dir, expect_file=outfile)
+        run(
+            f"Export quiz ({fmt})",
+            ["export-quiz", quiz_id, "--format", fmt, "--output", str(output_dir / outfile)],
+            output_dir,
+            expect_file=outfile,
+        )
     print()
 
     # ---- Study Materials (4 types x 4 formats = 16) ----
     print("--- Study Material Generation ---")
     study_ids = {}
     for stype in ["flashcard", "study_guide", "vocabulary", "review_sheet"]:
-        ok, out = run(f"Generate {stype}", [
-            "generate-study", "--type", stype,
-            "--quiz", quiz_id,
-            "--title", f"Cell Biology {stype.replace('_', ' ').title()}"
-        ], output_dir)
+        ok, out = run(
+            f"Generate {stype}",
+            [
+                "generate-study",
+                "--type",
+                stype,
+                "--quiz",
+                quiz_id,
+                "--title",
+                f"Cell Biology {stype.replace('_', ' ').title()}",
+            ],
+            output_dir,
+        )
         sid = extract_id(out)
         if sid:
             study_ids[stype] = sid
@@ -266,91 +296,90 @@ def _run_trial(args, output_dir, model_label):
     for stype, sid in study_ids.items():
         for fmt in ["tsv", "csv", "pdf", "docx"]:
             outfile = f"{stype}.{fmt}"
-            run(f"Export {stype} ({fmt})", [
-                "export-study", sid, "--format", fmt,
-                "--output", str(output_dir / outfile)
-            ], output_dir, expect_file=outfile)
+            run(
+                f"Export {stype} ({fmt})",
+                ["export-study", sid, "--format", fmt, "--output", str(output_dir / outfile)],
+                output_dir,
+                expect_file=outfile,
+            )
     print()
 
     # ---- Rubric ----
     print("--- Rubric Generation & Export ---")
-    ok, out = run("Generate rubric", [
-        "generate-rubric", quiz_id, "--title", "Cell Biology Rubric"
-    ], output_dir)
+    ok, out = run("Generate rubric", ["generate-rubric", quiz_id, "--title", "Cell Biology Rubric"], output_dir)
     rubric_id = extract_id(out)
     if rubric_id:
         for fmt in ["csv", "docx", "pdf"]:
             outfile = f"rubric.{fmt}"
-            run(f"Export rubric ({fmt})", [
-                "export-rubric", rubric_id, "--format", fmt,
-                "--output", str(output_dir / outfile)
-            ], output_dir, expect_file=outfile)
+            run(
+                f"Export rubric ({fmt})",
+                ["export-rubric", rubric_id, "--format", fmt, "--output", str(output_dir / outfile)],
+                output_dir,
+                expect_file=outfile,
+            )
     print()
 
     # ---- Variant ----
     print("--- Variant Generation & Export ---")
-    ok, out = run("Generate ELL variant", [
-        "generate-variant", quiz_id, "--level", "ell"
-    ], output_dir)
+    ok, out = run("Generate ELL variant", ["generate-variant", quiz_id, "--level", "ell"], output_dir)
     variant_id = extract_id(out)
     if variant_id:
         for fmt in ["csv", "docx", "gift", "pdf", "qti"]:
             ext = "gift.txt" if fmt == "gift" else ("qti.zip" if fmt == "qti" else fmt)
             outfile = f"variant_ell.{ext}"
-            run(f"Export variant ({fmt})", [
-                "export-quiz", variant_id, "--format", fmt,
-                "--output", str(output_dir / outfile)
-            ], output_dir, expect_file=outfile)
+            run(
+                f"Export variant ({fmt})",
+                ["export-quiz", variant_id, "--format", fmt, "--output", str(output_dir / outfile)],
+                output_dir,
+                expect_file=outfile,
+            )
     print()
 
     # ---- Lesson Plan ----
     print("--- Lesson Plan Generation & Export ---")
-    ok, out = run("Generate lesson plan", [
-        "generate-lesson-plan",
-        "--topics", args.topics,
-        "--standards", "SOL LS.4",
-        "--duration", "50"
-    ], output_dir)
+    ok, out = run(
+        "Generate lesson plan",
+        ["generate-lesson-plan", "--topics", args.topics, "--standards", "SOL LS.4", "--duration", "50"],
+        output_dir,
+    )
     plan_id = extract_id(out)
     if plan_id:
         for fmt in ["pdf", "docx"]:
             outfile = f"lesson_plan.{fmt}"
-            run(f"Export lesson plan ({fmt})", [
-                "export-lesson-plan", plan_id, "--format", fmt,
-                "--output", str(output_dir / outfile)
-            ], output_dir, expect_file=outfile)
+            run(
+                f"Export lesson plan ({fmt})",
+                ["export-lesson-plan", plan_id, "--format", fmt, "--output", str(output_dir / outfile)],
+                output_dir,
+                expect_file=outfile,
+            )
     print()
 
     # ---- Template Export/Import ----
     print("--- Template Round-Trip ---")
     template_file = output_dir / "quiz_template.json"
-    run("Export template", [
-        "export-template", quiz_id,
-        "--output", str(template_file)
-    ], output_dir, expect_file="quiz_template.json")
+    run(
+        "Export template",
+        ["export-template", quiz_id, "--output", str(template_file)],
+        output_dir,
+        expect_file="quiz_template.json",
+    )
 
     if template_file.exists():
-        run("Import template (round-trip)", [
-            "import-template",
-            "--file", str(template_file),
-            "--class", class_id,
-            "--title", "Imported Template Quiz"
-        ], output_dir)
+        run(
+            "Import template (round-trip)",
+            ["import-template", "--file", str(template_file), "--class", class_id, "--title", "Imported Template Quiz"],
+            output_dir,
+        )
     print()
 
     # ---- Performance & Analytics ----
     print("--- Performance & Analytics ---")
     sample_csv = output_dir / "sample_performance.csv"
-    run("Import performance CSV", [
-        "import-performance", "--file", str(sample_csv),
-        "--class", class_id
-    ], output_dir)
+    run("Import performance CSV", ["import-performance", "--file", str(sample_csv), "--class", class_id], output_dir)
 
     run("Analytics", ["analytics", "--class", class_id], output_dir)
 
-    run("Reteach suggestions", [
-        "reteach", "--class", class_id, "--max", "5"
-    ], output_dir)
+    run("Reteach suggestions", ["reteach", "--class", class_id, "--max", "5"], output_dir)
     print()
 
     # ---- Info Commands ----

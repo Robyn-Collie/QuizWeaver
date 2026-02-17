@@ -60,6 +60,10 @@ def normalize_question_data(q: dict) -> dict:
         _type_map = {
             "multiple choice": "mc",
             "multiple_choice": "mc",
+            "multiple answer": "ma",
+            "multiple_answer": "ma",
+            "select all that apply": "ma",
+            "select_all": "ma",
             "true/false": "tf",
             "true false": "tf",
             "short answer": "short_answer",
@@ -71,6 +75,9 @@ def normalize_question_data(q: dict) -> dict:
             "matching": "matching",
             "essay": "essay",
             "ordering": "ordering",
+            "stimulus": "stimulus",
+            "stimulus/passage": "stimulus",
+            "passage": "stimulus",
         }
         mapped = _type_map.get(q["question_type"].lower().strip())
         if mapped:

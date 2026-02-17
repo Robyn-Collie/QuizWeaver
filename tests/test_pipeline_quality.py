@@ -62,8 +62,7 @@ class TestQuizNeedsReview:
 
         # Patch pipeline to return metadata with approved=True
         fake_questions = [
-            {"text": "What is photosynthesis?", "type": "mc",
-             "options": ["A", "B", "C", "D"], "correct_index": 0}
+            {"text": "What is photosynthesis?", "type": "mc", "options": ["A", "B", "C", "D"], "correct_index": 0}
         ]
         fake_metadata = {
             "prompt_summary": {},
@@ -83,8 +82,7 @@ class TestQuizNeedsReview:
             "model": None,
         }
 
-        with patch("src.quiz_generator.run_agentic_pipeline",
-                    return_value=(fake_questions, fake_metadata)):
+        with patch("src.quiz_generator.run_agentic_pipeline", return_value=(fake_questions, fake_metadata)):
             quiz = generate_quiz(session, class_id, config, num_questions=5)
 
         assert quiz is not None
@@ -99,8 +97,7 @@ class TestQuizNeedsReview:
 
         # Patch the orchestrator to return metadata with approved=False
         fake_questions = [
-            {"text": "What is photosynthesis?", "type": "mc",
-             "options": ["A", "B", "C", "D"], "correct_index": 0}
+            {"text": "What is photosynthesis?", "type": "mc", "options": ["A", "B", "C", "D"], "correct_index": 0}
         ]
         fake_metadata = {
             "prompt_summary": {},
@@ -114,15 +111,13 @@ class TestQuizNeedsReview:
                 "approved": False,
             },
             "critic_history": [
-                {"attempt": 1, "status": "REJECTED",
-                 "feedback": "Questions are too easy"},
+                {"attempt": 1, "status": "REJECTED", "feedback": "Questions are too easy"},
             ],
             "provider": "mock",
             "model": None,
         }
 
-        with patch("src.quiz_generator.run_agentic_pipeline",
-                    return_value=(fake_questions, fake_metadata)):
+        with patch("src.quiz_generator.run_agentic_pipeline", return_value=(fake_questions, fake_metadata)):
             quiz = generate_quiz(session, class_id, config, num_questions=5)
 
         assert quiz is not None
@@ -135,15 +130,18 @@ class TestQuizNeedsReview:
         config["agent_loop"] = {"max_retries": 1}
         class_id = _seed_class(session)
 
-        fake_questions = [
-            {"text": "Test?", "type": "mc",
-             "options": ["A", "B"], "correct_index": 0}
-        ]
+        fake_questions = [{"text": "Test?", "type": "mc", "options": ["A", "B"], "correct_index": 0}]
         fake_metadata = {
             "prompt_summary": {},
-            "metrics": {"approved": False, "duration_seconds": 0.1,
-                        "generator_calls": 1, "critic_calls": 1,
-                        "total_llm_calls": 2, "errors": 0, "attempts": 1},
+            "metrics": {
+                "approved": False,
+                "duration_seconds": 0.1,
+                "generator_calls": 1,
+                "critic_calls": 1,
+                "total_llm_calls": 2,
+                "errors": 0,
+                "attempts": 1,
+            },
             "critic_history": [
                 {"attempt": 1, "status": "REJECTED", "feedback": "Bad quiz"},
             ],
@@ -151,8 +149,7 @@ class TestQuizNeedsReview:
             "model": None,
         }
 
-        with patch("src.quiz_generator.run_agentic_pipeline",
-                    return_value=(fake_questions, fake_metadata)):
+        with patch("src.quiz_generator.run_agentic_pipeline", return_value=(fake_questions, fake_metadata)):
             quiz = generate_quiz(session, class_id, config, num_questions=5)
 
         assert quiz is not None
@@ -173,18 +170,25 @@ class TestNeedsReviewBadgeInTemplate:
             class_id=1,
             status="needs_review",
             style_profile=json.dumps({"grade_level": "7th Grade", "provider": "mock"}),
-            generation_metadata=json.dumps({
-                "prompt_summary": {},
-                "metrics": {"approved": False, "duration_seconds": 0.5,
-                            "generator_calls": 1, "critic_calls": 1,
-                            "total_llm_calls": 2, "errors": 0, "attempts": 1},
-                "critic_history": [
-                    {"attempt": 1, "status": "REJECTED",
-                     "feedback": "Questions are not aligned."},
-                ],
-                "provider": "mock",
-                "model": None,
-            }),
+            generation_metadata=json.dumps(
+                {
+                    "prompt_summary": {},
+                    "metrics": {
+                        "approved": False,
+                        "duration_seconds": 0.5,
+                        "generator_calls": 1,
+                        "critic_calls": 1,
+                        "total_llm_calls": 2,
+                        "errors": 0,
+                        "attempts": 1,
+                    },
+                    "critic_history": [
+                        {"attempt": 1, "status": "REJECTED", "feedback": "Questions are not aligned."},
+                    ],
+                    "provider": "mock",
+                    "model": None,
+                }
+            ),
         )
         session.add(quiz)
         session.commit()
@@ -233,26 +237,32 @@ class TestRubricRetry:
         session.commit()
 
         q = Question(
-            quiz_id=quiz.id, question_type="mc", text="Test?",
-            points=5.0, sort_order=0,
-            data=json.dumps({"type": "mc", "text": "Test?",
-                             "options": ["A", "B"], "correct_index": 0}),
+            quiz_id=quiz.id,
+            question_type="mc",
+            text="Test?",
+            points=5.0,
+            sort_order=0,
+            data=json.dumps({"type": "mc", "text": "Test?", "options": ["A", "B"], "correct_index": 0}),
         )
         session.add(q)
         session.commit()
 
         # Mock: first call returns unparseable text, second returns valid JSON
-        valid_json = json.dumps([{
-            "criterion": "Content Knowledge",
-            "description": "Demonstrates understanding",
-            "max_points": 10,
-            "levels": [
-                {"level": 1, "label": "Beginning", "description": "Minimal"},
-                {"level": 2, "label": "Developing", "description": "Some"},
-                {"level": 3, "label": "Proficient", "description": "Good"},
-                {"level": 4, "label": "Advanced", "description": "Excellent"},
-            ],
-        }])
+        valid_json = json.dumps(
+            [
+                {
+                    "criterion": "Content Knowledge",
+                    "description": "Demonstrates understanding",
+                    "max_points": 10,
+                    "levels": [
+                        {"level": 1, "label": "Beginning", "description": "Minimal"},
+                        {"level": 2, "label": "Developing", "description": "Some"},
+                        {"level": 3, "label": "Proficient", "description": "Good"},
+                        {"level": 4, "label": "Advanced", "description": "Excellent"},
+                    ],
+                }
+            ]
+        )
 
         mock_provider = MagicMock()
         mock_provider.generate.side_effect = [
@@ -285,10 +295,12 @@ class TestRubricRetry:
         session.commit()
 
         q = Question(
-            quiz_id=quiz.id, question_type="mc", text="Test?",
-            points=5.0, sort_order=0,
-            data=json.dumps({"type": "mc", "text": "Test?",
-                             "options": ["A", "B"], "correct_index": 0}),
+            quiz_id=quiz.id,
+            question_type="mc",
+            text="Test?",
+            points=5.0,
+            sort_order=0,
+            data=json.dumps({"type": "mc", "text": "Test?", "options": ["A", "B"], "correct_index": 0}),
         )
         session.add(q)
         session.commit()
@@ -321,20 +333,26 @@ class TestRubricRetry:
         session.commit()
 
         q = Question(
-            quiz_id=quiz.id, question_type="mc", text="Test?",
-            points=5.0, sort_order=0,
-            data=json.dumps({"type": "mc", "text": "Test?",
-                             "options": ["A", "B"], "correct_index": 0}),
+            quiz_id=quiz.id,
+            question_type="mc",
+            text="Test?",
+            points=5.0,
+            sort_order=0,
+            data=json.dumps({"type": "mc", "text": "Test?", "options": ["A", "B"], "correct_index": 0}),
         )
         session.add(q)
         session.commit()
 
-        valid_json = json.dumps([{
-            "criterion": "Knowledge",
-            "description": "Understanding",
-            "max_points": 5,
-            "levels": [],
-        }])
+        valid_json = json.dumps(
+            [
+                {
+                    "criterion": "Knowledge",
+                    "description": "Understanding",
+                    "max_points": 5,
+                    "levels": [],
+                }
+            ]
+        )
 
         mock_provider = MagicMock()
         mock_provider.generate.side_effect = [

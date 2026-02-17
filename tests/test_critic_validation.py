@@ -11,6 +11,7 @@ from src.critic_validation import VALID_TYPES, pre_validate_questions
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mc(text="What is X?", options=None, correct_index=0, points=1, **kw):
     q = {
         "type": "mc",
@@ -123,6 +124,9 @@ class TestCommonFields:
                 q.update({"options": ["A", "B"], "correct_indices": [0]})
             elif t == "matching":
                 q["matches"] = [{"term": "A", "definition": "1"}, {"term": "B", "definition": "2"}]
+            elif t == "stimulus":
+                q["stimulus_text"] = "A passage about cells."
+                q["sub_questions"] = [{"type": "mc", "text": "Q?", "points": 1}]
             results = pre_validate_questions([q])
             assert results[0]["passed"] is True, f"Type '{t}' should pass: {results[0]['issues']}"
 
@@ -263,7 +267,9 @@ class TestOtherTypeValidation:
 
     def test_matching_one_pair_insufficient(self):
         q = {
-            "type": "matching", "text": "Match.", "points": 1,
+            "type": "matching",
+            "text": "Match.",
+            "points": 1,
             "matches": [{"term": "A", "definition": "B"}],
         }
         results = pre_validate_questions([q])
@@ -272,7 +278,9 @@ class TestOtherTypeValidation:
 
     def test_matching_missing_term_in_pair(self):
         q = {
-            "type": "matching", "text": "Match.", "points": 1,
+            "type": "matching",
+            "text": "Match.",
+            "points": 1,
             "matches": [
                 {"term": "A", "definition": "B"},
                 {"term": "", "definition": "D"},
@@ -284,7 +292,9 @@ class TestOtherTypeValidation:
     def test_matching_prompt_response_alternate_shape(self):
         """Alternate data shape with prompt_items/response_items."""
         q = {
-            "type": "matching", "text": "Match.", "points": 1,
+            "type": "matching",
+            "text": "Match.",
+            "points": 1,
             "prompt_items": ["A", "B", "C"],
             "response_items": ["1", "2", "3"],
         }

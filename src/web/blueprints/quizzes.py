@@ -699,13 +699,15 @@ def estimate_cost():
     is_mock = pipeline["provider"] == "mock"
 
     if is_mock:
-        return jsonify({
-            "estimated_cost": "$0.00",
-            "estimated_tokens": 0,
-            "model": "mock",
-            "is_mock": True,
-            "message": "Mock mode -- no API costs",
-        })
+        return jsonify(
+            {
+                "estimated_cost": "$0.00",
+                "estimated_tokens": 0,
+                "model": "mock",
+                "is_mock": True,
+                "message": "Mock mode -- no API costs",
+            }
+        )
 
     # Scale estimate by question count (base estimate assumes ~10 questions)
     scale_factor = num_questions / 10.0
@@ -715,15 +717,17 @@ def estimate_cost():
     # Estimate tokens: ~200 input + ~100 output per question, times pipeline calls
     estimated_tokens = int((200 + 100) * num_questions * pipeline["max_calls"])
 
-    return jsonify({
-        "estimated_cost": f"${scaled_cost:.4f}",
-        "estimated_cost_raw": round(scaled_cost, 6),
-        "estimated_tokens": estimated_tokens,
-        "model": pipeline["model"],
-        "provider": pipeline["provider"],
-        "is_mock": False,
-        "max_calls": pipeline["max_calls"],
-    })
+    return jsonify(
+        {
+            "estimated_cost": f"${scaled_cost:.4f}",
+            "estimated_cost_raw": round(scaled_cost, 6),
+            "estimated_tokens": estimated_tokens,
+            "model": pipeline["model"],
+            "provider": pipeline["provider"],
+            "is_mock": False,
+            "max_calls": pipeline["max_calls"],
+        }
+    )
 
 
 # --- Costs ---

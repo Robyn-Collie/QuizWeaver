@@ -103,4 +103,4 @@ def test_logout_still_present(client):
     """Logout button should still be present in the user section."""
     resp = client.get("/dashboard?skip_onboarding=1")
     html = resp.data.decode("utf-8")
-    assert "action=\"/logout\"" in html or "/logout" in html
+    assert 'action="/logout"' in html or "/logout" in html

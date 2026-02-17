@@ -560,8 +560,9 @@ class TestLastUsedProvider:
             )
 
         # last_provider should not be set
-        assert "last_provider" not in app.config["APP_CONFIG"] or \
-               "quiz" not in app.config["APP_CONFIG"].get("last_provider", {})
+        assert "last_provider" not in app.config["APP_CONFIG"] or "quiz" not in app.config["APP_CONFIG"].get(
+            "last_provider", {}
+        )
 
     def test_config_last_provider_structure(self):
         """Verify the config structure for last_provider."""

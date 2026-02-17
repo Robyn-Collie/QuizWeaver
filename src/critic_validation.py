@@ -14,7 +14,7 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 # Recognised question type identifiers (internal canonical forms)
-VALID_TYPES = {"mc", "tf", "short_answer", "fill_in_blank", "matching", "essay", "ordering", "ma"}
+VALID_TYPES = {"mc", "tf", "short_answer", "fill_in_blank", "matching", "essay", "ordering", "ma", "stimulus"}
 
 
 def pre_validate_questions(
@@ -57,12 +57,14 @@ def pre_validate_questions(
             if qtype and qtype not in allowed_types:
                 issues.append(f"Type '{qtype}' not in allowed types: {sorted(allowed_types)}")
 
-        results.append({
-            "index": idx,
-            "passed": len(issues) == 0,
-            "issues": issues,
-            "fact_warnings": fact_warnings,
-        })
+        results.append(
+            {
+                "index": idx,
+                "passed": len(issues) == 0,
+                "issues": issues,
+                "fact_warnings": fact_warnings,
+            }
+        )
 
     return results
 
@@ -114,6 +116,8 @@ def _check_type_specific(q: Dict[str, Any], issues: List[str], fact_warnings: Li
         _check_ordering(q, issues)
     elif qtype == "matching":
         _check_matching(q, issues)
+    elif qtype == "stimulus":
+        _check_stimulus(q, issues)
     # essay: no additional structural requirements beyond common
 
 
@@ -137,9 +141,7 @@ def _check_mc(q: Dict[str, Any], issues: List[str], fact_warnings: List[str]) ->
         if ca is not None and isinstance(ca, str):
             actual = str(options[ci]).strip()
             if ca.strip() and actual and ca.strip().lower() != actual.lower():
-                fact_warnings.append(
-                    f"correct_answer '{ca}' does not match options[{ci}] '{actual}'"
-                )
+                fact_warnings.append(f"correct_answer '{ca}' does not match options[{ci}] '{actual}'")
 
 
 def _check_ma(q: Dict[str, Any], issues: List[str]) -> None:
@@ -170,9 +172,7 @@ def _check_tf(q: Dict[str, Any], issues: List[str], fact_warnings: List[str]) ->
             if ca_lower in ("true", "false"):
                 expected_bool = ca_lower == "true"
                 if expected_bool != is_true:
-                    fact_warnings.append(
-                        f"is_true={is_true} contradicts correct_answer='{ca}'"
-                    )
+                    fact_warnings.append(f"is_true={is_true} contradicts correct_answer='{ca}'")
 
 
 def _check_short_answer(q: Dict[str, Any], issues: List[str]) -> None:
@@ -227,3 +227,28 @@ def _check_matching(q: Dict[str, Any], issues: List[str]) -> None:
             "Matching question missing 'matches' list (expected [{term, definition}, ...]) "
             "or 'prompt_items'/'response_items' lists"
         )
+
+
+def _check_stimulus(q: Dict[str, Any], issues: List[str]) -> None:
+    """Stimulus/passage: must have stimulus_text and at least one sub-question."""
+    stimulus_text = q.get("stimulus_text")
+    if not stimulus_text or not str(stimulus_text).strip():
+        issues.append("Stimulus question missing 'stimulus_text' (the shared passage)")
+
+    sub_qs = q.get("sub_questions")
+    if not isinstance(sub_qs, list) or len(sub_qs) == 0:
+        issues.append("Stimulus question needs at least 1 sub-question in 'sub_questions'")
+    else:
+        for si, sq in enumerate(sub_qs):
+            if not isinstance(sq, dict):
+                issues.append(f"Sub-question {si} is not a dict")
+                continue
+            sq_text = sq.get("text")
+            if not sq_text or not str(sq_text).strip():
+                issues.append(f"Sub-question {si} missing 'text'")
+            sq_type = sq.get("type")
+            if not sq_type:
+                issues.append(f"Sub-question {si} missing 'type'")
+            sq_points = sq.get("points")
+            if sq_points is None or (isinstance(sq_points, (int, float)) and sq_points <= 0):
+                issues.append(f"Sub-question {si} has invalid 'points'")

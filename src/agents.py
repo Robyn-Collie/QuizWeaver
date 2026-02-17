@@ -798,7 +798,7 @@ class Orchestrator:
         metrics.stop()
         metrics.approved = len(approved_questions) >= target_count
         self.last_metrics = metrics
-        final = approved_questions[:target_count] if approved_questions else questions if 'questions' in dir() else []
+        final = approved_questions[:target_count] if approved_questions else questions if "questions" in dir() else []
         return final, self._build_metadata(context, metrics, critic_history)
 
     def _build_metadata(
@@ -848,14 +848,10 @@ class Orchestrator:
         report = metrics.report()
         estimated_cost = 0.0
         if model_name and report["total_tokens"] > 0:
-            estimated_cost = estimate_cost(
-                model_name, report["input_tokens"], report["output_tokens"]
-            )
+            estimated_cost = estimate_cost(model_name, report["input_tokens"], report["output_tokens"])
         elif report["total_tokens"] > 0:
             # Fallback: use default pricing
-            estimated_cost = estimate_cost(
-                "unknown", report["input_tokens"], report["output_tokens"]
-            )
+            estimated_cost = estimate_cost("unknown", report["input_tokens"], report["output_tokens"])
 
         token_usage = {
             "input_tokens": report["input_tokens"],
@@ -924,24 +920,23 @@ def _build_class_context_section(context: Dict[str, Any]) -> str:
     content_summary = context.get("content_summary", "")
     if user_provided and content_summary:
         parts.append(
-            "**Teacher-Provided Content (PRIMARY -- generate questions ONLY about this):**\n"
-            + content_summary
+            "**Teacher-Provided Content (PRIMARY -- generate questions ONLY about this):**\n" + content_summary
         )
 
     lesson_logs = context.get("lesson_logs", [])
     assumed_knowledge = context.get("assumed_knowledge", {})
     if lesson_logs or assumed_knowledge:
         if user_provided:
-            parts.append("**Supplementary Class Context (for background only, do NOT go beyond the teacher's content above):**")
+            parts.append(
+                "**Supplementary Class Context (for background only, do NOT go beyond the teacher's content above):**"
+            )
         else:
             parts.append("**Class Context:**")
         if lesson_logs:
             parts.append("Recent lessons taught to this class:")
             for log in lesson_logs[:10]:
                 topics = log.get("topics", [])
-                parts.append(
-                    f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}"
-                )
+                parts.append(f"- {log.get('date', 'N/A')}: {', '.join(topics) if topics else 'general'}")
         if assumed_knowledge:
             parts.append("\nAssumed student knowledge (topic: depth 1-5):")
             for topic, data in assumed_knowledge.items():
@@ -990,10 +985,7 @@ def _build_cognitive_section(context: Dict[str, Any]) -> str:
                 entry = cognitive_distribution.get(str(num)) or cognitive_distribution.get(num)
                 if entry is None:
                     continue
-                if isinstance(entry, dict):
-                    count = entry.get("count", 0)
-                else:
-                    count = int(entry)
+                count = entry.get("count", 0) if isinstance(entry, dict) else int(entry)
                 if count > 0:
                     cognitive_section += f"- Level {num} ({lvl['name']}): {count} questions\n"
         cognitive_section += "\nIMPORTANT: Tag every question with these fields:\n"
@@ -1013,7 +1005,9 @@ def _build_cognitive_validation_section(cognitive_config: Dict[str, Any]) -> str
         levels = get_framework(framework)
         framework_label = "Bloom's Taxonomy" if framework == "blooms" else "Webb's DOK"
         section = f"\n**Cognitive Framework Validation ({framework_label}):**\n"
-        section += "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
+        section += (
+            "- Verify every question has cognitive_level, cognitive_framework, and cognitive_level_number fields\n"
+        )
         section += f"- Target difficulty: {difficulty}/5\n"
         if distribution and levels:
             section += "- Verify distribution matches targets:\n"
@@ -1057,6 +1051,7 @@ def _build_critic_config(config: Dict[str, Any]) -> Dict[str, Any]:
 
     # Build a separate config for the critic
     import copy
+
     critic_config = copy.deepcopy(config)
     critic_config["llm"]["provider"] = critic_provider
     if critic_section.get("model_name"):

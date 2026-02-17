@@ -231,9 +231,7 @@ def sample_quiz_with_questions(mc_question_data):
             "title": "Test Quiz",
             "class_id": cls.id,
             "status": "generated",
-            "style_profile": json.dumps(
-                {"grade_level": "7th Grade", "provider": "mock"}
-            ),
+            "style_profile": json.dumps({"grade_level": "7th Grade", "provider": "mock"}),
         }
         quiz_defaults.update(quiz_overrides)
         quiz = Quiz(**quiz_defaults)

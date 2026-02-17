@@ -264,7 +264,56 @@
         </div>
         {% endif %}
 
-        {% if q.type == 'matching' or (q.data and q.data.question_type is defined and q.data.question_type == 'matching') %}
+        {% if q.type == 'stimulus' or (q.data and q.data.type is defined and q.data.type == 'stimulus') %}
+        {# --- Stimulus/Passage question display --- #}
+        {% if q.data and q.data.stimulus_text is defined and q.data.stimulus_text %}
+        <div class="stimulus-passage">
+            <div class="stimulus-passage-label">Passage:</div>
+            <blockquote class="stimulus-text">{{ q.data.stimulus_text }}</blockquote>
+        </div>
+        {% endif %}
+        {% if q.data and q.data.image_url is defined and q.data.image_url %}
+        <div class="stimulus-image">
+            <img src="{{ q.data.image_url }}" alt="Stimulus image" class="question-image" referrerpolicy="no-referrer"
+                 onerror="this.style.display='none'">
+        </div>
+        {% endif %}
+        {% if q.data and q.data.sub_questions is defined and q.data.sub_questions %}
+        <div class="stimulus-sub-questions">
+            {% for sq in q.data.sub_questions %}
+            <div class="sub-question" data-sub-index="{{ loop.index0 }}">
+                <p class="sub-question-header">
+                    <strong>Part {{ loop.index }}.</strong>
+                    <span class="question-type">{{ sq.type or 'mc' }}</span>
+                    <span class="question-points">{{ sq.points or 1 }} pts</span>
+                </p>
+                <p class="sub-question-text">{{ sq.text }}</p>
+                {% if sq.type == 'mc' and sq.options is defined %}
+                <ul class="question-options">
+                    {% for opt in sq.options %}
+                    <li{% if sq.correct_index is defined and loop.index0 == sq.correct_index %} class="correct"{% endif %}>{{ opt }}</li>
+                    {% endfor %}
+                </ul>
+                {% elif sq.type == 'tf' %}
+                <div class="tf-answer">
+                    <span class="tf-option {% if sq.correct_answer == 'True' %}correct{% endif %}">True</span>
+                    <span class="tf-option {% if sq.correct_answer == 'False' %}correct{% endif %}">False</span>
+                </div>
+                {% elif sq.type == 'short_answer' %}
+                <div class="short-answer-blank"><p>________________________________________</p></div>
+                <div class="question-answer">
+                    <strong>Expected Answer:</strong> {{ sq.expected_answer or '' }}
+                    {% if sq.acceptable_answers is defined and sq.acceptable_answers %}
+                    <br><strong>Also accepted:</strong> {{ sq.acceptable_answers|join(', ') }}
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% elif q.type == 'matching' or (q.data and q.data.question_type is defined and q.data.question_type == 'matching') %}
         {# --- Matching question display --- #}
         {% set matches = q.data.matches if q.data.matches is defined else [] %}
         {% if matches %}
@@ -326,6 +375,26 @@
             {% endif %}
         </div>
 
+        {% elif q.type == 'ma' or (q.data and q.data.type is defined and q.data.type == 'ma') or (q.data and q.data.question_type is defined and q.data.question_type == 'multiple_answer') %}
+        {# --- Multiple Answer (select all that apply) --- #}
+        <p class="ma-instruction"><em>Select ALL that apply.</em></p>
+        {% if q.data and q.data.options is defined %}
+        <ul class="question-options ma-options">
+            {% set correct_indices = q.data.correct_indices if q.data.correct_indices is defined else [] %}
+            {% for option in q.data.options %}
+            <li{% if loop.index0 in correct_indices %} class="correct"{% endif %}>
+                <span class="ma-checkbox">&#9744;</span> {{ option }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% if q.data and q.data.correct_indices is defined and q.data.correct_indices and q.data.options is defined %}
+        <div class="question-answer">
+            <strong>Correct Answers:</strong>
+            {% for idx in q.data.correct_indices %}{% if idx < q.data.options|length %}{% if not loop.first %}, {% endif %}{{ q.data.options[idx] }}{% endif %}{% endfor %}
+        </div>
+        {% endif %}
+
         {% elif q.type == 'tf' or q.question_type == 'tf' %}
         <div class="tf-answer">
             <span class="tf-option {% if q.data.correct_answer == 'True' or q.data.answer == 'True' %}correct{% endif %}">True</span>
@@ -386,6 +455,7 @@
                     <option value="ordering" {% if q.type == 'ordering' %}selected{% endif %}>Ordering</option>
                     <option value="matching" {% if q.type == 'matching' %}selected{% endif %}>Matching</option>
                     <option value="essay" {% if q.type == 'essay' %}selected{% endif %}>Essay</option>
+                    <option value="stimulus" {% if q.type == 'stimulus' %}selected{% endif %}>Stimulus / Passage</option>
                 </select>
             </div>
         </div>

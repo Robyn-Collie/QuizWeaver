@@ -75,14 +75,10 @@ class TestTerminologyCompliance:
             with open(full_path, encoding="utf-8") as f:
                 for lineno, line in enumerate(f, 1):
                     if _AI_RE.search(line) and not _is_allowed(line):
-                        violations.append(
-                            f"  {rel_path}:{lineno}: {line.rstrip()}"
-                        )
+                        violations.append(f"  {rel_path}:{lineno}: {line.rstrip()}")
 
         assert violations == [], (
-            "Found non-whitelisted 'AI' in templates. "
-            "Use 'LLM' or 'language model' instead.\n"
-            + "\n".join(violations)
+            "Found non-whitelisted 'AI' in templates. Use 'LLM' or 'language model' instead.\n" + "\n".join(violations)
         )
 
     def test_template_files_exist(self):

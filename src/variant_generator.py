@@ -192,8 +192,12 @@ def generate_variant(
         if idx < len(source_questions):
             src = source_questions[idx]
             for answer_key in (
-                "correct_answer", "correct_index", "is_true",
-                "expected_answer", "acceptable_answers", "rubric_hint",
+                "correct_answer",
+                "correct_index",
+                "is_true",
+                "expected_answer",
+                "acceptable_answers",
+                "rubric_hint",
             ):
                 if answer_key not in q_data and answer_key in src and src[answer_key]:
                     q_data[answer_key] = src[answer_key]

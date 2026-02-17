@@ -28,7 +28,7 @@ def _is_safe_url(target):
         return False
     parsed = urlparse(target)
     # Must be relative (no scheme, no netloc) and not protocol-relative (//)
-    return not parsed.scheme and not parsed.netloc and not target.startswith('//')
+    return not parsed.scheme and not parsed.netloc and not target.startswith("//")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])

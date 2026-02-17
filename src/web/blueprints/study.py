@@ -130,6 +130,7 @@ def study_generate():
             if provider_override:
                 config.setdefault("last_provider", {})["study"] = provider_override
                 from src.web.config_utils import save_config
+
                 save_config(config)
             flash("Study material generated successfully.", "success")
             return redirect(url_for("study.study_detail", study_set_id=study_set.id), code=303)
@@ -304,6 +305,7 @@ def exit_ticket_generate():
             if provider_override:
                 config.setdefault("last_provider", {})["quiz"] = provider_override
                 from src.web.config_utils import save_config
+
                 save_config(config)
             flash("Exit ticket generated successfully.", "success")
             return redirect(url_for("quizzes.quiz_detail", quiz_id=quiz.id), code=303)
@@ -336,12 +338,14 @@ def api_class_lessons(class_id):
     lessons = list_lessons(session, class_id, filters={"last_days": 30})
     result = []
     for lesson in lessons:
-        result.append({
-            "id": lesson.id,
-            "topics": lesson.topics or "Untitled lesson",
-            "date": lesson.date.strftime("%b %d") if lesson.date else "",
-            "notes": (lesson.notes or "")[:100],
-        })
+        result.append(
+            {
+                "id": lesson.id,
+                "topics": lesson.topics or "Untitled lesson",
+                "date": lesson.date.strftime("%b %d") if lesson.date else "",
+                "notes": (lesson.notes or "")[:100],
+            }
+        )
     return jsonify(result)
 
 

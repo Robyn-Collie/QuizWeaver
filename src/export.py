@@ -27,6 +27,7 @@ from src.export_utils import sanitize_csv_cell, sanitize_filename
 # Type normalization map: long form -> short form
 TYPE_MAP = {
     "multiple_choice": "mc",
+    "multiple_answer": "ma",
     "true_false": "tf",
     "short_answer": "short_answer",
     "fill_in": "fill_in",
@@ -35,6 +36,7 @@ TYPE_MAP = {
     "matching": "matching",
     "ordering": "ordering",
     "essay": "essay",
+    "stimulus": "stimulus",
 }
 
 
@@ -77,8 +79,13 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
     if options and isinstance(options[0], dict):
         options = [opt.get("text", str(opt)) for opt in options]
 
-    # Resolve correct answer
-    correct_answer = _resolve_correct_answer(data, options, q_type)
+    # Resolve correct answer (and correct_indices for ma type)
+    correct_indices = data.get("correct_indices", [])
+    if q_type == "ma" and correct_indices and options:
+        # For ma, correct_answer is a comma-separated list of correct option texts
+        correct_answer = ", ".join(str(options[idx]) for idx in correct_indices if 0 <= idx < len(options))
+    else:
+        correct_answer = _resolve_correct_answer(data, options, q_type)
 
     # Resolve matching pairs
     matches = _resolve_matches(data)
@@ -103,6 +110,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "text": text,
         "options": options,
         "correct_answer": correct_answer,
+        "correct_indices": correct_indices,
         "matches": matches,
         "ordering_items": ordering_items,
         "ordering_correct_order": ordering_correct_order,
@@ -115,6 +123,9 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "cognitive_level": data.get("cognitive_level"),
         "cognitive_framework": data.get("cognitive_framework"),
         "image_description": data.get("image_description") or data.get("image_ref"),
+        # Stimulus fields
+        "stimulus_text": data.get("stimulus_text", ""),
+        "sub_questions": data.get("sub_questions", []),
     }
 
 
@@ -196,9 +207,7 @@ def _sanitize_filename(title: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def export_csv(
-    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
-) -> str:
+def export_csv(quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False) -> str:
     """Export quiz questions to CSV format.
 
     Args:
@@ -262,6 +271,13 @@ def export_csv(
 
 def _format_options_csv(nq: dict) -> str:
     """Format options for CSV column."""
+    if nq["type"] == "stimulus" and nq.get("sub_questions"):
+        parts = []
+        for si, sq in enumerate(nq["sub_questions"], 1):
+            sq_type = sq.get("type", "mc").upper()
+            sq_text = sq.get("text", "")
+            parts.append(f"Sub-Q{si} [{sq_type}]: {sq_text}")
+        return " | ".join(parts)
     if nq["type"] == "matching" and nq["matches"]:
         return " | ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
     if nq["type"] == "ordering" and nq.get("ordering_items"):
@@ -278,7 +294,8 @@ def _format_options_csv(nq: dict) -> str:
         parts = []
         for j, opt in enumerate(nq["options"]):
             letter = letters[j] if j < len(letters) else str(j)
-            parts.append(f"{letter}) {opt}")
+            marker = "*" if nq["type"] == "ma" and j in nq.get("correct_indices", []) else ""
+            parts.append(f"{letter}) {opt}{marker}")
         return " | ".join(parts)
     return ""
 
@@ -305,11 +322,20 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
     writer = csv.writer(output)
 
     # Header row (Quizizz official import format)
-    writer.writerow([
-        "Question Text", "Question Type",
-        "Option 1", "Option 2", "Option 3", "Option 4", "Option 5",
-        "Correct Answer", "Time Limit", "Image Link",
-    ])
+    writer.writerow(
+        [
+            "Question Text",
+            "Question Type",
+            "Option 1",
+            "Option 2",
+            "Option 3",
+            "Option 4",
+            "Option 5",
+            "Correct Answer",
+            "Time Limit",
+            "Image Link",
+        ]
+    )
 
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
@@ -330,26 +356,43 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
             if not correct_answer and nq["correct_answer"]:
                 correct_answer = nq["correct_answer"]
 
-            writer.writerow([
-                sanitize_csv_cell(nq["text"]), "Multiple Choice",
-                sanitize_csv_cell(options[0]), sanitize_csv_cell(options[1]),
-                sanitize_csv_cell(options[2]), sanitize_csv_cell(options[3]),
-                sanitize_csv_cell(options[4]),
-                sanitize_csv_cell(correct_answer), 30, "",
-            ])
+            writer.writerow(
+                [
+                    sanitize_csv_cell(nq["text"]),
+                    "Multiple Choice",
+                    sanitize_csv_cell(options[0]),
+                    sanitize_csv_cell(options[1]),
+                    sanitize_csv_cell(options[2]),
+                    sanitize_csv_cell(options[3]),
+                    sanitize_csv_cell(options[4]),
+                    sanitize_csv_cell(correct_answer),
+                    30,
+                    "",
+                ]
+            )
 
         elif q_type == "tf":
-            writer.writerow([
-                sanitize_csv_cell(nq["text"]), "True or False",
-                "True", "False", "", "", "",
-                nq["correct_answer"] or "True", 30, "",
-            ])
+            writer.writerow(
+                [
+                    sanitize_csv_cell(nq["text"]),
+                    "True or False",
+                    "True",
+                    "False",
+                    "",
+                    "",
+                    "",
+                    nq["correct_answer"] or "True",
+                    30,
+                    "",
+                ]
+            )
 
         else:
             # matching, ordering, short_answer, fill_in, essay -- skip with warning
             logger.debug(
                 "Quizizz CSV: skipping question %d (type=%s, not supported by Quizizz)",
-                nq["number"], q_type,
+                nq["number"],
+                q_type,
             )
 
     return output.getvalue()
@@ -360,9 +403,7 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
 # ---------------------------------------------------------------------------
 
 
-def export_docx(
-    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
-) -> io.BytesIO:
+def export_docx(quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False) -> io.BytesIO:
     """Export quiz to a Word document.
 
     Args:
@@ -479,6 +520,8 @@ def _add_docx_question(doc, nq: dict, student_mode: bool = False):
     # Answer area based on type
     if nq["type"] == "mc":
         _add_docx_mc_options(doc, nq, student_mode=student_mode)
+    elif nq["type"] == "ma":
+        _add_docx_ma_options(doc, nq, student_mode=student_mode)
     elif nq["type"] == "tf":
         _add_docx_tf_options(doc, nq, student_mode=student_mode)
     elif nq["type"] in ("fill_in",):
@@ -505,6 +548,8 @@ def _add_docx_question(doc, nq: dict, student_mode: bool = False):
             doc.add_paragraph("_" * 60)
     elif nq["type"] == "matching" and nq["matches"]:
         _add_docx_matching(doc, nq)
+    elif nq["type"] == "stimulus":
+        _add_docx_stimulus(doc, nq, student_mode=student_mode)
 
     # Spacer
     doc.add_paragraph("")
@@ -523,6 +568,28 @@ def _add_docx_mc_options(doc, nq: dict, student_mode: bool = False):
         text = f"    {letter}. {opt}"
         run = p.add_run(text)
         if not student_mode and str(opt) == nq["correct_answer"]:
+            run.bold = True
+
+
+def _add_docx_ma_options(doc, nq: dict, student_mode: bool = False):
+    """Add multiple-answer options with A/B/C/D lettering and checkboxes.
+
+    In teacher mode correct answers are bolded.
+    In student mode an instruction line is shown.
+    """
+    p = doc.add_paragraph()
+    run = p.add_run("    (Select ALL that apply)")
+    run.italic = True
+    run.font.size = Pt(9)
+
+    correct_indices = set(nq.get("correct_indices", []))
+    letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    for j, opt in enumerate(nq["options"]):
+        letter = letters[j] if j < len(letters) else str(j)
+        p = doc.add_paragraph()
+        text = f"    {letter}. {opt}"
+        run = p.add_run(text)
+        if not student_mode and j in correct_indices:
             run.bold = True
 
 
@@ -572,10 +639,67 @@ def _add_docx_ordering(doc, nq: dict):
         p.add_run(f"___  {items[idx]}")
 
 
+def _add_docx_stimulus(doc, nq: dict, student_mode: bool = False):
+    """Add a stimulus/passage question with sub-questions."""
+    # Passage block
+    stimulus_text = nq.get("stimulus_text", "")
+    if stimulus_text:
+        p = doc.add_paragraph()
+        run = p.add_run("Passage:")
+        run.bold = True
+        run.font.size = Pt(10)
+        p = doc.add_paragraph()
+        run = p.add_run(stimulus_text)
+        run.italic = True
+        run.font.size = Pt(10)
+
+    # Sub-questions
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    sub_qs = nq.get("sub_questions", [])
+    for si, sq in enumerate(sub_qs):
+        sq_letter = letters[si] if si < len(letters) else str(si + 1)
+        sq_type = sq.get("type", "mc")
+        sq_text = sq.get("text", "")
+        sq_points = sq.get("points", 1)
+
+        p = doc.add_paragraph()
+        run = p.add_run(f"  {sq_letter}) [{sq_type.upper()}] ({sq_points} pts) ")
+        run.bold = True
+        run.font.size = Pt(10)
+        p.add_run(sq_text)
+
+        if sq_type == "mc" and sq.get("options"):
+            opt_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            for oi, opt in enumerate(sq["options"]):
+                ol = opt_letters[oi] if oi < len(opt_letters) else str(oi)
+                p = doc.add_paragraph()
+                text = f"      {ol}. {opt}"
+                run = p.add_run(text)
+                ci = sq.get("correct_index")
+                if not student_mode and ci is not None and oi == ci:
+                    run.bold = True
+        elif sq_type == "tf":
+            for opt_l, val in [("A", "True"), ("B", "False")]:
+                p = doc.add_paragraph()
+                run = p.add_run(f"      {opt_l}. {val}")
+                if not student_mode and sq.get("correct_answer") == val:
+                    run.bold = True
+        elif sq_type == "short_answer":
+            doc.add_paragraph("      " + "_" * 40)
+
+
 def _add_docx_answer_key(doc, normalized: list):
     """Add answer key section listing all correct answers."""
     for nq in normalized:
-        if nq["type"] == "matching" and nq["matches"]:
+        if nq["type"] == "ma" and nq.get("correct_indices") and nq.get("options"):
+            letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            parts = []
+            for idx in nq["correct_indices"]:
+                if 0 <= idx < len(nq["options"]):
+                    letter = letters[idx] if idx < len(letters) else str(idx)
+                    parts.append(f"{letter}. {nq['options'][idx]}")
+            answer_text = "; ".join(parts) if parts else nq["correct_answer"]
+        elif nq["type"] == "matching" and nq["matches"]:
             answer_text = "; ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
         elif nq["type"] == "ordering" and nq.get("ordering_items"):
             correct_order = nq.get("ordering_correct_order", [])
@@ -591,6 +715,23 @@ def _add_docx_answer_key(doc, normalized: list):
             if alts:
                 parts.append(f"(also: {', '.join(alts)})")
             answer_text = " ".join(parts)
+        elif nq["type"] == "stimulus" and nq.get("sub_questions"):
+            sub_answers = []
+            for si, sq in enumerate(nq["sub_questions"]):
+                sq_type = sq.get("type", "mc")
+                if sq_type == "mc" and sq.get("options"):
+                    ci = sq.get("correct_index")
+                    if ci is not None and 0 <= ci < len(sq["options"]):
+                        sub_answers.append(f"{chr(97 + si)}) {sq['options'][ci]}")
+                    else:
+                        sub_answers.append(f"{chr(97 + si)}) (unknown)")
+                elif sq_type == "tf":
+                    sub_answers.append(f"{chr(97 + si)}) {sq.get('correct_answer', 'True')}")
+                elif sq_type == "short_answer":
+                    sub_answers.append(f"{chr(97 + si)}) {sq.get('expected_answer', '')}")
+                else:
+                    sub_answers.append(f"{chr(97 + si)}) (see question)")
+            answer_text = "; ".join(sub_answers)
         else:
             answer_text = nq["correct_answer"]
 
@@ -637,6 +778,8 @@ def _format_gift_question(nq: dict) -> str:
 
     if nq["type"] == "mc":
         return _gift_mc(title, escaped_text, nq)
+    elif nq["type"] == "ma":
+        return _gift_ma(title, escaped_text, nq)
     elif nq["type"] == "tf":
         return _gift_tf(title, escaped_text, nq)
     elif nq["type"] == "short_answer":
@@ -649,6 +792,8 @@ def _format_gift_question(nq: dict) -> str:
         return _gift_ordering(title, escaped_text, nq)
     elif nq["type"] == "essay":
         return _gift_essay(title, escaped_text)
+    elif nq["type"] == "stimulus":
+        return _gift_stimulus(title, escaped_text, nq)
     else:
         # Default: treat as short answer
         return _gift_short(title, escaped_text, nq)
@@ -663,6 +808,33 @@ def _gift_mc(title: str, text: str, nq: dict) -> str:
             parts.append(f"  ={escaped_opt}")
         else:
             parts.append(f"  ~{escaped_opt}")
+    parts.append("}")
+    return "\n".join(parts)
+
+
+def _gift_ma(title: str, text: str, nq: dict) -> str:
+    """Format multiple-answer question in GIFT with percentage weights.
+
+    Moodle GIFT multi-answer uses ~%weight% for each option:
+    correct options get positive weight, wrong options get negative weight.
+    """
+    correct_indices = set(nq.get("correct_indices", []))
+    num_correct = len(correct_indices)
+    num_wrong = len(nq["options"]) - num_correct
+    if num_correct == 0:
+        return _gift_mc(title, text, nq)
+
+    # Equal positive weight per correct answer, equal negative per wrong answer
+    pos_weight = round(100 / num_correct, 5)
+    neg_weight = round(-100 / num_wrong, 5) if num_wrong > 0 else 0
+
+    parts = [f"::{title}:: {text} {{"]
+    for idx, opt in enumerate(nq["options"]):
+        escaped_opt = _escape_gift(str(opt))
+        if idx in correct_indices:
+            parts.append(f"  ~%{pos_weight}%{escaped_opt}")
+        else:
+            parts.append(f"  ~%{neg_weight}%{escaped_opt}")
     parts.append("}")
     return "\n".join(parts)
 
@@ -737,14 +909,70 @@ def _gift_essay(title: str, text: str) -> str:
     return f"::{title}:: {text} {{}}"
 
 
+def _gift_stimulus(title: str, text: str, nq: dict) -> str:
+    """Format stimulus/passage question group in GIFT.
+
+    GIFT doesn't natively support grouped questions with a shared passage.
+    We emit a comment block containing the passage, then render each
+    sub-question as a separate GIFT question with titles like Q3a, Q3b, etc.
+    """
+    stimulus_text = _escape_gift(nq.get("stimulus_text", ""))
+    parts = [f"// === Passage for {title} ==="]
+    # Multi-line passage as GIFT comments
+    for line in stimulus_text.split("\n"):
+        parts.append(f"// {line}")
+    parts.append(f"// === End of passage for {title} ===")
+    parts.append("")
+
+    sub_qs = nq.get("sub_questions", [])
+    for si, sq in enumerate(sub_qs):
+        sub_title = f"{title}{chr(ord('a') + si)}"
+        sq_type = sq.get("type", "mc")
+        sq_text = _escape_gift(sq.get("text", ""))
+
+        if sq_type == "mc":
+            opts = sq.get("options", [])
+            correct_idx = sq.get("correct_index", 0)
+            sub_parts = [f"::{sub_title}:: [Passage: see above] {sq_text} {{"]
+            for oi, opt in enumerate(opts):
+                escaped_opt = _escape_gift(str(opt))
+                if oi == correct_idx:
+                    sub_parts.append(f"  ={escaped_opt}")
+                else:
+                    sub_parts.append(f"  ~{escaped_opt}")
+            sub_parts.append("}")
+            parts.append("\n".join(sub_parts))
+        elif sq_type == "tf":
+            answer = (sq.get("correct_answer", "True") or "True").upper()
+            parts.append(f"::{sub_title}:: [Passage: see above] {sq_text} {{{answer}}}")
+        elif sq_type in ("short_answer", "fill_in"):
+            answers = []
+            expected = sq.get("expected_answer", "")
+            if expected:
+                answers.append(expected)
+            for alt in sq.get("acceptable_answers", []):
+                if alt and alt not in answers:
+                    answers.append(alt)
+            if not answers and sq.get("correct_answer"):
+                answers.append(sq["correct_answer"])
+            if answers:
+                answer_parts = " ".join(f"={_escape_gift(a)}" for a in answers)
+                parts.append(f"::{sub_title}:: [Passage: see above] {sq_text} {{{answer_parts}}}")
+            else:
+                parts.append(f"::{sub_title}:: [Passage: see above] {sq_text} {{}}")
+        else:
+            # Default: essay-style (open response)
+            parts.append(f"::{sub_title}:: [Passage: see above] {sq_text} {{}}")
+
+    return "\n\n".join(parts)
+
+
 # ---------------------------------------------------------------------------
 # PDF Export
 # ---------------------------------------------------------------------------
 
 
-def export_pdf(
-    quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False
-) -> io.BytesIO:
+def export_pdf(quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False) -> io.BytesIO:
     """Export quiz to a PDF document.
 
     Args:
@@ -896,6 +1124,19 @@ def _pdf_draw_question(
             letter_label = letters[j] if j < len(letters) else str(j)
             c.drawString(70, y, f"{letter_label}. {opt}")
             y -= 14
+    elif nq["type"] == "ma" and nq["options"]:
+        c.setFont("Helvetica-Oblique", 9)
+        c.drawString(70, y, "(Select ALL that apply)")
+        y -= 14
+        c.setFont("Helvetica", 10)
+        letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for j, opt in enumerate(nq["options"]):
+            if y < 60:
+                c.showPage()
+                y = page_height - 50
+            letter_label = letters[j] if j < len(letters) else str(j)
+            c.drawString(70, y, f"{letter_label}. {opt}")
+            y -= 14
     elif nq["type"] == "tf":
         for opt_letter, val in [("A", "True"), ("B", "False")]:
             if y < 60:
@@ -958,6 +1199,7 @@ def _pdf_draw_question(
             y -= 14
         # List definitions as a word bank (shuffled)
         import random as _rng_m
+
         definitions = [m["definition"] for m in nq["matches"]]
         _rng_m.Random(nq["number"]).shuffle(definitions)
         y -= 4
@@ -968,6 +1210,51 @@ def _pdf_draw_question(
         c.drawString(70, y, "Choices: " + "  |  ".join(definitions))
         c.setFont("Helvetica", 10)
         y -= 14
+    elif nq["type"] == "stimulus":
+        # Draw passage
+        stimulus_text = nq.get("stimulus_text", "")
+        if stimulus_text:
+            if y < 80:
+                c.showPage()
+                y = page_height - 50
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(70, y, "Passage:")
+            y -= 14
+            c.setFont("Helvetica-Oblique", 10)
+            y = _pdf_draw_wrapped_text(c, stimulus_text, 80, y, page_width - 140, page_height)
+            c.setFont("Helvetica", 10)
+        # Draw sub-questions
+        sub_qs = nq.get("sub_questions", [])
+        for si, sq in enumerate(sub_qs):
+            if y < 80:
+                c.showPage()
+                y = page_height - 50
+            sq_type = sq.get("type", "mc").upper()
+            sq_points = sq.get("points", 1)
+            c.setFont("Helvetica-Bold", 10)
+            c.drawString(80, y, f"{chr(97 + si)}) [{sq_type}] ({sq_points} pts)")
+            y -= 14
+            c.setFont("Helvetica", 10)
+            y = _pdf_draw_wrapped_text(c, sq.get("text", ""), 90, y, page_width - 150, page_height)
+            if sq.get("type") == "mc" and sq.get("options"):
+                opt_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                for oi, opt in enumerate(sq["options"]):
+                    if y < 60:
+                        c.showPage()
+                        y = page_height - 50
+                    ol = opt_letters[oi] if oi < len(opt_letters) else str(oi)
+                    c.drawString(100, y, f"{ol}. {opt}")
+                    y -= 14
+            elif sq.get("type") == "tf":
+                for ol, val in [("A", "True"), ("B", "False")]:
+                    if y < 60:
+                        c.showPage()
+                        y = page_height - 50
+                    c.drawString(100, y, f"{ol}. {val}")
+                    y -= 14
+            elif sq.get("type") == "short_answer":
+                c.drawString(100, y, "_" * 40)
+                y -= 14
 
     y -= 10  # Spacer between questions
     return y
@@ -1001,6 +1288,14 @@ def _pdf_draw_wrapped_text(c, text: str, x: float, y: float, max_width: float, p
 
 def _pdf_answer_text(nq: dict) -> str:
     """Get answer text for the answer key."""
+    if nq["type"] == "ma" and nq.get("correct_indices") and nq.get("options"):
+        letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        parts = []
+        for idx in nq["correct_indices"]:
+            if 0 <= idx < len(nq["options"]):
+                letter = letters[idx] if idx < len(letters) else str(idx)
+                parts.append(f"{letter}. {nq['options'][idx]}")
+        return "; ".join(parts) if parts else nq["correct_answer"]
     if nq["type"] == "matching" and nq["matches"]:
         return "; ".join(f"{m['term']} -> {m['definition']}" for m in nq["matches"])
     if nq["type"] == "ordering" and nq.get("ordering_items"):
@@ -1014,6 +1309,23 @@ def _pdf_answer_text(nq: dict) -> str:
         if alts:
             parts.append(f"(also: {', '.join(alts)})")
         return " ".join(p for p in parts if p)
+    if nq["type"] == "stimulus" and nq.get("sub_questions"):
+        sub_answers = []
+        for si, sq in enumerate(nq["sub_questions"]):
+            sq_type = sq.get("type", "mc")
+            if sq_type == "mc" and sq.get("options"):
+                ci = sq.get("correct_index")
+                if ci is not None and 0 <= ci < len(sq["options"]):
+                    sub_answers.append(f"{chr(97 + si)}) {sq['options'][ci]}")
+                else:
+                    sub_answers.append(f"{chr(97 + si)}) (unknown)")
+            elif sq_type == "tf":
+                sub_answers.append(f"{chr(97 + si)}) {sq.get('correct_answer', 'True')}")
+            elif sq_type == "short_answer":
+                sub_answers.append(f"{chr(97 + si)}) {sq.get('expected_answer', '')}")
+            else:
+                sub_answers.append(f"{chr(97 + si)}) (see question)")
+        return "; ".join(sub_answers)
     return nq["correct_answer"] or "(see rubric)"
 
 
@@ -1115,6 +1427,58 @@ def _qti_mc_item(ident: str, nq: dict) -> str:
       </item>"""
 
 
+def _qti_ma_item(ident: str, nq: dict) -> str:
+    """Build a QTI multiple-answer item with rcardinality=Multiple."""
+    text = _xml_escape(nq["text"])
+    points = nq["points"] or 5
+    correct_indices = set(nq.get("correct_indices", []))
+
+    response_labels = ""
+    for idx, opt in enumerate(nq["options"]):
+        response_labels += (
+            f'          <response_label ident="opt_{idx}">'
+            f'<material><mattext texttype="text/plain">{_xml_escape(str(opt))}</mattext></material>'
+            f"</response_label>\n"
+        )
+
+    # Build conditions: all correct must be selected AND no wrong selected
+    conditions = ""
+    for i in range(len(nq["options"])):
+        if i in correct_indices:
+            conditions += f'<varequal respident="response1">opt_{i}</varequal>'
+        else:
+            conditions += f'<not><varequal respident="response1">opt_{i}</varequal></not>'
+
+    return f"""      <item ident="{ident}" title="Q{nq["number"]}">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_answers_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>{points}</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material><mattext texttype="text/html">{text}</mattext></material>
+          <response_lid ident="response1" rcardinality="Multiple">
+            <render_choice>
+{response_labels}            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes><decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/></outcomes>
+          <respcondition continue="No">
+            <conditionvar><and>{conditions}</and></conditionvar>
+            <setvar action="Set" varname="SCORE">{points}</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>"""
+
+
 def _qti_tf_item(ident: str, nq: dict) -> str:
     """Build a QTI True/False item (implemented as MC with True/False options)."""
     is_true = nq["correct_answer"].strip().lower() == "true" if nq["correct_answer"] else True
@@ -1180,22 +1544,22 @@ def _qti_matching_item(ident: str, nq: dict) -> str:
             all_defs += (
                 f'            <response_label ident="def_{d_idx}">'
                 f'<material><mattext texttype="text/plain">{d_text}</mattext></material>'
-                f'</response_label>\n'
+                f"</response_label>\n"
             )
 
         response_grps += (
             f'        <response_grp ident="grp_{idx}">\n'
             f'          <material><mattext texttype="text/plain">{term}</mattext></material>\n'
-            f'          <render_choice>\n{all_defs}'
-            f'          </render_choice>\n'
-            f'        </response_grp>\n'
+            f"          <render_choice>\n{all_defs}"
+            f"          </render_choice>\n"
+            f"        </response_grp>\n"
         )
 
         respconditions += (
-            f'          <respcondition>\n'
+            f"          <respcondition>\n"
             f'            <conditionvar><varequal respident="grp_{idx}">def_{idx}</varequal></conditionvar>\n'
             f'            <setvar action="Add" varname="SCORE">{round(points / len(matches), 2)}</setvar>\n'
-            f'          </respcondition>\n'
+            f"          </respcondition>\n"
         )
 
     return f"""      <item ident="{ident}" title="Q{nq["number"]}">
@@ -1262,7 +1626,7 @@ def _qti_short_answer_item(ident: str, nq: dict) -> str:
             f'          <respcondition continue="No">\n'
             f'            <conditionvar><varequal respident="response1" case="No">{ans}</varequal></conditionvar>\n'
             f'            <setvar action="Set" varname="SCORE">{points}</setvar>\n'
-            f'          </respcondition>\n'
+            f"          </respcondition>\n"
         )
 
     return f"""      <item ident="{ident}" title="Q{nq["number"]}">
@@ -1290,6 +1654,121 @@ def _qti_short_answer_item(ident: str, nq: dict) -> str:
       </item>"""
 
 
+def _qti_stimulus_items(ident: str, nq: dict) -> str:
+    """Build QTI items for a stimulus/passage question group.
+
+    QTI 1.2 doesn't have a native 'passage group' construct. We emit each
+    sub-question as a separate item with the passage text prepended to the
+    question text so the context is preserved for each item.
+    """
+    stimulus_text = _xml_escape(nq.get("stimulus_text", ""))
+    passage_html = f"<p><strong>Passage:</strong> {stimulus_text}</p>"
+    items = []
+
+    for si, sq in enumerate(nq.get("sub_questions", [])):
+        sub_ident = f"{ident}_{chr(ord('a') + si)}"
+        sq_type = sq.get("type", "mc")
+        sq_text = _xml_escape(sq.get("text", ""))
+        sq_points = sq.get("points", 1)
+        full_text = f"{passage_html}<p>{sq_text}</p>"
+
+        if sq_type == "mc":
+            opts = sq.get("options", [])
+            correct_idx = sq.get("correct_index", 0)
+            response_labels = ""
+            for idx, opt in enumerate(opts):
+                response_labels += (
+                    f'          <response_label ident="opt_{idx}">'
+                    f'<material><mattext texttype="text/plain">{_xml_escape(str(opt))}</mattext></material>'
+                    f"</response_label>\n"
+                )
+            items.append(f"""      <item ident="{sub_ident}" title="Q{nq["number"]}{chr(ord("a") + si)}">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>multiple_choice_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>{sq_points}</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material><mattext texttype="text/html">{full_text}</mattext></material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+{response_labels}            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes><decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/></outcomes>
+          <respcondition continue="No">
+            <conditionvar><varequal respident="response1">opt_{correct_idx}</varequal></conditionvar>
+            <setvar action="Set" varname="SCORE">{sq_points}</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>""")
+        elif sq_type == "tf":
+            is_true = (sq.get("correct_answer", "True") or "True").strip().lower() == "true"
+            correct_idx = 0 if is_true else 1
+            items.append(f"""      <item ident="{sub_ident}" title="Q{nq["number"]}{chr(ord("a") + si)}">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>true_false_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>{sq_points}</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material><mattext texttype="text/html">{full_text}</mattext></material>
+          <response_lid ident="response1" rcardinality="Single">
+            <render_choice>
+          <response_label ident="opt_0"><material><mattext texttype="text/plain">True</mattext></material></response_label>
+          <response_label ident="opt_1"><material><mattext texttype="text/plain">False</mattext></material></response_label>
+            </render_choice>
+          </response_lid>
+        </presentation>
+        <resprocessing>
+          <outcomes><decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/></outcomes>
+          <respcondition continue="No">
+            <conditionvar><varequal respident="response1">opt_{correct_idx}</varequal></conditionvar>
+            <setvar action="Set" varname="SCORE">{sq_points}</setvar>
+          </respcondition>
+        </resprocessing>
+      </item>""")
+        else:
+            # short_answer, fill_in, or other -> essay item
+            items.append(f"""      <item ident="{sub_ident}" title="Q{nq["number"]}{chr(ord("a") + si)}">
+        <itemmetadata>
+          <qtimetadata>
+            <qtimetadatafield>
+              <fieldlabel>question_type</fieldlabel>
+              <fieldentry>essay_question</fieldentry>
+            </qtimetadatafield>
+            <qtimetadatafield>
+              <fieldlabel>points_possible</fieldlabel>
+              <fieldentry>{sq_points}</fieldentry>
+            </qtimetadatafield>
+          </qtimetadata>
+        </itemmetadata>
+        <presentation>
+          <material><mattext texttype="text/html">{full_text}</mattext></material>
+          <response_str ident="response1" rcardinality="Single">
+            <render_fib><response_label ident="answer1"/></render_fib>
+          </response_str>
+        </presentation>
+      </item>""")
+
+    return "\n".join(items)
+
+
 def export_qti(quiz, questions) -> io.BytesIO:
     """Export quiz as a QTI 1.2 ZIP package (Canvas-compatible).
 
@@ -1313,6 +1792,8 @@ def export_qti(quiz, questions) -> io.BytesIO:
 
         if nq["type"] == "mc":
             item_parts.append(_qti_mc_item(ident, nq))
+        elif nq["type"] == "ma":
+            item_parts.append(_qti_ma_item(ident, nq))
         elif nq["type"] == "tf":
             item_parts.append(_qti_tf_item(ident, nq))
         elif nq["type"] == "matching" and nq.get("matches"):
@@ -1323,6 +1804,8 @@ def export_qti(quiz, questions) -> io.BytesIO:
             item_parts.append(_qti_short_answer_item(ident, nq))
         elif nq["type"] == "essay":
             item_parts.append(_qti_essay_item(ident, nq))
+        elif nq["type"] == "stimulus":
+            item_parts.append(_qti_stimulus_items(ident, nq))
         else:
             # Default: MC if options exist, else essay
             if nq["options"]:
@@ -1680,24 +2163,37 @@ def create_qti_package(questions, used_images, config):
         if q_type == "mc":
             question_xml_parts.append(
                 _create_mc_question_legacy(
-                    q_id, q.get("title", "Question"), q.get("text", ""),
-                    q.get("points", 5), q.get("options", []),
-                    q.get("correct_index", 0), image_ref, image_placeholder,
+                    q_id,
+                    q.get("title", "Question"),
+                    q.get("text", ""),
+                    q.get("points", 5),
+                    q.get("options", []),
+                    q.get("correct_index", 0),
+                    image_ref,
+                    image_placeholder,
                 )
             )
         elif q_type == "tf":
             question_xml_parts.append(
                 _create_tf_question_legacy(
-                    q_id, q.get("title", "Question"), q.get("text", ""),
-                    q.get("points", 5), q.get("is_true", True),
-                    image_ref, image_placeholder,
+                    q_id,
+                    q.get("title", "Question"),
+                    q.get("text", ""),
+                    q.get("points", 5),
+                    q.get("is_true", True),
+                    image_ref,
+                    image_placeholder,
                 )
             )
         elif q_type == "essay":
             question_xml_parts.append(
                 _create_essay_question_legacy(
-                    q_id, q.get("title", "Question"), q.get("text", ""),
-                    q.get("points", 5), image_ref, image_placeholder,
+                    q_id,
+                    q.get("title", "Question"),
+                    q.get("text", ""),
+                    q.get("points", 5),
+                    image_ref,
+                    image_placeholder,
                 )
             )
         elif q_type == "ma":
@@ -1706,24 +2202,32 @@ def create_qti_package(questions, used_images, config):
                 correct_indices = [q["correct_index"]]
             question_xml_parts.append(
                 _create_multiple_answers_question_legacy(
-                    q_id, q.get("title", "Question"), q.get("text", ""),
-                    q.get("points", 5), q.get("options", []),
-                    correct_indices, image_ref, image_placeholder,
+                    q_id,
+                    q.get("title", "Question"),
+                    q.get("text", ""),
+                    q.get("points", 5),
+                    q.get("options", []),
+                    correct_indices,
+                    image_ref,
+                    image_placeholder,
                 )
             )
         else:
             print(f"Warning: Unknown question type {q_type}, defaulting to MC")
             question_xml_parts.append(
                 _create_mc_question_legacy(
-                    q_id, q.get("title", "Question"), q.get("text", ""),
-                    q.get("points", 5), q.get("options", []),
-                    q.get("correct_index", 0), image_ref, image_placeholder,
+                    q_id,
+                    q.get("title", "Question"),
+                    q.get("text", ""),
+                    q.get("points", 5),
+                    q.get("options", []),
+                    q.get("correct_index", 0),
+                    image_ref,
+                    image_placeholder,
                 )
             )
 
-    quiz_content = _ASSESSMENT_HEADER.format(
-        assessment_id=assessment_id, title=config["generation"]["quiz_title"]
-    )
+    quiz_content = _ASSESSMENT_HEADER.format(assessment_id=assessment_id, title=config["generation"]["quiz_title"])
     quiz_content += "\n".join(question_xml_parts)
     quiz_content += _ASSESSMENT_FOOTER
 

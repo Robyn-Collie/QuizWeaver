@@ -171,6 +171,7 @@ def quiz_generate_variant(quiz_id):
             if provider_override:
                 config.setdefault("last_provider", {})["quiz"] = provider_override
                 from src.web.config_utils import save_config
+
                 save_config(config)
             flash("Variant generated successfully.", "success")
             return redirect(url_for("quizzes.quiz_detail", quiz_id=variant.id), code=303)
@@ -268,6 +269,7 @@ def quiz_generate_rubric(quiz_id):
             if provider_override:
                 config.setdefault("last_provider", {})["rubric"] = provider_override
                 from src.web.config_utils import save_config
+
                 save_config(config)
             flash("Rubric generated successfully.", "success")
             return redirect(url_for("content.rubric_detail", rubric_id=rubric.id), code=303)
@@ -639,6 +641,7 @@ def lesson_plan_generate():
             if provider_override:
                 config.setdefault("last_provider", {})["lesson_plan"] = provider_override
                 from src.web.config_utils import save_config
+
                 save_config(config)
             flash("Lesson plan generated successfully.", "success")
             return redirect(url_for("content.lesson_plan_detail", plan_id=plan.id), code=303)

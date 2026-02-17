@@ -132,10 +132,57 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "ordering",
                 "short_answer",
                 "fill_in",
+                "multiple_answer",
+                "stimulus",
             ]
         )
 
-        if q_type == "multiple_choice":
+        if q_type == "stimulus":
+            # Stimulus: shared passage with 2-3 sub-questions
+            topic2 = context_keywords[(i + 1) % len(context_keywords)]
+            question = {
+                "type": "stimulus",
+                "title": f"Question {i + 1}",
+                "text": f"Read the following passage about {topic} and answer the questions below.",
+                "stimulus_text": (
+                    f"{topic.capitalize()} is a fundamental biological process that occurs in living organisms. "
+                    f"Scientists have studied {topic} extensively and discovered that it involves multiple stages. "
+                    f"The first stage begins with the absorption of {topic2}, followed by a series of chemical "
+                    f"reactions that produce energy. This energy is then used by the organism for growth, "
+                    f"repair, and reproduction. Without {topic}, life as we know it would not be possible."
+                ),
+                "image_url": None,
+                "sub_questions": [
+                    {
+                        "type": "mc",
+                        "text": f"Based on the passage, what is the primary role of {topic}?",
+                        "options": [
+                            "To produce energy for the organism",
+                            f"To eliminate {topic2} from the body",
+                            "To slow down chemical reactions",
+                            "To reduce the need for reproduction",
+                        ],
+                        "correct_index": 0,
+                        "points": 1,
+                    },
+                    {
+                        "type": "tf",
+                        "text": f"According to the passage, {topic} involves multiple stages.",
+                        "correct_answer": "True",
+                        "points": 1,
+                    },
+                    {
+                        "type": "short_answer",
+                        "text": f"Name one purpose that organisms use the energy from {topic} for, according to the passage.",
+                        "expected_answer": "growth",
+                        "acceptable_answers": ["growth", "repair", "reproduction"],
+                        "points": 1,
+                    },
+                ],
+                "points": 3,
+                "image_ref": None,
+            }
+        elif q_type == "multiple_choice":
             question = {
                 "type": "multiple_choice",
                 "title": f"Question {i + 1}",
@@ -190,6 +237,24 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
                 "points": 5,
                 "correct_answer": topic,
                 "word_bank": word_bank,
+                "image_ref": None,
+            }
+        elif q_type == "multiple_answer":
+            # Select 2 correct indices from 4 options
+            correct_indices = sorted(random.sample(range(4), 2))
+            question = {
+                "type": "multiple_answer",
+                "question_type": "multiple_answer",
+                "title": f"Question {i + 1}",
+                "text": f"Select ALL that apply. Which of the following are true about {topic}?",
+                "points": 5,
+                "options": [
+                    f"{topic.capitalize()} involves energy conversion",
+                    f"{topic.capitalize()} occurs only in animals",
+                    f"{topic.capitalize()} is a biological process",
+                    f"{topic.capitalize()} requires no enzymes",
+                ],
+                "correct_indices": correct_indices,
                 "image_ref": None,
             }
         else:  # short_answer
@@ -935,23 +1000,27 @@ def _get_structured_critic_response(prompt_parts: List[Any]) -> str:
         h = hash((str(prompt_parts)[:200], i)) % 3
         if h == 0:
             # ~1/3 fail
-            verdicts.append({
-                "index": i,
-                "verdict": "FAIL",
-                "issues": ["Mock critic: question wording could be clearer"],
-                "fact_check": "WARN",
-                "fact_check_notes": "Mock critic: unable to verify factual accuracy",
-                "suggestions": "Consider rephrasing for clarity",
-            })
+            verdicts.append(
+                {
+                    "index": i,
+                    "verdict": "FAIL",
+                    "issues": ["Mock critic: question wording could be clearer"],
+                    "fact_check": "WARN",
+                    "fact_check_notes": "Mock critic: unable to verify factual accuracy",
+                    "suggestions": "Consider rephrasing for clarity",
+                }
+            )
         else:
-            verdicts.append({
-                "index": i,
-                "verdict": "PASS",
-                "issues": [],
-                "fact_check": "PASS",
-                "fact_check_notes": "",
-                "suggestions": "",
-            })
+            verdicts.append(
+                {
+                    "index": i,
+                    "verdict": "PASS",
+                    "issues": [],
+                    "fact_check": "PASS",
+                    "fact_check_notes": "",
+                    "suggestions": "",
+                }
+            )
 
     response = {
         "questions": verdicts,

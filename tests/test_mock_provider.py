@@ -64,7 +64,16 @@ class TestMockProvider:
         assert "type" in question
         assert "text" in question
         assert "points" in question
-        assert question["type"] in ["multiple_choice", "true_false", "ordering", "short_answer"]
+        assert question["type"] in [
+            "multiple_choice",
+            "true_false",
+            "ordering",
+            "short_answer",
+            "fill_in",
+            "fill_in_blank",
+            "multiple_answer",
+            "stimulus",
+        ]
 
     def test_critic_response_schema(self):
         """Test that critic response matches structured per-question verdict schema."""

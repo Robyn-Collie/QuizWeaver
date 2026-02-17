@@ -179,10 +179,16 @@ class TestExportCsvSanitization:
 
     def test_question_text_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="=SUM(A1)", question_type="mc", data={
-            "options": ["A", "B", "C", "D"],
-            "correct_answer": "A",
-        })]
+        questions = [
+            _make_question(
+                text="=SUM(A1)",
+                question_type="mc",
+                data={
+                    "options": ["A", "B", "C", "D"],
+                    "correct_answer": "A",
+                },
+            )
+        ]
         result = export_csv(quiz, questions)
         rows = _parse_csv(result)
         # Row 1 is data (row 0 is header)
@@ -190,20 +196,32 @@ class TestExportCsvSanitization:
 
     def test_correct_answer_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="Question?", question_type="mc", data={
-            "options": ["Safe", "+evil"],
-            "correct_answer": "+evil",
-        })]
+        questions = [
+            _make_question(
+                text="Question?",
+                question_type="mc",
+                data={
+                    "options": ["Safe", "+evil"],
+                    "correct_answer": "+evil",
+                },
+            )
+        ]
         result = export_csv(quiz, questions)
         rows = _parse_csv(result)
         assert rows[1][4] == "'+evil"  # Correct Answer column
 
     def test_options_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="Question?", question_type="mc", data={
-            "options": ["=HYPERLINK()", "B", "C", "D"],
-            "correct_answer": "B",
-        })]
+        questions = [
+            _make_question(
+                text="Question?",
+                question_type="mc",
+                data={
+                    "options": ["=HYPERLINK()", "B", "C", "D"],
+                    "correct_answer": "B",
+                },
+            )
+        ]
         result = export_csv(quiz, questions)
         rows = _parse_csv(result)
         # Options column contains formatted text like "A) =HYPERLINK() | B) B | ..."
@@ -213,10 +231,16 @@ class TestExportCsvSanitization:
 
     def test_safe_text_unchanged(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="What is 2+2?", question_type="mc", data={
-            "options": ["3", "4", "5", "6"],
-            "correct_answer": "4",
-        })]
+        questions = [
+            _make_question(
+                text="What is 2+2?",
+                question_type="mc",
+                data={
+                    "options": ["3", "4", "5", "6"],
+                    "correct_answer": "4",
+                },
+            )
+        ]
         result = export_csv(quiz, questions)
         rows = _parse_csv(result)
         assert rows[1][2] == "What is 2+2?"
@@ -232,31 +256,49 @@ class TestExportQuizizzCsvSanitization:
 
     def test_question_text_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="=EVIL()", question_type="mc", data={
-            "options": ["A", "B", "C", "D"],
-            "correct_answer": "A",
-        })]
+        questions = [
+            _make_question(
+                text="=EVIL()",
+                question_type="mc",
+                data={
+                    "options": ["A", "B", "C", "D"],
+                    "correct_answer": "A",
+                },
+            )
+        ]
         result = export_quizizz_csv(quiz, questions)
         rows = _parse_csv(result)
         assert rows[1][0] == "'=EVIL()"
 
     def test_option_fields_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="Question?", question_type="mc", data={
-            "options": ["+cmd", "@link", "Safe", "Also safe"],
-            "correct_answer": "Safe",
-        })]
+        questions = [
+            _make_question(
+                text="Question?",
+                question_type="mc",
+                data={
+                    "options": ["+cmd", "@link", "Safe", "Also safe"],
+                    "correct_answer": "Safe",
+                },
+            )
+        ]
         result = export_quizizz_csv(quiz, questions)
         rows = _parse_csv(result)
-        assert rows[1][2] == "'+cmd"    # Option 1
-        assert rows[1][3] == "'@link"   # Option 2
-        assert rows[1][4] == "Safe"     # Option 3 (safe)
+        assert rows[1][2] == "'+cmd"  # Option 1
+        assert rows[1][3] == "'@link"  # Option 2
+        assert rows[1][4] == "Safe"  # Option 3 (safe)
 
     def test_tf_question_text_sanitized(self):
         quiz = _make_quiz()
-        questions = [_make_question(text="-trick question", question_type="tf", data={
-            "correct_answer": "True",
-        })]
+        questions = [
+            _make_question(
+                text="-trick question",
+                question_type="tf",
+                data={
+                    "correct_answer": "True",
+                },
+            )
+        ]
         result = export_quizizz_csv(quiz, questions)
         rows = _parse_csv(result)
         assert rows[1][0] == "'-trick question"
@@ -286,20 +328,36 @@ class TestStudyExportCsvSanitization:
 
     def test_vocabulary_term_sanitized(self):
         study_set = _make_study_set(material_type="vocabulary")
-        cards = [_make_study_card(front="@term", back="definition", data=json.dumps({
-            "example": "=formula",
-            "part_of_speech": "noun",
-        }))]
+        cards = [
+            _make_study_card(
+                front="@term",
+                back="definition",
+                data=json.dumps(
+                    {
+                        "example": "=formula",
+                        "part_of_speech": "noun",
+                    }
+                ),
+            )
+        ]
         result = export_flashcards_csv(study_set, cards)
         rows = _parse_csv(result)
-        assert rows[1][1] == "'@term"      # Term column
-        assert rows[1][3] == "'=formula"   # Example column
+        assert rows[1][1] == "'@term"  # Term column
+        assert rows[1][3] == "'=formula"  # Example column
 
     def test_study_guide_sanitized(self):
         study_set = _make_study_set(material_type="study_guide")
-        cards = [_make_study_card(front="+heading", back="-content", data=json.dumps({
-            "key_points": ["point1"],
-        }))]
+        cards = [
+            _make_study_card(
+                front="+heading",
+                back="-content",
+                data=json.dumps(
+                    {
+                        "key_points": ["point1"],
+                    }
+                ),
+            )
+        ]
         result = export_flashcards_csv(study_set, cards)
         rows = _parse_csv(result)
         assert rows[1][1] == "'+heading"
@@ -346,26 +404,30 @@ class TestRubricExportCsvSanitization:
 
     def test_level_description_sanitized(self):
         rubric = _make_rubric()
-        levels = json.dumps([
-            {"label": "Beginning", "description": "=SUM(hack)"},
-            {"label": "Developing", "description": "Normal"},
-            {"label": "Proficient", "description": "@trick"},
-            {"label": "Advanced", "description": "Great work"},
-        ])
+        levels = json.dumps(
+            [
+                {"label": "Beginning", "description": "=SUM(hack)"},
+                {"label": "Developing", "description": "Normal"},
+                {"label": "Proficient", "description": "@trick"},
+                {"label": "Advanced", "description": "Great work"},
+            ]
+        )
         criteria = [_make_criterion(criterion="Analysis", description="Desc", levels=levels)]
         result = export_rubric_csv(rubric, criteria)
         rows = _parse_csv(result)
-        assert rows[1][3] == "'=SUM(hack)"   # Beginning column
-        assert rows[1][4] == "Normal"         # Developing (safe)
-        assert rows[1][5] == "'@trick"        # Proficient column
-        assert rows[1][6] == "Great work"     # Advanced (safe)
+        assert rows[1][3] == "'=SUM(hack)"  # Beginning column
+        assert rows[1][4] == "Normal"  # Developing (safe)
+        assert rows[1][5] == "'@trick"  # Proficient column
+        assert rows[1][6] == "Great work"  # Advanced (safe)
 
     def test_safe_rubric_unchanged(self):
         rubric = _make_rubric()
-        levels = json.dumps([
-            {"label": "Beginning", "description": "Needs improvement"},
-            {"label": "Advanced", "description": "Excellent analysis"},
-        ])
+        levels = json.dumps(
+            [
+                {"label": "Beginning", "description": "Needs improvement"},
+                {"label": "Advanced", "description": "Excellent analysis"},
+            ]
+        )
         criteria = [_make_criterion(criterion="Analysis", description="Analyze sources", levels=levels)]
         result = export_rubric_csv(rubric, criteria)
         rows = _parse_csv(result)

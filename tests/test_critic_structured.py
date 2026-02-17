@@ -66,10 +66,7 @@ def _all_pass(n):
 
 
 def _all_fail(n, issue="Bad question"):
-    return [
-        {"index": i, "verdict": "FAIL", "issues": [issue], "fact_check": "PASS"}
-        for i in range(n)
-    ]
+    return [{"index": i, "verdict": "FAIL", "issues": [issue], "fact_check": "PASS"} for i in range(n)]
 
 
 def _mixed(n_pass, n_fail):
@@ -77,9 +74,7 @@ def _mixed(n_pass, n_fail):
     for i in range(n_pass):
         verdicts.append({"index": i, "verdict": "PASS", "issues": [], "fact_check": "PASS"})
     for i in range(n_fail):
-        verdicts.append(
-            {"index": n_pass + i, "verdict": "FAIL", "issues": ["Rejected"], "fact_check": "PASS"}
-        )
+        verdicts.append({"index": n_pass + i, "verdict": "FAIL", "issues": ["Rejected"], "fact_check": "PASS"})
     return verdicts
 
 
@@ -114,7 +109,13 @@ class TestParseCriticResponse:
 
     def test_fact_check_warn_in_feedback(self):
         verdicts = [
-            {"index": 0, "verdict": "FAIL", "issues": [], "fact_check": "WARN", "fact_check_notes": "Answer may be incorrect"},
+            {
+                "index": 0,
+                "verdict": "FAIL",
+                "issues": [],
+                "fact_check": "WARN",
+                "fact_check_notes": "Answer may be incorrect",
+            },
         ]
         resp = _structured_response(verdicts)
         result = _parse_critic_response(resp, 1)
@@ -123,7 +124,13 @@ class TestParseCriticResponse:
 
     def test_fact_check_fail_in_feedback(self):
         verdicts = [
-            {"index": 0, "verdict": "FAIL", "issues": ["Wrong answer"], "fact_check": "FAIL", "fact_check_notes": "Incorrect fact"},
+            {
+                "index": 0,
+                "verdict": "FAIL",
+                "issues": ["Wrong answer"],
+                "fact_check": "FAIL",
+                "fact_check_notes": "Incorrect fact",
+            },
         ]
         resp = _structured_response(verdicts)
         result = _parse_critic_response(resp, 1)
