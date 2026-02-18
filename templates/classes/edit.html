@@ -22,16 +22,6 @@
         <label for="subject">Subject</label>
         <input type="text" id="subject" name="subject" value="{{ class_obj.subject or '' }}">
     </div>
-    <div class="form-group">
-        <label for="standards_search">Standards (optional) <span class="help-tip" data-tip="Search for SOL standards by code or keyword. Select from suggestions or type a custom code and press Enter.">?</span></label>
-        <div class="standards-picker">
-            <input type="text" id="standards_search" class="picker-input" placeholder="Type to search (e.g., SOL 7.1, fractions, reading)..." autocomplete="off">
-            <input type="hidden" id="standards_val" name="standards" value="{{ class_obj.standards|ensure_list|join(', ') if class_obj.standards else '' }}">
-            <div class="picker-hint">Search the standards database or type a custom code and press Enter.</div>
-        </div>
-        <div class="standards-chips" id="standards_chips"></div>
-        <small class="form-hint">Optional -- you can select specific standards when generating quizzes.</small>
-    </div>
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Save Changes</button>
         <a href="/classes/{{ class_obj.id }}" class="btn btn-secondary">Cancel</a>
@@ -39,16 +29,3 @@
 </form>
 {% endblock %}
 
-{% block scripts %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/standards_picker.css') }}">
-<script src="{{ url_for('static', filename='js/standards_picker.js') }}"></script>
-<script>
-initStandardsPicker({
-    inputId: 'standards_search',
-    hiddenInputId: 'standards_val',
-    chipsContainerId: 'standards_chips',
-    apiUrl: '/api/standards/search',
-    initialValues: {{ (class_obj.standards|ensure_list if class_obj.standards else [])|tojson }}
-});
-</script>
-{% endblock %}

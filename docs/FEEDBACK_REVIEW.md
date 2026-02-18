@@ -99,8 +99,8 @@ The teacher testing session uncovered **24 distinct feedback items** across quiz
 
 ### F13: Standards on class creation not useful
 **Feedback:** "Standards should not be part of class creation. If I am teaching a class on life science, it's going to be all the [standards]."
-**Status:** ADDRESSED (design-level)
-**Evidence:** Standards on class creation are already marked "optional" and pre-fill on the generate form only as a convenience. The generate form allows selecting specific standards per quiz, which is the teacher's actual workflow. The teacher can ignore standards at class creation and specify them at quiz generation time.
+**Status:** FULLY ADDRESSED (Session 19)
+**Evidence:** Standards picker removed from class creation and class edit forms. Standards selection now happens only on the generate form, where teachers pick standards per-quiz — matching the teacher's actual workflow. The DB column remains for backward compatibility but is no longer populated from the web UI.
 
 ### F14: Teacher wants to specify content directly, not through lessons
 **Feedback:** Teacher's workflow is: open curriculum framework PDF, copy specific enduring understandings and objectives, paste into quiz generation tool. Does not want to go through lessons.
@@ -229,7 +229,7 @@ The Session 16 fixes (topics field, content textarea, student-mode export, word 
 | F10 | Suggested image in export | ADDRESSED | Session 16, BL-058 |
 | F11 | Cannot delete suggested image text | ADDRESSED | Via student_mode |
 | F12 | Lesson logging extra work/privacy | ADDRESSED | Session 16 |
-| F13 | Standards on class creation | ADDRESSED | Already optional |
+| F13 | Standards on class creation | FULLY ADDRESSED | Session 19, removed from forms |
 | F14 | Specify content directly | ADDRESSED | Session 16, BL-057 |
 | P1 | Regeneration speed | PARTIAL | Needs UX indicator |
 | P2 | Inline dropdown per blank | PARTIAL | Word bank exists, not per-blank |

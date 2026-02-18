@@ -45,15 +45,12 @@ def class_create():
         session = _get_session()
         grade_level = request.form.get("grade_level", "").strip() or None
         subject = request.form.get("subject", "").strip() or None
-        standards_raw = request.form.get("standards", "").strip()
-        standards = [s.strip() for s in standards_raw.split(",") if s.strip()] if standards_raw else None
 
         new_cls = create_class(
             session,
             name=name,
             grade_level=grade_level,
             subject=subject,
-            standards=standards,
         )
         flash(f"Class '{new_cls.name}' created successfully.", "success")
         return redirect(url_for("classes.classes_list"), code=303)
@@ -96,8 +93,6 @@ def class_edit(class_id):
         name = request.form.get("name", "").strip() or None
         grade_level = request.form.get("grade_level", "").strip() or None
         subject = request.form.get("subject", "").strip() or None
-        standards_raw = request.form.get("standards", "").strip()
-        standards = [s.strip() for s in standards_raw.split(",") if s.strip()] if standards_raw else None
 
         update_class(
             session,
@@ -105,7 +100,6 @@ def class_edit(class_id):
             name=name,
             grade_level=grade_level,
             subject=subject,
-            standards=standards,
         )
         flash("Class updated successfully.", "success")
         return redirect(url_for("classes.class_detail", class_id=class_id), code=303)

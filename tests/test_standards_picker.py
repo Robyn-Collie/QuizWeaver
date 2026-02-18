@@ -164,18 +164,16 @@ class TestStandardsSearchAPI:
 
 
 class TestStandardsPickerInForms:
-    def test_new_class_has_picker(self, client):
+    def test_new_class_no_standards_picker(self, client):
+        """Standards picker was removed from class creation per teacher feedback (F13)."""
         resp = client.get("/classes/new")
         assert resp.status_code == 200
         html = resp.data.decode()
-        assert "standards_picker.js" in html
-        assert "standards_picker.css" in html
-        assert "standards_search" in html
-        assert "standards_chips" in html
-        assert "initStandardsPicker" in html
+        assert "standards_picker.js" not in html
+        assert "initStandardsPicker" not in html
 
-    def test_edit_class_has_picker(self, client):
-        # Create a class first
+    def test_edit_class_no_standards_picker(self, client):
+        """Standards picker was removed from class edit per teacher feedback (F13)."""
         from src.database import Class, get_engine, get_session
 
         engine = get_engine(client.application.config["DB_PATH"])
@@ -190,9 +188,8 @@ class TestStandardsPickerInForms:
         resp = client.get(f"/classes/{cls_id}/edit")
         assert resp.status_code == 200
         html = resp.data.decode()
-        assert "standards_picker.js" in html
-        assert "standards_picker.css" in html
-        assert "initStandardsPicker" in html
+        assert "standards_picker.js" not in html
+        assert "initStandardsPicker" not in html
 
     def test_generate_quiz_has_picker(self, client):
         # Create a class first
@@ -215,14 +212,14 @@ class TestStandardsPickerInForms:
         assert "sol_standards_search" in html
         assert "sol_standards_chips" in html
 
-    def test_new_class_submit_with_standards(self, client):
+    def test_new_class_submit_without_standards(self, client):
+        """Class creation no longer accepts standards (per teacher feedback F13)."""
         resp = client.post(
             "/classes/new",
             data={
                 "name": "Picker Test Class",
                 "grade_level": "7th Grade",
                 "subject": "Math",
-                "standards": "SOL 7.1, SOL 7.2",
             },
             follow_redirects=True,
         )
