@@ -1,6 +1,7 @@
-"""Quiz listing, detail, export, editing API, generation, costs, and TTS routes."""
+"""Quiz listing, detail, export, editing API, generation, costs, TTS, and image search routes."""
 
 import json
+import logging
 import os
 import re
 import uuid
@@ -35,6 +36,8 @@ from src.tts_generator import (
 from src.variant_generator import READING_LEVELS
 from src.web.blueprints.helpers import ALLOWED_IMAGE_EXTENSIONS, _get_session, flash_generation_error, login_required
 from src.web.config_utils import save_config
+
+logger = logging.getLogger(__name__)
 
 quizzes_bp = Blueprint("quizzes", __name__)
 
@@ -262,6 +265,7 @@ def quiz_export(quiz_id, format_name):
     safe_title = re.sub(r"[^\w\s\-]", "", quiz.title or "quiz")
     safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "quiz"
     suffix = "_student" if student_mode else ""
+    image_dir = _get_upload_dir()
 
     if format_name == "csv":
         csv_str = export_csv(quiz, questions, style_profile, student_mode=student_mode)
@@ -273,7 +277,7 @@ def quiz_export(quiz_id, format_name):
             mimetype="text/csv",
         )
     elif format_name == "docx":
-        buf = export_docx(quiz, questions, style_profile, student_mode=student_mode)
+        buf = export_docx(quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir)
         return send_file(
             buf,
             as_attachment=True,
@@ -290,7 +294,7 @@ def quiz_export(quiz_id, format_name):
             mimetype="text/plain",
         )
     elif format_name == "pdf":
-        buf = export_pdf(quiz, questions, style_profile, student_mode=student_mode)
+        buf = export_pdf(quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir)
         return send_file(
             buf,
             as_attachment=True,
@@ -298,7 +302,7 @@ def quiz_export(quiz_id, format_name):
             mimetype="application/pdf",
         )
     elif format_name == "qti":
-        buf = export_qti(quiz, questions)
+        buf = export_qti(quiz, questions, image_dir=image_dir)
         return send_file(
             buf,
             as_attachment=True,
@@ -811,6 +815,138 @@ def costs():
         budget=budget,
         monthly=monthly,
     )
+
+
+# --- Image Search API ---
+
+
+@quizzes_bp.route("/api/image-search")
+@login_required
+def api_image_search():
+    """Search Pixabay for images. Requires PIXABAY_API_KEY in .env."""
+    api_key = os.getenv("PIXABAY_API_KEY", "").strip()
+    if not api_key:
+        return jsonify(
+            {"ok": False, "error": "Image search not configured. Add PIXABAY_API_KEY to your .env file."}
+        )
+
+    query = (request.args.get("q") or "").strip()
+    if not query:
+        return jsonify({"ok": False, "error": "Search query is required."}), 400
+
+    image_type = request.args.get("type", "illustration").strip()
+    if image_type not in ("illustration", "photo", "vector", "all"):
+        image_type = "illustration"
+
+    import requests as http_requests
+
+    try:
+        resp = http_requests.get(
+            "https://pixabay.com/api/",
+            params={
+                "key": api_key,
+                "q": query,
+                "image_type": image_type,
+                "per_page": 12,
+                "safesearch": "true",
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except Exception:
+        logger.exception("Pixabay API request failed")
+        return jsonify({"ok": False, "error": "Image search request failed. Please try again."}), 502
+
+    hits = [
+        {
+            "id": h.get("id"),
+            "thumbnail": h.get("previewURL", ""),
+            "medium": h.get("webformatURL", ""),
+            "tags": h.get("tags", ""),
+            "page_url": h.get("pageURL", ""),
+            "width": h.get("webformatWidth", 0),
+            "height": h.get("webformatHeight", 0),
+        }
+        for h in data.get("hits", [])
+    ]
+
+    return jsonify({"ok": True, "hits": hits})
+
+
+@quizzes_bp.route("/api/questions/<int:question_id>/image-from-url", methods=["POST"])
+@login_required
+def api_question_image_from_url(question_id):
+    """Download an image from a URL and attach it to a question."""
+    session = _get_session()
+    question = session.query(Question).filter_by(id=question_id).first()
+    if not question:
+        return jsonify({"ok": False, "error": "Question not found"}), 404
+
+    payload = request.get_json(silent=True) or {}
+    image_url = (payload.get("url") or "").strip()
+    if not image_url:
+        return jsonify({"ok": False, "error": "Image URL is required"}), 400
+
+    import requests as http_requests
+
+    try:
+        resp = http_requests.get(image_url, timeout=15, stream=True)
+        resp.raise_for_status()
+    except Exception:
+        logger.exception("Failed to download image from URL")
+        return jsonify({"ok": False, "error": "Failed to download image from the provided URL."}), 400
+
+    content_type = resp.headers.get("Content-Type", "")
+    if not content_type.startswith("image/"):
+        return jsonify({"ok": False, "error": f"URL does not point to an image (content-type: {content_type})."}), 400
+
+    # Check size limit (10 MB)
+    content_length = resp.headers.get("Content-Length")
+    if content_length and int(content_length) > 10 * 1024 * 1024:
+        return jsonify({"ok": False, "error": "Image is too large (max 10 MB)."}), 400
+
+    # Determine extension from content type
+    ext_map = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/gif": ".gif",
+        "image/webp": ".webp",
+    }
+    ext = ext_map.get(content_type.split(";")[0].strip(), ".jpg")
+
+    filename = f"{uuid.uuid4().hex}{ext}"
+    upload_dir = _get_upload_dir()
+    filepath = os.path.join(upload_dir, filename)
+
+    # Stream to disk with size guard
+    total = 0
+    max_size = 10 * 1024 * 1024
+    with open(filepath, "wb") as f:
+        for chunk in resp.iter_content(chunk_size=8192):
+            total += len(chunk)
+            if total > max_size:
+                f.close()
+                os.remove(filepath)
+                return jsonify({"ok": False, "error": "Image is too large (max 10 MB)."}), 400
+            f.write(chunk)
+
+    # Update question data
+    q_data = question.data
+    if isinstance(q_data, str):
+        q_data = json.loads(q_data)
+    if not isinstance(q_data, dict):
+        q_data = {}
+    q_data["image_ref"] = filename
+    q_data.pop("image_description", None)
+
+    question.data = q_data
+    from sqlalchemy.orm.attributes import flag_modified
+
+    flag_modified(question, "data")
+    session.commit()
+
+    return jsonify({"ok": True, "image_ref": filename, "url": f"/uploads/images/{filename}"})
 
 
 # --- Server-Side TTS ---

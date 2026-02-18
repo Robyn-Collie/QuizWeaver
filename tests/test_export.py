@@ -1257,3 +1257,302 @@ class TestExportRoute:
         resp = client.get("/quizzes/1/export/qti")
         buf = io.BytesIO(resp.data)
         assert zipfile.is_zipfile(buf)
+
+
+# ---------------------------------------------------------------------------
+# TestExportPDFImages
+# ---------------------------------------------------------------------------
+
+
+class TestExportPDFImages:
+    """Test PDF export with embedded question images."""
+
+    @pytest.fixture()
+    def image_dir(self, tmp_path):
+        """Create a temp dir with a small test PNG image."""
+        from PIL import Image as PILImage
+
+        img = PILImage.new("RGB", (100, 80), color="red")
+        img_path = tmp_path / "test-image.png"
+        img.save(str(img_path))
+        return str(tmp_path)
+
+    def _make_quiz_and_question(self, image_ref=None):
+        data = {
+            "options": ["A", "B", "C"],
+            "correct_answer": "B",
+            "cognitive_level": "Remember",
+        }
+        if image_ref:
+            data["image_ref"] = image_ref
+        quiz = _make_quiz(title="Image PDF Test")
+        q = _make_question(question_type="mc", text="Pick one?", data=data)
+        return quiz, [q]
+
+    def test_pdf_larger_with_image(self, image_dir):
+        """PDF with embedded image should be larger than without."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf_with = export_pdf(quiz, questions, image_dir=image_dir)
+        buf_without = export_pdf(quiz, questions)
+        assert len(buf_with.getvalue()) > len(buf_without.getvalue())
+
+    def test_pdf_fallback_without_file(self):
+        """When image_ref file doesn't exist, PDF falls back to description text."""
+        quiz, questions = self._make_quiz_and_question(image_ref="nonexistent.png")
+        buf = export_pdf(quiz, questions, image_dir="/tmp/empty_dir_xxx")
+        data = buf.getvalue()
+        # Should still produce valid PDF
+        assert data[:5] == b"%PDF-"
+
+    def test_pdf_no_image_dir(self):
+        """When image_dir is None, no crash even with image_ref."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf = export_pdf(quiz, questions)
+        assert buf.getvalue()[:5] == b"%PDF-"
+
+    def test_pdf_student_mode_with_image(self, image_dir):
+        """Student mode PDF still embeds image (images are content, not answers)."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf = export_pdf(quiz, questions, student_mode=True, image_dir=image_dir)
+        # Should be valid and larger than no-image version
+        buf_no_img = export_pdf(quiz, questions, student_mode=True)
+        assert len(buf.getvalue()) > len(buf_no_img.getvalue())
+
+
+# ---------------------------------------------------------------------------
+# TestExportDOCXImages
+# ---------------------------------------------------------------------------
+
+
+class TestExportDOCXImages:
+    """Test DOCX export with embedded question images."""
+
+    @pytest.fixture()
+    def image_dir(self, tmp_path):
+        """Create a temp dir with a small test PNG image."""
+        from PIL import Image as PILImage
+
+        img = PILImage.new("RGB", (100, 80), color="blue")
+        img_path = tmp_path / "test-image.png"
+        img.save(str(img_path))
+        return str(tmp_path)
+
+    def _make_quiz_and_question(self, image_ref=None):
+        data = {
+            "options": ["X", "Y", "Z"],
+            "correct_answer": "Y",
+            "cognitive_level": "Apply",
+        }
+        if image_ref:
+            data["image_ref"] = image_ref
+        quiz = _make_quiz(title="Image DOCX Test")
+        q = _make_question(question_type="mc", text="Choose one?", data=data)
+        return quiz, [q]
+
+    def test_docx_contains_image(self, image_dir):
+        """DOCX with embedded image should contain image file in ZIP."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf = export_docx(quiz, questions, image_dir=image_dir)
+        with zipfile.ZipFile(buf) as zf:
+            image_files = [n for n in zf.namelist() if n.startswith("word/media/")]
+            assert len(image_files) >= 1
+
+    def test_docx_fallback_without_file(self):
+        """When image file doesn't exist, DOCX shows text description fallback."""
+        data = {
+            "options": ["A", "B"],
+            "correct_answer": "A",
+            "image_ref": "missing.png",
+            "image_description": "A diagram of the cell",
+        }
+        quiz = _make_quiz(title="Fallback Test")
+        q = _make_question(question_type="mc", text="Q?", data=data)
+        buf = export_docx(quiz, [q], image_dir="/tmp/empty_dir_xxx")
+        doc = Document(buf)
+        text = "\n".join(p.text for p in doc.paragraphs)
+        assert "Suggested image:" in text
+
+    def test_docx_no_image_dir(self):
+        """When image_dir is None, no crash even with image_ref."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf = export_docx(quiz, questions)
+        assert zipfile.is_zipfile(buf)
+
+    def test_docx_student_mode_with_image(self, image_dir):
+        """Student mode DOCX still embeds the image."""
+        quiz, questions = self._make_quiz_and_question(image_ref="test-image.png")
+        buf = export_docx(quiz, questions, student_mode=True, image_dir=image_dir)
+        with zipfile.ZipFile(buf) as zf:
+            image_files = [n for n in zf.namelist() if n.startswith("word/media/")]
+            assert len(image_files) >= 1
+
+    def test_docx_no_media_without_image(self):
+        """DOCX without image_ref should have no media files."""
+        quiz, questions = self._make_quiz_and_question()
+        buf = export_docx(quiz, questions)
+        with zipfile.ZipFile(buf) as zf:
+            image_files = [n for n in zf.namelist() if n.startswith("word/media/")]
+            assert len(image_files) == 0
+
+
+# ---------------------------------------------------------------------------
+# TestExportQTIImages
+# ---------------------------------------------------------------------------
+
+
+class TestExportQTIImages:
+    """Test QTI export with bundled question images."""
+
+    @pytest.fixture()
+    def image_dir(self, tmp_path):
+        """Create a temp dir with a small test PNG image."""
+        img_path = tmp_path / "abc123.png"
+        # Write a minimal valid PNG (1x1 red pixel)
+        import struct
+        import zlib
+
+        def _mini_png():
+            sig = b"\x89PNG\r\n\x1a\n"
+            # IHDR
+            ihdr_data = struct.pack(">IIBBBBB", 1, 1, 8, 2, 0, 0, 0)
+            ihdr_crc = zlib.crc32(b"IHDR" + ihdr_data) & 0xFFFFFFFF
+            ihdr = struct.pack(">I", 13) + b"IHDR" + ihdr_data + struct.pack(">I", ihdr_crc)
+            # IDAT
+            raw = zlib.compress(b"\x00\xff\x00\x00")
+            idat_crc = zlib.crc32(b"IDAT" + raw) & 0xFFFFFFFF
+            idat = struct.pack(">I", len(raw)) + b"IDAT" + raw + struct.pack(">I", idat_crc)
+            # IEND
+            iend_crc = zlib.crc32(b"IEND") & 0xFFFFFFFF
+            iend = struct.pack(">I", 0) + b"IEND" + struct.pack(">I", iend_crc)
+            return sig + ihdr + idat + iend
+
+        img_path.write_bytes(_mini_png())
+        return str(tmp_path)
+
+    def _make_quiz_and_questions(self, image_ref=None):
+        data = {
+            "options": ["Water", "Salt", "Sugar"],
+            "correct_answer": "Water",
+        }
+        if image_ref:
+            data["image_ref"] = image_ref
+        quiz = _make_quiz(title="QTI Image Test")
+        q = _make_question(question_type="mc", text="What is H2O?", data=data)
+        return quiz, [q]
+
+    def test_qti_zip_contains_image_file(self, image_dir):
+        """QTI ZIP should contain the image under images/ directory."""
+        quiz, questions = self._make_quiz_and_questions(image_ref="abc123.png")
+        buf = export_qti(quiz, questions, image_dir=image_dir)
+        with zipfile.ZipFile(buf, "r") as zf:
+            assert "images/abc123.png" in zf.namelist()
+
+    def test_qti_manifest_has_webcontent_resource(self, image_dir):
+        """Manifest XML should declare a webcontent resource for the image."""
+        quiz, questions = self._make_quiz_and_questions(image_ref="abc123.png")
+        buf = export_qti(quiz, questions, image_dir=image_dir)
+        with zipfile.ZipFile(buf, "r") as zf:
+            manifest = zf.read("imsmanifest.xml").decode("utf-8")
+            assert 'type="webcontent"' in manifest
+            assert 'href="images/abc123.png"' in manifest
+
+    def test_qti_question_xml_references_image(self, image_dir):
+        """Question XML should reference the image with $IMS-CC-FILEBASE$."""
+        quiz, questions = self._make_quiz_and_questions(image_ref="abc123.png")
+        buf = export_qti(quiz, questions, image_dir=image_dir)
+        with zipfile.ZipFile(buf, "r") as zf:
+            names = zf.namelist()
+            xml_files = [n for n in names if n.endswith(".xml") and n != "imsmanifest.xml"]
+            assessment_xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "%24IMS-CC-FILEBASE%24/images/abc123.png" in assessment_xml
+            assert "Question image" in assessment_xml
+
+    def test_qti_without_images_still_works(self):
+        """Questions without image_ref should export normally."""
+        quiz, questions = self._make_quiz_and_questions()
+        buf = export_qti(quiz, questions)
+        assert zipfile.is_zipfile(buf)
+        with zipfile.ZipFile(buf, "r") as zf:
+            names = zf.namelist()
+            image_files = [n for n in names if n.startswith("images/")]
+            assert len(image_files) == 0
+            manifest = zf.read("imsmanifest.xml").decode("utf-8")
+            assert "webcontent" not in manifest
+
+    def test_qti_missing_image_file_graceful(self):
+        """When image_ref points to a missing file, skip gracefully."""
+        quiz, questions = self._make_quiz_and_questions(image_ref="nonexistent.png")
+        buf = export_qti(quiz, questions, image_dir="/tmp/empty_dir_xxx")
+        assert zipfile.is_zipfile(buf)
+        with zipfile.ZipFile(buf, "r") as zf:
+            names = zf.namelist()
+            image_files = [n for n in names if n.startswith("images/")]
+            assert len(image_files) == 0
+            # Question text should still be present
+            xml_files = [n for n in names if n.endswith(".xml") and n != "imsmanifest.xml"]
+            assessment_xml = zf.read(xml_files[0]).decode("utf-8")
+            assert "What is H2O?" in assessment_xml
+
+    def test_qti_no_image_dir_param(self):
+        """When image_dir is None, no crash even with image_ref on question."""
+        quiz, questions = self._make_quiz_and_questions(image_ref="abc123.png")
+        buf = export_qti(quiz, questions)
+        assert zipfile.is_zipfile(buf)
+        with zipfile.ZipFile(buf, "r") as zf:
+            image_files = [n for n in zf.namelist() if n.startswith("images/")]
+            assert len(image_files) == 0
+
+    def test_qti_multiple_questions_with_images(self, image_dir):
+        """Multiple questions with images should all be bundled."""
+        # Create a second image file
+        import shutil
+
+        shutil.copy(
+            os.path.join(image_dir, "abc123.png"),
+            os.path.join(image_dir, "def456.png"),
+        )
+
+        quiz = _make_quiz(title="Multi Image QTI")
+        q1 = _make_question(
+            question_type="mc",
+            text="Q1?",
+            data={"options": ["A", "B"], "correct_answer": "A", "image_ref": "abc123.png"},
+        )
+        q2 = _make_question(
+            question_type="tf",
+            text="Q2?",
+            data={"correct_answer": "True", "image_ref": "def456.png"},
+        )
+        q3 = _make_question(
+            question_type="mc",
+            text="Q3 no image?",
+            data={"options": ["X", "Y"], "correct_answer": "X"},
+        )
+        buf = export_qti(quiz, [q1, q2, q3], image_dir=image_dir)
+        with zipfile.ZipFile(buf, "r") as zf:
+            names = zf.namelist()
+            assert "images/abc123.png" in names
+            assert "images/def456.png" in names
+            # Manifest should have two webcontent resources
+            manifest = zf.read("imsmanifest.xml").decode("utf-8")
+            assert manifest.count('type="webcontent"') == 2
+
+    def test_qti_deduplicate_same_image(self, image_dir):
+        """Same image_ref on multiple questions should only be bundled once."""
+        quiz = _make_quiz(title="Dedup QTI")
+        q1 = _make_question(
+            question_type="mc",
+            text="Q1?",
+            data={"options": ["A", "B"], "correct_answer": "A", "image_ref": "abc123.png"},
+        )
+        q2 = _make_question(
+            question_type="mc",
+            text="Q2?",
+            data={"options": ["C", "D"], "correct_answer": "C", "image_ref": "abc123.png"},
+        )
+        buf = export_qti(quiz, [q1, q2], image_dir=image_dir)
+        with zipfile.ZipFile(buf, "r") as zf:
+            image_entries = [n for n in zf.namelist() if n.startswith("images/")]
+            assert len(image_entries) == 1
+            manifest = zf.read("imsmanifest.xml").decode("utf-8")
+            assert manifest.count('type="webcontent"') == 1

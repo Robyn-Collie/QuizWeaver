@@ -231,6 +231,7 @@
             <button class="btn btn-sm btn-outline btn-move-down" title="Move down" aria-label="Move question down">Down</button>
             <button class="btn btn-sm btn-outline btn-regen-question" title="Regenerate" aria-label="Regenerate question">Regen</button>
             <button class="btn btn-sm btn-outline btn-upload-image" title="Upload image" aria-label="Upload image">Image</button>
+            <button class="btn btn-sm btn-outline btn-search-image" title="Search for images" aria-label="Search for images">Search</button>
             <button class="btn btn-sm {% if q.saved_to_bank %}btn-secondary{% else %}btn-outline{% endif %} btn-bank-toggle"
                     title="{% if q.saved_to_bank %}Remove from Bank{% else %}Save to Bank{% endif %}"
                     aria-label="{% if q.saved_to_bank %}Remove from question bank{% else %}Save to question bank{% endif %}"
@@ -254,8 +255,18 @@
         </div>
         {% elif q.data and q.data.image_description is defined and q.data.image_description %}
         <div class="image-placeholder">
-            <strong>Suggested image:</strong> {{ q.data.image_description }}
+            <strong>Suggested image:</strong> <span class="image-desc-text">{{ q.data.image_description }}</span>
             <button class="btn-clear-image-desc" title="Remove suggested image" aria-label="Remove suggested image description">&times;</button>
+            <div class="image-search-links">
+                <a href="#" class="image-search-link" data-provider="pixabay" target="_blank" rel="noopener" title="Search Pixabay for this image">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Pixabay
+                </a>
+                <a href="#" class="image-search-link" data-provider="wikimedia" target="_blank" rel="noopener" title="Search Wikimedia Commons for this image">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Wikimedia
+                </a>
+            </div>
         </div>
         {% elif q.data and q.data.image is defined and q.data.image %}
         <div class="question-image-external" data-src="{{ q.data.image }}">
@@ -548,6 +559,34 @@
 {% endfor %}
 
 <p><a href="/quizzes">&larr; Back to Quizzes</a></p>
+
+{# --- Image Search Modal --- #}
+<div class="image-search-modal" id="imageSearchModal" style="display:none;" role="dialog" aria-label="Image search">
+    <div class="image-search-modal-content">
+        <div class="image-search-modal-header">
+            <h3>Search Images</h3>
+            <button class="image-search-modal-close" aria-label="Close image search">&times;</button>
+        </div>
+        <div class="image-search-modal-body">
+            <div class="image-search-form">
+                <input type="text" id="imageSearchQuery" class="image-search-input" placeholder="Search for images...">
+                <select id="imageSearchType" class="image-search-type-select">
+                    <option value="illustration">Illustrations</option>
+                    <option value="photo">Photos</option>
+                    <option value="vector">Vectors</option>
+                    <option value="all">All</option>
+                </select>
+                <button class="btn btn-primary btn-image-search-go" id="imageSearchBtn">Search</button>
+            </div>
+            <div class="image-search-status" id="imageSearchStatus"></div>
+            <div class="image-search-grid" id="imageSearchGrid"></div>
+            <div class="image-search-attribution">
+                Images provided by <a href="https://pixabay.com/" target="_blank" rel="noopener">Pixabay</a> (free for commercial use, no attribution required).
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -555,4 +594,143 @@
 <script src="{{ url_for('static', filename='js/tts.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script src="{{ url_for('static', filename='js/matching.js') }}"></script>
+<script>
+(function() {
+    // --- Search link URL builder ---
+    document.querySelectorAll('.image-search-link').forEach(function(link) {
+        var descEl = link.closest('.image-placeholder').querySelector('.image-desc-text');
+        if (!descEl) return;
+        var desc = descEl.textContent.trim();
+        var provider = link.dataset.provider;
+        if (provider === 'pixabay') {
+            link.href = 'https://pixabay.com/images/search/' + encodeURIComponent(desc) + '/';
+        } else if (provider === 'wikimedia') {
+            link.href = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(desc) + '&title=Special:MediaSearch&type=image';
+        }
+    });
+
+    // --- Image Search Modal ---
+    var modal = document.getElementById('imageSearchModal');
+    var searchInput = document.getElementById('imageSearchQuery');
+    var searchBtn = document.getElementById('imageSearchBtn');
+    var searchGrid = document.getElementById('imageSearchGrid');
+    var searchStatus = document.getElementById('imageSearchStatus');
+    var searchType = document.getElementById('imageSearchType');
+    var activeQuestionId = null;
+    var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+    // Open modal from Search button on question card
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.btn-search-image');
+        if (!btn) return;
+        var card = btn.closest('.question-card');
+        activeQuestionId = card.dataset.questionId;
+        // Pre-fill from image_description if available
+        var descEl = card.querySelector('.image-desc-text');
+        searchInput.value = descEl ? descEl.textContent.trim() : '';
+        searchGrid.innerHTML = '';
+        searchStatus.textContent = '';
+        modal.style.display = 'flex';
+        searchInput.focus();
+    });
+
+    // Close modal
+    modal.querySelector('.image-search-modal-close').addEventListener('click', function() {
+        modal.style.display = 'none';
+        activeQuestionId = null;
+    });
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            activeQuestionId = null;
+        }
+    });
+
+    // Perform search
+    function doSearch() {
+        var query = searchInput.value.trim();
+        if (!query) return;
+        searchStatus.textContent = 'Searching...';
+        searchGrid.innerHTML = '';
+        fetch('/api/image-search?q=' + encodeURIComponent(query) + '&type=' + encodeURIComponent(searchType.value))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.ok) {
+                    searchStatus.textContent = data.error || 'Search failed.';
+                    return;
+                }
+                if (!data.hits || data.hits.length === 0) {
+                    searchStatus.textContent = 'No images found. Try different keywords.';
+                    return;
+                }
+                searchStatus.textContent = data.hits.length + ' images found. Click to use.';
+                data.hits.forEach(function(hit) {
+                    var thumb = document.createElement('div');
+                    thumb.className = 'image-search-thumb';
+                    thumb.innerHTML = '<img src="' + hit.thumbnail + '" alt="' + (hit.tags || '').replace(/"/g, '&quot;') + '" loading="lazy">'
+                        + '<span class="image-search-thumb-tags">' + (hit.tags || '') + '</span>';
+                    thumb.dataset.mediumUrl = hit.medium;
+                    thumb.dataset.pageUrl = hit.page_url;
+                    searchGrid.appendChild(thumb);
+                });
+            })
+            .catch(function() {
+                searchStatus.textContent = 'Search request failed. Check your connection.';
+            });
+    }
+
+    searchBtn.addEventListener('click', doSearch);
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+    });
+
+    // Select an image from results
+    searchGrid.addEventListener('click', function(e) {
+        var thumb = e.target.closest('.image-search-thumb');
+        if (!thumb || !activeQuestionId) return;
+        var url = thumb.dataset.mediumUrl;
+        if (!url) return;
+        searchStatus.textContent = 'Downloading image...';
+        fetch('/api/questions/' + activeQuestionId + '/image-from-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({url: url})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok) {
+                // Refresh the question's image display
+                var card = document.querySelector('.question-card[data-question-id="' + activeQuestionId + '"]');
+                if (card) {
+                    var viewMode = card.querySelector('.question-view-mode');
+                    // Remove old placeholder / external image
+                    var old = viewMode.querySelector('.image-placeholder, .question-image-external');
+                    if (old) old.remove();
+                    // Insert or update image wrapper
+                    var wrapper = viewMode.querySelector('.question-image-wrapper');
+                    if (!wrapper) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = 'question-image-wrapper';
+                        var questionText = viewMode.querySelector('.question-text');
+                        if (questionText) questionText.after(wrapper);
+                        else viewMode.prepend(wrapper);
+                    }
+                    wrapper.innerHTML = '<img src="' + data.url + '" alt="Question image" class="question-image">'
+                        + '<button class="btn btn-sm btn-outline btn-remove-image" aria-label="Remove question image">Remove Image</button>';
+                }
+                modal.style.display = 'none';
+                activeQuestionId = null;
+            } else {
+                searchStatus.textContent = data.error || 'Failed to attach image.';
+            }
+        })
+        .catch(function() {
+            searchStatus.textContent = 'Failed to attach image. Check your connection.';
+        });
+    });
+})();
+</script>
 {% endblock %}

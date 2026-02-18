@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt
+from docx.shared import Inches, Pt
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.utils import ImageReader
 from reportlab.pdfgen import canvas
@@ -122,6 +122,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "cognitive_level": data.get("cognitive_level"),
         "cognitive_framework": data.get("cognitive_framework"),
         "image_description": data.get("image_description") or data.get("image_ref"),
+        "image_ref": data.get("image_ref"),
         # Stimulus fields
         "stimulus_text": data.get("stimulus_text", ""),
         "sub_questions": data.get("sub_questions", []),
@@ -413,7 +414,13 @@ def export_quizizz_csv(quiz, questions, style_profile: Optional[dict] = None) ->
 # ---------------------------------------------------------------------------
 
 
-def export_docx(quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False) -> io.BytesIO:
+def export_docx(
+    quiz,
+    questions,
+    style_profile: Optional[dict] = None,
+    student_mode: bool = False,
+    image_dir: Optional[str] = None,
+) -> io.BytesIO:
     """Export quiz to a Word document.
 
     Args:
@@ -423,6 +430,7 @@ def export_docx(quiz, questions, style_profile: Optional[dict] = None, student_m
         student_mode: If True, suppress correct-answer highlighting,
             cognitive levels, image descriptions, and move answer key
             to a separate page without inline hints.
+        image_dir: Directory containing uploaded question images.
 
     Returns:
         BytesIO buffer containing the .docx file.
@@ -450,7 +458,7 @@ def export_docx(quiz, questions, style_profile: Optional[dict] = None, student_m
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        _add_docx_question(doc, nq, student_mode=student_mode)
+        _add_docx_question(doc, nq, student_mode=student_mode, image_dir=image_dir)
 
     # Answer key (new page) — only in teacher mode
     if not student_mode:
@@ -503,7 +511,7 @@ def _add_docx_info(doc, quiz, style_profile: dict, student_mode: bool = False):
             p.style.font.size = Pt(10)
 
 
-def _add_docx_question(doc, nq: dict, student_mode: bool = False):
+def _add_docx_question(doc, nq: dict, student_mode: bool = False, image_dir: Optional[str] = None):
     """Add a single question to the Word document."""
     # Question header: "1. [MC] (5 pts) - Remember"
     header_parts = [f"{nq['number']}."]
@@ -520,8 +528,20 @@ def _add_docx_question(doc, nq: dict, student_mode: bool = False):
     # Question text
     doc.add_paragraph(nq["text"])
 
-    # Image description — teacher mode only
-    if not student_mode and nq.get("image_description"):
+    # Embedded image (if image_ref points to a real file)
+    image_embedded = False
+    image_ref = nq.get("image_ref")
+    if image_ref and image_dir:
+        img_path = os.path.join(image_dir, image_ref)
+        if os.path.isfile(img_path):
+            try:
+                doc.add_picture(img_path, width=Inches(5))
+                image_embedded = True
+            except Exception:
+                pass  # Fall through to description fallback
+
+    # Image description fallback — teacher mode only, when no image was embedded
+    if not image_embedded and not student_mode and nq.get("image_description"):
         p = doc.add_paragraph()
         run = p.add_run(f"Suggested image: {nq['image_description']}")
         run.italic = True
@@ -1059,7 +1079,13 @@ def _gift_stimulus(title: str, text: str, nq: dict) -> str:
 # ---------------------------------------------------------------------------
 
 
-def export_pdf(quiz, questions, style_profile: Optional[dict] = None, student_mode: bool = False) -> io.BytesIO:
+def export_pdf(
+    quiz,
+    questions,
+    style_profile: Optional[dict] = None,
+    student_mode: bool = False,
+    image_dir: Optional[str] = None,
+) -> io.BytesIO:
     """Export quiz to a PDF document.
 
     Args:
@@ -1068,6 +1094,7 @@ def export_pdf(quiz, questions, style_profile: Optional[dict] = None, student_mo
         style_profile: Parsed style profile dict (optional).
         student_mode: If True, suppress correct-answer info inline,
             cognitive levels, image descriptions, and omit answer key.
+        image_dir: Directory containing uploaded question images.
 
     Returns:
         BytesIO buffer containing the PDF file.
@@ -1111,7 +1138,7 @@ def export_pdf(quiz, questions, style_profile: Optional[dict] = None, student_mo
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        y = _pdf_draw_question(c, nq, y, width, height, student_mode=student_mode)
+        y = _pdf_draw_question(c, nq, y, width, height, student_mode=student_mode, image_dir=image_dir)
 
     # --- Answer Key (new page) — teacher mode only ---
     if not student_mode:
@@ -1172,7 +1199,13 @@ def _pdf_info_lines(quiz, style_profile: dict, student_mode: bool = False) -> Li
 
 
 def _pdf_draw_question(
-    c, nq: dict, y: float, page_width: float, page_height: float, student_mode: bool = False
+    c,
+    nq: dict,
+    y: float,
+    page_width: float,
+    page_height: float,
+    student_mode: bool = False,
+    image_dir: Optional[str] = None,
 ) -> float:
     """Draw a single question on the PDF canvas. Returns new y position."""
     # Check for page break
@@ -1195,8 +1228,33 @@ def _pdf_draw_question(
     c.setFont("Helvetica", 10)
     y = _pdf_draw_wrapped_text(c, nq["text"], 50, y, page_width - 100, page_height)
 
-    # Image description — teacher mode only
-    if nq.get("image_description") and not student_mode:
+    # Embedded image (if image_ref points to a real file)
+    image_embedded = False
+    image_ref = nq.get("image_ref")
+    if image_ref and image_dir:
+        img_path = os.path.join(image_dir, image_ref)
+        if os.path.isfile(img_path):
+            try:
+                img_reader = ImageReader(img_path)
+                iw, ih = img_reader.getSize()
+                max_width = 400
+                scale = min(max_width / iw, 1.0)
+                display_width = iw * scale
+                display_height = ih * scale
+
+                # Page break if image won't fit
+                if y - display_height < 60:
+                    c.showPage()
+                    y = page_height - 50
+
+                c.drawImage(img_path, 60, y - display_height, width=display_width, height=display_height)
+                y -= display_height + 10
+                image_embedded = True
+            except Exception:
+                pass  # Fall through to description fallback
+
+    # Image description fallback — teacher mode only, when no image was embedded
+    if not image_embedded and nq.get("image_description") and not student_mode:
         c.setFont("Helvetica-Oblique", 9)
         y = _pdf_draw_wrapped_text(c, f"[Image: {nq['image_description']}]", 60, y, page_width - 120, page_height)
         c.setFont("Helvetica", 10)
@@ -1948,12 +2006,30 @@ def _qti_cloze_items(ident: str, nq: dict) -> str:
       </item>"""
 
 
-def export_qti(quiz, questions) -> io.BytesIO:
+def _qti_image_html(image_ref: str) -> str:
+    """Return XML-escaped HTML img tag for a QTI image reference.
+
+    Canvas expects images referenced via ``%24IMS-CC-FILEBASE%24`` which is
+    the URL-encoded form of ``$IMS-CC-FILEBASE$``.
+    """
+    return (
+        f"&lt;p&gt;&lt;img src=&quot;%24IMS-CC-FILEBASE%24"
+        f"/images/{_xml_escape(image_ref)}&quot; "
+        f'alt=&quot;Question image&quot;/&gt;&lt;/p&gt;'
+    )
+
+
+def export_qti(
+    quiz, questions, image_dir: Optional[str] = None
+) -> io.BytesIO:
     """Export quiz as a QTI 1.2 ZIP package (Canvas-compatible).
 
     Args:
         quiz: Quiz ORM object.
         questions: List of Question ORM objects.
+        image_dir: Optional path to the uploaded images directory.
+            When provided, questions with ``image_ref`` will have their
+            images bundled in the ZIP and referenced in the question HTML.
 
     Returns:
         BytesIO buffer containing the .zip file.
@@ -1963,54 +2039,97 @@ def export_qti(quiz, questions) -> io.BytesIO:
     title = _xml_escape(quiz.title or "Quiz")
     assessment_filename = f"{assessment_id}.xml"
 
+    # Track images to bundle (deduplicated, preserving order)
+    image_files: List[str] = []
+
     # Build item XML for each question
     item_parts = []
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         ident = f"q{nq['number']}"
 
+        # Check if this question has a bundleable image
+        img_ref = nq.get("image_ref")
+        has_image = False
+        if img_ref and image_dir:
+            img_path = os.path.join(image_dir, img_ref)
+            if os.path.isfile(img_path):
+                has_image = True
+                if img_ref not in image_files:
+                    image_files.append(img_ref)
+
         if nq["type"] == "mc":
-            item_parts.append(_qti_mc_item(ident, nq))
+            item_xml = _qti_mc_item(ident, nq)
         elif nq["type"] == "ma":
-            item_parts.append(_qti_ma_item(ident, nq))
+            item_xml = _qti_ma_item(ident, nq)
         elif nq["type"] == "tf":
-            item_parts.append(_qti_tf_item(ident, nq))
+            item_xml = _qti_tf_item(ident, nq)
         elif nq["type"] == "matching" and nq.get("matches"):
-            item_parts.append(_qti_matching_item(ident, nq))
+            item_xml = _qti_matching_item(ident, nq)
         elif nq["type"] == "ordering" and nq.get("ordering_items"):
-            item_parts.append(_qti_ordering_item(ident, nq))
+            item_xml = _qti_ordering_item(ident, nq)
         elif nq["type"] in ("short_answer", "fill_in"):
-            item_parts.append(_qti_short_answer_item(ident, nq))
+            item_xml = _qti_short_answer_item(ident, nq)
         elif nq["type"] == "essay":
-            item_parts.append(_qti_essay_item(ident, nq))
+            item_xml = _qti_essay_item(ident, nq)
         elif nq["type"] == "stimulus":
-            item_parts.append(_qti_stimulus_items(ident, nq))
+            item_xml = _qti_stimulus_items(ident, nq)
         elif nq["type"] == "cloze":
-            item_parts.append(_qti_cloze_items(ident, nq))
+            item_xml = _qti_cloze_items(ident, nq)
         else:
             # Default: MC if options exist, else essay
-            if nq["options"]:
-                item_parts.append(_qti_mc_item(ident, nq))
-            else:
-                item_parts.append(_qti_essay_item(ident, nq))
+            item_xml = _qti_mc_item(ident, nq) if nq["options"] else _qti_essay_item(ident, nq)
+
+        # Inject image tag into the first mattext element if image exists
+        if has_image:
+            img_html = _qti_image_html(img_ref)
+            item_xml = item_xml.replace(
+                '<mattext texttype="text/html">',
+                f'<mattext texttype="text/html">{img_html}',
+                1,
+            )
+
+        item_parts.append(item_xml)
 
     # Assemble assessment XML
-    assessment_xml = _QTI_ASSESSMENT_HEADER.format(assessment_id=assessment_id, title=title)
+    assessment_xml = _QTI_ASSESSMENT_HEADER.format(
+        assessment_id=assessment_id, title=title
+    )
     assessment_xml += "\n".join(item_parts)
     assessment_xml += "\n" + _QTI_ASSESSMENT_FOOTER
 
-    # Assemble manifest XML
+    # Assemble manifest XML -- add webcontent resources for bundled images
+    image_resources = ""
+    for img_name in image_files:
+        res_id = f"img_{uuid.uuid4().hex[:8]}"
+        escaped_name = _xml_escape(img_name)
+        image_resources += (
+            f'    <resource identifier="{res_id}" type="webcontent" '
+            f'href="images/{escaped_name}">'
+            f'<file href="images/{escaped_name}"/>'
+            f"</resource>\n"
+        )
+
     manifest_xml = _QTI_MANIFEST_START.format(
         manifest_id=manifest_id,
         assessment_id=assessment_id,
         assessment_filename=assessment_filename,
     )
+    if image_resources:
+        manifest_xml = manifest_xml.replace(
+            "  </resources>",
+            image_resources + "  </resources>",
+        )
 
     # Write to ZIP in memory
     buf = io.BytesIO()
     with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("imsmanifest.xml", manifest_xml)
         zf.writestr(assessment_filename, assessment_xml)
+        # Bundle image files into the ZIP under images/
+        for img_name in image_files:
+            img_path = os.path.join(image_dir, img_name)
+            zf.write(img_path, f"images/{img_name}")
 
     buf.seek(0)
     return buf
