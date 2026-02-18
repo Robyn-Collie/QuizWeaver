@@ -230,48 +230,35 @@ class TestDeleteImageDescription:
 # --- F5: Standards optional at class level ---
 
 
-class TestStandardsOptional:
-    """Verify standards field is marked optional on class forms."""
+class TestStandardsRemovedFromClassForms:
+    """Verify standards field was removed from class forms per teacher feedback (F13)."""
 
-    def test_new_class_standards_optional_label(self):
-        """new.html should label standards as (optional)."""
+    def test_new_class_no_standards_field(self):
+        """new.html should NOT have a standards field (removed per F13)."""
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "classes", "new.html")
         with open(template_path) as f:
             content = f.read()
-        assert "Standards (optional)" in content
+        assert "Standards" not in content or "standards" not in content.lower().split("class")[0]
+        assert "standards_picker" not in content
 
-    def test_new_class_standards_hint(self):
-        """new.html should have a hint below the standards field."""
-        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "classes", "new.html")
-        with open(template_path) as f:
-            content = f.read()
-        assert "select specific standards when generating quizzes" in content
-
-    def test_edit_class_standards_optional_label(self):
-        """edit.html should label standards as (optional)."""
+    def test_edit_class_no_standards_field(self):
+        """edit.html should NOT have a standards field (removed per F13)."""
         template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "classes", "edit.html")
         with open(template_path) as f:
             content = f.read()
-        assert "Standards (optional)" in content
-
-    def test_edit_class_standards_hint(self):
-        """edit.html should have a hint below the standards field."""
-        template_path = os.path.join(os.path.dirname(__file__), "..", "templates", "classes", "edit.html")
-        with open(template_path) as f:
-            content = f.read()
-        assert "select specific standards when generating quizzes" in content
+        assert "standards_picker" not in content
 
     def test_new_class_form_renders(self, flask_client):
-        """The new class form should render with optional standards."""
+        """The new class form should render without standards picker."""
         resp = flask_client.get("/classes/new")
         assert resp.status_code == 200
-        assert b"Standards (optional)" in resp.data
+        assert b"standards_picker" not in resp.data
 
     def test_edit_class_form_renders(self, flask_client):
-        """The edit class form should render with optional standards."""
+        """The edit class form should render without standards picker."""
         resp = flask_client.get("/classes/1/edit")
         assert resp.status_code == 200
-        assert b"Standards (optional)" in resp.data
+        assert b"standards_picker" not in resp.data
 
 
 # --- F4: Lesson logging guidance ---
