@@ -133,3 +133,9 @@ def onboarding():
 def help_page():
     """Render the help and getting started guide."""
     return render_template("help.html")
+
+
+@main_bp.route("/offline")
+def offline():
+    """Render offline fallback page (no auth required)."""
+    return render_template("offline.html")
