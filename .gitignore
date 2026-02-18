@@ -28,6 +28,9 @@ trial_run.db
 # --- Trial Run Outputs ---
 trial_run_outputs/
 
+# --- Uploaded Images ---
+uploads/
+
 # --- Logs ---
 api_costs.log
 

@@ -1049,6 +1049,120 @@ a:hover {
 }
 .matching-col { flex: 1; }
 
+/* ── Interactive drag-and-drop (BL-038) ────────────────────────── */
+
+/* Hide the interactive container until JS activates it */
+.matching-interactive,
+.ordering-interactive {
+    display: none;
+}
+.matching-interactive.dnd-active,
+.ordering-interactive.dnd-active {
+    display: block;
+    margin: 0.5rem 0 0.75rem;
+}
+
+/* When interactive mode is active, hide the static fallback */
+.matching-interactive.dnd-active ~ .matching-static-fallback,
+.ordering-interactive.dnd-active ~ .ordering-static-fallback {
+    display: none;
+}
+
+.dnd-matching-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.dnd-terms-col,
+.dnd-defs-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dnd-term,
+.dnd-def,
+.dnd-order-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg, #fff);
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.dnd-term {
+    background: var(--muted-bg, #f5f5f5);
+    font-weight: 600;
+    cursor: default;
+}
+
+.dnd-def,
+.dnd-order-item {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.dnd-def:hover,
+.dnd-order-item:hover {
+    border-color: var(--primary, #4361ee);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.dnd-drag-handle {
+    margin-right: 0.5rem;
+    color: var(--text-muted, #888);
+    font-size: 1.1rem;
+    cursor: grab;
+}
+
+/* SortableJS ghost / chosen */
+.dnd-ghost {
+    opacity: 0.4;
+    border: 2px dashed var(--primary, #4361ee);
+}
+.dnd-chosen {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Feedback classes */
+.dnd-correct {
+    border-color: var(--success, #2ecc71) !important;
+    background: rgba(46, 204, 113, 0.08);
+}
+.dnd-incorrect {
+    border-color: var(--danger, #e74c3c) !important;
+    background: rgba(231, 76, 60, 0.08);
+}
+
+/* Ordering list */
+.dnd-ordering-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Button row */
+.dnd-btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Mobile: stack matching columns vertically */
+@media (max-width: 600px) {
+    .dnd-matching-wrapper {
+        flex-direction: column;
+    }
+}
+
 .tf-answer {
     display: flex;
     gap: 0.75rem;

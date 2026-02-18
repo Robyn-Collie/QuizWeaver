@@ -1,8 +1,9 @@
-"""Quiz listing, detail, export, editing API, generation, and costs routes."""
+"""Quiz listing, detail, export, editing API, generation, costs, and TTS routes."""
 
 import json
 import os
 import re
+import uuid
 from io import BytesIO
 
 from flask import (
@@ -17,7 +18,6 @@ from flask import (
     send_file,
     url_for,
 )
-from werkzeug.utils import secure_filename
 
 from src.classroom import get_class, list_classes
 from src.cost_tracking import check_budget, estimate_pipeline_cost, get_cost_summary, get_monthly_total
@@ -25,6 +25,13 @@ from src.database import Question, Quiz, Rubric
 from src.export import export_csv, export_docx, export_gift, export_pdf, export_qti, export_quizizz_csv
 from src.llm_provider import ProviderError, get_provider_info
 from src.quiz_generator import generate_quiz
+from src.tts_generator import (
+    bundle_audio_zip,
+    generate_quiz_audio,
+    get_quiz_audio_dir,
+    has_audio,
+    is_tts_available,
+)
 from src.variant_generator import READING_LEVELS
 from src.web.blueprints.helpers import ALLOWED_IMAGE_EXTENSIONS, _get_session, flash_generation_error, login_required
 from src.web.config_utils import save_config
@@ -426,6 +433,58 @@ def api_quiz_reorder(quiz_id):
     return jsonify({"ok": True})
 
 
+def _get_upload_dir():
+    """Return the absolute path to the image uploads directory, creating it if needed."""
+    config = current_app.config["APP_CONFIG"]
+    upload_dir = os.path.abspath(config.get("paths", {}).get("upload_dir", "uploads/images"))
+    os.makedirs(upload_dir, exist_ok=True)
+    return upload_dir
+
+
+def _validate_image_file(field_name="image"):
+    """Validate an uploaded image file from the request.
+
+    Returns (file, ext) on success or (None, error_response) on failure.
+    """
+    if field_name not in request.files:
+        return None, (jsonify({"ok": False, "error": "No image file provided"}), 400)
+    file = request.files[field_name]
+    if not file.filename:
+        return None, (jsonify({"ok": False, "error": "No image file provided"}), 400)
+
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return None, (
+            jsonify({"ok": False, "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}"}),
+            400,
+        )
+    return file, ext
+
+
+def _save_uploaded_image(file, ext):
+    """Save an uploaded file with a UUID filename. Returns the filename."""
+    filename = f"{uuid.uuid4().hex}{ext}"
+    upload_dir = _get_upload_dir()
+    file.save(os.path.join(upload_dir, filename))
+    return filename
+
+
+@quizzes_bp.route("/api/upload-image", methods=["POST"])
+@login_required
+def api_upload_image():
+    """Upload an image file and return its URL.
+
+    Accepts multipart form data with an 'image' field.
+    Returns JSON ``{"ok": true, "url": "/uploads/images/<uuid>.<ext>", "filename": "<uuid>.<ext>"}``.
+    """
+    file, ext_or_error = _validate_image_file()
+    if file is None:
+        return ext_or_error
+
+    filename = _save_uploaded_image(file, ext_or_error)
+    return jsonify({"ok": True, "url": f"/uploads/images/{filename}", "filename": filename})
+
+
 @quizzes_bp.route("/api/questions/<int:question_id>/image", methods=["POST"])
 @login_required
 def api_question_image_upload(question_id):
@@ -435,26 +494,11 @@ def api_question_image_upload(question_id):
     if not question:
         return jsonify({"ok": False, "error": "Question not found"}), 404
 
-    if "image" not in request.files:
-        return jsonify({"ok": False, "error": "No image file provided"}), 400
-    file = request.files["image"]
-    if not file.filename:
-        return jsonify({"ok": False, "error": "No image file provided"}), 400
+    file, ext_or_error = _validate_image_file()
+    if file is None:
+        return ext_or_error
 
-    ext = os.path.splitext(file.filename)[1].lower()
-    if ext not in ALLOWED_IMAGE_EXTENSIONS:
-        return jsonify(
-            {"ok": False, "error": f"Invalid file type. Allowed: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}"}
-        ), 400
-
-    safe_name = secure_filename(file.filename)
-    # Add question_id prefix to avoid collisions
-    filename = f"upload_{question_id}_{safe_name}"
-
-    config = current_app.config["APP_CONFIG"]
-    images_dir = os.path.abspath(config.get("paths", {}).get("generated_images_dir", "generated_images"))
-    os.makedirs(images_dir, exist_ok=True)
-    file.save(os.path.join(images_dir, filename))
+    filename = _save_uploaded_image(file, ext_or_error)
 
     # Update question data
     q_data = question.data
@@ -471,7 +515,7 @@ def api_question_image_upload(question_id):
     flag_modified(question, "data")
     session.commit()
 
-    return jsonify({"ok": True, "image_ref": filename})
+    return jsonify({"ok": True, "image_ref": filename, "url": f"/uploads/images/{filename}"})
 
 
 @quizzes_bp.route("/api/questions/<int:question_id>/image", methods=["DELETE"])
@@ -767,3 +811,85 @@ def costs():
         budget=budget,
         monthly=monthly,
     )
+
+
+# --- Server-Side TTS ---
+
+
+@quizzes_bp.route("/api/quizzes/<int:quiz_id>/tts-status")
+@login_required
+def api_tts_status(quiz_id):
+    """Check TTS availability and whether audio has been generated for a quiz."""
+    if not is_tts_available():
+        return jsonify({"available": False, "has_audio": False, "message": "Install gTTS to enable audio export."})
+
+    return jsonify({"available": True, "has_audio": has_audio(quiz_id)})
+
+
+@quizzes_bp.route("/quizzes/<int:quiz_id>/generate-audio", methods=["POST"])
+@login_required
+def quiz_generate_audio(quiz_id):
+    """Generate MP3 audio for all questions in a quiz."""
+    if not is_tts_available():
+        return jsonify({"ok": False, "error": "gTTS is not installed. Run: pip install gtts"}), 400
+
+    session = _get_session()
+    quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+    if not quiz:
+        return jsonify({"ok": False, "error": "Quiz not found"}), 404
+
+    questions = session.query(Question).filter_by(quiz_id=quiz_id).order_by(Question.sort_order, Question.id).all()
+
+    if not questions:
+        return jsonify({"ok": False, "error": "Quiz has no questions"}), 400
+
+    # Build question dicts for the generator
+    question_dicts = []
+    for q in questions:
+        data = q.data
+        if isinstance(data, str):
+            data = json.loads(data)
+        if not isinstance(data, dict):
+            data = {}
+        question_dicts.append({"id": q.id, "text": q.text or data.get("text", ""), "options": data.get("options", [])})
+
+    lang = request.json.get("lang", "en") if request.is_json else "en"
+    audio_dir = get_quiz_audio_dir(quiz_id)
+
+    try:
+        results = generate_quiz_audio(question_dicts, audio_dir, lang=lang)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    return jsonify({"ok": True, "generated": len(results), "total": len(question_dicts)})
+
+
+@quizzes_bp.route("/quizzes/<int:quiz_id>/audio/<int:question_id>.mp3")
+@login_required
+def quiz_serve_audio(quiz_id, question_id):
+    """Serve a single question's audio MP3 file."""
+    audio_dir = get_quiz_audio_dir(quiz_id)
+    filepath = os.path.join(audio_dir, f"q{question_id}.mp3")
+    if not os.path.isfile(filepath):
+        abort(404)
+    return send_file(filepath, mimetype="audio/mpeg")
+
+
+@quizzes_bp.route("/quizzes/<int:quiz_id>/audio/download")
+@login_required
+def quiz_download_audio(quiz_id):
+    """Download all audio files for a quiz as a ZIP archive."""
+    session = _get_session()
+    quiz = session.query(Quiz).filter_by(id=quiz_id).first()
+    if not quiz:
+        abort(404)
+
+    audio_dir = get_quiz_audio_dir(quiz_id)
+    if not has_audio(quiz_id):
+        abort(404)
+
+    safe_title = re.sub(r"[^\w\s\-]", "", quiz.title or "quiz")
+    safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "quiz"
+
+    buf = bundle_audio_zip(audio_dir, quiz_title=safe_title)
+    return send_file(buf, as_attachment=True, download_name=f"{safe_title}_audio.zip", mimetype="application/zip")

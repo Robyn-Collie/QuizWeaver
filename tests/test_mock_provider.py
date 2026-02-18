@@ -73,6 +73,7 @@ class TestMockProvider:
             "fill_in_blank",
             "multiple_answer",
             "stimulus",
+            "cloze",
         ]
 
     def test_critic_response_schema(self):

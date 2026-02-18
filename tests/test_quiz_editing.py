@@ -352,8 +352,9 @@ class TestImageUpload:
         assert resp.status_code == 200
         result = resp.get_json()
         assert result["ok"] is True
-        assert "upload_1_" in result["image_ref"]
         assert result["image_ref"].endswith(".png")
+        # UUID-based filename (no question ID leakage)
+        assert len(result["image_ref"]) > 10
 
     def test_upload_wrong_extension(self, client):
         data = {

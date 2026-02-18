@@ -248,8 +248,8 @@
 
         {% if q.data and q.data.image_ref is defined and q.data.image_ref %}
         <div class="question-image-wrapper">
-            <img src="/generated_images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
-                 onerror="this.style.display='none'">
+            <img src="/uploads/images/{{ q.data.image_ref }}" alt="Question image" class="question-image"
+                 onerror="this.src='/generated_images/{{ q.data.image_ref }}'; this.onerror=function(){this.style.display='none'}">
             <button class="btn btn-sm btn-outline btn-remove-image" aria-label="Remove question image">Remove Image</button>
         </div>
         {% elif q.data and q.data.image_description is defined and q.data.image_description %}
@@ -346,7 +346,10 @@
         {# --- Matching question display --- #}
         {% set matches = q.data.matches if q.data.matches is defined else [] %}
         {% if matches %}
-        <table class="matching-table">
+        {# Interactive drag-and-drop (BL-038) — hidden until JS activates #}
+        <div class="matching-interactive" data-matches='{{ matches|tojson }}'></div>
+        {# Static fallback for no-JS environments #}
+        <table class="matching-table matching-static-fallback">
             <thead>
                 <tr><th>Term</th><th>Definition</th></tr>
             </thead>
@@ -377,12 +380,17 @@
         {% if q.data.instructions is defined and q.data.instructions %}
         <p class="ordering-instructions"><em>{{ q.data.instructions }}</em></p>
         {% endif %}
-        <ol class="ordering-items">
+        {# Interactive drag-and-drop (BL-038) — hidden until JS activates #}
+        {% if q.data['items'] is defined and q.data.correct_order is defined %}
+        <div class="ordering-interactive" data-items='{{ q.data["items"]|tojson }}' data-correct-order='{{ q.data.correct_order|tojson }}'></div>
+        {% endif %}
+        {# Static fallback for no-JS environments #}
+        <ol class="ordering-items ordering-static-fallback">
             {% for item in q.data['items'] %}
             <li>{{ item }}</li>
             {% endfor %}
         </ol>
-        <div class="question-answer">
+        <div class="question-answer ordering-static-fallback">
             <strong>Correct Order:</strong>
             {% if q.data.correct_order is defined %}
             {% for idx in q.data.correct_order %}{% if idx < q.data['items']|length %}{% if not loop.first %} &rarr; {% endif %}{{ q.data['items'][idx] }}{% endif %}{% endfor %}
@@ -545,4 +553,6 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/quiz_edit.js') }}"></script>
 <script src="{{ url_for('static', filename='js/tts.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="{{ url_for('static', filename='js/matching.js') }}"></script>
 {% endblock %}

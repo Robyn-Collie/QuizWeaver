@@ -174,4 +174,12 @@ def create_app(config=None):
     def serve_generated_image(filename):
         return send_from_directory(generated_images_dir, filename)
 
+    # SEC-008: Serve uploaded images (requires login)
+    @app.route("/uploads/images/<filename>")
+    @_image_login_required
+    def serve_uploaded_image(filename):
+        cfg = app.config["APP_CONFIG"]
+        upload_dir = os.path.abspath(cfg.get("paths", {}).get("upload_dir", "uploads/images"))
+        return send_from_directory(upload_dir, filename)
+
     return app
