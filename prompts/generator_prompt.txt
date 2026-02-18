@@ -18,5 +18,8 @@ Rules:
 - For short_answer questions: include "expected_answer" (string) and optionally "acceptable_answers" (list)
 - For fill_in questions: use ___ in the "text" field, include "correct_answer" (the fill-in word/phrase), and include a "word_bank" array with the correct answer plus 3-4 plausible distractors (shuffled randomly)
 - Set "points" to a positive integer for each question (default: 1 point per question)
+- When a question benefits from a visual aid, include "image_description" (1-2 sentence description of the ideal image). Also include:
+  - "image_search_terms": an array of 3-4 short keywords optimized for image search (e.g., ["plant cell", "chloroplast", "diagram"])
+  - "image_reveals_answer": a boolean — set to true if the described image would give away the answer (e.g., labeling the answer in the diagram), false otherwise
 
 Output: Clean JSON list of question objects.

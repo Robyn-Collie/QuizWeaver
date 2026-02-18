@@ -122,6 +122,8 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         "cognitive_level": data.get("cognitive_level"),
         "cognitive_framework": data.get("cognitive_framework"),
         "image_description": data.get("image_description") or data.get("image_ref"),
+        "image_search_terms": data.get("image_search_terms"),
+        "image_reveals_answer": data.get("image_reveals_answer"),
         "image_ref": data.get("image_ref"),
         # Stimulus fields
         "stimulus_text": data.get("stimulus_text", ""),

@@ -223,6 +223,8 @@ Return ONLY the JSON object, no markdown.
     for keep_key in (
         "image_ref",
         "image_description",
+        "image_search_terms",
+        "image_reveals_answer",
         "cognitive_level",
         "cognitive_framework",
         "cognitive_level_number",

@@ -963,6 +963,19 @@ a:hover {
     font-weight: 500;
 }
 
+.image-reveals-answer-warning {
+    display: inline-block;
+    background: #f59e0b;
+    color: #78350f;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
 .question-header {
     display: flex;
     gap: 0.625rem;
@@ -3226,6 +3239,11 @@ small.text-muted {
 
 :root[data-theme="dark"] .image-placeholder {
     color: var(--accent);
+}
+
+:root[data-theme="dark"] .image-reveals-answer-warning {
+    background: #b45309;
+    color: #fef3c7;
 }
 
 :root[data-theme="dark"] .cognitive-badge-4 {

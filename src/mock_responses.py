@@ -119,6 +119,7 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
     # Generate 5-7 mock questions (mix of types)
     num_questions = random.randint(5, 7)
     questions = []
+    has_image = False
 
     for i in range(num_questions):
         topic = context_keywords[i % len(context_keywords)]
@@ -300,7 +301,22 @@ def get_generator_response(prompt_parts: List[Any], context_keywords: List[str] 
             question["cognitive_framework"] = cognitive_framework
             question["cognitive_level_number"] = level_idx + 1
 
+        # Add smart image fields when a question has an image_ref
+        if question.get("image_ref"):
+            has_image = True
+            question["image_description"] = f"Diagram illustrating {topic} in a biological context"
+            question["image_search_terms"] = [topic, "diagram", "biology"]
+            # First image question reveals the answer, others don't
+            question["image_reveals_answer"] = i == 0
+
         questions.append(question)
+
+    # Ensure at least one question has smart image fields for realistic mocking
+    if not has_image and questions:
+        first_topic = context_keywords[0] if context_keywords else "science"
+        questions[0]["image_description"] = f"Diagram illustrating {first_topic} in a biological context"
+        questions[0]["image_search_terms"] = [first_topic, "diagram", "biology"]
+        questions[0]["image_reveals_answer"] = False
 
     return json.dumps(questions, indent=2)
 

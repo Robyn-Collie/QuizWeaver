@@ -254,8 +254,12 @@
             <button class="btn btn-sm btn-outline btn-remove-image" aria-label="Remove question image">Remove Image</button>
         </div>
         {% elif q.data and q.data.image_description is defined and q.data.image_description %}
-        <div class="image-placeholder">
+        <div class="image-placeholder"
+             {% if q.data.image_search_terms is defined and q.data.image_search_terms %}data-search-terms="{{ q.data.image_search_terms|join(' ') }}"{% endif %}>
             <strong>Suggested image:</strong> <span class="image-desc-text">{{ q.data.image_description }}</span>
+            {% if q.data.image_reveals_answer is defined and q.data.image_reveals_answer %}
+            <span class="image-reveals-answer-warning" title="This suggested image may give away the answer to the question">May reveal answer</span>
+            {% endif %}
             <button class="btn-clear-image-desc" title="Remove suggested image" aria-label="Remove suggested image description">&times;</button>
             <div class="image-search-links">
                 <a href="#" class="image-search-link" data-provider="pixabay" target="_blank" rel="noopener" title="Search Pixabay for this image">
@@ -598,14 +602,20 @@
 (function() {
     // --- Search link URL builder ---
     document.querySelectorAll('.image-search-link').forEach(function(link) {
-        var descEl = link.closest('.image-placeholder').querySelector('.image-desc-text');
-        if (!descEl) return;
-        var desc = descEl.textContent.trim();
+        var placeholder = link.closest('.image-placeholder');
+        if (!placeholder) return;
+        // Prefer image_search_terms over full description for more effective searches
+        var searchTerms = placeholder.dataset.searchTerms;
+        if (!searchTerms) {
+            var descEl = placeholder.querySelector('.image-desc-text');
+            searchTerms = descEl ? descEl.textContent.trim() : '';
+        }
+        if (!searchTerms) return;
         var provider = link.dataset.provider;
         if (provider === 'pixabay') {
-            link.href = 'https://pixabay.com/images/search/' + encodeURIComponent(desc) + '/';
+            link.href = 'https://pixabay.com/images/search/' + encodeURIComponent(searchTerms) + '/';
         } else if (provider === 'wikimedia') {
-            link.href = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(desc) + '&title=Special:MediaSearch&type=image';
+            link.href = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(searchTerms) + '&title=Special:MediaSearch&type=image';
         }
     });
 
@@ -625,9 +635,14 @@
         if (!btn) return;
         var card = btn.closest('.question-card');
         activeQuestionId = card.dataset.questionId;
-        // Pre-fill from image_description if available
-        var descEl = card.querySelector('.image-desc-text');
-        searchInput.value = descEl ? descEl.textContent.trim() : '';
+        // Pre-fill: prefer image_search_terms over full description
+        var placeholder = card.querySelector('.image-placeholder');
+        var searchTerms = placeholder ? placeholder.dataset.searchTerms : '';
+        if (!searchTerms) {
+            var descEl = card.querySelector('.image-desc-text');
+            searchTerms = descEl ? descEl.textContent.trim() : '';
+        }
+        searchInput.value = searchTerms;
         searchGrid.innerHTML = '';
         searchStatus.textContent = '';
         modal.style.display = 'flex';
