@@ -226,7 +226,7 @@ body.color-blind-mode .test-failure {
     cursor: pointer;
 }
 
-.tts-panel-header h3 {
+.tts-panel-header h2 {
     margin: 0;
     font-size: 0.95rem;
     display: flex;

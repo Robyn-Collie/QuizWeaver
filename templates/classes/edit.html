@@ -12,15 +12,15 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
         <label for="name">Class Name (required) <span class="help-tip" data-tip="A unique name for your class or block period">?</span></label>
-        <input type="text" id="name" name="name" value="{{ class_obj.name }}" required>
+        <input type="text" id="name" name="name" value="{{ class_obj.name }}" required autocomplete="off">
     </div>
     <div class="form-group">
         <label for="grade_level">Grade Level <span class="help-tip" data-tip="Used to calibrate quiz difficulty and vocabulary level">?</span></label>
-        <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}">
+        <input type="text" id="grade_level" name="grade_level" value="{{ class_obj.grade_level or '' }}" autocomplete="off">
     </div>
     <div class="form-group">
         <label for="subject">Subject</label>
-        <input type="text" id="subject" name="subject" value="{{ class_obj.subject or '' }}">
+        <input type="text" id="subject" name="subject" value="{{ class_obj.subject or '' }}" autocomplete="off">
     </div>
     <div class="form-actions">
         <button type="submit" class="btn btn-primary">Save Changes</button>

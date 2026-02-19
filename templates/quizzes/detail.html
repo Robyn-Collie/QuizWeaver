@@ -54,7 +54,7 @@
         {# BL-040: Prompt Summary #}
         {% if generation_metadata.prompt_summary %}
         <div class="glass-box-subsection">
-            <h3>Generation Parameters</h3>
+            <h2>Generation Parameters</h2>
             <ul class="glass-box-params">
                 {% if generation_metadata.prompt_summary.grade_level %}
                 <li><strong>Grade Level:</strong> {{ generation_metadata.prompt_summary.grade_level }}</li>
@@ -81,7 +81,7 @@
         {# BL-040: Pipeline Metrics #}
         {% if generation_metadata.metrics %}
         <div class="glass-box-subsection">
-            <h3>Pipeline Metrics</h3>
+            <h2>Pipeline Metrics</h2>
             <ul class="glass-box-params">
                 <li><strong>Provider:</strong> {{ generation_metadata.provider or 'unknown' }}</li>
                 {% if generation_metadata.model %}
@@ -98,7 +98,7 @@
         {# BL-042: Generation Cost #}
         {% if generation_metadata.token_usage %}
         <div class="glass-box-subsection">
-            <h3>Generation Cost</h3>
+            <h2>Generation Cost</h2>
             {% if generation_metadata.token_usage.is_mock %}
             <p class="cost-mock-notice">$0.00 (mock mode -- no API costs)</p>
             {% else %}
@@ -116,7 +116,7 @@
         {# BL-041: Critic Feedback History #}
         {% if generation_metadata.critic_history %}
         <div class="glass-box-subsection">
-            <h3>Quality Review History</h3>
+            <h2>Quality Review History</h2>
             <p class="glass-box-note">The critic agent reviewed the generated questions for quality, accuracy, and alignment. Here is what happened:</p>
             {% for entry in generation_metadata.critic_history %}
             <div class="critic-entry critic-{{ entry.status|lower }}">
@@ -192,10 +192,10 @@
 <!-- TTS Panel (BL-032) -->
 <div class="tts-panel collapsed" id="ttsPanel">
     <div class="tts-panel-header">
-        <h3>
+        <h2>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
             Read Aloud
-        </h3>
+        </h2>
         <button class="tts-toggle-btn" aria-label="Toggle TTS panel" aria-expanded="false">+</button>
     </div>
     <div class="tts-controls">
