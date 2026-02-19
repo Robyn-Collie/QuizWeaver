@@ -12,6 +12,11 @@ Supports multiple standard sets:
 - Common Core Math (ccss_math)
 - Next Generation Science Standards (ngss)
 - Texas Essential Knowledge and Skills (teks)
+- New Jersey Student Learning Standards (njsls)
+- Georgia Standards of Excellence (gse)
+- Florida Next Generation Sunshine State Standards (ngsss)
+- California Content Standards (cas)
+- Illinois Learning Standards (ils)
 - Custom teacher-imported sets
 """
 
@@ -31,6 +36,65 @@ STANDARD_SETS = {
     "ccss_math": {"label": "Common Core Math", "file": "ccss_math_standards.json"},
     "ngss": {"label": "Next Generation Science Standards", "file": "ngss_standards.json"},
     "teks": {"label": "Texas TEKS", "file": "teks_standards.json"},
+    "njsls": {"label": "New Jersey NJSLS", "file": "njsls_standards.json"},
+    "gse": {"label": "Georgia GSE", "file": "gse_standards.json"},
+    "ngsss": {"label": "Florida NGSSS", "file": "ngsss_standards.json"},
+    "cas": {"label": "California Content Standards", "file": "cas_standards.json"},
+    "ils": {"label": "Illinois Learning Standards", "file": "ils_standards.json"},
+}
+
+# Extended metadata for each standard set (state, official URL, adoption year)
+STANDARD_SET_METADATA = {
+    "sol": {
+        "state": "Virginia",
+        "url": "https://www.doe.virginia.gov/teaching-learning-assessment/k-12-standards-of-learning",
+        "adopted_year": 2023,
+    },
+    "ccss_ela": {
+        "state": "Multi-state",
+        "url": "https://www.corestandards.org/ELA-Literacy/",
+        "adopted_year": 2010,
+    },
+    "ccss_math": {
+        "state": "Multi-state",
+        "url": "https://www.corestandards.org/Math/",
+        "adopted_year": 2010,
+    },
+    "ngss": {
+        "state": "Multi-state",
+        "url": "https://www.nextgenscience.org/",
+        "adopted_year": 2013,
+    },
+    "teks": {
+        "state": "Texas",
+        "url": "https://tea.texas.gov/academics/curriculum-standards/teks/texas-essential-knowledge-and-skills",
+        "adopted_year": 2024,
+    },
+    "njsls": {
+        "state": "New Jersey",
+        "url": "https://www.nj.gov/education/standards/",
+        "adopted_year": 2020,
+    },
+    "gse": {
+        "state": "Georgia",
+        "url": "https://www.georgiastandards.org/",
+        "adopted_year": 2023,
+    },
+    "ngsss": {
+        "state": "Florida",
+        "url": "https://www.cpalms.org/Public/search/Standard",
+        "adopted_year": 2023,
+    },
+    "cas": {
+        "state": "California",
+        "url": "https://www.cde.ca.gov/be/st/ss/",
+        "adopted_year": 2023,
+    },
+    "ils": {
+        "state": "Illinois",
+        "url": "https://www.isbe.net/Pages/Learning-Standards.aspx",
+        "adopted_year": 2023,
+    },
 }
 
 
@@ -50,6 +114,122 @@ def get_available_standard_sets() -> List[Dict]:
             }
         )
     return result
+
+
+def list_standard_sets() -> List[Dict]:
+    """Return list of all available standard set names with metadata.
+
+    Merges STANDARD_SETS registry info with STANDARD_SET_METADATA to provide
+    a comprehensive view of each standard set.
+
+    Returns:
+        List of dicts with 'key', 'label', 'file', 'state', 'url',
+        and 'adopted_year' for each set.
+    """
+    result = []
+    for key, info in STANDARD_SETS.items():
+        entry = {
+            "key": key,
+            "label": info["label"],
+            "file": info["file"],
+        }
+        meta = STANDARD_SET_METADATA.get(key, {})
+        entry["state"] = meta.get("state", "Unknown")
+        entry["url"] = meta.get("url", "")
+        entry["adopted_year"] = meta.get("adopted_year")
+        result.append(entry)
+    return result
+
+
+def get_standards_by_state(state_name: str) -> List[Dict]:
+    """Return standard sets associated with a state.
+
+    Performs case-insensitive matching against the state field in
+    STANDARD_SET_METADATA.
+
+    Args:
+        state_name: Name of the state (e.g., "Virginia", "Texas",
+            "Multi-state"). Case-insensitive.
+
+    Returns:
+        List of dicts with 'key', 'label', and metadata for matching sets.
+    """
+    result = []
+    state_lower = state_name.lower()
+    for key, meta in STANDARD_SET_METADATA.items():
+        if meta.get("state", "").lower() == state_lower:
+            info = STANDARD_SETS.get(key, {})
+            entry = {
+                "key": key,
+                "label": info.get("label", key),
+                "state": meta.get("state", "Unknown"),
+                "url": meta.get("url", ""),
+                "adopted_year": meta.get("adopted_year"),
+            }
+            result.append(entry)
+    return result
+
+
+def get_all_subjects() -> List[str]:
+    """Return sorted unique list of all subjects across all standard sets.
+
+    Reads all JSON data files and collects unique subject values.
+
+    Returns:
+        Sorted list of unique subject names.
+    """
+    subjects = set()
+    data_dir = get_data_dir()
+    for _key, info in STANDARD_SETS.items():
+        json_path = os.path.join(data_dir, info["file"])
+        if not os.path.exists(json_path):
+            continue
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                data = json.load(f)
+            for std in data.get("standards", []):
+                if std.get("subject"):
+                    subjects.add(std["subject"])
+        except (json.JSONDecodeError, OSError):
+            continue
+    return sorted(subjects)
+
+
+def get_all_grades() -> List[str]:
+    """Return sorted list of all grade levels across all standard sets.
+
+    Reads all JSON data files and collects unique grade_band values.
+    Sorts using a custom key to ensure proper ordering (K-2, 3-5, 6-8, 9-12).
+
+    Returns:
+        Sorted list of unique grade band strings.
+    """
+    grades = set()
+    data_dir = get_data_dir()
+    for _key, info in STANDARD_SETS.items():
+        json_path = os.path.join(data_dir, info["file"])
+        if not os.path.exists(json_path):
+            continue
+        try:
+            with open(json_path, encoding="utf-8") as f:
+                data = json.load(f)
+            for std in data.get("standards", []):
+                if std.get("grade_band"):
+                    grades.add(std["grade_band"])
+        except (json.JSONDecodeError, OSError):
+            continue
+
+    def _grade_sort_key(grade_band: str) -> tuple:
+        """Sort grade bands by their starting number, with K first."""
+        first = grade_band.split("-")[0].strip()
+        if first.upper() == "K":
+            return (0,)
+        try:
+            return (int(first),)
+        except ValueError:
+            return (999,)
+
+    return sorted(grades, key=_grade_sort_key)
 
 
 def get_data_dir() -> str:

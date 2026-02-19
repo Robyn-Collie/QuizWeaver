@@ -135,6 +135,10 @@ def check_if_migration_needed(db_path):
             std_columns = [row[1] for row in cursor.fetchall()]
             standards_set_exists = "standard_set" in std_columns
 
+        # Check if pacing_guides table exists (migration 011)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pacing_guides'")
+        pacing_guides_exists = cursor.fetchone() is not None
+
         conn.close()
 
         return (
@@ -145,6 +149,7 @@ def check_if_migration_needed(db_path):
             or not users_exists
             or not standards_exists
             or not standards_set_exists
+            or not pacing_guides_exists
         )
     except Exception as e:
         print(f"Error checking migration status: {e}")

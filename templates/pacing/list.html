@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Pacing Guides - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Pacing Guides</h1>
+    <a href="/pacing-guides/new" class="btn btn-primary">+ New Guide</a>
+</div>
+
+<div class="filter-bar">
+    <form method="GET" action="/pacing-guides" class="filter-form">
+        <select name="class_id" class="filter-select" onchange="this.form.submit()">
+            <option value="">All Classes</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}" {% if current_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+{% if guides %}
+<div class="study-grid">
+    {% for g in guides %}
+    <div class="study-card" data-id="{{ g.id }}">
+        <div class="study-card-header">
+            {% if g.school_year %}
+            <span class="study-type-badge">{{ g.school_year }}</span>
+            {% endif %}
+            <span class="study-type-badge">{{ g.total_weeks }} weeks</span>
+        </div>
+        <h3><a href="/pacing-guides/{{ g.id }}">{{ g.title }}</a></h3>
+        <p class="study-card-meta">
+            {{ g.class_name }}
+            &middot; {{ g.unit_count }} unit{{ 's' if g.unit_count != 1 else '' }}
+        </p>
+        <div class="study-card-footer">
+            <span class="study-card-date">{{ g.created_at.strftime('%b %d, %Y') if g.created_at else '' }}</span>
+            <div class="study-card-actions">
+                <div class="export-dropdown">
+                    <button class="btn btn-sm btn-outline export-dropdown-toggle">Export</button>
+                    <div class="export-dropdown-menu">
+                        <a href="/pacing-guides/{{ g.id }}/export/csv">CSV</a>
+                        <a href="/pacing-guides/{{ g.id }}/export/pdf">PDF</a>
+                        <a href="/pacing-guides/{{ g.id }}/export/docx">Word</a>
+                    </div>
+                </div>
+                <form method="POST" action="/pacing-guides/{{ g.id }}/delete" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this pacing guide?')">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>No pacing guides yet.</p>
+    <a href="/pacing-guides/new" class="btn btn-primary">Create Your First Pacing Guide</a>
+</div>
+{% endif %}
+{% endblock %}

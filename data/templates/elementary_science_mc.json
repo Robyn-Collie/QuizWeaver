@@ -1,0 +1,116 @@
+{
+  "template_version": "1.0",
+  "title": "Elementary Science: States of Matter",
+  "subject": "Science",
+  "grade_level": "3rd-5th Grade",
+  "standards": ["NGSS 2-PS1-1", "NGSS 5-PS1-1"],
+  "cognitive_framework": "blooms",
+  "question_count": 10,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "Which of the following is an example of a solid?",
+      "options": ["Water in a glass", "Air in a balloon", "A wooden block", "Steam from a kettle"],
+      "correct_answer": "A wooden block",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "What happens to water when it freezes?",
+      "options": ["It becomes a gas", "It becomes a solid", "It disappears", "It becomes lighter"],
+      "correct_answer": "It becomes a solid",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which state of matter takes the shape of its container?",
+      "options": ["Solid", "Liquid", "Only gas", "None of the above"],
+      "correct_answer": "Liquid",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "When you heat ice, it turns into water. What is this process called?",
+      "options": ["Freezing", "Melting", "Evaporation", "Condensation"],
+      "correct_answer": "Melting",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which of these is a property of gases?",
+      "options": ["They have a fixed shape", "They cannot be compressed", "They spread out to fill their container", "They are always visible"],
+      "correct_answer": "They spread out to fill their container",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "A puddle of water disappears on a hot day. What happened to the water?",
+      "options": ["It soaked into the sky", "It evaporated into water vapor", "It froze underground", "It was absorbed by the sun"],
+      "correct_answer": "It evaporated into water vapor",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which change of state occurs when water vapor touches a cold window?",
+      "options": ["Evaporation", "Melting", "Condensation", "Freezing"],
+      "correct_answer": "Condensation",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Why does a metal spoon feel cold when you first pick it up?",
+      "options": ["The spoon makes cold", "Heat moves from your hand to the spoon", "The spoon is always frozen", "Cold moves from the spoon to your hand"],
+      "correct_answer": "Heat moves from your hand to the spoon",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "hard",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "What are the three common states of matter?",
+      "options": ["Hot, warm, cold", "Solid, liquid, gas", "Big, medium, small", "Hard, soft, squishy"],
+      "correct_answer": "Solid, liquid, gas",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "If you leave a glass of water outside on a freezing night, what will happen?",
+      "options": ["The water will evaporate", "The water will turn into ice", "Nothing will change", "The glass will melt"],
+      "correct_answer": "The water will turn into ice",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["science", "states of matter", "elementary", "physical science"],
+    "description": "A 10-question multiple choice quiz covering states of matter for elementary students. Covers solids, liquids, gases, and phase changes."
+  }
+}

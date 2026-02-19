@@ -1,0 +1,277 @@
+{
+  "source": "New Jersey Student Learning Standards",
+  "version": "2020",
+  "standard_set": "njsls",
+  "standards": [
+    {
+      "code": "NJSLS.MATH.3.OA.A.1",
+      "description": "Interpret products of whole numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Operations & Algebraic Thinking",
+      "full_text": "Interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.3.NF.A.1",
+      "description": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number & Operations - Fractions",
+      "full_text": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.4.NBT.B.5",
+      "description": "Multiply a whole number of up to four digits by a one-digit whole number",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number & Operations in Base Ten",
+      "full_text": "Multiply a whole number of up to four digits by a one-digit whole number, and multiply two two-digit numbers, using strategies based on place value and the properties of operations.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.5.MD.C.3",
+      "description": "Recognize volume as an attribute of solid figures and understand concepts of volume measurement",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Measurement & Data",
+      "full_text": "Recognize volume as an attribute of solid figures and understand concepts of volume measurement.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.6.RP.A.1",
+      "description": "Understand the concept of a ratio and use ratio language",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Ratios & Proportional Relationships",
+      "full_text": "Understand the concept of a ratio and use ratio language to describe a ratio relationship between two quantities.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.7.EE.B.4",
+      "description": "Use variables to represent quantities in a real-world or mathematical problem",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions & Equations",
+      "full_text": "Use variables to represent quantities in a real-world or mathematical problem, and construct simple equations and inequalities to solve problems.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.8.F.A.1",
+      "description": "Understand that a function is a rule that assigns to each input exactly one output",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Functions",
+      "full_text": "Understand that a function is a rule that assigns to each input exactly one output. The graph of a function is the set of ordered pairs consisting of an input and the corresponding output.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.HS.A-REI.B.3",
+      "description": "Solve linear equations and inequalities in one variable",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Algebra",
+      "full_text": "Solve linear equations and inequalities in one variable, including equations with coefficients represented by letters.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.RL.3.1",
+      "description": "Ask and answer questions referring explicitly to the text as the basis for the answers",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading: Literature",
+      "full_text": "Ask and answer questions, and make relevant connections, to demonstrate understanding of a text, referring explicitly to the text as the basis for the answers.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.RI.5.2",
+      "description": "Determine two or more main ideas of a text and explain how they are supported by key details",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading: Informational Text",
+      "full_text": "Determine two or more main ideas of a text and explain how they are supported by key details; summarize the text.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.W.6.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.RL.7.2",
+      "description": "Determine a theme or central idea of a text and analyze its development",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine a theme or central idea of a text and analyze its development over the course of the text; provide an objective summary of the text.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.RI.8.8",
+      "description": "Delineate and evaluate the argument and specific claims in a text",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Informational Text",
+      "full_text": "Delineate and evaluate the argument and specific claims in a text, assessing whether the reasoning is sound and the evidence is relevant and sufficient.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.W.9-10.2",
+      "description": "Write informative/explanatory texts to examine and convey complex ideas",
+      "subject": "English Language Arts",
+      "grade_band": "9-12",
+      "strand": "Writing",
+      "full_text": "Write informative/explanatory texts to examine and convey complex ideas, concepts, and information clearly and accurately through the effective selection, organization, and analysis of content.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.3-LS3-1",
+      "description": "Analyze and interpret data to provide evidence that plants and animals have traits inherited from parents",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Life Science",
+      "full_text": "Analyze and interpret data to provide evidence that plants and animals have traits inherited from parents and that variation of these traits exists in a group of similar organisms.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.4-PS3-2",
+      "description": "Make observations to provide evidence that energy can be transferred from place to place",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Physical Science",
+      "full_text": "Make observations to provide evidence that energy can be transferred from place to place by sound, light, heat, and electric currents.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.5-ESS2-1",
+      "description": "Develop a model using an example to describe ways the geosphere, biosphere, hydrosphere, and atmosphere interact",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth and Space Science",
+      "full_text": "Develop a model using an example to describe ways the geosphere, biosphere, hydrosphere, and/or atmosphere interact.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.MS-PS1-2",
+      "description": "Analyze and interpret data on the properties of substances before and after the substances interact",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Physical Science",
+      "full_text": "Analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.MS-LS1-3",
+      "description": "Use argument supported by evidence for how the body is a system of interacting subsystems",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "Use argument supported by evidence for how the body is a system of interacting subsystems composed of groups of cells.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.MS-ESS1-4",
+      "description": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space Science",
+      "full_text": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's 4.6-billion-year-old history.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.HS-PS1-1",
+      "description": "Use the periodic table as a model to predict the relative properties of elements",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "Use the periodic table as a model to predict the relative properties of elements based on the patterns of electrons in the outermost energy level of atoms.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.HS-LS1-1",
+      "description": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life Science",
+      "full_text": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins, which carry out the essential functions of life through systems of specialized cells.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SS.6.1.4.A.1",
+      "description": "Explain how the availability of resources affects people differently in different regions",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "U.S. History",
+      "full_text": "Explain how the availability of natural resources, climate conditions, and the geography of a region affect the way people live in that region.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SS.6.1.8.A.1",
+      "description": "Compare and contrast forms of governance, belief systems, and family structures among African, European, and Native American groups",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "U.S. History",
+      "full_text": "Compare and contrast forms of governance, belief systems, and family structures among African, European, and Native American groups.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SS.6.1.8.D.3",
+      "description": "Analyze the impact of the American Revolution on the political structure and economic systems",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "U.S. History",
+      "full_text": "Analyze the impact of the American Revolution on the development of American politics, including new political institutions and the development of political thought.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SS.6.1.12.A.1",
+      "description": "Explain how British colonial policies regarding Native Americans led to conflict",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "U.S. History",
+      "full_text": "Explain how British colonial policies regarding taxation and western expansion led to the American Revolution.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SS.6.2.8.A.1",
+      "description": "Compare and contrast the access to resources and development of different civilizations",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "World History",
+      "full_text": "Compare and contrast the access to, and the development of, resources in different world civilizations and the impact these had on the development of those civilizations.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.MATH.K.CC.A.1",
+      "description": "Count to 100 by ones and by tens",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Counting & Cardinality",
+      "full_text": "Count to 100 by ones and by tens.",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.ELA.RF.1.2",
+      "description": "Demonstrate understanding of spoken words, syllables, and sounds",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading: Foundational Skills",
+      "full_text": "Demonstrate understanding of spoken words, syllables, and sounds (phonemes).",
+      "standard_set": "njsls"
+    },
+    {
+      "code": "NJSLS.SCI.2-PS1-1",
+      "description": "Plan and conduct an investigation to describe and classify different kinds of materials",
+      "subject": "Science",
+      "grade_band": "K-2",
+      "strand": "Physical Science",
+      "full_text": "Plan and conduct an investigation to describe and classify different kinds of materials by their observable properties.",
+      "standard_set": "njsls"
+    }
+  ]
+}

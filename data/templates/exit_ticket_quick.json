@@ -1,0 +1,53 @@
+{
+  "template_version": "1.0",
+  "title": "Quick Exit Ticket: Check for Understanding",
+  "subject": "General",
+  "grade_level": "Any",
+  "standards": [],
+  "cognitive_framework": "blooms",
+  "question_count": 3,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "How confident are you about today's lesson?",
+      "options": [
+        "I understand it well and could explain it to someone else",
+        "I understand most of it but have a few questions",
+        "I understand some parts but need more practice",
+        "I am confused and need help"
+      ],
+      "correct_answer": "I understand it well and could explain it to someone else",
+      "cognitive_level": "Evaluate",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 0
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Write one thing you learned in today's lesson.",
+      "expected_answer": "Responses will vary based on lesson content.",
+      "acceptable_answers": [],
+      "rubric_hint": "Accept any response that demonstrates engagement with the lesson topic.",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Write one question you still have about today's topic.",
+      "expected_answer": "Responses will vary. Look for genuine questions that show reflective thinking.",
+      "acceptable_answers": [],
+      "rubric_hint": "Accept any thoughtful question related to the lesson. If the student writes 'none,' encourage them to think of something they would like to explore further.",
+      "cognitive_level": "Evaluate",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["exit ticket", "formative assessment", "check for understanding", "any subject"],
+    "description": "A quick 3-question exit ticket for formative assessment. Includes self-reflection and open-ended prompts suitable for any subject or grade level."
+  }
+}

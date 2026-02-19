@@ -1,0 +1,277 @@
+{
+  "source": "California Content Standards",
+  "version": "2023",
+  "standard_set": "cas",
+  "standards": [
+    {
+      "code": "CA.MATH.K.CC.1",
+      "description": "Count to 100 by ones and by tens",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Counting and Cardinality",
+      "full_text": "Know number names and the count sequence. Count to 100 by ones and by tens.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.1.OA.1",
+      "description": "Use addition and subtraction within 20 to solve word problems",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Operations and Algebraic Thinking",
+      "full_text": "Use addition and subtraction within 20 to solve word problems involving situations of adding to, taking from, putting together, taking apart, and comparing.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.3.NF.1",
+      "description": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Operations - Fractions",
+      "full_text": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.4.MD.3",
+      "description": "Apply the area and perimeter formulas for rectangles in real-world and mathematical problems",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Measurement and Data",
+      "full_text": "Apply the area and perimeter formulas for rectangles in real-world and mathematical problems.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.5.NF.1",
+      "description": "Add and subtract fractions with unlike denominators",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Operations - Fractions",
+      "full_text": "Add and subtract fractions with unlike denominators (including mixed numbers) by replacing given fractions with equivalent fractions.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.6.RP.1",
+      "description": "Understand the concept of a ratio and use ratio language",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Ratios and Proportional Relationships",
+      "full_text": "Understand the concept of a ratio and use ratio language to describe a ratio relationship between two quantities.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.7.G.4",
+      "description": "Know the formulas for the area and circumference of a circle",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Geometry",
+      "full_text": "Know the formulas for the area and circumference of a circle and solve problems; give an informal derivation of the relationship between the circumference and area of a circle.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.8.EE.7",
+      "description": "Solve linear equations in one variable",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions and Equations",
+      "full_text": "Solve linear equations in one variable, including equations with the variable on both sides.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.MATH.HS.A-SSE.1",
+      "description": "Interpret expressions that represent a quantity in terms of its context",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Algebra",
+      "full_text": "Interpret expressions that represent a quantity in terms of its context. Interpret parts of an expression, such as terms, factors, and coefficients.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.RL.K.1",
+      "description": "With prompting and support, ask and answer questions about key details in a text",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading: Literature",
+      "full_text": "With prompting and support, ask and answer questions about key details in a text.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.RI.3.1",
+      "description": "Ask and answer questions to demonstrate understanding of a text, referring explicitly to the text",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading: Informational Text",
+      "full_text": "Ask and answer questions to demonstrate understanding of a text, referring explicitly to the text as the basis for the answers.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.W.4.1",
+      "description": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.RL.6.1",
+      "description": "Cite textual evidence to support analysis of what the text says explicitly",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Cite textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.W.7.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.ELA.RI.11-12.1",
+      "description": "Cite strong and thorough textual evidence to support analysis of what the text says",
+      "subject": "English Language Arts",
+      "grade_band": "9-12",
+      "strand": "Reading: Informational Text",
+      "full_text": "Cite strong and thorough textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text, including determining where the text leaves matters uncertain.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.1-LS1-1",
+      "description": "Use materials to design a solution to a human problem by mimicking how plants and/or animals use their external parts",
+      "subject": "Science",
+      "grade_band": "K-2",
+      "strand": "Life Science",
+      "full_text": "Use materials to design a solution to a human problem by mimicking how plants and/or animals use their external parts to help them survive, grow, and meet their needs.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.3-LS4-3",
+      "description": "Construct an argument with evidence that in a particular habitat some organisms can survive well, some survive less well, and some cannot survive at all",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Life Science",
+      "full_text": "Construct an argument with evidence that in a particular habitat some organisms can survive well, some survive less well, and some cannot survive at all.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.5-PS1-3",
+      "description": "Make observations and measurements to identify materials based on their properties",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Physical Science",
+      "full_text": "Make observations and measurements to identify materials based on their properties.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.MS-ESS1-4",
+      "description": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space Science",
+      "full_text": "Construct a scientific explanation based on evidence from rock strata for how the geologic time scale is used to organize Earth's 4.6-billion-year-old history.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.MS-LS1-5",
+      "description": "Construct a scientific explanation based on evidence for how environmental and genetic factors influence the growth of organisms",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "Construct a scientific explanation based on evidence for how environmental and genetic factors influence the growth of organisms.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.MS-PS1-2",
+      "description": "Analyze and interpret data on the properties of substances before and after the substances interact",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Physical Science",
+      "full_text": "Analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.NGSS.HS-LS1-1",
+      "description": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life Science",
+      "full_text": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins, which carry out the essential functions of life through systems of specialized cells.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.3.1.1",
+      "description": "Identify geographical features in their local region",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "History-Social Science",
+      "full_text": "Identify geographical features in their local region (e.g., deserts, mountains, valleys, hills, coastal areas, oceans, lakes).",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.4.1.3",
+      "description": "Identify the state capital, the three largest cities, and explain the geographic and economic reasons for their locations",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "History-Social Science",
+      "full_text": "Identify the state capital, the three largest cities in California, and explain the geographic and economic reasons for the locations of each.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.5.7.5",
+      "description": "Discuss the principles of the Magna Carta, the English Bill of Rights, and the American Bill of Rights",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "History-Social Science",
+      "full_text": "Discuss the principles of the Magna Carta, the English Bill of Rights (1689), the American Declaration of Independence (1776), the French Declaration of the Rights of Man and the Citizen (1789), and the U.S. Bill of Rights (1791).",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.6.1.1",
+      "description": "Describe the hunter-gatherer societies including the development of tools and the use of fire",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History-Social Science",
+      "full_text": "Describe the hunter-gatherer societies, including the development of tools and the use of fire.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.7.11.1",
+      "description": "Know the great voyages of discovery, the locations of the routes, and the influence of cartography",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History-Social Science",
+      "full_text": "Know the great voyages of discovery, the locations of the routes, and the influence of cartography in the development of a new European worldview.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.8.1.1",
+      "description": "Describe the relationship between the moral and political ideas of the Great Awakening and the development of revolutionary fervor",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History-Social Science",
+      "full_text": "Describe the relationship between the moral and political ideas of the Great Awakening and the development of revolutionary fervor.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.11.1.1",
+      "description": "Describe the Enlightenment and the rise of democratic ideas as the context in which the nation was founded",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "History-Social Science",
+      "full_text": "Describe the Enlightenment and the rise of democratic ideas as the context in which the nation was founded.",
+      "standard_set": "cas"
+    },
+    {
+      "code": "CA.HSS.12.1.1",
+      "description": "Analyze the influence of ancient Greek, Roman, English, and leading European political thinkers on the development of American government",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "History-Social Science",
+      "full_text": "Analyze the influence of ancient Greek, Roman, English, and leading European political thinkers such as John Locke, Charles-Louis Montesquieu, Niccolo Machiavelli, and William Blackstone on the development of American government.",
+      "standard_set": "cas"
+    }
+  ]
+}

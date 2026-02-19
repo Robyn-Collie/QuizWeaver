@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Template Library - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Community Template Library</h1>
+
+<div class="ai-notice" data-dismiss-key="template-library">
+    <button class="ai-notice-dismiss" aria-label="Dismiss notice" title="Dismiss">&times;</button>
+    <strong>About Templates:</strong> These are curated quiz templates shared by the QuizWeaver community. Always review imported questions for accuracy, bias, and appropriateness before sharing with students.
+</div>
+
+<div class="section-actions">
+    <a href="{{ url_for('content.template_library_upload') }}" class="btn btn-primary">Upload Template</a>
+    <a href="{{ url_for('content.quiz_template_list') }}" class="btn btn-secondary">My Imported Templates</a>
+</div>
+
+<form method="GET" action="{{ url_for('content.template_library') }}" class="template-library-filters">
+    <div class="filter-row">
+        <div class="filter-group">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" value="{{ query }}" placeholder="Search templates..." class="search-input" autocomplete="off">
+        </div>
+        <div class="filter-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject">
+                <option value="">All Subjects</option>
+                {% for s in subjects %}
+                <option value="{{ s }}" {% if subject_filter == s %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="grade_level">Grade Level</label>
+            <select id="grade_level" name="grade_level">
+                <option value="">All Grades</option>
+                {% for g in grade_levels %}
+                <option value="{{ g }}" {% if grade_filter == g %}selected{% endif %}>{{ g }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="tag">Tag</label>
+            <select id="tag" name="tag">
+                <option value="">All Tags</option>
+                {% for t in all_tags %}
+                <option value="{{ t }}" {% if tag_filter == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group filter-actions">
+            <button type="submit" class="btn btn-secondary">Filter</button>
+            {% if query or subject_filter or grade_filter or tag_filter %}
+            <a href="{{ url_for('content.template_library') }}" class="btn btn-sm btn-secondary">Clear</a>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+{% if templates %}
+<p class="result-count">Showing {{ templates|length }} template{{ 's' if templates|length != 1 else '' }}</p>
+
+<div class="template-grid">
+    {% for t in templates %}
+    <div class="template-card">
+        <div class="template-card-header">
+            <h3><a href="{{ url_for('content.template_library_preview', template_id=t.id) }}">{{ t.title }}</a></h3>
+            <span class="template-source-badge template-source-{{ t.source }}">{{ t.source }}</span>
+        </div>
+        <div class="template-card-meta">
+            {% if t.subject %}<span class="template-meta-item">{{ t.subject }}</span>{% endif %}
+            {% if t.grade_level %}<span class="template-meta-item">{{ t.grade_level }}</span>{% endif %}
+            <span class="template-meta-item">{{ t.question_count }} question{{ 's' if t.question_count != 1 else '' }}</span>
+        </div>
+        {% if t.description %}
+        <p class="template-card-description">{{ t.description[:120] }}{% if t.description|length > 120 %}...{% endif %}</p>
+        {% endif %}
+        {% if t.tags %}
+        <div class="template-tags">
+            {% for tag in t.tags[:5] %}
+            <span class="template-tag">{{ tag }}</span>
+            {% endfor %}
+            {% if t.tags|length > 5 %}
+            <span class="template-tag template-tag-more">+{{ t.tags|length - 5 }}</span>
+            {% endif %}
+        </div>
+        {% endif %}
+        <div class="template-card-actions">
+            <a href="{{ url_for('content.template_library_preview', template_id=t.id) }}" class="btn btn-sm btn-secondary">Preview</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No templates found{% if query or subject_filter or grade_filter or tag_filter %} matching your filters. Try broadening your search.{% else %}. Upload a template to get started!{% endif %}</p>
+{% endif %}
+{% endblock %}

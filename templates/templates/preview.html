@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ preview.title }} - Template Preview - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{{ url_for('content.template_library') }}">Template Library</a> &raquo; Preview
+</div>
+
+<h1>{{ preview.title }}</h1>
+
+<div class="template-preview-header">
+    <div class="template-preview-meta">
+        {% if preview.subject %}<span class="template-meta-item"><strong>Subject:</strong> {{ preview.subject }}</span>{% endif %}
+        {% if preview.grade_level %}<span class="template-meta-item"><strong>Grade Level:</strong> {{ preview.grade_level }}</span>{% endif %}
+        <span class="template-meta-item"><strong>Questions:</strong> {{ preview.question_count }}</span>
+        <span class="template-meta-item"><strong>Total Points:</strong> {{ preview.total_points }}</span>
+        {% if preview.cognitive_framework %}<span class="template-meta-item"><strong>Framework:</strong> {{ preview.cognitive_framework|title }}</span>{% endif %}
+        {% if preview.created_by %}<span class="template-meta-item"><strong>Author:</strong> {{ preview.created_by }}</span>{% endif %}
+        <span class="template-source-badge template-source-{{ preview.source }}">{{ preview.source }}</span>
+    </div>
+
+    {% if preview.description %}
+    <p class="template-preview-description">{{ preview.description }}</p>
+    {% endif %}
+
+    {% if preview.standards %}
+    <div class="template-preview-standards">
+        <strong>Standards:</strong>
+        {% for s in preview.standards %}
+        <span class="template-tag">{{ s }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if preview.tags %}
+    <div class="template-tags">
+        {% for tag in preview.tags %}
+        <span class="template-tag">{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+{% if preview.question_types %}
+<div class="template-preview-types">
+    <h3>Question Types</h3>
+    <ul>
+        {% for qtype, count in preview.question_types.items() %}
+        <li>{{ qtype|replace('_', ' ')|title }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="template-preview-questions">
+    <h3>Question Preview (first {{ preview.questions_preview|length }} of {{ preview.question_count }})</h3>
+    {% for q in preview.questions_preview %}
+    <div class="template-preview-question">
+        <p class="template-question-number"><strong>Question {{ loop.index }}.</strong>
+            <span class="template-question-type">[{{ q.question_type|replace('_', ' ')|title }}{% if q.points %} - {{ q.points }} pt{{ 's' if q.points != 1 else '' }}{% endif %}]</span>
+        </p>
+        <p class="template-question-text">{{ q.text }}</p>
+        {% if q.options %}
+        <ol class="template-question-options" type="A">
+            {% for opt in q.options %}
+            <li{% if q.correct_answer and opt == q.correct_answer %} class="template-correct-option"{% endif %}>{{ opt }}</li>
+            {% endfor %}
+        </ol>
+        {% endif %}
+        {% if q.question_type == 'short_answer' and q.expected_answer %}
+        <p class="template-expected-answer"><em>Expected: {{ q.expected_answer[:100] }}{% if q.expected_answer|length > 100 %}...{% endif %}</em></p>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% if preview.question_count > preview.questions_preview|length %}
+    <p class="template-preview-more">... and {{ preview.question_count - preview.questions_preview|length }} more question{{ 's' if (preview.question_count - preview.questions_preview|length) != 1 else '' }}</p>
+    {% endif %}
+</div>
+
+<div class="template-preview-use">
+    <h3>Use This Template</h3>
+    <div class="ai-notice" data-dismiss-key="template-use-warning">
+        <button class="ai-notice-dismiss" aria-label="Dismiss notice" title="Dismiss">&times;</button>
+        <strong>Review Reminder:</strong> Importing this template will create a new quiz in your selected class. Please review all questions for accuracy and appropriateness before assigning to students.
+    </div>
+    {% if classes %}
+    <form method="POST" action="{{ url_for('content.template_library_use', template_id=preview.id) }}" class="form-card template-use-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="form-group">
+            <label for="class_id">Import into Class</label>
+            <select id="class_id" name="class_id" required>
+                {% for c in classes %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="title">Quiz Title (optional override)</label>
+            <input type="text" id="title" name="title" placeholder="Leave blank to use template title" autocomplete="off">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Use This Template</button>
+            <a href="{{ url_for('content.template_library') }}" class="btn btn-secondary">Back to Library</a>
+        </div>
+    </form>
+    {% else %}
+    <p>You need to <a href="{{ url_for('classes.class_create') }}">create a class</a> before importing templates.</p>
+    {% endif %}
+</div>
+{% endblock %}

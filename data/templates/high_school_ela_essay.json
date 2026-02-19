@@ -1,0 +1,78 @@
+{
+  "template_version": "1.0",
+  "title": "High School ELA: Literary Analysis",
+  "subject": "English Language Arts",
+  "grade_level": "9th-12th Grade",
+  "standards": ["CCSS.ELA-LITERACY.RL.9-10.1", "CCSS.ELA-LITERACY.RL.9-10.2", "CCSS.ELA-LITERACY.RL.9-10.4"],
+  "cognitive_framework": "blooms",
+  "question_count": 5,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "Which literary device involves giving human qualities to non-human things?",
+      "options": ["Simile", "Personification", "Alliteration", "Hyperbole"],
+      "correct_answer": "Personification",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 2
+    },
+    {
+      "question_type": "mc",
+      "text": "An author writes, 'The abandoned house groaned under the weight of years.' What is the effect of the personification in this sentence?",
+      "options": [
+        "It makes the house seem literally alive",
+        "It creates a sense of age and neglect",
+        "It suggests the house is haunted",
+        "It shows the house is about to collapse"
+      ],
+      "correct_answer": "It creates a sense of age and neglect",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 3
+    },
+    {
+      "question_type": "mc",
+      "text": "Which of the following best describes the concept of theme in literature?",
+      "options": [
+        "The sequence of events in a story",
+        "The setting where the story takes place",
+        "A central message or insight about life conveyed through the text",
+        "The point of view from which the story is told"
+      ],
+      "correct_answer": "A central message or insight about life conveyed through the text",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 2
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Explain the difference between a static character and a dynamic character. Provide a brief example of each from a text you have read.",
+      "expected_answer": "A static character remains the same throughout the story, while a dynamic character undergoes significant internal change. For example, Sherlock Holmes is often considered static, while Ebenezer Scrooge in A Christmas Carol is dynamic.",
+      "acceptable_answers": [],
+      "rubric_hint": "Award full credit for clear definitions of both terms with relevant textual examples. Partial credit for definitions without examples.",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 5
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Choose a novel or short story you have read this year. Identify one theme the author develops and explain how specific details in the text support that theme. Use at least two pieces of textual evidence in your response.",
+      "expected_answer": "Responses will vary. A strong response identifies a clear theme, explains how it develops, and provides at least two specific references to the text.",
+      "acceptable_answers": [],
+      "rubric_hint": "Look for: (1) clearly stated theme, (2) logical connection between theme and text, (3) at least two specific textual references, (4) coherent explanation.",
+      "cognitive_level": "Evaluate",
+      "cognitive_framework": "blooms",
+      "difficulty": "hard",
+      "points": 8
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["ela", "literary analysis", "high school", "reading comprehension", "writing"],
+    "description": "A 5-question literary analysis assessment for high school ELA. Combines multiple choice with extended short answer/essay questions targeting higher-order thinking."
+  }
+}

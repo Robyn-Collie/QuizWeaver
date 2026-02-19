@@ -1,0 +1,268 @@
+{
+  "source": "Florida Next Generation Sunshine State Standards",
+  "version": "2023",
+  "standard_set": "ngsss",
+  "standards": [
+    {
+      "code": "NGSSS.MA.K.A.1.1",
+      "description": "Represent quantities with numbers up to 20",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Number Sense, Concepts, and Operations",
+      "full_text": "Represent quantities with numbers up to 20, verbally, in writing, and with manipulatives.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.3.A.1.1",
+      "description": "Model multiplication and division including problems presented in context",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number Sense, Concepts, and Operations",
+      "full_text": "Model multiplication and division including problems presented in context: repeated addition, multiplicative comparison, array, how many combinations, measurement, and partitioning.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.4.A.6.1",
+      "description": "Use and represent numbers through millions in various forms",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number Sense, Concepts, and Operations",
+      "full_text": "Use and represent numbers through millions in various forms including standard form, expanded form, and word form.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.5.A.2.1",
+      "description": "Represent addition and subtraction of decimals and fractions with like and unlike denominators",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number Sense, Concepts, and Operations",
+      "full_text": "Represent addition and subtraction of decimals and fractions with like and unlike denominators using models, place value, or properties.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.6.A.3.6",
+      "description": "Construct and analyze tables, graphs, and equations to describe linear functions",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Algebra",
+      "full_text": "Construct and analyze tables, graphs, and equations to describe linear functions and other simple relations using both common language and algebraic notation.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.7.A.3.1",
+      "description": "Use and justify the rules for adding, subtracting, multiplying, dividing, and finding the absolute value of integers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Algebra",
+      "full_text": "Use and justify the rules for adding, subtracting, multiplying, dividing, and finding the absolute value of integers.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.8.A.1.1",
+      "description": "Create and interpret tables, graphs, and models to represent, analyze, and solve problems related to linear equations",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Algebra",
+      "full_text": "Create and interpret tables, graphs, and models to represent, analyze, and solve problems related to linear equations, including analysis of domain, range, and the difference between discrete and continuous data.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.MA.912.A.3.1",
+      "description": "Solve linear equations in one variable that include simplifying algebraic expressions",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Algebra",
+      "full_text": "Solve linear equations in one variable that include simplifying algebraic expressions.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.1.1.7.1",
+      "description": "Use knowledge of phonics to read unfamiliar words",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading Process",
+      "full_text": "The student uses knowledge of letter/sound relationships, structural analysis, and context clues to identify words.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.3.1.7.3",
+      "description": "Determine the main idea or essential message in a text and identify relevant supporting details",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading Process",
+      "full_text": "Determine the main idea or essential message in grade-level or higher text through inferring, paraphrasing, summarizing, and identifying relevant details.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.5.2.2.1",
+      "description": "Locate, explain, and use information from text features",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Literary Analysis",
+      "full_text": "The student will locate, explain, and use information from text features (e.g., table of contents, glossary, headings, charts, graphs, diagrams, illustrations).",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.6.1.7.1",
+      "description": "Use background knowledge of subject and related content areas, prereading strategies, graphic representations, and knowledge of text structure",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading Process",
+      "full_text": "The student uses background knowledge of subject and related content areas, prereading strategies, graphic representations, and knowledge of text structure to make and confirm complex predictions of content, purpose, and organization of a reading selection.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.8.2.2.3",
+      "description": "Analyze the author's development of characters, setting, and plot",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Literary Analysis",
+      "full_text": "The student will analyze the way in which the author's development and use of characters, setting, and plot contribute to the theme.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.LA.910.2.2.1",
+      "description": "Analyze the development of the author's argument, perspective, or viewpoint in text",
+      "subject": "English Language Arts",
+      "grade_band": "9-12",
+      "strand": "Literary Analysis",
+      "full_text": "The student will analyze the development of the author's argument, perspective, or viewpoint in text.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.2.L.14.1",
+      "description": "Distinguish human body parts and their basic functions",
+      "subject": "Science",
+      "grade_band": "K-2",
+      "strand": "Life Science",
+      "full_text": "Distinguish human body parts (brain, heart, lungs, stomach, muscles, and skeleton) and their basic functions.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.3.E.5.2",
+      "description": "Identify the Sun as a star that emits energy",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth and Space Science",
+      "full_text": "Identify the Sun as a star that emits energy; some of it in the form of light.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.4.P.8.1",
+      "description": "Measure and compare objects and materials based on their physical properties",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Physical Science",
+      "full_text": "Measure and compare objects and materials based on their physical properties including: mass, shape, volume, color, hardness, texture, odor, taste, attraction to magnets.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.5.L.14.2",
+      "description": "Compare and contrast the function of organs and other physical structures of plants and animals",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Life Science",
+      "full_text": "Compare and contrast the function of organs and other physical structures of plants and animals, including humans, for example: skin of animals vs. bark of trees.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.6.E.6.1",
+      "description": "Describe and give examples of ways in which Earth's surface is built up and torn down by physical and chemical weathering, erosion, and deposition",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space Science",
+      "full_text": "Describe and give examples of ways in which Earth's surface is built up and torn down by physical and chemical weathering, erosion, and deposition.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.7.L.15.2",
+      "description": "Explore the scientific theory of evolution by recognizing and explaining ways in which genetic variation and environmental factors contribute to evolution by natural selection",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "Explore the scientific theory of evolution by recognizing and explaining ways in which genetic variation and environmental factors contribute to evolution by natural selection and diversity of organisms.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.8.P.8.5",
+      "description": "Recognize that there are a finite number of elements and that their atoms combine in a multitude of ways to produce compounds",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Physical Science",
+      "full_text": "Recognize that there are a finite number of elements and that their atoms combine in a multitude of ways to produce compounds that make up all of the living and nonliving things that we encounter.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SC.912.L.14.1",
+      "description": "Describe the scientific theory of cells (cell theory) and relate the history of its discovery",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life Science",
+      "full_text": "Describe the scientific theory of cells (cell theory) and relate the history of its discovery to the advances in technology.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.3.A.1.1",
+      "description": "Analyze primary and secondary sources",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "American History",
+      "full_text": "Analyze primary and secondary sources.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.4.G.1.1",
+      "description": "Identify physical features of Florida",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Geography",
+      "full_text": "Identify physical features of Florida.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.5.E.1.1",
+      "description": "Recognize the importance of economic activity in the United States",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Economics",
+      "full_text": "Recognize the importance of making informed economic choices and identify incentives.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.6.W.1.1",
+      "description": "Use timelines to identify chronological order of historical events",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "World History",
+      "full_text": "Use timelines to identify chronological order of historical events.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.7.C.1.1",
+      "description": "Recognize how Enlightenment ideas including Montesquieu's view of separation of powers and John Locke's theories related to natural law influenced the development of the United States Government",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "Civics and Government",
+      "full_text": "Recognize how Enlightenment ideas including Montesquieu's view of separation of powers and John Locke's theories related to natural law and how they are related to the development of the United States Government.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.8.A.1.1",
+      "description": "Provide supporting details for an answer from text, interview for oral history, or other sources",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "American History",
+      "full_text": "Provide supporting details for an answer from text, interview for oral history, or other sources.",
+      "standard_set": "ngsss"
+    },
+    {
+      "code": "NGSSS.SS.912.A.1.1",
+      "description": "Describe the importance of historiography, which includes how historical knowledge is obtained and transmitted",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "American History",
+      "full_text": "Describe the importance of historiography, which includes how historical knowledge is obtained and transmitted, when interpreting events in history.",
+      "standard_set": "ngsss"
+    }
+  ]
+}

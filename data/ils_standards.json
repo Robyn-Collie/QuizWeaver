@@ -1,0 +1,277 @@
+{
+  "source": "Illinois Learning Standards",
+  "version": "2023",
+  "standard_set": "ils",
+  "standards": [
+    {
+      "code": "ILS.MATH.K.CC.A.1",
+      "description": "Count to 100 by ones and by tens",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Counting and Cardinality",
+      "full_text": "Count to 100 by ones and by tens.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.2.OA.B.2",
+      "description": "Fluently add and subtract within 20 using mental strategies",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Operations and Algebraic Thinking",
+      "full_text": "Fluently add and subtract within 20 using mental strategies. By end of Grade 2, know from memory all sums of two one-digit numbers.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.3.OA.A.1",
+      "description": "Interpret products of whole numbers",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Operations and Algebraic Thinking",
+      "full_text": "Interpret products of whole numbers, e.g., interpret 5 x 7 as the total number of objects in 5 groups of 7 objects each.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.4.NF.A.1",
+      "description": "Explain why a fraction a/b is equivalent to a fraction (n x a)/(n x b)",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Operations - Fractions",
+      "full_text": "Explain why a fraction a/b is equivalent to a fraction (n x a)/(n x b) by using visual fraction models, with attention to how the number and size of the parts differ even though the two fractions themselves are the same size.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.5.G.A.1",
+      "description": "Use a pair of perpendicular number lines to define a coordinate system",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Geometry",
+      "full_text": "Use a pair of perpendicular number lines, called axes, to define a coordinate system, with the intersection of the lines arranged to coincide with the 0 on each line and a given point in the plane located by using an ordered pair of numbers, called its coordinates.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.6.EE.A.2",
+      "description": "Write, read, and evaluate expressions in which letters stand for numbers",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions and Equations",
+      "full_text": "Write, read, and evaluate expressions in which letters stand for numbers.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.7.RP.A.2",
+      "description": "Recognize and represent proportional relationships between quantities",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Ratios and Proportional Relationships",
+      "full_text": "Recognize and represent proportional relationships between quantities.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.8.F.A.1",
+      "description": "Understand that a function is a rule that assigns to each input exactly one output",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Functions",
+      "full_text": "Understand that a function is a rule that assigns to each input exactly one output. The graph of a function is the set of ordered pairs consisting of an input and the corresponding output.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.MATH.HS.A-REI.B.3",
+      "description": "Solve linear equations and inequalities in one variable",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Algebra",
+      "full_text": "Solve linear equations and inequalities in one variable, including equations with coefficients represented by letters.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.RL.K.1",
+      "description": "With prompting and support, ask and answer questions about key details in a text",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading: Literature",
+      "full_text": "With prompting and support, ask and answer questions about key details in a text.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.RF.1.3",
+      "description": "Know and apply grade-level phonics and word analysis skills in decoding words",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading: Foundational Skills",
+      "full_text": "Know and apply grade-level phonics and word analysis skills in decoding words.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.RI.3.2",
+      "description": "Determine the main idea of a text; recount the key details and explain how they support the main idea",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading: Informational Text",
+      "full_text": "Determine the main idea of a text; recount the key details and explain how they support the main idea.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.W.4.1",
+      "description": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.RL.6.2",
+      "description": "Determine a theme or central idea of a text and how it is conveyed through particular details",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading: Literature",
+      "full_text": "Determine a theme or central idea of a text and how it is conveyed through particular details; provide a summary of the text distinct from personal opinions or judgments.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.W.8.1",
+      "description": "Write arguments to support claims with clear reasons and relevant evidence",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write arguments to support claims with clear reasons and relevant evidence.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.ELA.RI.11-12.1",
+      "description": "Cite strong and thorough textual evidence to support analysis of what the text says",
+      "subject": "English Language Arts",
+      "grade_band": "9-12",
+      "strand": "Reading: Informational Text",
+      "full_text": "Cite strong and thorough textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text, including determining where the text leaves matters uncertain.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.2-LS4-1",
+      "description": "Make observations of plants and animals to compare the diversity of life in different habitats",
+      "subject": "Science",
+      "grade_band": "K-2",
+      "strand": "Life Science",
+      "full_text": "Make observations of plants and animals to compare the diversity of life in different habitats.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.3-PS2-1",
+      "description": "Plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Physical Science",
+      "full_text": "Plan and conduct an investigation to provide evidence of the effects of balanced and unbalanced forces on the motion of an object.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.5-ESS1-2",
+      "description": "Represent data in graphical displays to reveal patterns of daily changes in length and direction of shadows",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth and Space Science",
+      "full_text": "Represent data in graphical displays to reveal patterns of daily changes in length and direction of shadows, day and night, and the seasonal appearance of some stars in the night sky.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.MS-LS2-1",
+      "description": "Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "Analyze and interpret data to provide evidence for the effects of resource availability on organisms and populations of organisms in an ecosystem.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.MS-PS1-2",
+      "description": "Analyze and interpret data on the properties of substances before and after the substances interact",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Physical Science",
+      "full_text": "Analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.MS-ESS2-2",
+      "description": "Construct an explanation based on evidence for how geoscience processes have changed Earth's surface",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth and Space Science",
+      "full_text": "Construct an explanation based on evidence for how geoscience processes have changed Earth's surface at varying time and spatial scales.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.HS-LS1-1",
+      "description": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life Science",
+      "full_text": "Construct an explanation based on evidence for how the structure of DNA determines the structure of proteins, which carry out the essential functions of life through systems of specialized cells.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.14.A.2",
+      "description": "Understand and explain basic principles of the United States government",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Political Systems",
+      "full_text": "Understand and explain basic principles of the United States government including the purposes of government as identified in the Preamble of the Constitution.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.15.A.2c",
+      "description": "Describe how trade among people and countries is based on natural resources and economic specialization",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Economics",
+      "full_text": "Describe how trade among people and countries is based on natural resources and economic specialization.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.16.A.3a",
+      "description": "Describe how different historical events relate to changes in political ideas",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History",
+      "full_text": "Describe how different historical events shaped political ideas and movements (e.g., the American Revolution's effect on political thinking).",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.17.A.3a",
+      "description": "Explain how people interact with and modify the physical environment",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "Geography",
+      "full_text": "Explain how people interact with and modify the physical environment (e.g., clearing forests for farmland, building dams).",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.14.F.4a",
+      "description": "Determine the historical events and processes that brought about changes in the United States foreign policy",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "Political Systems",
+      "full_text": "Determine the historical events and processes that brought about changes in United States foreign policy over time.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SS.16.B.5a",
+      "description": "Describe how modern political positions are affected by differences in ideologies and viewpoints",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "History",
+      "full_text": "Describe how modern political positions are affected by differences in ideologies and viewpoints that have developed over time.",
+      "standard_set": "ils"
+    },
+    {
+      "code": "ILS.SCI.HS-PS1-1",
+      "description": "Use the periodic table as a model to predict the relative properties of elements",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "Use the periodic table as a model to predict the relative properties of elements based on the patterns of electrons in the outermost energy level of atoms.",
+      "standard_set": "ils"
+    }
+  ]
+}

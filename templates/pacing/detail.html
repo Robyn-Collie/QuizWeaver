@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}{{ guide.title }} - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>{{ guide.title }}</h1>
+
+<div class="quiz-info">
+    <p><strong>Class:</strong> {{ class_name }}</p>
+    {% if guide.school_year %}
+    <p><strong>School Year:</strong> {{ guide.school_year }}</p>
+    {% endif %}
+    <p><strong>Total Weeks:</strong> {{ guide.total_weeks }}</p>
+    <p><strong>Units:</strong> {{ units|length }}</p>
+    {% if progress %}
+    <p><strong>Progress:</strong> {{ progress.covered_units }}/{{ progress.total_units }} units covered ({{ progress.percent_complete }}%)</p>
+    {% endif %}
+</div>
+
+<div class="export-actions">
+    <span class="export-label">Export:</span>
+    <a href="/pacing-guides/{{ guide.id }}/export/csv" class="btn btn-sm btn-outline">CSV</a>
+    <a href="/pacing-guides/{{ guide.id }}/export/pdf" class="btn btn-sm btn-outline">PDF</a>
+    <a href="/pacing-guides/{{ guide.id }}/export/docx" class="btn btn-sm btn-outline">Word</a>
+</div>
+
+{% if progress and progress.total_units > 0 %}
+<div class="progress-bar-container" style="margin: 1rem 0;">
+    <div class="progress-bar" style="width: {{ progress.percent_complete }}%; background: var(--primary-color, #2c5f2d); height: 20px; border-radius: 4px; text-align: center; color: white; font-size: 0.8rem; line-height: 20px;">
+        {{ progress.percent_complete }}%
+    </div>
+</div>
+{% endif %}
+
+{% if units %}
+<h2>Timeline</h2>
+<div class="pacing-timeline" style="overflow-x: auto;">
+    <table class="data-table" style="width: 100%;">
+        <thead>
+            <tr>
+                <th>Unit</th>
+                <th>Title</th>
+                <th>Weeks</th>
+                <th>Standards</th>
+                <th>Topics</th>
+                <th>Assessment</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in units %}
+            <tr {% if current_unit and current_unit.id == u.id %}class="highlight-row" style="background: var(--highlight-bg, #e8f5e9);"{% endif %}>
+                <td>{{ u.unit_number }}</td>
+                <td><strong>{{ u.title }}</strong></td>
+                <td>Wk {{ u.start_week }}-{{ u.end_week }}</td>
+                <td>{{ u.standards|ensure_list|join(', ') }}</td>
+                <td>{{ u.topics|ensure_list|join(', ') }}</td>
+                <td>{{ u.assessment_type or '' }}</td>
+                <td>{{ u.notes or '' }}</td>
+                <td>
+                    <div style="display: flex; gap: 0.25rem;">
+                        <button class="btn btn-xs btn-outline unit-edit-btn" data-unit-id="{{ u.id }}" data-unit-number="{{ u.unit_number }}" data-title="{{ u.title }}" data-start-week="{{ u.start_week }}" data-end-week="{{ u.end_week }}" data-standards="{{ u.standards or '[]' }}" data-topics="{{ u.topics or '[]' }}" data-assessment-type="{{ u.assessment_type or '' }}" data-notes="{{ u.notes or '' }}">Edit</button>
+                        <form method="POST" action="/pacing-guides/{{ guide.id }}/units/{{ u.id }}/delete" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-xs btn-danger" onclick="return confirm('Delete this unit?')">Del</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state" style="margin: 2rem 0;">
+    <p>No units yet. Add a unit below.</p>
+</div>
+{% endif %}
+
+<h2>Add Unit</h2>
+<form method="POST" action="/pacing-guides/{{ guide.id }}/add-unit" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+        <div class="form-group">
+            <label for="unit_number">Unit #</label>
+            <input type="number" id="unit_number" name="unit_number" class="form-control" value="{{ (units|length) + 1 }}" min="1" required>
+        </div>
+        <div class="form-group">
+            <label for="unit_title">Title</label>
+            <input type="text" id="unit_title" name="title" class="form-control" required placeholder="e.g., Cell Biology">
+        </div>
+        <div class="form-group">
+            <label for="start_week">Start Week</label>
+            <input type="number" id="start_week" name="start_week" class="form-control" min="1" max="{{ guide.total_weeks }}" required>
+        </div>
+        <div class="form-group">
+            <label for="end_week">End Week</label>
+            <input type="number" id="end_week" name="end_week" class="form-control" min="1" max="{{ guide.total_weeks }}" required>
+        </div>
+        <div class="form-group">
+            <label for="standards">Standards (comma-separated)</label>
+            <input type="text" id="standards" name="standards" class="form-control" placeholder="e.g., SOL 7.1, SOL 7.2">
+        </div>
+        <div class="form-group">
+            <label for="topics">Topics (comma-separated)</label>
+            <input type="text" id="topics" name="topics" class="form-control" placeholder="e.g., Cells, Organelles">
+        </div>
+        <div class="form-group">
+            <label for="assessment_type">Assessment Type</label>
+            <select id="assessment_type" name="assessment_type" class="form-control">
+                <option value="">None</option>
+                {% for atype in assessment_types %}
+                <option value="{{ atype }}">{{ atype|replace('_', ' ')|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="notes">Notes</label>
+            <input type="text" id="notes" name="notes" class="form-control" placeholder="Optional notes">
+        </div>
+    </div>
+    <div class="form-actions" style="margin-top: 1rem;">
+        <button type="submit" class="btn btn-primary">Add Unit</button>
+    </div>
+</form>
+
+<!-- Edit Unit Modal (hidden by default) -->
+<div id="editUnitModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; padding: 2rem;">
+    <div style="background: var(--card-bg, white); max-width: 600px; margin: 2rem auto; padding: 2rem; border-radius: 8px; max-height: 80vh; overflow-y: auto;">
+        <h3>Edit Unit</h3>
+        <form id="editUnitForm" method="POST" action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-group">
+                <label for="edit_unit_number">Unit #</label>
+                <input type="number" id="edit_unit_number" name="unit_number" class="form-control" min="1">
+            </div>
+            <div class="form-group">
+                <label for="edit_title">Title</label>
+                <input type="text" id="edit_title" name="title" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="edit_start_week">Start Week</label>
+                <input type="number" id="edit_start_week" name="start_week" class="form-control" min="1">
+            </div>
+            <div class="form-group">
+                <label for="edit_end_week">End Week</label>
+                <input type="number" id="edit_end_week" name="end_week" class="form-control" min="1">
+            </div>
+            <div class="form-group">
+                <label for="edit_standards">Standards (comma-separated)</label>
+                <input type="text" id="edit_standards" name="standards" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="edit_topics">Topics (comma-separated)</label>
+                <input type="text" id="edit_topics" name="topics" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="edit_assessment_type">Assessment Type</label>
+                <select id="edit_assessment_type" name="assessment_type" class="form-control">
+                    <option value="">None</option>
+                    {% for atype in assessment_types %}
+                    <option value="{{ atype }}">{{ atype|replace('_', ' ')|title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit_notes">Notes</label>
+                <input type="text" id="edit_notes" name="notes" class="form-control">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="section-actions" style="margin-top: 2rem;">
+    <a href="/pacing-guides/{{ guide.id }}/edit" class="btn btn-outline">Edit Guide Details</a>
+    <a href="/pacing-guides" class="btn btn-secondary">Back to Pacing Guides</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.unit-edit-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var unitId = btn.getAttribute('data-unit-id');
+            var guideId = {{ guide.id }};
+            document.getElementById('editUnitForm').action = '/pacing-guides/' + guideId + '/units/' + unitId + '/edit';
+            document.getElementById('edit_unit_number').value = btn.getAttribute('data-unit-number');
+            document.getElementById('edit_title').value = btn.getAttribute('data-title');
+            document.getElementById('edit_start_week').value = btn.getAttribute('data-start-week');
+            document.getElementById('edit_end_week').value = btn.getAttribute('data-end-week');
+            try {
+                var stds = JSON.parse(btn.getAttribute('data-standards') || '[]');
+                document.getElementById('edit_standards').value = stds.join(', ');
+            } catch(e) {
+                document.getElementById('edit_standards').value = '';
+            }
+            try {
+                var tops = JSON.parse(btn.getAttribute('data-topics') || '[]');
+                document.getElementById('edit_topics').value = tops.join(', ');
+            } catch(e) {
+                document.getElementById('edit_topics').value = '';
+            }
+            document.getElementById('edit_assessment_type').value = btn.getAttribute('data-assessment-type') || '';
+            document.getElementById('edit_notes').value = btn.getAttribute('data-notes') || '';
+            document.getElementById('editUnitModal').style.display = 'block';
+        });
+    });
+});
+function closeEditModal() {
+    document.getElementById('editUnitModal').style.display = 'none';
+}
+</script>
+{% endblock %}

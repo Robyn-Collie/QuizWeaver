@@ -4781,3 +4781,286 @@ html {
 .image-search-attribution a {
     color: var(--secondary);
 }
+
+/* ===== Community Template Library ===== */
+
+.template-library-filters {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.template-library-filters .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+.template-library-filters .filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+.template-library-filters .filter-group label {
+    display: block;
+    font-size: 0.85em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-muted);
+}
+.template-library-filters .filter-group select,
+.template-library-filters .filter-group input {
+    width: 100%;
+}
+.template-library-filters .filter-actions {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+    min-width: auto;
+    align-items: center;
+}
+.result-count {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+/* Template Grid */
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.template-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), transform var(--transition);
+    display: flex;
+    flex-direction: column;
+}
+.template-card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-2px);
+}
+.template-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.template-card-header h3 {
+    font-size: 1.05em;
+    margin: 0;
+    line-height: 1.3;
+}
+.template-card-header h3 a {
+    color: var(--text);
+    text-decoration: none;
+}
+.template-card-header h3 a:hover {
+    color: var(--primary);
+}
+.template-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 0.85em;
+    color: var(--text-muted);
+}
+.template-meta-item {
+    white-space: nowrap;
+}
+.template-card-description {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    flex-grow: 1;
+}
+
+/* Template Tags */
+.template-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+.template-tag {
+    display: inline-block;
+    background: var(--secondary-light);
+    color: var(--secondary-dark);
+    font-size: 0.78em;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+.template-tag-more {
+    background: var(--border-light);
+    color: var(--text-muted);
+}
+
+/* Source Badge */
+.template-source-badge {
+    display: inline-block;
+    font-size: 0.75em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.template-source-builtin {
+    background: var(--accent-light);
+    color: var(--primary-dark);
+}
+.template-source-user {
+    background: var(--secondary-light);
+    color: var(--secondary-dark);
+}
+
+.template-card-actions {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-light);
+}
+
+/* Template Preview Page */
+.template-preview-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.template-preview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+.template-preview-description {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+.template-preview-standards {
+    margin-bottom: 10px;
+}
+.template-preview-types {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.template-preview-types h3 {
+    margin-bottom: 8px;
+}
+.template-preview-types ul {
+    list-style: none;
+    padding: 0;
+}
+.template-preview-types li {
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+.template-preview-types li:last-child {
+    border-bottom: none;
+}
+.template-preview-questions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.template-preview-questions h3 {
+    margin-bottom: 12px;
+}
+.template-preview-question {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+.template-preview-question:last-of-type {
+    border-bottom: none;
+}
+.template-question-number {
+    margin-bottom: 4px;
+}
+.template-question-type {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+.template-question-text {
+    margin-bottom: 8px;
+}
+.template-question-options {
+    margin-left: 24px;
+    margin-bottom: 8px;
+}
+.template-question-options li {
+    padding: 2px 0;
+}
+.template-correct-option {
+    font-weight: 700;
+    color: var(--success);
+}
+.template-expected-answer {
+    font-size: 0.9em;
+    color: var(--text-muted);
+}
+.template-preview-more {
+    font-style: italic;
+    color: var(--text-muted);
+    padding-top: 8px;
+}
+.template-preview-use {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+.template-preview-use h3 {
+    margin-bottom: 12px;
+}
+.template-use-form .form-group {
+    margin-bottom: 12px;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+.breadcrumb a {
+    color: var(--secondary);
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive: stack filter row on small screens */
+@media (max-width: 768px) {
+    .template-library-filters .filter-row {
+        flex-direction: column;
+    }
+    .template-library-filters .filter-group {
+        min-width: 100%;
+    }
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,128 @@
+{
+  "template_version": "1.0",
+  "title": "Vocabulary Review: Academic Word List",
+  "subject": "English Language Arts",
+  "grade_level": "6th-8th Grade",
+  "standards": ["CCSS.ELA-LITERACY.L.6.4", "CCSS.ELA-LITERACY.L.7.4"],
+  "cognitive_framework": "blooms",
+  "question_count": 10,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "Choose the word that best completes the sentence: The scientist needed to _______ her hypothesis before publishing the results.",
+      "options": ["verify", "demolish", "ignore", "postpone"],
+      "correct_answer": "verify",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "What does the word 'elaborate' mean in this sentence? 'The teacher asked the student to elaborate on her answer.'",
+      "options": [
+        "To make shorter",
+        "To provide more detail",
+        "To start over",
+        "To speak louder"
+      ],
+      "correct_answer": "To provide more detail",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which word is a synonym for 'sufficient'?",
+      "options": ["Lacking", "Enough", "Excessive", "Minimal"],
+      "correct_answer": "Enough",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "The prefix 'pre-' in the word 'predict' means:",
+      "options": ["After", "Before", "Against", "Without"],
+      "correct_answer": "Before",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Use the word 'contrast' in a sentence that shows you understand its meaning.",
+      "expected_answer": "Any sentence that correctly uses 'contrast' to show comparison of differences.",
+      "acceptable_answers": [],
+      "rubric_hint": "The sentence must demonstrate understanding of 'contrast' as comparing differences between two or more things.",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 2
+    },
+    {
+      "question_type": "mc",
+      "text": "Which word means 'to make a judgment based on evidence'?",
+      "options": ["Guess", "Conclude", "Imagine", "Assume"],
+      "correct_answer": "Conclude",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "In the sentence 'The results were consistent across all trials,' what does 'consistent' mean?",
+      "options": [
+        "Surprising each time",
+        "Different every time",
+        "Staying the same",
+        "Getting worse"
+      ],
+      "correct_answer": "Staying the same",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Explain the difference between 'affect' and 'effect.' Give one example of each used correctly.",
+      "expected_answer": "'Affect' is usually a verb meaning to influence. 'Effect' is usually a noun meaning a result. Example: 'The rain will affect our plans.' 'The effect of the rain was a canceled game.'",
+      "acceptable_answers": [],
+      "rubric_hint": "Full credit for correct definitions of both words with appropriate examples. Partial credit for one correct.",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "hard",
+      "points": 3
+    },
+    {
+      "question_type": "mc",
+      "text": "What does the root word 'bio' mean in the word 'biology'?",
+      "options": ["Earth", "Life", "Water", "Study"],
+      "correct_answer": "Life",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Choose the antonym (opposite) of 'abundant.'",
+      "options": ["Plentiful", "Scarce", "Generous", "Overflowing"],
+      "correct_answer": "Scarce",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 1
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["vocabulary", "ela", "academic words", "middle school", "word study"],
+    "description": "A 10-question vocabulary review covering academic word list terms. Includes context clues, word roots, synonyms/antonyms, and sentence-level application."
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "template_version": "1.0",
+  "title": "Middle School Math: Ratios and Proportions",
+  "subject": "Mathematics",
+  "grade_level": "6th-8th Grade",
+  "standards": ["CCSS.MATH.6.RP.1", "CCSS.MATH.6.RP.3", "CCSS.MATH.7.RP.2"],
+  "cognitive_framework": "blooms",
+  "question_count": 8,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "What is the ratio of 15 to 25 in simplest form?",
+      "options": ["15:25", "3:5", "5:3", "1:2"],
+      "correct_answer": "3:5",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 2
+    },
+    {
+      "question_type": "mc",
+      "text": "A recipe calls for 2 cups of flour for every 3 cups of sugar. If you use 6 cups of flour, how many cups of sugar do you need?",
+      "options": ["4 cups", "6 cups", "9 cups", "12 cups"],
+      "correct_answer": "9 cups",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 2
+    },
+    {
+      "question_type": "short_answer",
+      "text": "A map has a scale of 1 inch = 50 miles. Two cities are 3.5 inches apart on the map. How many miles apart are the two cities?",
+      "expected_answer": "175 miles",
+      "acceptable_answers": ["175", "175 miles", "175 mi"],
+      "rubric_hint": "Multiply 3.5 by 50 to get 175 miles.",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 3
+    },
+    {
+      "question_type": "mc",
+      "text": "Which of the following represents a proportional relationship?",
+      "options": ["y = 3x + 1", "y = 4x", "y = x^2", "y = x + 5"],
+      "correct_answer": "y = 4x",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 2
+    },
+    {
+      "question_type": "short_answer",
+      "text": "If 4 notebooks cost $6.00, what is the unit price per notebook?",
+      "expected_answer": "$1.50",
+      "acceptable_answers": ["$1.50", "1.50", "$1.5", "1.5"],
+      "rubric_hint": "Divide $6.00 by 4 to find the unit price.",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "points": 3
+    },
+    {
+      "question_type": "mc",
+      "text": "A car travels 180 miles in 3 hours. At the same rate, how far will it travel in 5 hours?",
+      "options": ["200 miles", "250 miles", "300 miles", "350 miles"],
+      "correct_answer": "300 miles",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 2
+    },
+    {
+      "question_type": "mc",
+      "text": "In a class of 30 students, the ratio of boys to girls is 2:3. How many girls are in the class?",
+      "options": ["10", "12", "15", "18"],
+      "correct_answer": "18",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "hard",
+      "points": 2
+    },
+    {
+      "question_type": "short_answer",
+      "text": "Explain what it means for two quantities to be in a proportional relationship.",
+      "expected_answer": "Two quantities are proportional when they maintain a constant ratio or rate as they change together.",
+      "acceptable_answers": [],
+      "rubric_hint": "Look for mention of constant ratio, rate, or multiplicative relationship.",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "points": 4
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["math", "ratios", "proportions", "middle school"],
+    "description": "An 8-question mixed-format assessment on ratios and proportions. Includes multiple choice and short answer questions aligned to Common Core standards."
+  }
+}

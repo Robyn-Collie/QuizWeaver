@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}New Pacing Guide - QuizWeaver{% endblock %}
+
+{% block content %}
+<h1>Create Pacing Guide</h1>
+
+{% if error %}
+<div class="alert alert-error" role="alert">{{ error }}</div>
+{% endif %}
+
+<form method="POST" action="/pacing-guides/new" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+    <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" required placeholder="e.g., Life Science Year Plan" value="{{ request.form.get('title', '') }}">
+    </div>
+
+    <div class="form-group">
+        <label for="class_id">Class</label>
+        <select id="class_id" name="class_id" class="form-control" required>
+            <option value="">-- Select a class --</option>
+            {% for cls in classes %}
+            <option value="{{ cls.id }}" {% if selected_class_id == cls.id %}selected{% endif %}>{{ cls.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="school_year">School Year (optional)</label>
+        <input type="text" id="school_year" name="school_year" class="form-control" placeholder="e.g., 2025-2026" value="{{ request.form.get('school_year', '') }}">
+    </div>
+
+    <div class="form-group">
+        <label for="total_weeks">Total Weeks</label>
+        <input type="number" id="total_weeks" name="total_weeks" class="form-control" value="{{ request.form.get('total_weeks', '36') }}" min="1" max="52">
+    </div>
+
+    <div class="form-group">
+        <label for="template_name">Start from Template (optional)</label>
+        <select id="template_name" name="template_name" class="form-control">
+            <option value="">Blank (add units manually)</option>
+            {% for key, tmpl in templates.items() %}
+            <option value="{{ key }}">{{ tmpl.label }} - {{ tmpl.description }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="standards_input">Standards to Distribute (optional, comma-separated)</label>
+        <input type="text" id="standards_input" name="standards_input" class="form-control" placeholder="e.g., SOL 7.1, SOL 7.2, SOL 7.3" value="{{ request.form.get('standards_input', '') }}">
+        <small class="form-help">If a template is selected, these standards will be evenly distributed across units.</small>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Create Guide</button>
+        <a href="/pacing-guides" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,133 @@
+{
+  "template_version": "1.0",
+  "title": "Virginia SOL: Life Science Grade 7",
+  "subject": "Life Science",
+  "grade_level": "7th Grade",
+  "standards": ["SOL LS.2", "SOL LS.3", "SOL LS.4"],
+  "cognitive_framework": "blooms",
+  "question_count": 10,
+  "questions": [
+    {
+      "question_type": "mc",
+      "text": "Which organelle is responsible for producing energy in the cell?",
+      "options": ["Nucleus", "Cell membrane", "Mitochondria", "Ribosome"],
+      "correct_answer": "Mitochondria",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.2"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which of the following is found in plant cells but NOT in animal cells?",
+      "options": ["Mitochondria", "Cell wall", "Nucleus", "Cytoplasm"],
+      "correct_answer": "Cell wall",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.2"],
+      "points": 1
+    },
+    {
+      "question_type": "tf",
+      "text": "DNA is found in the nucleus of a cell.",
+      "correct_answer": "True",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.3"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "What is the process by which plants convert sunlight into food?",
+      "options": ["Cellular respiration", "Photosynthesis", "Fermentation", "Decomposition"],
+      "correct_answer": "Photosynthesis",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.4"],
+      "points": 1
+    },
+    {
+      "question_type": "tf",
+      "text": "All living things are made up of cells.",
+      "correct_answer": "True",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.2"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "A student observes a cell under a microscope and sees a large central vacuole and a cell wall. This cell is most likely from which organism?",
+      "options": ["A dog", "A mushroom", "A plant", "A bacterium"],
+      "correct_answer": "A plant",
+      "cognitive_level": "Apply",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "standards": ["SOL LS.2"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "Which of the following correctly describes the role of chloroplasts?",
+      "options": [
+        "They break down food to release energy",
+        "They capture light energy to make glucose",
+        "They store water for the cell",
+        "They control what enters and exits the cell"
+      ],
+      "correct_answer": "They capture light energy to make glucose",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "standards": ["SOL LS.4"],
+      "points": 1
+    },
+    {
+      "question_type": "tf",
+      "text": "Cellular respiration occurs only in animal cells.",
+      "correct_answer": "False",
+      "cognitive_level": "Understand",
+      "cognitive_framework": "blooms",
+      "difficulty": "medium",
+      "standards": ["SOL LS.4"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "During photosynthesis, which gas is released as a byproduct?",
+      "options": ["Carbon dioxide", "Nitrogen", "Oxygen", "Hydrogen"],
+      "correct_answer": "Oxygen",
+      "cognitive_level": "Remember",
+      "cognitive_framework": "blooms",
+      "difficulty": "easy",
+      "standards": ["SOL LS.4"],
+      "points": 1
+    },
+    {
+      "question_type": "mc",
+      "text": "If a cell's mitochondria stopped working, what would most directly be affected?",
+      "options": [
+        "The cell's ability to make proteins",
+        "The cell's ability to produce energy",
+        "The cell's ability to divide",
+        "The cell's ability to store water"
+      ],
+      "correct_answer": "The cell's ability to produce energy",
+      "cognitive_level": "Analyze",
+      "cognitive_framework": "blooms",
+      "difficulty": "hard",
+      "standards": ["SOL LS.2"],
+      "points": 1
+    }
+  ],
+  "metadata": {
+    "created_by": "QuizWeaver Community",
+    "tags": ["science", "life science", "virginia sol", "cells", "photosynthesis", "7th grade"],
+    "description": "A 10-question assessment aligned to Virginia SOL Life Science standards. Covers cell structures, photosynthesis, and cellular respiration with MC and TF questions."
+  }
+}

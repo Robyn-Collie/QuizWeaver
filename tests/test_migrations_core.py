@@ -77,6 +77,11 @@ def mini_migrations(tmp_path):
         "    id INTEGER PRIMARY KEY,\n"
         "    class_id INTEGER\n"
         ");\n"
+        "CREATE TABLE IF NOT EXISTS pacing_guides (\n"
+        "    id INTEGER PRIMARY KEY,\n"
+        "    class_id INTEGER NOT NULL,\n"
+        "    title TEXT NOT NULL\n"
+        ");\n"
     )
     (mig_dir / "001_init.sql").write_text(sql)
     return str(mig_dir)

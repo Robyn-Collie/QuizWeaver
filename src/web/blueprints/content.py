@@ -963,3 +963,559 @@ def quiz_template_validate():
 
     is_valid, errors = validate_template(data)
     return jsonify({"valid": is_valid, "errors": errors})
+
+
+# --- Community Template Library ---
+
+
+@content_bp.route("/templates/library")
+@login_required
+def template_library():
+    """Browse the community template library with optional filters."""
+    from src.template_library import list_templates, search_templates
+
+    query = request.args.get("q", "").strip()
+    subject = request.args.get("subject", "").strip()
+    grade_level = request.args.get("grade_level", "").strip()
+    tag = request.args.get("tag", "").strip()
+
+    if query or subject or grade_level or tag:
+        tags_list = [tag] if tag else None
+        templates = search_templates(
+            query=query or None,
+            subject=subject or None,
+            grade_level=grade_level or None,
+            tags=tags_list,
+        )
+    else:
+        templates = list_templates()
+
+    # Collect unique subjects, grade levels, and tags for filter dropdowns
+    all_templates = list_templates()
+    subjects = sorted({t["subject"] for t in all_templates if t.get("subject")})
+    grade_levels = sorted({t["grade_level"] for t in all_templates if t.get("grade_level")})
+    all_tags = set()
+    for t in all_templates:
+        for tg in t.get("tags", []):
+            all_tags.add(tg)
+    all_tags = sorted(all_tags)
+
+    return render_template(
+        "templates/library.html",
+        templates=templates,
+        subjects=subjects,
+        grade_levels=grade_levels,
+        all_tags=all_tags,
+        query=query,
+        subject_filter=subject,
+        grade_filter=grade_level,
+        tag_filter=tag,
+    )
+
+
+@content_bp.route("/templates/library/<template_id>")
+@login_required
+def template_library_preview(template_id):
+    """Preview a specific template from the community library."""
+    from src.template_library import get_template_preview
+
+    preview = get_template_preview(template_id)
+    if preview is None:
+        abort(404)
+
+    session = _get_session()
+    classes = list_classes(session)
+
+    return render_template(
+        "templates/preview.html",
+        preview=preview,
+        classes=classes,
+    )
+
+
+@content_bp.route("/templates/library/<template_id>/use", methods=["POST"])
+@login_required
+def template_library_use(template_id):
+    """Import a template from the library into a class."""
+    from src.template_library import get_template
+    from src.template_manager import import_quiz_template
+
+    template_data = get_template(template_id)
+    if template_data is None:
+        abort(404)
+
+    class_id = request.form.get("class_id", type=int)
+    if not class_id:
+        flash("Please select a class.", "error")
+        return redirect(url_for("content.template_library_preview", template_id=template_id), code=303)
+
+    title_override = request.form.get("title", "").strip() or None
+
+    session = _get_session()
+
+    # Remove internal keys before importing
+    import_data = {k: v for k, v in template_data.items() if not k.startswith("_")}
+
+    quiz = import_quiz_template(session, import_data, class_id, title=title_override)
+    if quiz is None:
+        flash("Failed to import template. It may have validation errors.", "error")
+        return redirect(url_for("content.template_library_preview", template_id=template_id), code=303)
+
+    flash(f"Template imported successfully as '{quiz.title}'.", "success")
+    return redirect(url_for("quizzes.quiz_detail", quiz_id=quiz.id), code=303)
+
+
+@content_bp.route("/templates/library/upload", methods=["GET", "POST"])
+@login_required
+def template_library_upload():
+    """Upload a user template to the community library."""
+    if request.method == "GET":
+        return render_template("templates/upload.html")
+
+    file = request.files.get("template_file")
+    if not file or not file.filename:
+        flash("Please select a template file to upload.", "error")
+        return render_template("templates/upload.html")
+
+    try:
+        raw = file.read().decode("utf-8")
+        template_data = json.loads(raw)
+    except (json.JSONDecodeError, UnicodeDecodeError) as e:
+        flash(f"Invalid JSON file: {e}", "error")
+        return render_template("templates/upload.html")
+
+    from src.template_library import save_user_template
+
+    success, result = save_user_template(template_data)
+    if not success:
+        flash(f"Template validation failed: {result}", "error")
+        return render_template("templates/upload.html")
+
+    flash(f"Template uploaded successfully as '{template_data.get('title', result)}'.", "success")
+    return redirect(url_for("content.template_library"), code=303)
+
+
+# --- Pacing Guide Routes ---
+
+
+@content_bp.route("/pacing-guides")
+@login_required
+def pacing_guide_list():
+    """List all pacing guides, optionally filtered by class."""
+    from src.pacing_guide import PacingGuideUnit, list_pacing_guides
+
+    session = _get_session()
+    class_id_filter = request.args.get("class_id", type=int)
+    guides = list_pacing_guides(session, class_id=class_id_filter)
+
+    guide_data = []
+    for g in guides:
+        class_obj = get_class(session, g.class_id) if g.class_id else None
+        unit_count = (
+            session.query(PacingGuideUnit)
+            .filter_by(pacing_guide_id=g.id)
+            .count()
+        )
+        guide_data.append(
+            {
+                "id": g.id,
+                "title": g.title,
+                "school_year": g.school_year,
+                "total_weeks": g.total_weeks,
+                "class_name": class_obj.name if class_obj else "N/A",
+                "unit_count": unit_count,
+                "created_at": g.created_at,
+            }
+        )
+
+    classes = list_classes(session)
+    return render_template(
+        "pacing/list.html",
+        guides=guide_data,
+        classes=classes,
+        current_class_id=class_id_filter,
+    )
+
+
+@content_bp.route("/pacing-guides/new", methods=["GET", "POST"])
+@login_required
+def pacing_guide_new():
+    """Create a new pacing guide."""
+    from src.pacing_guide import (
+        PACING_TEMPLATES,
+        create_pacing_guide,
+        generate_from_template,
+    )
+
+    session = _get_session()
+    classes = list_classes(session)
+
+    if not classes:
+        flash("Create a class before creating a pacing guide.", "warning")
+        return redirect(url_for("classes.class_create"), code=303)
+
+    selected_class_id = request.args.get("class_id", type=int)
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        class_id = request.form.get("class_id", type=int)
+        school_year = request.form.get("school_year", "").strip() or None
+        total_weeks = request.form.get("total_weeks", 36, type=int)
+        template_name = request.form.get("template_name", "").strip() or None
+        standards_input = request.form.get("standards_input", "").strip()
+
+        if not title:
+            return render_template(
+                "pacing/new.html",
+                classes=classes,
+                templates=PACING_TEMPLATES,
+                selected_class_id=class_id,
+                error="Title is required.",
+            ), 400
+        if not class_id:
+            return render_template(
+                "pacing/new.html",
+                classes=classes,
+                templates=PACING_TEMPLATES,
+                selected_class_id=class_id,
+                error="Please select a class.",
+            ), 400
+
+        try:
+            if template_name:
+                standards_list = (
+                    [s.strip() for s in standards_input.split(",") if s.strip()]
+                    if standards_input
+                    else None
+                )
+                guide = generate_from_template(
+                    session,
+                    class_id=class_id,
+                    title=title,
+                    template_name=template_name,
+                    school_year=school_year,
+                    standards_list=standards_list,
+                    total_weeks=total_weeks,
+                )
+            else:
+                guide = create_pacing_guide(
+                    session,
+                    class_id=class_id,
+                    title=title,
+                    school_year=school_year,
+                    total_weeks=total_weeks,
+                )
+            flash("Pacing guide created successfully.", "success")
+            return redirect(
+                url_for("content.pacing_guide_detail", guide_id=guide.id), code=303
+            )
+        except ValueError as e:
+            return render_template(
+                "pacing/new.html",
+                classes=classes,
+                templates=PACING_TEMPLATES,
+                selected_class_id=class_id,
+                error=str(e),
+            ), 400
+
+    return render_template(
+        "pacing/new.html",
+        classes=classes,
+        templates=PACING_TEMPLATES,
+        selected_class_id=selected_class_id,
+    )
+
+
+@content_bp.route("/pacing-guides/<int:guide_id>")
+@login_required
+def pacing_guide_detail(guide_id):
+    """View a pacing guide with timeline and progress."""
+    from src.pacing_guide import (
+        ASSESSMENT_TYPES,
+        PacingGuideUnit,
+        get_current_unit,
+        get_pacing_guide,
+        get_progress,
+    )
+
+    session = _get_session()
+    guide = get_pacing_guide(session, guide_id)
+    if not guide:
+        abort(404)
+
+    class_obj = get_class(session, guide.class_id) if guide.class_id else None
+    units = (
+        session.query(PacingGuideUnit)
+        .filter_by(pacing_guide_id=guide_id)
+        .order_by(PacingGuideUnit.unit_number)
+        .all()
+    )
+
+    progress = get_progress(session, guide_id)
+    current_unit_obj = get_current_unit(session, guide_id)
+
+    return render_template(
+        "pacing/detail.html",
+        guide=guide,
+        units=units,
+        class_name=class_obj.name if class_obj else "N/A",
+        progress=progress,
+        current_unit=current_unit_obj,
+        assessment_types=ASSESSMENT_TYPES,
+    )
+
+
+@content_bp.route("/pacing-guides/<int:guide_id>/edit", methods=["GET", "POST"])
+@login_required
+def pacing_guide_edit(guide_id):
+    """Edit pacing guide details."""
+    from src.pacing_guide import get_pacing_guide, update_pacing_guide
+
+    session = _get_session()
+    guide = get_pacing_guide(session, guide_id)
+    if not guide:
+        abort(404)
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        school_year = request.form.get("school_year", "").strip() or None
+        total_weeks = request.form.get("total_weeks", type=int)
+
+        if not title:
+            return render_template(
+                "pacing/edit.html", guide=guide, error="Title is required."
+            ), 400
+
+        kwargs = {"title": title, "school_year": school_year}
+        if total_weeks and total_weeks > 0:
+            kwargs["total_weeks"] = total_weeks
+
+        update_pacing_guide(session, guide_id, **kwargs)
+        flash("Pacing guide updated.", "success")
+        return redirect(
+            url_for("content.pacing_guide_detail", guide_id=guide_id), code=303
+        )
+
+    return render_template("pacing/edit.html", guide=guide)
+
+
+@content_bp.route("/pacing-guides/<int:guide_id>/delete", methods=["POST"])
+@login_required
+def pacing_guide_delete(guide_id):
+    """Delete a pacing guide and all its units."""
+    from src.pacing_guide import delete_pacing_guide
+
+    session = _get_session()
+    deleted = delete_pacing_guide(session, guide_id)
+    if not deleted:
+        abort(404)
+    flash("Pacing guide deleted.", "success")
+    return redirect(url_for("content.pacing_guide_list"), code=303)
+
+
+@content_bp.route("/pacing-guides/<int:guide_id>/add-unit", methods=["POST"])
+@login_required
+def pacing_guide_add_unit(guide_id):
+    """Add a unit to a pacing guide."""
+    from src.pacing_guide import add_unit, get_pacing_guide
+
+    session = _get_session()
+    guide = get_pacing_guide(session, guide_id)
+    if not guide:
+        abort(404)
+
+    unit_number = request.form.get("unit_number", type=int)
+    title = request.form.get("title", "").strip()
+    start_week = request.form.get("start_week", type=int)
+    end_week = request.form.get("end_week", type=int)
+    standards_raw = request.form.get("standards", "").strip()
+    topics_raw = request.form.get("topics", "").strip()
+    assessment_type = request.form.get("assessment_type", "").strip() or None
+    notes = request.form.get("notes", "").strip() or None
+
+    standards = [s.strip() for s in standards_raw.split(",") if s.strip()] if standards_raw else None
+    topics = [t.strip() for t in topics_raw.split(",") if t.strip()] if topics_raw else None
+
+    try:
+        add_unit(
+            session,
+            guide_id=guide_id,
+            unit_number=unit_number or 1,
+            title=title or "Untitled Unit",
+            start_week=start_week or 1,
+            end_week=end_week or 1,
+            standards=standards,
+            topics=topics,
+            assessment_type=assessment_type,
+            notes=notes,
+        )
+        flash("Unit added.", "success")
+    except ValueError as e:
+        flash(str(e), "error")
+
+    return redirect(
+        url_for("content.pacing_guide_detail", guide_id=guide_id), code=303
+    )
+
+
+@content_bp.route(
+    "/pacing-guides/<int:guide_id>/units/<int:unit_id>/edit", methods=["POST"]
+)
+@login_required
+def pacing_guide_edit_unit(guide_id, unit_id):
+    """Update a unit within a pacing guide."""
+    from src.pacing_guide import get_pacing_guide, update_unit
+
+    session = _get_session()
+    guide = get_pacing_guide(session, guide_id)
+    if not guide:
+        abort(404)
+
+    kwargs = {}
+    if request.form.get("unit_number"):
+        kwargs["unit_number"] = int(request.form["unit_number"])
+    if request.form.get("title"):
+        kwargs["title"] = request.form["title"].strip()
+    if request.form.get("start_week"):
+        kwargs["start_week"] = int(request.form["start_week"])
+    if request.form.get("end_week"):
+        kwargs["end_week"] = int(request.form["end_week"])
+
+    standards_raw = request.form.get("standards", "").strip()
+    if standards_raw:
+        kwargs["standards"] = [s.strip() for s in standards_raw.split(",") if s.strip()]
+    topics_raw = request.form.get("topics", "").strip()
+    if topics_raw:
+        kwargs["topics"] = [t.strip() for t in topics_raw.split(",") if t.strip()]
+
+    assessment_type = request.form.get("assessment_type", "")
+    kwargs["assessment_type"] = assessment_type if assessment_type else None
+    kwargs["notes"] = request.form.get("notes", "").strip() or None
+
+    result = update_unit(session, unit_id, **kwargs)
+    if result is None:
+        flash("Unit not found.", "error")
+    else:
+        flash("Unit updated.", "success")
+
+    return redirect(
+        url_for("content.pacing_guide_detail", guide_id=guide_id), code=303
+    )
+
+
+@content_bp.route(
+    "/pacing-guides/<int:guide_id>/units/<int:unit_id>/delete", methods=["POST"]
+)
+@login_required
+def pacing_guide_delete_unit(guide_id, unit_id):
+    """Delete a unit from a pacing guide."""
+    from src.pacing_guide import delete_unit
+
+    session = _get_session()
+    deleted = delete_unit(session, unit_id)
+    if not deleted:
+        flash("Unit not found.", "error")
+    else:
+        flash("Unit deleted.", "success")
+    return redirect(
+        url_for("content.pacing_guide_detail", guide_id=guide_id), code=303
+    )
+
+
+@content_bp.route("/pacing-guides/<int:guide_id>/export/<format_name>")
+@login_required
+def pacing_guide_export(guide_id, format_name):
+    """Export a pacing guide in the requested format (csv, pdf, docx)."""
+    if format_name not in ("csv", "pdf", "docx"):
+        abort(404)
+
+    from src.pacing_guide import PacingGuideUnit, get_pacing_guide
+
+    session = _get_session()
+    guide = get_pacing_guide(session, guide_id)
+    if not guide:
+        abort(404)
+
+    units = (
+        session.query(PacingGuideUnit)
+        .filter_by(pacing_guide_id=guide_id)
+        .order_by(PacingGuideUnit.unit_number)
+        .all()
+    )
+
+    safe_title = re.sub(r"[^\w\s\-]", "", guide.title or "pacing_guide")
+    safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "pacing_guide"
+
+    if format_name == "csv":
+        from src.pacing_export import export_pacing_csv
+
+        csv_str = export_pacing_csv(guide, units)
+        buf = BytesIO(csv_str.encode("utf-8"))
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=f"{safe_title}.csv",
+            mimetype="text/csv",
+        )
+    elif format_name == "pdf":
+        from src.pacing_export import export_pacing_pdf
+
+        buf = export_pacing_pdf(guide, units)
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=f"{safe_title}.pdf",
+            mimetype="application/pdf",
+        )
+    elif format_name == "docx":
+        from src.pacing_export import export_pacing_docx
+
+        buf = export_pacing_docx(guide, units)
+        return send_file(
+            buf,
+            as_attachment=True,
+            download_name=f"{safe_title}.docx",
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+
+@content_bp.route("/pacing-guides/generate", methods=["POST"])
+@login_required
+def pacing_guide_generate():
+    """Generate a pacing guide from a template (API-style POST)."""
+    from src.pacing_guide import generate_from_template
+
+    session = _get_session()
+
+    class_id = request.form.get("class_id", type=int)
+    title = request.form.get("title", "").strip()
+    template_name = request.form.get("template_name", "").strip()
+    school_year = request.form.get("school_year", "").strip() or None
+    standards_input = request.form.get("standards_input", "").strip()
+
+    if not class_id or not title or not template_name:
+        flash("Class, title, and template are required.", "error")
+        return redirect(url_for("content.pacing_guide_new"), code=303)
+
+    standards_list = (
+        [s.strip() for s in standards_input.split(",") if s.strip()]
+        if standards_input
+        else None
+    )
+
+    try:
+        guide = generate_from_template(
+            session,
+            class_id=class_id,
+            title=title,
+            template_name=template_name,
+            school_year=school_year,
+            standards_list=standards_list,
+        )
+        flash("Pacing guide generated from template.", "success")
+        return redirect(
+            url_for("content.pacing_guide_detail", guide_id=guide.id), code=303
+        )
+    except ValueError as e:
+        flash(str(e), "error")
+        return redirect(url_for("content.pacing_guide_new"), code=303)

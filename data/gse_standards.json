@@ -1,0 +1,277 @@
+{
+  "source": "Georgia Standards of Excellence",
+  "version": "2023",
+  "standard_set": "gse",
+  "standards": [
+    {
+      "code": "GSE.MATH.K.CC.1",
+      "description": "Count to 100 by ones and by tens",
+      "subject": "Mathematics",
+      "grade_band": "K-2",
+      "strand": "Counting and Cardinality",
+      "full_text": "Know number names and the count sequence. Count to 100 by ones and by tens.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.3.NF.1",
+      "description": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Operations - Fractions",
+      "full_text": "Understand a fraction 1/b as the quantity formed by 1 part when a whole is partitioned into b equal parts; understand a fraction a/b as the quantity formed by a parts of size 1/b.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.4.OA.1",
+      "description": "Interpret a multiplication equation as a comparison",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Operations and Algebraic Thinking",
+      "full_text": "Interpret a multiplication equation as a comparison, e.g., interpret 35 = 5 x 7 as a statement that 35 is 5 times as many as 7 and 7 times as many as 5.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.5.NBT.1",
+      "description": "Recognize that in a multi-digit number, a digit in one place represents 10 times as much as it represents in the place to its right",
+      "subject": "Mathematics",
+      "grade_band": "3-5",
+      "strand": "Number and Operations in Base Ten",
+      "full_text": "Recognize that in a multi-digit number, a digit in one place represents 10 times as much as it represents in the place to its right and 1/10 of what it represents in the place to its left.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.6.RP.1",
+      "description": "Understand the concept of a ratio and use ratio language to describe a ratio relationship",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Ratios and Proportional Relationships",
+      "full_text": "Understand the concept of a ratio and use ratio language to describe a ratio relationship between two quantities, e.g., the ratio of wings to beaks in the bird house at the zoo was 2:1.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.7.EE.1",
+      "description": "Apply properties of operations as strategies to add, subtract, factor, and expand linear expressions",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Expressions and Equations",
+      "full_text": "Apply properties of operations as strategies to add, subtract, factor, and expand linear expressions with rational coefficients.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.8.F.1",
+      "description": "Understand that a function is a rule that assigns to each input exactly one output",
+      "subject": "Mathematics",
+      "grade_band": "6-8",
+      "strand": "Functions",
+      "full_text": "Understand that a function is a rule that assigns to each input exactly one output. The graph of a function is the set of ordered pairs consisting of an input and the corresponding output.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.MATH.HS.A.CED.1",
+      "description": "Create equations and inequalities in one variable and use them to solve problems",
+      "subject": "Mathematics",
+      "grade_band": "9-12",
+      "strand": "Algebra",
+      "full_text": "Create equations and inequalities in one variable including ones with absolute value and use them to solve problems.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.RL.1.1",
+      "description": "Ask and answer questions about key details in a text",
+      "subject": "English Language Arts",
+      "grade_band": "K-2",
+      "strand": "Reading Literary",
+      "full_text": "Ask and answer questions about key details in a text.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.RI.3.2",
+      "description": "Determine the main idea of a text; recount the key details and explain how they support the main idea",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Reading Informational",
+      "full_text": "Determine the main idea of a text; recount the key details and explain how they support the main idea.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.W.5.1",
+      "description": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information",
+      "subject": "English Language Arts",
+      "grade_band": "3-5",
+      "strand": "Writing",
+      "full_text": "Write opinion pieces on topics or texts, supporting a point of view with reasons and information.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.RL.7.1",
+      "description": "Cite several pieces of textual evidence to support analysis of what the text says",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Reading Literary",
+      "full_text": "Cite several pieces of textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.W.8.2",
+      "description": "Write informative/explanatory texts to examine a topic and convey ideas, concepts, and information",
+      "subject": "English Language Arts",
+      "grade_band": "6-8",
+      "strand": "Writing",
+      "full_text": "Write informative/explanatory texts to examine a topic and convey ideas, concepts, and information through the selection, organization, and analysis of relevant content.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.ELA.RI.11-12.1",
+      "description": "Cite strong and thorough textual evidence to support analysis of what the text says",
+      "subject": "English Language Arts",
+      "grade_band": "9-12",
+      "strand": "Reading Informational",
+      "full_text": "Cite strong and thorough textual evidence to support analysis of what the text says explicitly as well as inferences drawn from the text, including determining where the text leaves matters uncertain.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S3L1",
+      "description": "Obtain, evaluate, and communicate information about the similarities and differences between plants, animals, and habitats",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Life Science",
+      "full_text": "Obtain, evaluate, and communicate information about the similarities and differences between plants, animals, and habitats found within geographic regions.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S4P1",
+      "description": "Obtain, evaluate, and communicate information about the nature of light and how light interacts with objects",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Physical Science",
+      "full_text": "Obtain, evaluate, and communicate information about the nature of light and how light interacts with objects.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S5E1",
+      "description": "Obtain, evaluate, and communicate information about the water cycle and its effects on weather patterns and climate",
+      "subject": "Science",
+      "grade_band": "3-5",
+      "strand": "Earth Science",
+      "full_text": "Obtain, evaluate, and communicate information to identify surface features of the Earth caused by constructive and/or destructive processes.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S6E5",
+      "description": "Obtain, evaluate, and communicate information about the scientific view of the changing universe",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Earth Science",
+      "full_text": "Obtain, evaluate, and communicate information to show how Earth's surface is formed.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S7L2",
+      "description": "Obtain, evaluate, and communicate information about the diversity of living organisms and how they can be compared scientifically",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "Obtain, evaluate, and communicate information about the diversity of living organisms and how they can be compared scientifically.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.S8P1",
+      "description": "Obtain, evaluate, and communicate information about the structure and properties of matter",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Physical Science",
+      "full_text": "Obtain, evaluate, and communicate information about the structure and properties of matter.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.SB1",
+      "description": "Analyze the nature of the relationships between structures and functions in living cells",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life Science",
+      "full_text": "Analyze the nature of the relationships between structures and functions in living cells.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SCI.SC1",
+      "description": "Obtain, evaluate, and communicate information about the use of the modern atomic theory and periodic law",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "Obtain, evaluate, and communicate information about the use of the modern atomic theory and periodic law to explain the characteristics of atoms and elements.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS3H1",
+      "description": "Describe the lives of historical figures in Georgia history",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "History",
+      "full_text": "Describe the lives of historical figures in Georgia history, including James Oglethorpe, Tomochichi, and Mary Musgrove.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS4G1",
+      "description": "Locate important physical and human-made features in the United States",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Geography",
+      "full_text": "Locate important physical and man-made features in the United States.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS5E1",
+      "description": "Use the basic concepts of trade, opportunity cost, specialization, productivity, and price incentives",
+      "subject": "Social Studies",
+      "grade_band": "3-5",
+      "strand": "Economics",
+      "full_text": "Use the basic concepts of trade, opportunity cost, specialization, voluntary exchange, productivity, and price incentives to illustrate historical events.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS6G1",
+      "description": "Locate selected features of Latin America and the Caribbean",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "Geography",
+      "full_text": "Locate selected features of Latin America and the Caribbean on a world and regional political-physical map.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS7H1",
+      "description": "Analyze continuity and change in Southwest Asia leading to the 21st century",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History",
+      "full_text": "Analyze continuity and change in Southwest Asia (Middle East) leading to the 21st century.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SS8H1",
+      "description": "Evaluate the impact of European exploration and settlement on American Indians in Georgia",
+      "subject": "Social Studies",
+      "grade_band": "6-8",
+      "strand": "History",
+      "full_text": "Evaluate the impact of European exploration and settlement on American Indians in Georgia.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SSCG1",
+      "description": "Compare and contrast various systems of government",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "Government/Civics",
+      "full_text": "Compare and contrast various systems of government including unitary, confederal, and federal.",
+      "standard_set": "gse"
+    },
+    {
+      "code": "GSE.SS.SSUSH1",
+      "description": "Compare and contrast the development of English settlement and colonization during the 17th century",
+      "subject": "Social Studies",
+      "grade_band": "9-12",
+      "strand": "U.S. History",
+      "full_text": "Compare and contrast the development of English settlement and colonization during the 17th century.",
+      "standard_set": "gse"
+    }
+  ]
+}

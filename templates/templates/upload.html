@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Upload Template - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{{ url_for('content.template_library') }}">Template Library</a> &raquo; Upload
+</div>
+
+<h1>Upload Template to Library</h1>
+
+<div class="ai-notice" data-dismiss-key="template-upload">
+    <button class="ai-notice-dismiss" aria-label="Dismiss notice" title="Dismiss">&times;</button>
+    <strong>About Sharing Templates:</strong> Uploaded templates become available in your local template library. Always ensure templates contain accurate, unbiased, and educationally appropriate content before sharing.
+</div>
+
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('content.template_library_upload') }}" class="form-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="form-group">
+        <label for="template_file">Template File (JSON)</label>
+        <input type="file" id="template_file" name="template_file" accept=".json" required>
+        <small>Upload a .json template file. The file will be validated before being added to the library.</small>
+    </div>
+
+    <div id="uploadPreview" style="display:none;">
+        <h3>File Preview</h3>
+        <div id="uploadPreviewContent"></div>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Upload Template</button>
+        <a href="{{ url_for('content.template_library') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var fileInput = document.getElementById('template_file');
+    var preview = document.getElementById('uploadPreview');
+    var previewContent = document.getElementById('uploadPreviewContent');
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            var file = this.files[0];
+            if (!file) { preview.style.display = 'none'; return; }
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var data = JSON.parse(e.target.result);
+                    var html = '<p><strong>Title:</strong> ' + (data.title || 'Untitled') + '</p>';
+                    html += '<p><strong>Questions:</strong> ' + (data.question_count || (data.questions ? data.questions.length : 0)) + '</p>';
+                    if (data.subject) html += '<p><strong>Subject:</strong> ' + data.subject + '</p>';
+                    if (data.grade_level) html += '<p><strong>Grade Level:</strong> ' + data.grade_level + '</p>';
+                    if (data.metadata && data.metadata.tags && data.metadata.tags.length) {
+                        html += '<p><strong>Tags:</strong> ' + data.metadata.tags.join(', ') + '</p>';
+                    }
+                    previewContent.innerHTML = html;
+                    preview.style.display = '';
+                } catch(err) {
+                    previewContent.innerHTML = '<p style="color:var(--danger-color)">Invalid JSON file: ' + err.message + '</p>';
+                    preview.style.display = '';
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+});
+</script>
+{% endblock %}
