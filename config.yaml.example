@@ -1,6 +1,11 @@
 # QuizWeaver Configuration
 # Copy this to config.yaml and customize.
 # API keys should go in .env (never in this file).
+
+# --- Database ---
+# SQLite is the default (zero-config, local-first).
+# For PostgreSQL, set DATABASE_URL in your .env file instead.
+# Example: DATABASE_URL=postgresql://user:pass@localhost:5432/quizweaver
 paths:
   database_file: quiz_warehouse.db
 llm:

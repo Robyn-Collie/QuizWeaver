@@ -19,8 +19,13 @@ from src.review import interactive_review
 
 
 def _get_db_session(config):
-    """Helper to get a database engine and session."""
-    engine = get_engine(config["paths"]["database_file"])
+    """Helper to get a database engine and session.
+
+    Uses DATABASE_URL environment variable if set (PostgreSQL support),
+    otherwise falls back to the SQLite path in config.
+    """
+    database_url = os.environ.get("DATABASE_URL")
+    engine = get_engine(url=database_url) if database_url else get_engine(config["paths"]["database_file"])
     init_db(engine)
     session = get_session(engine)
     return engine, session
@@ -43,7 +48,8 @@ def _resolve_class_id(config, args, session):
 def handle_ingest(config):
     """Handles the "ingest" command."""
     print("--- Starting Content Ingestion ---")
-    engine = get_engine(config["paths"]["database_file"])
+    database_url = os.environ.get("DATABASE_URL")
+    engine = get_engine(url=database_url) if database_url else get_engine(config["paths"]["database_file"])
     init_db(engine)
     session = get_session(engine)
     ingest_content(session, config)
@@ -639,6 +645,10 @@ def main():
         from src.cli.quiz_commands import handle_export_quiz
 
         handle_export_quiz(config, args)
+    elif args.command == "generate-audio":
+        from src.cli.quiz_commands import handle_generate_audio
+
+        handle_generate_audio(config, args)
     elif args.command == "generate-study":
         from src.cli.study_commands import handle_generate_study
 

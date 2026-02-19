@@ -3,11 +3,43 @@ Database migration runner for QuizWeaver.
 
 Handles applying SQL migrations to upgrade the database schema.
 Migrations are idempotent and safe to run multiple times.
+
+For SQLite databases, raw SQL migration files in ``migrations/`` are
+applied directly.  For PostgreSQL (or other non-SQLite databases), the
+ORM's ``Base.metadata.create_all()`` handles schema creation and the
+raw SQL files are skipped — they contain SQLite-specific syntax
+(``AUTOINCREMENT``, ``PRAGMA``, etc.) that is incompatible with
+PostgreSQL.
 """
 
 import os
 import sqlite3
 from pathlib import Path
+
+
+def detect_dialect(db_path=None):
+    """Detect which database dialect is in use.
+
+    Args:
+        db_path: Path to a SQLite database file, or ``None`` when
+            ``DATABASE_URL`` points to a non-SQLite database.
+
+    Returns:
+        ``'sqlite'`` or ``'postgresql'`` (or another dialect name
+        inferred from ``DATABASE_URL``).
+    """
+    database_url = os.environ.get("DATABASE_URL", "")
+    if database_url:
+        if database_url.startswith("postgresql"):
+            return "postgresql"
+        if database_url.startswith("mysql"):
+            return "mysql"
+        if database_url.startswith("sqlite"):
+            return "sqlite"
+        # Unknown URL scheme — return the scheme portion
+        return database_url.split("://")[0] if "://" in database_url else "unknown"
+    # No DATABASE_URL → default is SQLite
+    return "sqlite"
 
 
 def get_migration_files(migrations_dir="migrations"):
@@ -31,6 +63,9 @@ def get_migration_files(migrations_dir="migrations"):
 def check_if_migration_needed(db_path):
     """
     Check if database needs migration by testing for new tables/columns.
+
+    This function only works for SQLite databases.  For PostgreSQL,
+    migrations are handled by the ORM (``Base.metadata.create_all``).
 
     Args:
         db_path: Path to SQLite database file
@@ -120,7 +155,12 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
     """
     Run all pending database migrations.
 
-    This function is idempotent - it's safe to run multiple times.
+    For SQLite databases, raw SQL migration files are applied directly.
+    For PostgreSQL (or other non-SQLite dialects detected via
+    ``DATABASE_URL``), raw SQL migrations are skipped — the ORM's
+    ``Base.metadata.create_all()`` handles schema creation instead.
+
+    This function is idempotent — it's safe to run multiple times.
     Migrations use CREATE TABLE IF NOT EXISTS and INSERT ... ON CONFLICT.
 
     Args:
@@ -131,6 +171,18 @@ def run_migrations(db_path, migrations_dir="migrations", verbose=True):
     Returns:
         True if migrations were applied, False if skipped or failed
     """
+    dialect = detect_dialect(db_path)
+
+    # For non-SQLite databases, skip raw SQL migrations.
+    # Schema creation is handled by Base.metadata.create_all() in init_db().
+    if dialect != "sqlite":
+        if verbose:
+            print(
+                f"[OK] Database dialect is {dialect}; "
+                "raw SQL migrations skipped (ORM handles schema)"
+            )
+        return False
+
     if not check_if_migration_needed(db_path):
         if verbose:
             print("[OK] Database schema is up to date, no migrations needed")
@@ -197,10 +249,18 @@ def create_default_class_if_needed(db_path):
     Create default "Legacy Class" for existing quizzes if needed.
 
     This is called after migrations to ensure backward compatibility.
+    Only applies to SQLite databases; for PostgreSQL the ORM handles
+    initial data seeding separately.
 
     Args:
         db_path: Path to SQLite database file
     """
+    dialect = detect_dialect(db_path)
+    if dialect != "sqlite":
+        # For non-SQLite, use the ORM to create the default class
+        _create_default_class_via_orm()
+        return
+
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -231,6 +291,39 @@ def create_default_class_if_needed(db_path):
         conn.close()
     except Exception as e:
         print(f"Warning: Could not create default class: {e}")
+
+
+def _create_default_class_via_orm():
+    """Create the default Legacy Class using the ORM (for non-SQLite databases)."""
+    try:
+        from src.database import Class, Quiz, get_engine, get_session
+
+        engine = get_engine()
+        session = get_session(engine)
+
+        # Check if legacy class exists
+        existing = session.query(Class).filter_by(id=1).first()
+        if existing is None:
+            legacy = Class(
+                id=1,
+                name="Legacy Class (Pre-Platform Expansion)",
+                grade_level="7th Grade",
+                subject="Science",
+                standards="[]",
+                config="{}",
+            )
+            session.add(legacy)
+            session.commit()
+
+        # Update any null class_id references
+        session.query(Quiz).filter(Quiz.class_id.is_(None)).update(
+            {"class_id": 1}, synchronize_session="fetch"
+        )
+        session.commit()
+        session.close()
+        engine.dispose()
+    except Exception as e:
+        print(f"Warning: Could not create default class via ORM: {e}")
 
 
 def init_database_with_migrations(db_path, migrations_dir="migrations"):

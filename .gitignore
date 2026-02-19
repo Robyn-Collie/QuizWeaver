@@ -13,6 +13,7 @@ __pycache__/
 # Keep generated images and outputs out of git for now
 extracted_images/
 generated_images/
+generated_audio/
 Quiz_Output/
 draft_preview.pdf
 

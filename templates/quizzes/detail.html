@@ -162,6 +162,13 @@
     <a href="/quizzes/{{ quiz.id }}/export/qti" class="btn btn-sm btn-outline">QTI (Canvas)</a>
     <a href="/quizzes/{{ quiz.id }}/export/quizizz" class="btn btn-sm btn-outline">Quizizz CSV</a>
     <a href="/quizzes/{{ quiz.id }}/export-template" class="btn btn-sm btn-outline">Export as Template</a>
+
+    {% if tts_available %}
+    <span class="export-label">Audio:</span>
+    <button class="btn btn-sm btn-outline" id="generateAudioBtn" {% if quiz_has_audio %}style="display:none;"{% endif %}>Generate Audio</button>
+    <span class="audio-status-badge" id="audioStatusBadge" {% if not quiz_has_audio %}style="display:none;"{% endif %}>Audio available</span>
+    <a href="/quizzes/{{ quiz.id }}/audio/download" class="btn btn-sm btn-outline" id="downloadAudioBtn" {% if not quiz_has_audio %}style="display:none;"{% endif %}>Download Audio ZIP</a>
+    {% endif %}
 </div>
 
 <div class="section-actions">
@@ -225,6 +232,12 @@
         <button class="tts-read-btn" title="Read aloud" aria-label="Read this question aloud">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
         </button>
+        {% if quiz_has_audio %}
+        <a href="/quizzes/{{ quiz.id }}/audio/{{ q.id }}.mp3" class="btn btn-sm btn-outline audio-download-link" title="Download audio for this question" aria-label="Download audio" download>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            MP3
+        </a>
+        {% endif %}
         <span class="question-actions">
             <button class="btn btn-sm btn-outline btn-edit-question" title="Edit" aria-label="Edit question">Edit</button>
             <button class="btn btn-sm btn-outline btn-move-up" title="Move up" aria-label="Move question up">Up</button>
@@ -743,6 +756,47 @@
         })
         .catch(function() {
             searchStatus.textContent = 'Failed to attach image. Check your connection.';
+        });
+    });
+})();
+
+// --- Server-Side TTS: Generate Audio Button ---
+(function() {
+    var genBtn = document.getElementById('generateAudioBtn');
+    if (!genBtn) return;
+    var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    var quizId = {{ quiz.id }};
+
+    genBtn.addEventListener('click', function() {
+        genBtn.disabled = true;
+        genBtn.textContent = 'Generating...';
+        fetch('/quizzes/' + quizId + '/generate-audio', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.ok) {
+                genBtn.style.display = 'none';
+                var badge = document.getElementById('audioStatusBadge');
+                if (badge) badge.style.display = '';
+                var dlBtn = document.getElementById('downloadAudioBtn');
+                if (dlBtn) dlBtn.style.display = '';
+                // Reload to show per-question audio links
+                window.location.reload();
+            } else {
+                genBtn.textContent = 'Generate Audio';
+                genBtn.disabled = false;
+                alert('Audio generation failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(function() {
+            genBtn.textContent = 'Generate Audio';
+            genBtn.disabled = false;
+            alert('Audio generation request failed. Check your connection.');
         });
     });
 })();

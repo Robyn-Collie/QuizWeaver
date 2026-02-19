@@ -1,5 +1,5 @@
 """
-Quiz listing, viewing, and export CLI commands.
+Quiz listing, viewing, export, and audio generation CLI commands.
 """
 
 import json
@@ -33,6 +33,11 @@ def register_quiz_commands(subparsers):
         help="Export format.",
     )
     p.add_argument("--output", type=str, help="Output file path.")
+
+    # generate-audio
+    p = subparsers.add_parser("generate-audio", help="Generate TTS audio for a quiz.")
+    p.add_argument("quiz_id", type=int, help="Quiz ID to generate audio for.")
+    p.add_argument("--lang", default="en", help="Language code (default: en).")
 
 
 def handle_list_quizzes(config, args):
@@ -178,5 +183,48 @@ def handle_export_quiz(config, args):
                 f.write(content)
 
         print(f"[OK] Exported quiz to: {out_path}")
+    finally:
+        session.close()
+
+
+def handle_generate_audio(config, args):
+    """Generate TTS audio files for all questions in a quiz."""
+    from src.tts_generator import generate_quiz_audio, get_quiz_audio_dir, is_tts_available
+
+    if not is_tts_available():
+        print("Error: gTTS is not installed. Run: pip install gtts")
+        return
+
+    engine, session = get_db_session(config)
+    try:
+        quiz = session.query(Quiz).filter_by(id=args.quiz_id).first()
+        if not quiz:
+            print(f"Error: Quiz with ID {args.quiz_id} not found.")
+            return
+
+        questions = session.query(Question).filter_by(quiz_id=quiz.id).order_by(Question.sort_order, Question.id).all()
+
+        if not questions:
+            print(f"Error: Quiz {args.quiz_id} has no questions.")
+            return
+
+        # Build question dicts for the generator
+        question_dicts = []
+        for q in questions:
+            data = q.data
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except (json.JSONDecodeError, ValueError):
+                    data = {}
+            if not isinstance(data, dict):
+                data = {}
+            question_dicts.append({"id": q.id, "text": q.text or data.get("text", ""), "options": data.get("options", [])})
+
+        audio_dir = get_quiz_audio_dir(args.quiz_id)
+        lang = getattr(args, "lang", "en") or "en"
+
+        results = generate_quiz_audio(question_dicts, audio_dir, lang=lang)
+        print(f"[OK] Generated audio for {len(results)} questions in {audio_dir}/")
     finally:
         session.close()

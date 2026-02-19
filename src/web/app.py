@@ -113,13 +113,16 @@ def create_app(config=None):
     if os.environ.get("LLM_PROVIDER"):
         config.setdefault("llm", {})["provider"] = os.environ["LLM_PROVIDER"]
 
-    # Create a single engine for the app lifetime
-    db_path = config["paths"]["database_file"]
+    # Create a single engine for the app lifetime.
+    # DATABASE_URL (env var) takes precedence for PostgreSQL support;
+    # falls back to the SQLite path in config.
+    database_url = os.environ.get("DATABASE_URL")
+    db_path = config.get("paths", {}).get("database_file", "quiz_warehouse.db")
 
-    # Run migrations before ORM init
+    # Run migrations before ORM init (skipped automatically for non-SQLite)
     run_migrations(db_path, verbose=False)
 
-    engine = get_engine(db_path)
+    engine = get_engine(url=database_url) if database_url else get_engine(db_path)
     init_db(engine)
     app.config["DB_ENGINE"] = engine
 

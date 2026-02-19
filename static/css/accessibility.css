@@ -415,3 +415,27 @@ body.color-blind-mode .test-failure {
     word-spacing: 0.16em;
     line-height: 1.8;
 }
+
+
+/* ===== Server-Side TTS Audio (BL-032 Stretch) ===== */
+.audio-status-badge {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.audio-download-link {
+    font-size: 0.75rem;
+    padding: 1px 6px;
+    vertical-align: middle;
+}
+
+.audio-download-link svg {
+    vertical-align: middle;
+    margin-right: 2px;
+}

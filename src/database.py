@@ -1,3 +1,4 @@
+import os
 from datetime import date, datetime
 
 from sqlalchemy import (
@@ -453,16 +454,98 @@ class RubricCriterion(Base):
     rubric = relationship("Rubric", back_populates="criteria")
 
 
-def get_engine(db_path):
-    """Returns a SQLAlchemy engine for the specified database.
+def get_database_url(db_path=None, url=None):
+    """Resolve the database connection URL.
+
+    Priority order:
+    1. Explicit ``url`` parameter (highest)
+    2. ``DATABASE_URL`` environment variable
+    3. SQLite file at ``db_path`` (lowest / default)
 
     Args:
-        db_path: Path to the SQLite database file.
+        db_path: Path to a SQLite database file (used as fallback).
+        url: Explicit database URL to use.
+
+    Returns:
+        A database URL string suitable for ``create_engine()``.
+
+    Raises:
+        ValueError: If neither ``url``, ``DATABASE_URL``, nor ``db_path``
+            is provided.
+    """
+    if url:
+        return url
+
+    env_url = os.environ.get("DATABASE_URL")
+    if env_url:
+        return env_url
+
+    if db_path:
+        return f"sqlite:///{db_path}"
+
+    raise ValueError(
+        "No database connection configured. Provide db_path, url, "
+        "or set the DATABASE_URL environment variable."
+    )
+
+
+def get_dialect(engine):
+    """Return the dialect name for a SQLAlchemy engine.
+
+    Args:
+        engine: A SQLAlchemy Engine instance.
+
+    Returns:
+        Dialect name string, e.g. ``'sqlite'`` or ``'postgresql'``.
+    """
+    return engine.dialect.name
+
+
+def get_engine(db_path=None, url=None):
+    """Returns a SQLAlchemy engine for the specified database.
+
+    Supports SQLite (default, zero-config) and PostgreSQL (opt-in via
+    ``DATABASE_URL`` environment variable or explicit ``url`` parameter).
+
+    Priority order for resolving the connection:
+    1. Explicit ``url`` keyword argument
+    2. ``DATABASE_URL`` environment variable
+    3. SQLite file at ``db_path``
+
+    For PostgreSQL connections, connection pooling is configured
+    automatically (pool_size=5, max_overflow=10).  For SQLite the
+    default pool behaviour is used (StaticPool / NullPool).
+
+    Args:
+        db_path: Path to a SQLite database file (default behaviour).
+        url: Explicit database URL.  Overrides both ``db_path`` and
+            ``DATABASE_URL``.
 
     Returns:
         SQLAlchemy Engine instance connected to the database.
     """
-    return create_engine(f"sqlite:///{db_path}")
+    database_url = get_database_url(db_path=db_path, url=url)
+
+    # PostgreSQL: enable connection pooling
+    if database_url.startswith("postgresql"):
+        try:
+            return create_engine(
+                database_url,
+                pool_size=5,
+                max_overflow=10,
+                pool_pre_ping=True,
+            )
+        except Exception as exc:
+            # Provide a helpful message when psycopg2 is not installed
+            if "psycopg2" in str(exc) or "No module named" in str(exc):
+                raise ImportError(
+                    "PostgreSQL support requires the psycopg2 driver. "
+                    "Install it with: pip install psycopg2-binary"
+                ) from exc
+            raise
+
+    # SQLite (default)
+    return create_engine(database_url)
 
 
 def init_db(engine):

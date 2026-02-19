@@ -104,6 +104,7 @@ def normalize_question(question_obj, index: int) -> Dict[str, Any]:
         correct_answer = expected_answer
 
     return {
+        "question_id": getattr(question_obj, "id", None),
         "number": index + 1,
         "type": q_type,
         "text": text,
@@ -422,6 +423,7 @@ def export_docx(
     style_profile: Optional[dict] = None,
     student_mode: bool = False,
     image_dir: Optional[str] = None,
+    audio_dir: Optional[str] = None,
 ) -> io.BytesIO:
     """Export quiz to a Word document.
 
@@ -433,6 +435,9 @@ def export_docx(
             cognitive levels, image descriptions, and move answer key
             to a separate page without inline hints.
         image_dir: Directory containing uploaded question images.
+        audio_dir: Directory containing generated audio MP3 files.
+            When provided, an audio filename reference is added below
+            each question that has a corresponding audio file.
 
     Returns:
         BytesIO buffer containing the .docx file.
@@ -460,7 +465,7 @@ def export_docx(
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        _add_docx_question(doc, nq, student_mode=student_mode, image_dir=image_dir)
+        _add_docx_question(doc, nq, student_mode=student_mode, image_dir=image_dir, audio_dir=audio_dir)
 
     # Answer key (new page) — only in teacher mode
     if not student_mode:
@@ -513,7 +518,9 @@ def _add_docx_info(doc, quiz, style_profile: dict, student_mode: bool = False):
             p.style.font.size = Pt(10)
 
 
-def _add_docx_question(doc, nq: dict, student_mode: bool = False, image_dir: Optional[str] = None):
+def _add_docx_question(
+    doc, nq: dict, student_mode: bool = False, image_dir: Optional[str] = None, audio_dir: Optional[str] = None
+):
     """Add a single question to the Word document."""
     # Question header: "1. [MC] (5 pts) - Remember"
     header_parts = [f"{nq['number']}."]
@@ -584,6 +591,16 @@ def _add_docx_question(doc, nq: dict, student_mode: bool = False, image_dir: Opt
         _add_docx_stimulus(doc, nq, student_mode=student_mode)
     elif nq["type"] == "cloze":
         _add_docx_cloze(doc, nq, student_mode=student_mode)
+
+    # Audio file reference (when audio_dir is provided and file exists)
+    q_id = nq.get("question_id")
+    if audio_dir and q_id:
+        audio_path = os.path.join(audio_dir, f"q{q_id}.mp3")
+        if os.path.isfile(audio_path):
+            p = doc.add_paragraph()
+            run = p.add_run(f"(Audio: q{q_id}.mp3)")
+            run.italic = True
+            run.font.size = Pt(9)
 
     # Spacer
     doc.add_paragraph("")
@@ -1087,6 +1104,7 @@ def export_pdf(
     style_profile: Optional[dict] = None,
     student_mode: bool = False,
     image_dir: Optional[str] = None,
+    audio_dir: Optional[str] = None,
 ) -> io.BytesIO:
     """Export quiz to a PDF document.
 
@@ -1097,6 +1115,9 @@ def export_pdf(
         student_mode: If True, suppress correct-answer info inline,
             cognitive levels, image descriptions, and omit answer key.
         image_dir: Directory containing uploaded question images.
+        audio_dir: Directory containing generated audio MP3 files.
+            When provided, an audio filename reference is added below
+            each question that has a corresponding audio file.
 
     Returns:
         BytesIO buffer containing the PDF file.
@@ -1140,7 +1161,7 @@ def export_pdf(
     for i, q in enumerate(questions):
         nq = normalize_question(q, i)
         normalized.append(nq)
-        y = _pdf_draw_question(c, nq, y, width, height, student_mode=student_mode, image_dir=image_dir)
+        y = _pdf_draw_question(c, nq, y, width, height, student_mode=student_mode, image_dir=image_dir, audio_dir=audio_dir)
 
     # --- Answer Key (new page) — teacher mode only ---
     if not student_mode:
@@ -1208,6 +1229,7 @@ def _pdf_draw_question(
     page_height: float,
     student_mode: bool = False,
     image_dir: Optional[str] = None,
+    audio_dir: Optional[str] = None,
 ) -> float:
     """Draw a single question on the PDF canvas. Returns new y position."""
     # Check for page break
@@ -1417,6 +1439,19 @@ def _pdf_draw_question(
             elif sq.get("type") == "short_answer":
                 c.drawString(100, y, "_" * 40)
                 y -= 14
+
+    # Audio file reference (when audio_dir is provided and file exists)
+    q_id = nq.get("question_id")
+    if audio_dir and q_id:
+        audio_path = os.path.join(audio_dir, f"q{q_id}.mp3")
+        if os.path.isfile(audio_path):
+            if y < 60:
+                c.showPage()
+                y = page_height - 50
+            c.setFont("Helvetica-Oblique", 9)
+            c.drawString(70, y, f"[Audio: q{q_id}.mp3]")
+            c.setFont("Helvetica", 10)
+            y -= 14
 
     y -= 10  # Spacer between questions
     return y

@@ -172,6 +172,10 @@ def quiz_detail(quiz_id):
     # Rubrics for this quiz
     rubrics = session.query(Rubric).filter_by(quiz_id=quiz_id).order_by(Rubric.created_at.desc()).all()
 
+    # Server-side TTS status
+    tts_available = is_tts_available()
+    quiz_has_audio = has_audio(quiz_id)
+
     return render_template(
         "quizzes/detail.html",
         quiz=quiz,
@@ -183,6 +187,8 @@ def quiz_detail(quiz_id):
         variant_count=variant_count,
         rubrics=rubrics,
         reading_levels=READING_LEVELS,
+        tts_available=tts_available,
+        quiz_has_audio=quiz_has_audio,
     )
 
 
@@ -266,6 +272,8 @@ def quiz_export(quiz_id, format_name):
     safe_title = re.sub(r"\s+", "_", safe_title.strip())[:80] or "quiz"
     suffix = "_student" if student_mode else ""
     image_dir = _get_upload_dir()
+    # Include audio references in exports when audio has been generated
+    quiz_audio_dir = get_quiz_audio_dir(quiz_id) if has_audio(quiz_id) else None
 
     if format_name == "csv":
         csv_str = export_csv(quiz, questions, style_profile, student_mode=student_mode)
@@ -277,7 +285,9 @@ def quiz_export(quiz_id, format_name):
             mimetype="text/csv",
         )
     elif format_name == "docx":
-        buf = export_docx(quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir)
+        buf = export_docx(
+            quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir, audio_dir=quiz_audio_dir
+        )
         return send_file(
             buf,
             as_attachment=True,
@@ -294,7 +304,9 @@ def quiz_export(quiz_id, format_name):
             mimetype="text/plain",
         )
     elif format_name == "pdf":
-        buf = export_pdf(quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir)
+        buf = export_pdf(
+            quiz, questions, style_profile, student_mode=student_mode, image_dir=image_dir, audio_dir=quiz_audio_dir
+        )
         return send_file(
             buf,
             as_attachment=True,

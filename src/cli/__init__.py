@@ -4,12 +4,19 @@ CLI command modules for QuizWeaver.
 Provides shared helpers and imports for all CLI command modules.
 """
 
+import os
+
 from src.database import get_engine, get_session, init_db
 
 
 def get_db_session(config):
-    """Helper to get a database engine and session."""
-    engine = get_engine(config["paths"]["database_file"])
+    """Helper to get a database engine and session.
+
+    Uses DATABASE_URL environment variable if set (PostgreSQL support),
+    otherwise falls back to the SQLite path in config.
+    """
+    database_url = os.environ.get("DATABASE_URL")
+    engine = get_engine(url=database_url) if database_url else get_engine(config["paths"]["database_file"])
     init_db(engine)
     session = get_session(engine)
     return engine, session

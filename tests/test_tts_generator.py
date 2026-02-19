@@ -4,6 +4,8 @@ Covers:
 - tts_generator module functions (sanitize, build, generate, bundle, cleanup)
 - Web routes (tts-status, generate-audio, serve, download)
 - Graceful degradation when gTTS is not installed
+- Export integration (PDF and DOCX with audio_dir)
+- CLI generate-audio command
 """
 
 import json
@@ -332,3 +334,283 @@ class TestDownloadAudioRoute:
         with tts_app.test_client() as c:
             resp = c.get("/quizzes/1/audio/download")
             assert resp.status_code in (302, 303, 401)
+
+
+# ============================================================
+# Export integration tests (audio_dir parameter)
+# ============================================================
+
+
+def _make_quiz_obj():
+    """Create a minimal Quiz-like object for export tests."""
+    q = MagicMock()
+    q.title = "Audio Test Quiz"
+    q.status = "generated"
+    q.created_at = None
+    q.style_profile = "{}"
+    q.reading_level = None
+    return q
+
+
+def _make_question_obj(qid, text="What is 2+2?", qtype="multiple_choice"):
+    """Create a minimal Question-like object for export tests."""
+    q = MagicMock()
+    q.id = qid
+    q.text = text
+    q.title = f"Q{qid}"
+    q.question_type = qtype
+    q.points = 1.0
+    q.sort_order = qid
+    q.data = json.dumps(
+        {
+            "type": qtype,
+            "text": text,
+            "options": ["3", "4", "5"],
+            "correct_answer": "4",
+        }
+    )
+    return q
+
+
+class TestExportDocxWithAudio:
+    def test_docx_includes_audio_reference_when_file_exists(self):
+        from src.export import export_docx
+
+        quiz = _make_quiz_obj()
+        questions = [_make_question_obj(42, "What is 2+2?")]
+
+        with tempfile.TemporaryDirectory() as audio_dir:
+            # Create a fake audio file matching the question id
+            with open(os.path.join(audio_dir, "q42.mp3"), "wb") as f:
+                f.write(b"fake mp3")
+
+            buf = export_docx(quiz, questions, audio_dir=audio_dir)
+            assert buf is not None
+            # Read the docx content to verify audio reference
+            from docx import Document
+
+            buf.seek(0)
+            doc = Document(buf)
+            full_text = "\n".join(p.text for p in doc.paragraphs)
+            assert "(Audio: q42.mp3)" in full_text
+
+    def test_docx_no_audio_reference_when_no_file(self):
+        from src.export import export_docx
+
+        quiz = _make_quiz_obj()
+        questions = [_make_question_obj(42, "What is 2+2?")]
+
+        with tempfile.TemporaryDirectory() as audio_dir:
+            # No audio file created
+            buf = export_docx(quiz, questions, audio_dir=audio_dir)
+            from docx import Document
+
+            buf.seek(0)
+            doc = Document(buf)
+            full_text = "\n".join(p.text for p in doc.paragraphs)
+            assert "(Audio:" not in full_text
+
+    def test_docx_no_audio_reference_when_no_audio_dir(self):
+        from src.export import export_docx
+
+        quiz = _make_quiz_obj()
+        questions = [_make_question_obj(42, "What is 2+2?")]
+
+        buf = export_docx(quiz, questions, audio_dir=None)
+        from docx import Document
+
+        buf.seek(0)
+        doc = Document(buf)
+        full_text = "\n".join(p.text for p in doc.paragraphs)
+        assert "(Audio:" not in full_text
+
+
+class TestExportPdfWithAudio:
+    def test_pdf_includes_audio_reference_when_file_exists(self):
+        """Verify that _pdf_draw_question is called with audio_dir passed through."""
+        from src.export import export_pdf
+
+        quiz = _make_quiz_obj()
+        questions = [_make_question_obj(42, "What is 2+2?")]
+
+        with tempfile.TemporaryDirectory() as audio_dir:
+            with open(os.path.join(audio_dir, "q42.mp3"), "wb") as f:
+                f.write(b"fake mp3")
+
+            # Patch _pdf_draw_question to verify audio_dir is passed
+            with patch("src.export._pdf_draw_question", wraps=None) as mock_draw:
+                # Make it return a reasonable y value so the PDF completes
+                mock_draw.return_value = 500.0
+                buf = export_pdf(quiz, questions, audio_dir=audio_dir)
+                assert buf is not None
+                # Verify audio_dir was passed through to the draw function
+                mock_draw.assert_called_once()
+                call_kwargs = mock_draw.call_args
+                assert call_kwargs.kwargs.get("audio_dir") == audio_dir
+
+    def test_pdf_no_audio_reference_when_no_audio_dir(self):
+        from src.export import export_pdf
+
+        quiz = _make_quiz_obj()
+        questions = [_make_question_obj(42, "What is 2+2?")]
+
+        with patch("src.export._pdf_draw_question", wraps=None) as mock_draw:
+            mock_draw.return_value = 500.0
+            export_pdf(quiz, questions, audio_dir=None)
+            mock_draw.assert_called_once()
+            call_kwargs = mock_draw.call_args
+            assert call_kwargs.kwargs.get("audio_dir") is None
+
+
+class TestNormalizeQuestionId:
+    def test_includes_question_id(self):
+        from src.export import normalize_question
+
+        q = _make_question_obj(99)
+        nq = normalize_question(q, 0)
+        assert nq["question_id"] == 99
+
+    def test_question_id_is_none_when_missing(self):
+        from src.export import normalize_question
+
+        q = _make_question_obj(99)
+        del q.id  # remove id attribute
+        nq = normalize_question(q, 0)
+        assert nq["question_id"] is None
+
+
+# ============================================================
+# Quiz detail page audio UI tests
+# ============================================================
+
+
+class TestQuizDetailAudioUI:
+    @patch("src.web.blueprints.quizzes.has_audio", return_value=False)
+    @patch("src.web.blueprints.quizzes.is_tts_available", return_value=True)
+    def test_shows_generate_audio_button(self, mock_avail, mock_has, tts_client):
+        resp = tts_client.get("/quizzes/1")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "generateAudioBtn" in html
+        assert "Generate Audio" in html
+
+    @patch("src.web.blueprints.quizzes.has_audio", return_value=True)
+    @patch("src.web.blueprints.quizzes.is_tts_available", return_value=True)
+    def test_shows_audio_available_badge(self, mock_avail, mock_has, tts_client):
+        resp = tts_client.get("/quizzes/1")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "Audio available" in html
+        assert "Download Audio ZIP" in html
+
+    @patch("src.web.blueprints.quizzes.has_audio", return_value=True)
+    @patch("src.web.blueprints.quizzes.is_tts_available", return_value=True)
+    def test_shows_per_question_audio_download(self, mock_avail, mock_has, tts_client):
+        resp = tts_client.get("/quizzes/1")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert "audio-download-link" in html
+        assert "MP3" in html
+
+    @patch("src.web.blueprints.quizzes.is_tts_available", return_value=False)
+    @patch("src.web.blueprints.quizzes.has_audio", return_value=False)
+    def test_hides_audio_when_tts_unavailable(self, mock_has, mock_avail, tts_client):
+        resp = tts_client.get("/quizzes/1")
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        # The HTML button element should not be rendered when TTS is unavailable
+        # (the JS may still reference the id, but the button itself won't exist)
+        assert 'id="generateAudioBtn"' not in html
+        assert "Audio available" not in html
+        assert "Download Audio ZIP" not in html
+
+
+# ============================================================
+# CLI generate-audio command tests
+# ============================================================
+
+
+class TestCLIGenerateAudio:
+    @patch("src.tts_generator.TTS_AVAILABLE", True)
+    @patch("src.tts_generator.gTTS")
+    def test_generate_audio_success(self, mock_gtts_cls, db_path):
+        from src.cli.quiz_commands import handle_generate_audio
+        from src.database import Base, get_engine, get_session
+
+        mock_gtts_cls.return_value = MagicMock()
+
+        engine = get_engine(db_path)
+        Base.metadata.create_all(engine)
+        session = get_session(engine)
+
+        cls = Class(
+            name="CLI Class",
+            grade_level="8th",
+            subject="Science",
+            standards=json.dumps([]),
+            config=json.dumps({}),
+        )
+        session.add(cls)
+        session.commit()
+        quiz = Quiz(
+            title="CLI Quiz",
+            class_id=cls.id,
+            status="generated",
+            style_profile=json.dumps({}),
+        )
+        session.add(quiz)
+        session.commit()
+        q1 = Question(
+            quiz_id=quiz.id,
+            question_type="multiple_choice",
+            title="Q1",
+            text="What is 2+2?",
+            points=1.0,
+            data=json.dumps({"type": "mc", "text": "What is 2+2?", "options": ["3", "4"], "correct_answer": "4"}),
+        )
+        session.add(q1)
+        session.commit()
+        quiz_id = quiz.id
+        session.close()
+        engine.dispose()
+
+        config = {"paths": {"database_file": db_path}}
+        args = MagicMock()
+        args.quiz_id = quiz_id
+        args.lang = "en"
+
+        with patch("builtins.print") as mock_print:
+            handle_generate_audio(config, args)
+            printed = " ".join(str(c) for c in mock_print.call_args_list)
+            assert "[OK]" in printed
+
+    def test_generate_audio_not_installed(self, db_path, capsys):
+        from src.cli.quiz_commands import handle_generate_audio
+
+        config = {"paths": {"database_file": db_path}}
+        args = MagicMock()
+        args.quiz_id = 1
+        args.lang = "en"
+
+        with patch("src.tts_generator.TTS_AVAILABLE", False):
+            handle_generate_audio(config, args)
+            captured = capsys.readouterr()
+            assert "gTTS is not installed" in captured.out
+
+    def test_generate_audio_quiz_not_found(self, db_path, capsys):
+        from src.cli.quiz_commands import handle_generate_audio
+        from src.database import Base, get_engine
+
+        engine = get_engine(db_path)
+        Base.metadata.create_all(engine)
+        engine.dispose()
+
+        config = {"paths": {"database_file": db_path}}
+        args = MagicMock()
+        args.quiz_id = 9999
+        args.lang = "en"
+
+        with patch("src.tts_generator.TTS_AVAILABLE", True):
+            handle_generate_audio(config, args)
+            captured = capsys.readouterr()
+            assert "not found" in captured.out
