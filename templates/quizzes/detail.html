@@ -283,6 +283,10 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     Wikimedia
                 </a>
+                <a href="#" class="image-search-link" data-provider="google" target="_blank" rel="noopener" title="Search Google Images">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Google
+                </a>
             </div>
         </div>
         {% elif q.data and q.data.image is defined and q.data.image %}
@@ -628,6 +632,8 @@
             link.href = 'https://pixabay.com/images/search/' + encodeURIComponent(searchTerms) + '/';
         } else if (provider === 'wikimedia') {
             link.href = 'https://commons.wikimedia.org/w/index.php?search=' + encodeURIComponent(searchTerms) + '&title=Special:MediaSearch&type=image';
+        } else if (provider === 'google') {
+            link.href = 'https://www.google.com/search?tbm=isch&q=' + encodeURIComponent(searchTerms);
         }
     });
 
@@ -683,7 +689,24 @@
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (!data.ok) {
-                    searchStatus.textContent = data.error || 'Search failed.';
+                    if (data.configured === false) {
+                        var query = searchInput.value.trim();
+                        var encodedQ = encodeURIComponent(query);
+                        searchStatus.innerHTML = '';
+                        searchGrid.innerHTML =
+                            '<div class="image-search-fallback">' +
+                            '<p><strong>Pixabay image search is not configured.</strong></p>' +
+                            '<p>Search for images on these sites instead:</p>' +
+                            '<ul>' +
+                            '<li><a href="https://pixabay.com/images/search/' + encodedQ + '/" target="_blank" rel="noopener">Pixabay</a> (free, no attribution required)</li>' +
+                            '<li><a href="https://www.google.com/search?tbm=isch&q=' + encodedQ + '" target="_blank" rel="noopener">Google Images</a></li>' +
+                            '<li><a href="https://commons.wikimedia.org/w/index.php?search=' + encodedQ + '&title=Special:MediaSearch&type=image" target="_blank" rel="noopener">Wikimedia Commons</a> (free, open license)</li>' +
+                            '</ul>' +
+                            '<p><a href="' + data.setup_url + '">Set up Pixabay API</a> to search directly in QuizWeaver.</p>' +
+                            '</div>';
+                    } else {
+                        searchStatus.textContent = data.error || 'Search failed.';
+                    }
                     return;
                 }
                 if (!data.hits || data.hits.length === 0) {

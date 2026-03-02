@@ -1,5 +1,6 @@
 """Settings, provider wizard, audit log, and standards routes."""
 
+import logging
 import os
 
 from flask import (
@@ -12,6 +13,8 @@ from flask import (
     request,
     url_for,
 )
+
+logger = logging.getLogger(__name__)
 
 from src.llm_provider import ProviderError, get_provider, get_provider_info
 from src.standards import (
@@ -94,6 +97,8 @@ def settings():
     providers = get_provider_info(config)
     current_provider = llm_config.get("provider", "mock")
 
+    pixabay_configured = bool(os.getenv("PIXABAY_API_KEY", "").strip())
+
     return render_template(
         "settings.html",
         providers=providers,
@@ -101,6 +106,7 @@ def settings():
         llm_config=llm_config,
         standard_sets=get_available_standard_sets(),
         current_standard_set=config.get("standard_set", "sol"),
+        pixabay_configured=pixabay_configured,
     )
 
 
@@ -245,6 +251,85 @@ def test_provider():
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = val
+
+
+# --- Pixabay Settings (form-based) ---
+
+
+@settings_bp.route("/settings/pixabay", methods=["POST"])
+@login_required
+def settings_pixabay():
+    """Save or clear Pixabay API key from the settings page form."""
+    from src.web.config_utils import save_api_key_to_env
+
+    api_key = request.form.get("pixabay_api_key", "").strip()
+    if api_key:
+        save_api_key_to_env("PIXABAY_API_KEY", api_key)
+        os.environ["PIXABAY_API_KEY"] = api_key
+        flash("Pixabay API key saved.", "success")
+    else:
+        save_api_key_to_env("PIXABAY_API_KEY", "")
+        os.environ.pop("PIXABAY_API_KEY", None)
+        flash("Pixabay API key cleared.", "success")
+
+    return redirect(url_for("settings.settings"), code=303)
+
+
+# --- Pixabay Setup Wizard ---
+
+
+@settings_bp.route("/settings/pixabay-wizard")
+@login_required
+def pixabay_wizard():
+    """Guided step-by-step Pixabay API key setup wizard."""
+    return render_template("pixabay_wizard.html")
+
+
+@settings_bp.route("/api/settings/test-pixabay", methods=["POST"])
+@login_required
+def test_pixabay():
+    """Test a Pixabay API key without saving it."""
+    data = request.get_json(silent=True) or {}
+    api_key = (data.get("api_key") or "").strip()
+
+    if not api_key:
+        return jsonify({"success": False, "message": "API key is required."})
+
+    import requests as http_requests
+
+    try:
+        resp = http_requests.get(
+            "https://pixabay.com/api/",
+            params={"key": api_key, "q": "test", "per_page": 3},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        result = resp.json()
+        if "hits" in result:
+            return jsonify({"success": True, "message": "Pixabay API key is valid."})
+        else:
+            return jsonify({"success": False, "message": "Unexpected response from Pixabay API."})
+    except Exception:
+        logger.exception("Pixabay API test failed")
+        return jsonify({"success": False, "message": "Could not connect to Pixabay. Check your API key."})
+
+
+@settings_bp.route("/api/settings/save-pixabay", methods=["POST"])
+@login_required
+def save_pixabay():
+    """Save a Pixabay API key to .env."""
+    from src.web.config_utils import save_api_key_to_env
+
+    data = request.get_json(silent=True) or {}
+    api_key = (data.get("api_key") or "").strip()
+
+    if not api_key:
+        return jsonify({"success": False, "message": "API key is required."})
+
+    save_api_key_to_env("PIXABAY_API_KEY", api_key)
+    os.environ["PIXABAY_API_KEY"] = api_key
+
+    return jsonify({"success": True, "message": "Pixabay API key saved."})
 
 
 # --- Standards ---

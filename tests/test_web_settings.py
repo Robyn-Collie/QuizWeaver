@@ -558,6 +558,172 @@ class TestProviderRegistry:
 # ============================================================
 
 
+# ============================================================
+# Pixabay Settings Tests
+# ============================================================
+
+
+class TestPixabaySettings:
+    """Tests for the Pixabay Image Search section on the settings page."""
+
+    def test_settings_shows_image_search_section(self, client):
+        """GET /settings includes the Image Search section."""
+        resp = client.get("/settings")
+        assert resp.status_code == 200
+        assert b"Image Search" in resp.data
+        assert b"pixabay_api_key" in resp.data
+
+    def test_settings_shows_not_configured_badge(self, client):
+        """When no Pixabay key is set, show 'Not configured' badge."""
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("PIXABAY_API_KEY", None)
+            resp = client.get("/settings")
+            assert b"Not configured" in resp.data
+
+    def test_settings_shows_configured_badge(self, client):
+        """When Pixabay key is set, show 'Configured' badge."""
+        with patch.dict(os.environ, {"PIXABAY_API_KEY": "test-key-123"}):
+            resp = client.get("/settings")
+            assert b"Configured" in resp.data
+
+    def test_settings_pixabay_post_saves_key(self, client, app):
+        """POST /settings/pixabay saves the API key."""
+        with patch("src.web.config_utils.save_api_key_to_env") as mock_save:
+            resp = client.post(
+                "/settings/pixabay",
+                data={"pixabay_api_key": "new-pixabay-key"},
+                follow_redirects=True,
+            )
+            assert resp.status_code == 200
+            mock_save.assert_called_once_with("PIXABAY_API_KEY", "new-pixabay-key")
+
+    def test_settings_pixabay_post_clears_key(self, client, app):
+        """POST /settings/pixabay with blank key clears it."""
+        with patch("src.web.config_utils.save_api_key_to_env") as mock_save:
+            resp = client.post(
+                "/settings/pixabay",
+                data={"pixabay_api_key": ""},
+                follow_redirects=True,
+            )
+            assert resp.status_code == 200
+            mock_save.assert_called_once_with("PIXABAY_API_KEY", "")
+
+
+# ============================================================
+# Pixabay Wizard Tests
+# ============================================================
+
+
+class TestPixabayWizard:
+    """Tests for the Pixabay setup wizard page."""
+
+    def test_wizard_get_returns_200(self, client):
+        """GET /settings/pixabay-wizard returns 200."""
+        resp = client.get("/settings/pixabay-wizard")
+        assert resp.status_code == 200
+        assert b"Pixabay" in resp.data
+        assert b"API Key" in resp.data
+
+    def test_wizard_requires_login(self, app):
+        """Wizard page requires authentication."""
+        c = app.test_client()
+        resp = c.get("/settings/pixabay-wizard")
+        assert resp.status_code == 303
+
+
+class TestPixabayTestAPI:
+    """Tests for POST /api/settings/test-pixabay."""
+
+    def test_test_success(self, client):
+        """Valid key returns success."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"totalHits": 1, "hits": [{"id": 1}]}
+        mock_resp.raise_for_status = MagicMock()
+
+        with patch("requests.get", return_value=mock_resp):
+            resp = client.post(
+                "/api/settings/test-pixabay",
+                data=json.dumps({"api_key": "valid-key"}),
+                content_type="application/json",
+            )
+            data = resp.get_json()
+            assert data["success"] is True
+
+    def test_test_invalid_key(self, client):
+        """API error returns failure."""
+        with patch("requests.get", side_effect=Exception("401 Unauthorized")):
+            resp = client.post(
+                "/api/settings/test-pixabay",
+                data=json.dumps({"api_key": "bad-key"}),
+                content_type="application/json",
+            )
+            data = resp.get_json()
+            assert data["success"] is False
+
+    def test_test_missing_key(self, client):
+        """Missing key returns failure."""
+        resp = client.post(
+            "/api/settings/test-pixabay",
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+        data = resp.get_json()
+        assert data["success"] is False
+        assert "required" in data["message"].lower()
+
+    def test_test_requires_login(self, app):
+        """Test endpoint requires authentication."""
+        c = app.test_client()
+        resp = c.post(
+            "/api/settings/test-pixabay",
+            data=json.dumps({"api_key": "key"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 303
+
+
+class TestPixabaySaveAPI:
+    """Tests for POST /api/settings/save-pixabay."""
+
+    def test_save_success(self, client):
+        """Valid key saves successfully."""
+        with patch("src.web.config_utils.save_api_key_to_env") as mock_save:
+            resp = client.post(
+                "/api/settings/save-pixabay",
+                data=json.dumps({"api_key": "valid-key"}),
+                content_type="application/json",
+            )
+            data = resp.get_json()
+            assert data["success"] is True
+            mock_save.assert_called_once_with("PIXABAY_API_KEY", "valid-key")
+
+    def test_save_missing_key(self, client):
+        """Missing key returns failure."""
+        resp = client.post(
+            "/api/settings/save-pixabay",
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+        data = resp.get_json()
+        assert data["success"] is False
+
+    def test_save_requires_login(self, app):
+        """Save endpoint requires authentication."""
+        c = app.test_client()
+        resp = c.post(
+            "/api/settings/save-pixabay",
+            data=json.dumps({"api_key": "key"}),
+            content_type="application/json",
+        )
+        assert resp.status_code == 303
+
+
+# ============================================================
+# save_config Tests
+# ============================================================
+
+
 class TestSaveConfig:
     """Tests for the save_config() helper."""
 

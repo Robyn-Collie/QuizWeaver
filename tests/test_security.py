@@ -83,6 +83,21 @@ class TestCSRFProtection:
         assert b"csrf_token" in resp.data
 
 
+class TestPixabayCSRF:
+    """CSRF protection on Pixabay settings POST route."""
+
+    def test_pixabay_post_without_csrf_rejected(self, secure_app_with_user):
+        """POST /settings/pixabay without CSRF token should fail."""
+        client = secure_app_with_user.test_client()
+        with client.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "testteacher"
+            sess["user_id"] = 1
+
+        resp = client.post("/settings/pixabay", data={"pixabay_api_key": "test"})
+        assert resp.status_code == 400  # CSRF validation failure
+
+
 class TestOpenRedirect:
     """SEC-002: Open redirect via login next parameter."""
 

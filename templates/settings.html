@@ -272,6 +272,42 @@ toggleProviderFields();
     </div>
 </div>
 
+<!-- Image Search Settings -->
+<form method="POST" action="/settings/pixabay" class="form settings-form" style="margin-top: 2rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <h2>Image Search</h2>
+    <p class="text-muted">Configure Pixabay for in-app image search on quiz questions. Pixabay provides free images with no attribution required.</p>
+
+    <div class="form-group">
+        <label for="pixabay_api_key">Pixabay API Key
+            {% if pixabay_configured %}
+            <span class="badge badge-available">Configured</span>
+            {% else %}
+            <span class="badge badge-unavailable">Not configured</span>
+            {% endif %}
+        </label>
+        <input type="text" id="pixabay_api_key" name="pixabay_api_key"
+               value=""
+               placeholder="{% if pixabay_configured %}(key set - leave blank to clear){% else %}Enter Pixabay API key{% endif %}"
+               autocomplete="off" data-lpignore="true" data-1p-ignore="true"
+               style="-webkit-text-security: disc;">
+        <small class="text-muted">
+            {% if pixabay_configured %}
+            API key is configured. Submit blank to clear it.
+            {% else %}
+            Get a free API key from <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener">pixabay.com/api/docs</a>, or use the <a href="/settings/pixabay-wizard">setup wizard</a> for step-by-step guidance.
+            {% endif %}
+        </small>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Image Search Settings</button>
+        {% if not pixabay_configured %}
+        <a href="/settings/pixabay-wizard" class="btn btn-secondary">Setup Wizard</a>
+        {% endif %}
+    </div>
+</form>
+
 <script>
 // --- Accessibility Preference Management ---
 (function() {
