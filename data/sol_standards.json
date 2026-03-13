@@ -3,367 +3,42 @@
   "version": "2023",
   "standards": [
     {
-      "code": "SOL 3.1",
-      "description": "Read and write six-digit numerals",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will read, write, and identify the place and value of each digit in a six-digit numeral, with and without models."
-    },
-    {
-      "code": "SOL 3.2",
-      "description": "Compare and order whole numbers",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will compare and order whole numbers, each 9,999 or less."
-    },
-    {
-      "code": "SOL 3.3",
-      "description": "Represent fractions and mixed numbers",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will name and write fractions and mixed numbers represented by a model."
-    },
-    {
-      "code": "SOL 3.4",
-      "description": "Estimate and determine sums and differences",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will estimate solutions to and solve single-step and multistep problems involving the sum or difference of two whole numbers, each 9,999 or less, with or without regrouping."
-    },
-    {
-      "code": "SOL 4.1",
-      "description": "Read, write, and identify place value to millions",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will read, write, and identify the place and value of each digit in a nine-digit whole number."
-    },
-    {
-      "code": "SOL 4.2",
-      "description": "Compare and order whole numbers to millions",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will compare and order whole numbers expressed through millions."
-    },
-    {
-      "code": "SOL 4.3",
-      "description": "Read, write, represent, and identify decimals",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will read, write, represent, and identify decimals expressed through thousandths."
-    },
-    {
-      "code": "SOL 4.4",
-      "description": "Compare and order fractions and mixed numbers",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will compare and order fractions and mixed numbers, with and without models."
-    },
-    {
-      "code": "SOL 4.5",
-      "description": "Estimate and solve problems with whole numbers",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will estimate and solve single-step and multistep addition, subtraction, and multiplication problems with whole numbers."
-    },
-    {
-      "code": "SOL 5.1",
-      "description": "Determine prime and composite numbers",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will determine whether a whole number from 2 to 100 is prime or composite."
-    },
-    {
-      "code": "SOL 5.2",
-      "description": "Represent and identify equivalencies among fractions",
-      "subject": "Mathematics",
-      "grade_band": "3-5",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will represent and identify equivalencies among fractions and decimals, with and without models."
-    },
-    {
-      "code": "SOL 6.1",
-      "description": "Represent relationships between quantities using ratios",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will represent relationships between quantities using ratios, and will use appropriate notations, such as a/b, a to b, and a:b.",
-      "essential_knowledge": [
-        "ask questions to determine relationships between independent and dependent variables",
-        "develop hypotheses and identify independent and dependent variables",
-        "offer simple solutions to design problems",
-        "independently and collaboratively plan and conduct observational and experimental investigations; identify variables, constants, and controls where appropriate, including the safe use of chemicals and equipment",
-        "evaluate the accuracy of various methods for collecting data",
-        "take metric measurements using appropriate tools",
-        "use tools and/or materials to design and/or build a device to solve a specific problem",
-        "organize data sets to reveal patterns that suggest relationships",
-        "construct, analyze, and interpret graphical displays of data",
-        "compare and contrast data collected by different groups and discuss similarities and differences in findings",
-        "use data to evaluate and refine design solutions",
-        "construct explanations that include qualitative or quantitative relationships between variables",
-        "construct scientific explanations based on valid and reliable evidence obtained from sources (including the students' own investigations)",
-        "generate and compare multiple solutions to problems based on how well they meet the criteria and constraints",
-        "use scale models to represent and estimate distance",
-        "use, develop, and revise models to predict and explain phenomena",
-        "evaluate limitations of models",
-        "read scientific texts, including those adapted for classroom use, to obtain scientific and/or technical information",
-        "gather, read, and synthesize information from multiple appropriate sources and assess the credibility, accuracy, and possible bias of each publication",
-        "construct, use, and/or present an oral and written argument supported by empirical evidence and scientific reasoning"
-      ]
-    },
-    {
-      "code": "SOL 6.2",
-      "description": "Represent and determine equivalencies among fractions, mixed numbers, decimals, and percents",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will represent and determine equivalencies among fractions, mixed numbers, decimals, and percents.",
-      "essential_knowledge": [
-        "name the components of the solar system and describe their characteristics (6.2 a, b)",
-        "describe the planets and their relative positions from the sun (6.2 b)",
-        "identify characteristics of other components of the solar system including dwarf planets, meteors, asteroids, and comets (6.2a, b)",
-        "design, construct, and interpret a scale model of the Earth-moon-sun system and the solar system to Jupiter (6.2 b)",
-        "explain the role of gravity in the formation of the solar system and in orbital motion (6.2 c)",
-        "evaluate changes in the understanding of the solar system over time as changes in technology provided more information (6.2 d)",
-        "interpret a timeline of major developments in understanding the organization and workings of the solar system and assess the role of technology and mathematics in that development (6.2 d)."
-      ],
-      "essential_understandings": [
-        "The solar system is a set of interrelated and interdependent elements that are seamlessly connected through the flow of matter and energy. Characteristics of these elements within the solar system are determined by their composition.",
-        "The solar system consists of the sun, moon, Earth, other planets and their moons, meteors, asteroids, and comets. Each body has its own characteristics and features (6.2 a, b).",
-        "The distance between planets and the sizes of the planets vary greatly. The outer gas planets are very large, and the four inner planets are comparatively small and rocky (6.2 b).",
-        "Gravitational interactions are attractive and depend on the masses of interacting objects. Gravity is the force that keeps the planets in motion around the sun. Gravity acts everywhere in the universe (6.2 c).",
-        "Technological advances, breakthroughs in interpretation, and new observations continuously refine our understanding of the Earth and solar system.",
-        "The invention of the telescope provided powerful and confounding observations that rapidly challenged the Earth-centered model. The development of mathematical physics provided a scientific explanation for the motion of the nearby planets (6.2 d).",
-        "With the development of new technology over the last half-century (e.g., manned and robotic space craft, powerful Earth-based and space telescopes, and computer analyses of huge data sets), our knowledge of the solar system has increased substantially (6.2 d). Students are not responsible for memorizing specific missions or contributions."
-      ]
-    },
-    {
-      "code": "SOL 6.3",
-      "description": "Identify and represent integers",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will identify and represent integers; order and compare integers; and identify and describe absolute value of integers.",
-      "essential_knowledge": [
-        "describe the unique properties of Earth that enable it to support life (6.3 a)",
-        "model and describe how day and night and the phases of the moon occur (6.3 b, c)",
-        "model and explain the effect of Earth's axial tilt and its annual orbit around the sun on the seasons (6.3 d)",
-        "explain and illustrate the relationship between the gravitational pull of the moon and the cycle of tides (6.3 e)."
-      ],
-      "essential_understandings": [
-        "The proximity of the Earth to the sun and moon in our solar system influences Earth systems and enables life to exist on Earth.",
-        "Earth is a rocky planet, extensively covered with large oceans of liquid water, with ice caps in its polar regions. Earth has a protective atmosphere consisting predominantly of nitrogen and oxygen and has a magnetic field. The atmosphere and the magnetic field help shield Earth's surface from harmful solar radiation (6.3 a).",
-        "Scientific evidence indicates that Earth is about 4.5 billion years old (6.3 a).",
-        "The interactions and orientations of the sun, Earth, and moon lead to patterns that are evidenced in seasons, eclipses, and the phases of the moon.",
-        "As Earth rotates, different sides of Earth face toward or away from the sun, causing day and night, respectively (6.3 b).",
-        "The relative positions of the moon, Earth, and sun give rise to moon phases (6.3 c).",
-        "Seasons are caused by a combination of the tilt of Earth on its axis, the curvature of Earth's surface, and the angle at which sunlight strikes the surface of Earth during its annual revolution around the sun (6.3 d).",
-        "Tides are the result of the gravitational pull of the moon and sun on the surface waters of Earth (6.3 e)."
-      ]
-    },
-    {
-      "code": "SOL 6.4",
-      "description": "Recognize and represent patterns with whole number exponents and perfect squares",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will recognize and represent patterns with whole number exponents and perfect squares.",
-      "essential_knowledge": [
-        "explain the importance of the sun in the formation of most energy sources on Earth (6.4 a)",
-        "analyze and interpret a chart or diagram showing Earth's energy budget (6.4 b)",
-        "explain and illustrate how convection currents distribute thermal energy in the atmosphere and oceans (6.4 c)",
-        "explain the role of radiation, conduction, and convection in the distribution of Earth's energy through the atmosphere (6.4 c)",
-        "model and identify energy transformations from the sun to energy sources on Earth (6.4 d)",
-        "create and interpret a model or diagram of an energy transformation (6.4 d)",
-        "describe the transformations of energy involved with the formation and burning of coal and other fossil fuels (6.4 d)",
-        "investigate how light energy (radiant energy) can be transformed into other forms of energy (e.g., mechanical, chemical, and electrical) (6.4 d)."
-      ],
-      "essential_understandings": [
-        "All Earth's processes are the result of energy flowing and mass cycling within and among Earth's systems. The energy is derived from the sun and from Earth's hot interior.",
-        "Solar radiation is made up of different types of radiation (including infrared, visible light, and ultraviolet) (6.4 a).",
-        "Earth receives only a very small portion of the sun's energy, yet this energy is responsible for powering the motion of the atmosphere, the oceans, and many processes at Earth's surface. Earth's surface is heated unequally (6.4 b).",
-        "Earth's energy budget refers to the tracking of how much energy is flowing into and out of the Earth's climate, where the energy is going, and if the energy coming in balances with the energy going out (6.4 b).",
-        "The Earth's energy budget includes the solar energy entering and exiting Earth's atmosphere. Excess carbon dioxide and other gases affect the energy budget, creating a greenhouse effect (6.4 b).",
-        "When air or water is heated, the molecules move faster and farther apart, reducing their density and causing them to rise. Cooler air or water molecules move more slowly and are denser than warm air or water. Warm air or water rising coupled with cooler air or water descending forms a cyclic rising/falling pattern called convection (6.4 c).",
-        "Radiation and convection from Earth's surface transfer thermal energy. This energy powers the global circulation of the atmosphere and the oceans on our planet (6.4 c).",
-        "Energy is continuously transferred from one place to another and transformed among various forms.",
-        "Secondary sources of energy, such as electricity, are used to store, move, and deliver energy easily in usable form (6.4 d).",
-        "Thermal and radiant energy can be converted into mechanical energy, chemical energy, and electrical energy and back again (6.4 d)."
-      ]
-    },
-    {
-      "code": "SOL 6.5",
-      "description": "Investigate and describe the concept of positive exponents and perfect squares",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will investigate and describe the concept of positive exponents and perfect squares.",
-      "essential_knowledge": [
-        "create and interpret a simplified, modern model of the structure of an atom (6.5 a)",
-        "compare the atomic structure of two elements (6.5 b)",
-        "explain that elements are represented by symbols (6.5 c)",
-        "describe the role of bonding in the formation of new substances (6.5 d)",
-        "identify the name and number of each element present in a simple molecule or compound (6.5 e)",
-        "model a simple chemical change with an equation and account for all atoms (6.5 e)",
-        "distinguish the types of elements and number of each element in the chemical equation (6.5 f)",
-        "interpret data to identify the predominant elements found in the atmosphere, the oceans, living matter, and Earth's crust (6.5 g)."
-      ],
-      "essential_understandings": [
-        "Atoms are the basic building blocks of all matter. The properties of an atom are based on the number and arrangement of its subatomic particles.",
-        "The basic structural components of a typical atom are electrons, protons, and neutrons. Protons and neutrons comprise the nucleus of an atom (6.5 a).",
-        "An element is a form of matter made up of one type of atom. The atoms of an element have the same number of protons and electrons, although the number of neutrons may vary (6.5 b).",
-        "The atoms of one element differ from those of another element in the number of protons (6.5 b).",
-        "Elements can be represented by chemical symbols (6.5 c).",
-        "In a chemical process, the atoms that make up the original substance (reactants) are regrouped into different molecules and the new substances (products) have different properties from the properties of the reactants.",
-        "Two or more atoms of different elements may combine to form a compound (6.5 d).",
-        "Chemical bonds are the forces that hold atoms together to form new substances. These bonds are formed with electrons (6.5 d).",
-        "Compounds can be represented by chemical formulas. Each element in the compound is represented by its unique symbol. The number of each type of element in the compound (other than one) is represented by a small number (the subscript) to the right of the element symbol (6.5 e).",
-        "Matter is conserved because atoms are conserved in chemical and physical processes.",
-        "Chemical equations can be used to model chemical changes, illustrating how elements become rearranged in a chemical reaction (6.5 f). Students are not responsible for balancing equations.",
-        "A limited number of elements form the largest portion of Earth's crust, living matter, the oceans, and the atmosphere (6.5 g)."
-      ]
-    },
-    {
-      "code": "SOL 6.6",
-      "description": "Add, subtract, multiply, and divide integers",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will add, subtract, multiply, and divide integers.",
-      "essential_knowledge": [
-        "plan an investigation to demonstrate the ability of water to dissolve materials (6.6 a)",
-        "describe the properties of water and identify examples of cohesion, adhesion, and surface tension (6.6 b)",
-        "compare the effects of adding or subtracting thermal energy to the states of water (6.6 c)",
-        "relate the three states of water to the water cycle (6.6 c)",
-        "model the action of freezing water on rocks (6.6 d)",
-        "plan and conduct an investigation to determine the action of acidified water on building materials such as concrete, limestone, or marble (6.6 d)",
-        "chart, record, and describe evidence of chemical and physical weathering in the local environment (6.6 d)",
-        "analyze and explain the difference in average winter temperatures among areas in central and western Virginia and cities and counties along the Chesapeake Bay and Atlantic coast (6.6 e)",
-        "explain the role of water in power generation (6.6 f)",
-        "describe the importance of careful management of water resources (6.6 f)."
-      ],
-      "essential_understandings": [
-        "Water has unique properties that are essential to Earth processes.",
-        "Due to water's structure, many substances will dissolve in water. For this reason, water is often called the universal solvent (6.6 a).",
-        "Water is the only compound that commonly exists in all three states (solid, liquid, gas) on Earth (6.6 b).",
-        "The structure of water molecules allows for the attraction of these molecules to each other, leading to cohesion. Their structure also allows water molecules to stick to other surfaces, leading to adhesion (6.6 b).",
-        "Surface tension is the property of the surface of a liquid that allows it to resist an external force. This property is due to the cohesive nature of water molecules (6.6 b).",
-        "Solid water is less dense than liquid water (6.6 b).",
-        "Thermal energy added to a system increases the kinetic energy of molecules and results in temperature and phase changes.",
-        "Water can absorb thermal energy without showing relatively large changes in temperature (6.6 c, e).",
-        "Large bodies of water act to moderate the climate of surrounding areas by absorbing thermal energy in summer and slowly releasing that energy in the winter. For this reason, the climate near large bodies of water is slightly milder than in areas without large bodies of water (6.6 c, e).",
-        "Water shapes landscapes and is a powerful agent in weathering and erosion.",
-        "Water (rain, ice, snow) has shaped our environment by physically and chemically weathering rock and soil and transporting sediments. Freezing water can break rock without any change in the minerals that form the rock (physical weathering). This usually produces small particles and sand. Water, along with dissolved gases and other chemicals, causes the minerals in rocks to be changed, leading to the deterioration of the rock (chemical weathering). Erosion is the movement of the materials by water or wind (6.6 d).",
-        "Humans affect the quality, availability, and distribution of Earth's water.",
-        "Most of Earth's water (97 percent) is salt water in the oceans. Available fresh water, used by humans and other organisms, makes up less than one percent of the water on Earth (6.6 f).",
-        "Water is essential for agriculture and in power generation (6.6 f).",
-        "Accessibility of clean, fresh water is critical in maintaining public health (6.6 f)."
-      ]
-    },
-    {
-      "code": "SOL 7.1",
-      "description": "Investigate and describe the concept of negative exponents for powers of ten",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will investigate and describe the concept of negative exponents for powers of ten; compare and order numbers greater than zero written in scientific notation."
-    },
-    {
-      "code": "SOL 7.2",
-      "description": "Solve practical problems involving operations with rational numbers",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will solve practical problems involving operations with rational numbers."
-    },
-    {
-      "code": "SOL 7.3",
-      "description": "Solve single-step and multistep problems using proportional reasoning",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will solve single-step and multistep practical problems, using proportional reasoning."
-    },
-    {
-      "code": "SOL 7.4",
-      "description": "Solve problems involving percent increase and decrease",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will solve single-step and multistep practical problems, using proportional reasoning: problems involving tips, tax, and percent increase and decrease."
-    },
-    {
-      "code": "SOL 8.1",
-      "description": "Compare and order real numbers",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will compare and order real numbers."
-    },
-    {
-      "code": "SOL 8.2",
-      "description": "Describe the relationships between the subsets of the real number system",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will describe the relationships between the subsets of the real number system."
-    },
-    {
-      "code": "SOL 8.3",
-      "description": "Estimate and determine the two consecutive integers between which a square root lies",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Number and Number Sense",
-      "full_text": "The student will estimate and determine the two consecutive integers between which a square root lies."
-    },
-    {
-      "code": "SOL 8.4",
-      "description": "Solve practical problems involving consumer applications",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Computation and Estimation",
-      "full_text": "The student will solve practical problems involving consumer applications."
-    },
-    {
-      "code": "SOL 8.14",
-      "description": "Evaluate algebraic expressions",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Patterns, Functions, and Algebra",
-      "full_text": "The student will evaluate an algebraic expression for given replacement values of the variables."
-    },
-    {
-      "code": "SOL 8.15",
-      "description": "Solve multistep linear equations in one variable",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Patterns, Functions, and Algebra",
-      "full_text": "The student will solve multistep linear equations in one variable with the variable on one or both sides of the equation."
-    },
-    {
-      "code": "SOL 8.16",
-      "description": "Solve multistep linear inequalities in one variable",
-      "subject": "Mathematics",
-      "grade_band": "6-8",
-      "strand": "Patterns, Functions, and Algebra",
-      "full_text": "The student will solve multistep linear inequalities in one variable with the variable on one or both sides of the inequality."
-    },
-    {
       "code": "SOL 3.5R",
       "description": "Read and demonstrate comprehension of fictional texts",
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry."
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry.",
+      "essential_understandings": [
+        "understanding of the essential elements and characteristics of fictional text and poetry."
+      ],
+      "essential_knowledge": [
+        "identify literary nonfiction as a type of narrative text, which uses story elements and language to share accurate information about real people, places, and events, including but not limited to biography and autobiography.",
+        "use important plot events to summarize fictional text, literary nonfiction, and poetry",
+        "make a variety of connections with the text, such as:",
+        "connections between the text they are reading and other texts they have",
+        "read, such as identifying a similar plot or character; and",
+        "connections between what they already know about the topic and what they find in the reading that is new to them",
+        "use specific details to make, justify, and modify, confirm, and revise predictions by:",
+        "identifying information from the text that supports or contradicts a prediction; and",
+        "revising predictions based on new understandings.",
+        "apply knowledge of characterization by",
+        "describing a character’s attributes (traits, motivations or feelings);",
+        "using evidence from the text to support generalizations about the character;",
+        "comparing and contrasting characters within a selection or between/among two or more selections; and",
+        "explaining how the actions of characters contribute to the sequence of events",
+        "apply knowledge of setting by:",
+        "identifying the time and place of a story, using supporting details from the text; and",
+        "identifying the details that make two settings similar or different.",
+        "compare and contrast characters, setting, and plot in at least two versions of the same story (e.g., Cinderella stories).",
+        "identify the main conflict and resolution, main idea or theme, and supporting details.",
+        "recognize and identify a theme or lesson of fictional text(s)s (e.g., friendship, survival, determination) using key supporting details.",
+        "Thematic topic",
+        "Lesson learned",
+        "learn to differentiate fiction from nonfiction",
+        "demonstrate comprehension by writing about what is read.",
+        "read with accuracy, fluency, and meaningful expression to support comprehension."
+      ]
     },
     {
       "code": "SOL 3.6R",
@@ -371,7 +46,21 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of nonfiction texts."
+      "full_text": "The student will read and demonstrate comprehension of nonfiction texts.",
+      "essential_understandings": [
+        "understand that nonfiction texts provide information, explain a process, or persuade.",
+        "understand text features serve a purpose.",
+        "understand that details and information from the text are used to draw conclusions."
+      ],
+      "essential_knowledge": [
+        "identify the author’s purpose for writing, which may include to provide information, to explain a process, or to persuade",
+        "use prior and background knowledge as context for new learning by recognizing similarities between the text they are reading and other texts they have read.",
+        "use text features to preview, set a purpose for reading, make, confirm, and revise predictions and locate information",
+        "identify details that support the main idea",
+        "state in their own words the main idea",
+        "practice reading and rereading familiar nonfiction texts with fluency and accuracy.",
+        "demonstrate comprehension by writing about what is read"
+      ]
     },
     {
       "code": "SOL 3.9W",
@@ -379,7 +68,16 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Writing",
-      "full_text": "The student will write for a variety of purposes, including to describe, to inform, to entertain, and to explain."
+      "full_text": "The student will write for a variety of purposes, including to describe, to inform, to entertain, and to explain.",
+      "essential_understandings": [
+        "understand editing for correct sentence formation, grammar, capitalization, spelling, and punctuation makes the meaning of the writing clearer to the reader."
+      ],
+      "essential_knowledge": [
+        "write using complete sentences.",
+        "choose and use past and present verb tenses. for clarity.",
+        "use singular possessives to demonstrate ownership",
+        "use correct punctuation for commas in a simple series and apostrophes in contractions with pronouns (e.g., I’d, we’ve)"
+      ]
     },
     {
       "code": "SOL 4.4R",
@@ -387,7 +85,23 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will expand vocabulary when reading, using context clues, knowledge of roots, affixes, synonyms, and antonyms."
+      "full_text": "The student will expand vocabulary when reading, using context clues, knowledge of roots, affixes, synonyms, and antonyms.",
+      "essential_understandings": [
+        "understand that the content and structure of a sentence, paragraph, or reading selection can be used to determine the meaning of an unfamiliar word.",
+        "understand that roots, affixes, synonyms, and antonyms can be used to determine the meaning of unfamiliar words.",
+        "understand that word reference resources can be used to learn word meanings.",
+        "understand the type of information found in word reference materials such as a glossary, dictionary, and thesaurus."
+      ],
+      "essential_knowledge": [
+        "use context as a clue to clarify the meaning of unfamiliar words or phrases (e.g., definitions, examples, or restatements of text).",
+        "use clues in the context of a sentence, paragraph, or reading selection to predict and explain the meanings of words that have more than one definition.",
+        "use their knowledge of affixes to read and understand the meanings of words.",
+        "apply their knowledge of synonyms) and antonyms to understand the meanings of unfamiliar words.",
+        "derive word meaning by using their knowledge of homophones such as read/red, no/know, hear/here",
+        "use context to select the applicable definition of a word from a glossary or dictionary.",
+        "identify and consult the word-reference material(s), including the glossary, dictionary, and thesaurus, most likely to contain needed information to clarify word meaning.",
+        "determine the meaning of general academic and content-specific words or phrases in a text."
+      ]
     },
     {
       "code": "SOL 4.5R",
@@ -395,7 +109,32 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying the author's purpose, making inferences, and drawing conclusions."
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying the author's purpose, making inferences, and drawing conclusions.",
+      "essential_understandings": [
+        "understand the essential elements and characteristics of fictional text, literary nonfiction, and poetry.",
+        "understand the similarities and differences between literary and informational nonfiction texts."
+      ],
+      "essential_knowledge": [
+        "describe how an author’s choice of language, setting, and characters develops the plot and contributes to the sequence of events.",
+        "describe in depth a character, setting, or event drawing on specific details from the text (e.g., words, actions, or a character’s thoughts).",
+        "identify literary nonfiction as a type of narrative text, which uses story elements and language to share accurate information about real people, places, and events, including but not limited to biography and autobiography.",
+        "identify genres including but not limited to: fantasy, humor, fable/fairy tale, realistic fiction, historical fiction, folklore/tall tales",
+        "identify the theme(s) of a text (e.g., friendship, survival, determination)",
+        "thematic topic",
+        "lessons learned",
+        "summarize plot events using supporting details",
+        "identify the main conflict and resolution in a poem, or section of text, or book.",
+        "analyze the similarities and differences between paired fictional texts and informational nonfiction texts (e.g., similar themes and topics, patterns of events).",
+        "make connections between the text of a story and a visual/oral presentation of the text, identifying where each version reflects specific descriptions and directions in the text.",
+        "identify sensory words that describe sights, sounds, smells, and tastes, and describe how they contribute to the text. make the reader feel.",
+        "refer to details, specific vocabulary, and examples in a text to draw conclusions and make inferences.",
+        "use specific details to make, confirm, or revise predictions by:",
+        "identifying information from the text that supports or contradicts a prediction; and",
+        "revising predictions based on new understandings.",
+        "demonstrate comprehension and apply strategies by writing about what is read",
+        "read familiar text with fluency, accuracy, and meaningful expression",
+        "read with sufficient accuracy and fluency to support comprehension."
+      ]
     },
     {
       "code": "SOL 4.7W",
@@ -403,7 +142,42 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Writing",
-      "full_text": "The student will write effectively in a variety of forms, including narrative, descriptive, opinion, and expository."
+      "full_text": "The student will write effectively in a variety of forms, including narrative, descriptive, opinion, and expository.",
+      "essential_understandings": [
+        "understand that writers use the writing process including planning, drafting, revising, editing, and publishing.",
+        "understand the domains of writing include composing, written expression, and usage/mechanics."
+      ],
+      "essential_knowledge": [
+        "write focusing on the composing domain features of central idea, organization, unity, and elaboration.",
+        "write focusing on the written expression domain features of word choice, specific vocabulary, and sentence variety.",
+        "use mentor texts as an example of writing.",
+        "produce clear and coherent writing in which the development and organization are appropriate to purpose and audience.",
+        "recognize different forms of writing have different patterns of organization",
+        "descriptive/expository",
+        "clearly introduce a topic and organize information in paragraphs",
+        "use facts, definitions, opinions, quotations, details, or other examples and",
+        "information to develop the topic",
+        "use specific vocabulary to inform and explain the topic; and",
+        "provide a conclusion related to the topic",
+        "narrative",
+        "organize an event sequence that unfolds naturally",
+        "use transition words and phrases for sentence variety",
+        "provide a conclusion",
+        "use specific vocabulary to develop a story",
+        "opinion",
+        "state a clear opinion",
+        "provide multiple facts as reasons for support",
+        "provide a conclusion",
+        "organize thoughts to convey a central idea before writing.",
+        "use a variety of prewriting strategies",
+        "focus, organize, and elaborate to construct an effective cohesive message for the reader.",
+        "select specific information to guide readers more purposefully through the piece.",
+        "use specific vocabulary and vivid word choice.",
+        "link ideas within paragraphs using transition words and phrases",
+        "include sentences of various lengths and beginnings to create a rhythm.",
+        "use available word reference resources (e.g., dictionary and thesaurus) as aids to revising writing for clarity.",
+        "use facts and details in sentences to elaborate the main idea."
+      ]
     },
     {
       "code": "SOL 5.4R",
@@ -411,7 +185,14 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will expand vocabulary when reading, using knowledge of roots, affixes, synonyms, antonyms, and homophones."
+      "full_text": "The student will expand vocabulary when reading, using knowledge of roots, affixes, synonyms, antonyms, and homophones.",
+      "essential_understandings": [
+        "understand that the content and structure of a sentence, paragraph, or reading selection can be used to help determine the meaning of an unfamiliar word.",
+        "understand that roots, affixes, synonyms, and antonyms can be used to determine the meaning of unfamiliar words.",
+        "understand that word reference resources can be used to learn word meanings.",
+        "understand the type of information found in word reference materials such as a glossary, dictionary, and thesaurus"
+      ],
+      "essential_knowledge": []
     },
     {
       "code": "SOL 5.5R",
@@ -419,7 +200,15 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying theme, point of view, and figurative language."
+      "full_text": "The student will read and demonstrate comprehension of fictional texts, including narratives and poetry, identifying theme, point of view, and figurative language.",
+      "essential_understandings": [
+        "understand the essential elements and characteristics of fictional text, literary nonfiction, and poetry.",
+        "understand the similarities and differences between literary and informational nonfiction texts."
+      ],
+      "essential_knowledge": [
+        "thematic topic",
+        "lessons learned"
+      ]
     },
     {
       "code": "SOL 5.7W",
@@ -427,7 +216,44 @@
       "subject": "English",
       "grade_band": "3-5",
       "strand": "Writing",
-      "full_text": "The student will write for a variety of purposes: to describe, to inform, to entertain, to explain, and to persuade."
+      "full_text": "The student will write for a variety of purposes: to describe, to inform, to entertain, to explain, and to persuade.",
+      "essential_understandings": [
+        "understand that writers use the writing process including planning, drafting, revising, editing, and publishing.",
+        "understand the domains of writing include composing, written expression, and usage/mechanics.",
+        "understand voice shows an author’s personality, awareness of audience, and passion for the topic adding liveliness and energy to writing."
+      ],
+      "essential_knowledge": [
+        "write focusing on the composing domain features of central idea, organization, unity, and elaboration.",
+        "write focusing on the written expression domain features of word choice, specific vocabulary, tone, voice, and sentence variety.",
+        "produce a clear and coherent written piece in which the development and organization are appropriate to purpose and audience.",
+        "recognize different forms of writing have different patterns of organization",
+        "descriptive/expository",
+        "clearly introduce a topic and organize information in paragraphs",
+        "use facts, definitions, opinions, quotations, details, or other examples and information to develop the topic",
+        "provide a conclusion",
+        "narrative",
+        "organize an event sequence that unfolds naturally",
+        "use transition words and phrases",
+        "use narrative techniques, such as dialogue, description, and pacing, to develop experiences or characters.",
+        "provide a conclusion",
+        "persuasive",
+        "introduce the position",
+        "provide evidence to support the position",
+        "provide points for the opposite side and argue against them",
+        "provide a conclusion.",
+        "use mentor texts as an example of writing",
+        "focus, organize, and elaborate to construct an effective message for the reader",
+        "write a clear topic sentence focusing on the main idea",
+        "purposefully select language to demonstrate an awareness of the intended audience",
+        "select specific information to guide readers more purposefully through the piece",
+        "write multiparagraph compositions focused on a central idea, organizing related information in paragraphs",
+        "choose precise descriptive vocabulary and information to create tone and voice",
+        "revise writing by consulting with peers or adults",
+        "include sentences of various lengths and beginnings to create a rhythm",
+        "vary sentence structure by using transition words and phrases",
+        "clarify writing when revising",
+        "include supporting details that elaborate the main idea"
+      ]
     },
     {
       "code": "SOL 6.4R",
@@ -435,7 +261,21 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read and learn the meanings of unfamiliar words and phrases by using context clues, analyzing word structure, and consulting reference materials."
+      "full_text": "The student will read and learn the meanings of unfamiliar words and phrases by using context clues, analyzing word structure, and consulting reference materials.",
+      "essential_understandings": [
+        "understand that word structure can be analyzed to show relationships among words",
+        "understand that affixes and Greek and Latin roots are clues to determine meanings of words",
+        "recognize that many words have multiple meanings and that context and dictionaries are both supportive in determining which meaning is most appropriate",
+        "recognize that figurative language enriches text."
+      ],
+      "essential_knowledge": [
+        "use common Greek or Latin affixes and roots as clues to the meaning of a word (e.g., aud –  hearing, listening, or sound audience, auditory, audible.)",
+        "separate and recombine known word parts to predict the meaning of unfamiliar words, such as separating poly from polygon and phone from telephone to predict the meaning of polyphony.",
+        "use context clues to determine meanings of unfamiliar words in text, such as examples, restatements; and contrast",
+        "identify figurative language in text, including simile, hyperbole and personification",
+        "consult word reference materials to find the pronunciation of a word or determine or clarify its meaning",
+        "determine or clarify the meaning of unknown and multiple-meaning words and phrases based on reading and content"
+      ]
     },
     {
       "code": "SOL 6.5R",
@@ -443,7 +283,37 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, describing how the choice of language, setting, characters, and point of view contributes to the author's style."
+      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, describing how the choice of language, setting, characters, and point of view contributes to the author's style.",
+      "essential_understandings": [
+        "understand that literary nonfiction includes biography, autobiography, and personal essay",
+        "understand that poetry can be rhymed, unrhymed, and/or patterned",
+        "recognize that figurative language enriches text",
+        "understand that imagery and figurative language enrich texts"
+      ],
+      "essential_knowledge": [
+        "identify setting as time and place",
+        "explain plot as:",
+        "the development of the central conflict and resolution;",
+        "the sequence of events in the story; and",
+        "the writer’s map for what happens, how it happens, to whom it happens, when it happens, why it happens, and when it happens",
+        "identify characterization as the way an author presents a character and character traits revealed by what a character says, what a character thinks, what a character does, and how other characters respond to the character.",
+        "determine a theme(s) and explain how it is developed through specific details.",
+        "identify internal and external conflicts, including:",
+        "internal conflicts within characters;",
+        "describe how a fictional plot is often episodic, and how characters develop as the plot moves toward a resolution.",
+        "notice an author’s craft, including use of:",
+        "language patterns",
+        "sentence variety",
+        "vocabulary",
+        "imagery;",
+        "figurative language; and",
+        "differentiate between a variety of fictional genres including short story, novel, and drama.",
+        "recognize and analyze an author’s use of figurative language including simile, hyperbole, metaphor, personification",
+        "differentiate between narrative and poetic forms",
+        "recognize poetic forms including but not limited to haiku, limerick, ballad, and free verse",
+        "recognize poetic elements in prose and poetry including but not limited to rhyme, rhythm, repetition, alliteration, and onomatopoeia",
+        "identify how transitional words signal an author’s organization such as words indicating time, cause and effect, or indicating more information."
+      ]
     },
     {
       "code": "SOL 6.6R",
@@ -451,7 +321,28 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of a variety of nonfiction texts, identifying main idea, supporting details, and organizational patterns."
+      "full_text": "The student will read and demonstrate comprehension of a variety of nonfiction texts, identifying main idea, supporting details, and organizational patterns.",
+      "essential_understandings": [
+        "recognize an author’s patterns of organization can be an aid to comprehension.",
+        "recognize an author’s use of technical vocabulary.",
+        "understand text features are created purposefully and are an aid to comprehension",
+        "understand that all texts contain messages stated or implied by an author",
+        "understand that there are strategies including context, structural analysis, and reference sources, for determining the meaning of unfamiliar and technical vocabulary",
+        "understand that skilled readers of nonfictional texts apply different reading strategies"
+      ],
+      "essential_knowledge": [
+        "preview texts using text features such as but not limited to boldface and/or italics type, type set in color, vocabulary, graphics, and headings and subheadings",
+        "identify common patterns of organizing text including chronological or sequential, comparison/contrast, cause and effect, problem-solution; and process.",
+        "use context, structural analysis, and reference sources to determine the meaning of unfamiliar and technical vocabulary.",
+        "make inferences and draw conclusions using the text(s) for support.",
+        "identify similarities and differences in the information found in several sources about the same topic.",
+        "use strategies and rules for summarizing, such as the following:",
+        "delete trivia and redundancy;",
+        "substitute a general term for a list; and",
+        "find or create a main idea statement.",
+        "summarize the text without providing a personal opinion",
+        "demonstrate comprehension and apply strategies to write about what is read"
+      ]
     },
     {
       "code": "SOL 6.7W",
@@ -459,7 +350,33 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Writing",
-      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective, with an emphasis on narrative and reflective writing."
+      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective, with an emphasis on narrative and reflective writing.",
+      "essential_understandings": [
+        "understand that writing requires a recursive process that includes planning, drafting, revising, editing, and publishing.",
+        "understand that writing should be purposefully crafted with attention to deliberate word choice; precise information and vocabulary; sentence variety; and tone and voice.",
+        "understand that a thesis statement is not an announcement of the subject (statement of intent) but rather a unified and specific statement."
+      ],
+      "essential_knowledge": [
+        "compose with attention to central idea, unity, elaboration, and organization.",
+        "analyze and use mentor texts as models for writing.",
+        "use narrative techniques, such as pacing, and description, to develop experiences, events, and/or characters.",
+        "write reflectively to explain and analyze an experience, a skill, or event, and as a response to reading",
+        "Three examples of reflective writing include:",
+        "write expository texts to examine a topic and convey ideas, concepts, and information.",
+        "write using strategies organizational patterns such as definition, classification comparison/contrast, and cause/effect",
+        "develop the topic using relevant facts, definitions, details, quotations, and/or examples.",
+        "use transitional words or phrases to connect parts of sentences in order to show relationships between ideas; signal a shift or change in the writer's thoughts; signal levels of importance; suggest a pattern of organization; and make sentences clearer.",
+        "establish and maintain a formal style of writing when appropriate.",
+        "provide an appropriate conclusion for the purpose and form of writing.",
+        "identify audience and purpose for any piece of writing",
+        "elaborate to give detail; add depth; and continue the development of an idea.",
+        "write an effective thesis statement focusing, limiting, or narrowing the topic.",
+        "differentiate between a thesis statement and a topic sentence.",
+        "write on any central theme or topic demonstrating elaboration, coherence, and unity.",
+        "incorporate variety into sentences, using appropriate: modifier, coordination, and subordination",
+        "revise drafts for improvement using teacher assistance and peer collaboration.",
+        "understand that revising to improve a draft includes rereading, reflecting, rethinking, and rewriting to clarify, elaborate, and make more precise."
+      ]
     },
     {
       "code": "SOL 7.4R",
@@ -467,7 +384,22 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read to determine the meanings and pronunciations of unfamiliar words and phrases within authentic texts."
+      "full_text": "The student will read to determine the meanings and pronunciations of unfamiliar words and phrases within authentic texts.",
+      "essential_understandings": [
+        "recognize that figurative language enriches text.",
+        "understand that affixes and Greek and Latin roots are clues to determine meanings of words.",
+        "understand that words have nuances of meaning including figurative, connotative, and technical that help to determine the appropriate meaning.",
+        "understand that the effectiveness of any media message is determined by the impact on the intended audience."
+      ],
+      "essential_knowledge": [
+        "use common Greek or Latin affixes and roots to predict the meaning of unfamiliar words",
+        "separate and recombine known word parts to predict the meaning of unfamiliar words.",
+        "recognize, understand, use, and explain the impact of figurative language including simile, metaphor, personification, and hyperbole.",
+        "distinguish among the connotations of words with similar denotations",
+        "recognize that synonyms may have different connotations (e.g., elderly and mature; youthful and juvenile, inexpensive and cheap.)",
+        "use context as a clue to the meaning of a word or phrase",
+        "consult word reference materials to find the pronunciation of a word or determine/clarify meanings."
+      ]
     },
     {
       "code": "SOL 7.5R",
@@ -475,7 +407,56 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, comparing and contrasting various forms and genres."
+      "full_text": "The student will read and demonstrate comprehension of a variety of fictional texts, narrative nonfiction, and poetry, comparing and contrasting various forms and genres.",
+      "essential_understandings": [
+        "understand that the author uses images to craft a message and create characters.",
+        "understand that literary nonfiction includes biography, autobiography, and personal essay.",
+        "understand that poetry can be rhymed, unrhymed, and/or patterned",
+        "recognize an author’s craft as the purposeful choice of vocabulary, sentence formation, voice, and tone"
+      ],
+      "essential_knowledge": [
+        "recognize the elements of narrative structure including:",
+        "setting",
+        "character(s); protagonist and antagonist",
+        "external conflicts, such as",
+        "individual vs. individual",
+        "individual vs. nature",
+        "individual vs. society",
+        "individual vs. supernatural",
+        "individual vs. technology",
+        "internal conflict – individual vs. self;",
+        "plot – development of the central conflict, including",
+        "initiating event",
+        "rising action",
+        "climax",
+        "falling action",
+        "resolution",
+        "theme.",
+        "identify and distinguish between first and third person point-of-view",
+        "distinguish between narrative prose and poetic forms, including haiku, limerick, ballad, free verse, couplet, and quatrain",
+        "differentiate between a variety of fictional genres including short story, novel, and drama.",
+        "identify characterization as the way an author presents a character and reveals character traits by:",
+        "what a character says;",
+        "what a character thinks;",
+        "what a character does; and",
+        "how other characters respond to the character.",
+        "determine the theme(s) of a text and analyze its development over the course of the text.",
+        "provide an objective summary of the text.",
+        "analyze an author’s choice and use of literary devices, including foreshadowing and irony",
+        "analyze elements of an author’s style, including:",
+        "word choice to develop tone",
+        "sentence structure",
+        "imagery",
+        "contrasting points of view",
+        "figurative language",
+        "recognize and analyze the impact of an author’s choice of sound devices, including:",
+        "rhyme",
+        "rhythm",
+        "repetition",
+        "alliteration",
+        "onomatopoeia",
+        "demonstrate comprehension and apply strategies to write about what is read."
+      ]
     },
     {
       "code": "SOL 7.7W",
@@ -483,7 +464,39 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Writing",
-      "full_text": "The student will write in a variety of forms with an emphasis on exposition, persuasion, and narration."
+      "full_text": "The student will write in a variety of forms with an emphasis on exposition, persuasion, and narration.",
+      "essential_understandings": [
+        "understand that writing requires a recursive process that includes planning, drafting, revising, editing, and publishing.",
+        "understand that voice in writing is purposefully crafted with attention to deliberate word choice, precise information and vocabulary",
+        "understand that vocabulary and tone must be selected with awareness of audience and purpose.",
+        "understand that effective writing includes elaboration.",
+        "understand that a thesis statement is not an announcement of the subject (statement of intent) but rather a unified and specific statement.",
+        "understand that effective writing has been improved through revision."
+      ],
+      "essential_knowledge": [
+        "compose with attention to central idea, unity, elaboration, and organization.",
+        "elaborate to give detail; add depth; and continue the development of an idea.",
+        "analyze and use mentor texts as models for writing.",
+        "identify intended audience and purpose.",
+        "use a variety of prewriting strategies",
+        "explain, analyze, or summarize a topic.",
+        "write an effective thesis statement that focuses on the topic and explains the writer’s position in an argument.",
+        "differentiate between a thesis statement and a topic sentence.",
+        "choose an appropriate strategy for organizing ideas such as comparison/contrast, personal narrative, cause/effect, etc., and provide transitions between ideas",
+        "write reflectively to explain and analyze a text, a presentation, an experience, a skill, or event",
+        "Three examples of reflective writing include:",
+        "write persuasively organizing reasons logically and effectively.",
+        "create multiparagraph compositions focusing on a central idea and using elaborating details, reasons, or examples as appropriate for audience and purpose.",
+        "include an appropriate introduction and conclusion.",
+        "sustain a formal style when appropriate.",
+        "use written expression to draft and revise compositions with attention to voice, tone, selection of information, embedded phrases and clauses that clarify meaning, vivid and precise vocabulary, figurative language, and sentence variety.",
+        "recognize terms illustrative of tone in mentor texts and student writing",
+        "apply revising procedures in peer and self-review, including rereading, reflecting, rethinking, and, rewriting to clarify, elaborate, and make more precise",
+        "revise drafts for improvement using teacher assistance, peer collaboration, and growing independence",
+        "vary sentence structure by using coordinating conjunctions",
+        "use subordinating conjunctions to form complex sentences",
+        "incorporate variety into sentences using simple, compound, and compound-complex sentences, including, but not limited to coordination, subordination, and modifier"
+      ]
     },
     {
       "code": "SOL 8.4R",
@@ -491,7 +504,23 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts."
+      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts.",
+      "essential_understandings": [
+        "recognize that words have nuances of meaning including figurative, connotative, and technical which that help to determine the appropriate meaning.",
+        "understand that affixes and Greek and Latin roots are clues to determine meanings of words.",
+        "recognize that figurative language enriches text."
+      ],
+      "essential_knowledge": [
+        "use common roots to determine the meaning of unfamiliar words and make connections with word families (e.g., -phobia, and -ology).",
+        "recognize the relationships among words related by structure and derivation, such as polygraph and graffiti.",
+        "distinguish among the connotations of words with similar denotations",
+        "understand, evaluate, and use figurative language, including: simile, metaphor, personification, hyperbole and symbol",
+        "analyze the impact of specific word choices on meaning and tone",
+        "consult reference materials to find the pronunciation of a word or determine/clarify meaning.",
+        "recognize that synonyms may have different connotations, (elderly and mature; youthful and juvenile, inexpensive and cheap) and describe the impact on text.",
+        "use context as a clue to the meaning of a word or phrase.",
+        "use both context and reference skills independently to determine the nuances and connotations of words."
+      ]
     },
     {
       "code": "SOL 8.5R",
@@ -499,7 +528,70 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Reading",
-      "full_text": "The student will read and analyze a variety of fictional texts, narrative nonfiction, and poetry, making inferences and drawing conclusions based on explicit and implied information."
+      "full_text": "The student will read and analyze a variety of fictional texts, narrative nonfiction, and poetry, making inferences and drawing conclusions based on explicit and implied information.",
+      "essential_understandings": [
+        "understand that an author’s voice and tone stem from word choice and the stylized use of literary devices.",
+        "understand the relationship between causes and effects recognize that figurative language enriches text",
+        "understand that the author uses images to craft a message and create characters.",
+        "understand that literary nonfiction includes biography, autobiography, and personal essay.",
+        "understand that analysis of a text should be based on text references, not on personal opinion."
+      ],
+      "essential_knowledge": [
+        "identify and analyze narrative elements, including:",
+        "setting",
+        "character(s), either:",
+        "static",
+        "dynamic",
+        "identify protagonist and antagonist.",
+        "explain characterization as the way an author presents a character and reveals character traits by:",
+        "what a character says;",
+        "what a character thinks;",
+        "what a character does;",
+        "how other characters respond to the character",
+        "external conflicts, such as:",
+        "individual vs. individual; individual vs. nature; individual vs. society; individual vs. supernatural; individual vs. technology",
+        "external conflicts, such as:",
+        "individual vs. individual; individual vs. nature; individual vs. society; individual vs. supernatural; individual vs. technology",
+        "internal conflict – individual vs. self",
+        "plot",
+        "initiating event; rising action; climax; falling action; and resolution",
+        "theme",
+        "recognize different plot patterns including subplots.",
+        "analyze the interactions between individuals, events and ideas in a text.",
+        "compare and contrast the characteristics of literary forms, including but not limited to:",
+        "novel, short story, biography, essay, speech, poetry, memoir",
+        "understand and analyze elements of an author’s style, including:",
+        "dialogue; sentence structure; language patterns; word choice to develop tone; voice.",
+        "differentiate among points of view in stories, including:",
+        "first person; third person limited to a character or narrator; and third person omniscient.",
+        "analyze how differences in points of view can create such effects as suspense or humor.",
+        "analyze an author’s use of literary devices, including:",
+        "foreshadowing",
+        "irony",
+        "flashback",
+        "symbolism",
+        "analyze poetic devices in prose and poetry, including but not limited to: word choice, figurative language, symbolism, imagery, rhyme, rhythm, repetition, and sound elements.",
+        "analyze an author’s choice of words and images.",
+        "identify poetic forms, including but not limited to:",
+        "haiku",
+        "limerick",
+        "ballad",
+        "free verse",
+        "couplet",
+        "quatrain",
+        "compare and contrast an author’s choice of sound elements in prose and poetry, including but not limited to:",
+        "rhyme",
+        "rhythm",
+        "meter",
+        "repetition",
+        "alliteration",
+        "onomatopoeia",
+        "determine a theme of a text and analyze its development",
+        "compare and contrast two or more texts on the same topic or with similar themes.",
+        "use evidence from the text(s) for support when drawing conclusions, making inferences, or making predictions",
+        "analyze how an individual, event, or idea is introduced, illustrated, and elaborated in a text (e.g., through examples or anecdotes and organizational strategies.",
+        "demonstrate comprehension and apply strategies to write about what is read."
+      ]
     },
     {
       "code": "SOL 8.7W",
@@ -507,71 +599,31 @@
       "subject": "English",
       "grade_band": "6-8",
       "strand": "Writing",
-      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective."
-    },
-    {
-      "code": "SOL A.1",
-      "description": "Represent verbal quantitative situations algebraically",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Expressions and Operations",
-      "full_text": "The student will represent verbal quantitative situations algebraically and evaluate these expressions for given replacement values of the variables."
-    },
-    {
-      "code": "SOL A.2",
-      "description": "Perform operations on polynomials",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Expressions and Operations",
-      "full_text": "The student will perform operations on polynomials, including adding, subtracting, multiplying, dividing, and factoring."
-    },
-    {
-      "code": "SOL A.4",
-      "description": "Solve multistep linear and quadratic equations",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Equations and Inequalities",
-      "full_text": "The student will solve multistep linear and quadratic equations in two variables."
-    },
-    {
-      "code": "SOL A.6",
-      "description": "Graph linear equations and linear inequalities in two variables",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Equations and Inequalities",
-      "full_text": "The student will graph linear equations and linear inequalities in two variables."
-    },
-    {
-      "code": "SOL A.7",
-      "description": "Investigate and analyze linear and quadratic function families",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Functions",
-      "full_text": "The student will investigate and analyze linear and quadratic function families and their characteristics."
-    },
-    {
-      "code": "SOL G.1",
-      "description": "Use deductive reasoning to construct and judge validity of a logical argument",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Reasoning, Lines, and Transformations",
-      "full_text": "The student will construct and judge the validity of a logical argument consisting of a set of premises and a conclusion, using deductive reasoning."
-    },
-    {
-      "code": "SOL G.3",
-      "description": "Solve problems involving symmetry and transformation",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Reasoning, Lines, and Transformations",
-      "full_text": "The student will solve problems involving symmetry and transformation, including translation, reflection, rotation, and dilation."
-    },
-    {
-      "code": "SOL G.5",
-      "description": "Prove triangles congruent",
-      "subject": "Mathematics",
-      "grade_band": "9-12",
-      "strand": "Triangles",
-      "full_text": "The student, given information concerning the lengths of sides and/or measures of angles in triangles, will solve problems, including practical problems, and prove two triangles are congruent."
+      "full_text": "The student will write in a variety of forms, including narrative, expository, persuasive, and reflective.",
+      "essential_understandings": [
+        "understand that writing requires a recursive process that includes planning, drafting, revising, editing, and publishing.",
+        "understand that writing should be purposefully crafted with attention to deliberate word choice, precise information and vocabulary.",
+        "understand that vocabulary and tone must be selected with awareness of audience and purpose.",
+        "understand that effective writing has been elaborated.",
+        "understand that a thesis statement is not an announcement of the subject (statement of intent) but rather a unified and specific statement",
+        "understand that good writing has been improved through revision.",
+        "understand that a topic sentence supports an essay’s thesis statement."
+      ],
+      "essential_knowledge": [
+        "write in a variety of forms, including narrative; expository, persuasive, informational, and reflective",
+        "write reflectively to explain and analyze an experience, a skill, or an event.",
+        "apply the elements of composing: central idea, elaboration, unity, and organization.",
+        "use written expression to explain, analyze, or summarize a topic with attention to: purpose and audience; a central or controlling idea; voice; tone; coherent selection of information and details; embedded phrases and clauses that clarify meaning and increase variety; vivid and precise vocabulary; figurative language; sentence variety; and transitional words and phrases",
+        "apply revising procedures, including:",
+        "rereading; reflecting; rethinking; rewriting; including vivid vocabulary; combining sentences for variety and rhythm; and providing transitions between ideas and paragraphs.",
+        "write persuasively organizing reasons logically and effectively",
+        "identify counterclaims and identify counter-arguments that address claims",
+        "elaborate the central idea, providing sustained unity throughout the writing",
+        "choose language that expresses ideas precisely and concisely, recognizing and eliminating wordiness and redundancy",
+        "use appropriate and varied transitions to create cohesion and clarify the relationships among ideas and concepts",
+        "sustain a formal style when appropriate",
+        "develop an effective introduction and conclusion"
+      ]
     },
     {
       "code": "SOL BIO.1",
@@ -832,7 +884,24 @@
       "subject": "English",
       "grade_band": "9-12",
       "strand": "Reading",
-      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts."
+      "full_text": "The student will apply knowledge of word origins, derivations, and figurative language to extend vocabulary development in authentic texts.",
+      "essential_understandings": [
+        "understand that figurative language enriches text.",
+        "understand that word structure aids comprehension of unfamiliar and complex words.",
+        "recognize that words have nuances of meaning including figurative, connotative, and technical that help to determine the appropriate meaning.",
+        "understand that affixes and Greek and Latin roots are clues to determine meanings of words.",
+        "understand that context and connotations help determine the meaning of text.",
+        "understand that allusions are used to assist readers in providing connections to other works or historical events."
+      ],
+      "essential_knowledge": [
+        "understanding use word structure to analyze and relate words.",
+        "use roots or affixes to determine or clarify the meaning of new or unfamiliar words.",
+        "analyze the author’s use of idioms.",
+        "use prior reading knowledge and other study to identify the meaning of literary and classical allusions.",
+        "interpret figures of speech (e.g., euphemism, oxymoron) in context and analyze their role in the text.",
+        "analyze figurative language",
+        "demonstrate of connotations in word meanings"
+      ]
     },
     {
       "code": "SOL 9.4R",
@@ -840,7 +909,53 @@
       "subject": "English",
       "grade_band": "9-12",
       "strand": "Reading",
-      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, analyzing the development of themes across texts."
+      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, analyzing the development of themes across texts.",
+      "essential_understandings": [
+        "understand the relationship between an author’s style and literary effect.",
+        "understand that analysis of a text should be based on text references, not personal opinion.",
+        "understand an author’s use of figurative language to create images, sounds, and effects.",
+        "understand how dramatic conventions impact a reader’s comprehension of a play and are often revealed through staging as well as through narration and dialogue",
+        "understand a character’s development throughout a text.",
+        "understand how authors are often influenced by culture, society, or current events.",
+        "understand that allusions are used to assist readers in providing connections to other works or historical events."
+      ],
+      "essential_knowledge": [
+        "read paired passages/read across texts to examine author’s word choice, theme development, point of view, etc.",
+        "identify the differing characteristics that distinguish literary forms, including but not limited to: narrative; poetry; drama; essay: analytical essay; literary nonfiction; personal essays",
+        "analyze figurative language",
+        "demonstrate understanding of connotations in word meanings",
+        "identify and analyze elements of dramatic literature:",
+        "exposition/initiating event,",
+        "rising action,",
+        "complication/conflict,",
+        "climax, falling action,",
+        "resolution/denouement (conclusion/resolution);",
+        "describe how stage directions help the reader understand a play’s setting, mood, characters, plot, and theme.",
+        "explain the relationships among the elements of literature, including but not limited to:",
+        "protagonist/antagonist and other characters,",
+        "plot,",
+        "setting,",
+        "tone,",
+        "point of view: first person, third person limited, third person omniscient,",
+        "theme,",
+        "speaker, and",
+        "narrator.",
+        "analyze the techniques used by an author to convey information about a character.",
+        "analyze character types, including: dynamic/round character, static/flat character, and stereotype",
+        "analyze how authors create multilayered characters through the use of literary devices:  indirect and direct methods of characterization, character’s actions, interactions with other characters, dialogue, physical appearance, and thoughts.",
+        "analyze how characters with multiple or conflicting motivations develop over the course of a text, and advance the plot or develop theme.",
+        "analyze how the plot structures advance the action in literature.",
+        "determine a theme of a text and analyze its development",
+        "compare and contrast types of figurative language and other literary devices such as but not limited to:",
+        "simile, metaphor, personification, analogy, symbolism, apostrophe, allusion, imagery, paradox, and oxymoron.",
+        "identify and analyze sound devices, including but not limited to:",
+        "rhyme (approximate, end, slant), rhythm, repetition, alliteration, assonance, consonance, onomatopoeia, and parallelism.",
+        "identify and analyze an author’s presentation of literary content by the use of structuring techniques, such as:",
+        "parallel plots, subplots, and multiple story lines",
+        "analyze an author’s use of diction and syntax to convey ideas and content, including but not limited to:",
+        "rhetorical question, cliché, connotation, denotation, hyperbole, understatement, overstatement, irony: dramatic, situational, verbal; dialect, and pun.",
+        "demonstrate comprehension and apply strategies to write about what is read."
+      ]
     },
     {
       "code": "SOL 10.4R",
@@ -848,7 +963,35 @@
       "subject": "English",
       "grade_band": "9-12",
       "strand": "Reading",
-      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, comparing and contrasting literary elements across texts."
+      "full_text": "The student will read, comprehend, and analyze literary texts of different cultures and eras, comparing and contrasting literary elements across texts.",
+      "essential_understandings": [
+        "understand that literature is universal and influenced by different cultures and eras.",
+        "understand that analysis of a text should be based on textual evidence not personal opinion.",
+        "understand how dramatic conventions can provide the audience with a deeper understanding of the play",
+        "understand rhyme, rhythm, and sound elements.",
+        "understand that writers use techniques and literary devices to evoke emotion in the reader."
+      ],
+      "essential_knowledge": [
+        "construct meaning from text by making connections between what they already know and the new information they read.",
+        "analyze and critique themes across texts and within various social, cultural, and historical contexts.",
+        "compare and contrast a variety of literary works from different cultures and eras, including but not limited to: short stories, poems, plays, novels, essays, and literary nonfiction.",
+        "explain similarities and differences among literary genres from different cultures, such as including but not limited to: sonnets, myths, novels, graphic novels; and short stories.",
+        "analyze the different character roles in literary texts (e.g., foil, tragic hero).",
+        "analyze how indirect characterization reveal(s) nuances of character and advances the plot.",
+        "analyze universal themes, including but not limited to: struggle with nature, survival of the fittest, coming of age, power of love, loss of innocence, struggle with self, disillusionment with life, the effects of progress, power of nature, alienation and isolation, honoring the historical past, good overcoming evil, tolerance of the atypical; the great journey, noble sacrifice, the great battle, love and friendship, and revenge.",
+        "analyze works of literature for historical information about the period in which they were written.",
+        "describe common archetypes that pervade literature including but not limited to: hero/heroine; trickster; outsider/outcast; rugged individualist; shrew/vampiric male; innocent; caretaker; rebel; misfit; scapegoat; lonely orphan.",
+        "examine a literary selection from several different critical perspectives",
+        "analyze how an author achieves specific effects and purposes using literary devices and figurative language (e.g., understatement, allusion, allegory, paradox).",
+        "analyze a case in which a point of view requires distinguishing what is directly stated in a text from what is really meant (e.g., satire, irony, understatement).",
+        "analyze a particular point of view or cultural experience reflected in a literary work.",
+        "compare and contrast literary devices that convey a poem’s message and elicit a reader’s emotions.",
+        "interpret and paraphrase the meanings of selected poems.",
+        "identify and describe dramatic conventions.",
+        "compare and contrast two or more texts on the same topic or with similar themes.",
+        "use evidence from the text(s) for support when drawing conclusions, making inferences.",
+        "demonstrate comprehension and apply strategies to write about what is read."
+      ]
     },
     {
       "code": "SOL 11.3R",
@@ -856,7 +999,22 @@
       "subject": "English",
       "grade_band": "9-12",
       "strand": "Reading",
-      "full_text": "The student will read and analyze relationships among American literature, history, and culture."
+      "full_text": "The student will read and analyze relationships among American literature, history, and culture.",
+      "essential_understandings": [
+        "recognize that words have nuances of meaning and that understanding the connotations and context may be necessary to determine the appropriate meaning.",
+        "recognize that figurative language enriches text.",
+        "understand that word structure aids comprehension of unfamiliar and complex words.",
+        "understand that affixes and Greek and Latin roots are clues to determine meanings of words.",
+        "understand that allusions are used to assist readers in providing connections to other works or historical events."
+      ],
+      "essential_knowledge": [
+        "use roots or affixes to determine or clarify the meaning of words.",
+        "demonstrate an understanding of and explain common idioms.",
+        "use prior reading knowledge and other study to identify and explain the meaning of literary and classical allusions.",
+        "interpret figures of speech (paradox) in context and analyze their roles in the text.",
+        "analyze the connotation of words with similar denotations.",
+        "demonstrate understanding of figurative language and connotations in word meanings."
+      ]
     },
     {
       "code": "SOL 11.6W",
@@ -864,7 +1022,30 @@
       "subject": "English",
       "grade_band": "9-12",
       "strand": "Writing",
-      "full_text": "The student will write, revise, and edit personal, professional, and informational compositions, synthesizing information from multiple sources."
+      "full_text": "The student will write, revise, and edit personal, professional, and informational compositions, synthesizing information from multiple sources.",
+      "essential_understandings": [
+        "understand that writing requires a recursive process that includes planning, drafting, revising, editing, and publishing.",
+        "understand that writing should be purposefully crafted with attention to deliberate word choice, precise information and vocabulary.",
+        "understand the features of the domains of writing including composing, written expression, and usage/mechanics are essential to quality writing.",
+        "understand that voice and tone must be developed with awareness of audience and purpose.",
+        "understand that good writing is improved through revision."
+      ],
+      "essential_knowledge": [
+        "demonstrate the purpose of writing as persuasive/argumentative, reflective, interpretive or analytical.",
+        "develop and apply embedded narrative techniques, such as dialogue, description, and pacing to develop experiences and enhance writing.",
+        "refine the thesis by considering whether the claim is logical, meaningful, and expresses the writer’s position in an argument.",
+        "use phrases and clauses for sentence variety.",
+        "write persuasively/argumentatively organizing reasons logically and effectively.",
+        "analyze sources and determine the best information to support a position/argument.",
+        "utilize credible, current research and expert opinions to support a position/argument.",
+        "identify counterclaims and use counter-arguments.",
+        "compare/contrast and select evidence from multiple texts to strengthen a position/argument.",
+        "revise writing for clarity and quality of information to effectively match the intended audience and purpose of a workplace and/or postsecondary education.",
+        "introduce claim(s), acknowledge and distinguish the claim(s) from alternate or opposing claims.",
+        "assess and strengthen the quality of writing through revision.",
+        "use specific revision strategies and adapt content, vocabulary, voice, and tone to audience, purpose, and situation.",
+        "select an appropriate audience by analyzing assumptions, values, and background knowledge."
+      ]
     },
     {
       "code": "SOL LS.1",
