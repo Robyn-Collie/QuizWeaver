@@ -340,4 +340,15 @@ toggleProviderFields();
     });
 })();
 </script>
+
+<!-- Account Section -->
+<div style="margin-top: 2rem;">
+    <h2>Account</h2>
+    <ul>
+        <li><a href="/settings/password">Change Password</a></li>
+        {% if g.current_user and g.current_user.role == 'admin' %}
+        <li><a href="/settings/users">Manage Users</a></li>
+        {% endif %}
+    </ul>
+</div>
 {% endblock %}
