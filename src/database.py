@@ -391,7 +391,15 @@ class Standard(Base):
     source = Column(String, default="Virginia SOL")
     version = Column(String)
     standard_set = Column(String, default="sol")
+    essential_knowledge = Column(Text)
+    essential_understandings = Column(Text)
+    essential_skills = Column(Text)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    excerpts = relationship(
+        "StandardExcerpt", back_populates="standard", cascade="all, delete-orphan"
+    )
 
 
 class LessonPlan(Base):
@@ -452,6 +460,81 @@ class RubricCriterion(Base):
 
     # Relationships
     rubric = relationship("Rubric", back_populates="criteria")
+
+
+class SourceDocument(Base):
+    """Represents an official document used to populate standards data.
+
+    Tracks provenance: which PDF/document was ingested, when, and
+    provides a file hash for verification that the source hasn't changed.
+
+    Attributes:
+        id: Primary key.
+        filename: Unique filename of the source document.
+        title: Human-readable title of the document.
+        url: Optional URL where the document can be downloaded.
+        standard_set: Key identifying the standard set (e.g., "sol", "ccss_ela").
+        version: Version or year of the document.
+        download_date: Date the document was downloaded (ISO string).
+        file_hash: SHA-256 hash of the file for integrity verification.
+        page_count: Number of pages in the document.
+        created_at: Timestamp when the record was created.
+        excerpts: Relationship to StandardExcerpt objects from this document.
+    """
+
+    __tablename__ = "source_documents"
+    id = Column(Integer, primary_key=True)
+    filename = Column(String, unique=True, nullable=False)
+    title = Column(String, nullable=False)
+    url = Column(String)
+    standard_set = Column(String)
+    version = Column(String)
+    download_date = Column(String)
+    file_hash = Column(String)
+    page_count = Column(Integer)
+    created_at = Column(DateTime)
+
+    # Relationships
+    excerpts = relationship("StandardExcerpt", back_populates="source_document")
+
+
+class StandardExcerpt(Base):
+    """Represents an excerpt from a source document linked to a standard.
+
+    Provides page-level provenance so teachers can verify that a
+    standard's essential knowledge, skills, or understanding came
+    directly from official curriculum documentation.
+
+    Attributes:
+        id: Primary key.
+        standard_id: Foreign key to the Standard this excerpt supports.
+        source_document_id: Foreign key to the SourceDocument it came from.
+        content_type: Type of content (e.g., "essential_knowledge", "full_text").
+        source_page: Page number in the source document.
+        source_excerpt: The verbatim text extracted from the document.
+        sort_order: Display order when multiple excerpts exist.
+        created_at: Timestamp when the record was created.
+        standard: Relationship to the Standard object.
+        source_document: Relationship to the SourceDocument object.
+    """
+
+    __tablename__ = "standard_excerpts"
+    id = Column(Integer, primary_key=True)
+    standard_id = Column(
+        Integer, ForeignKey("standards.id", ondelete="CASCADE"), nullable=False
+    )
+    source_document_id = Column(
+        Integer, ForeignKey("source_documents.id", ondelete="CASCADE"), nullable=False
+    )
+    content_type = Column(String, nullable=False)
+    source_page = Column(Integer, nullable=False)
+    source_excerpt = Column(Text, nullable=False)
+    sort_order = Column(Integer, default=0)
+    created_at = Column(DateTime)
+
+    # Relationships
+    standard = relationship("Standard", back_populates="excerpts")
+    source_document = relationship("SourceDocument", back_populates="excerpts")
 
 
 def get_database_url(db_path=None, url=None):

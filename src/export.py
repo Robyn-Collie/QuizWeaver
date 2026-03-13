@@ -1999,27 +1999,57 @@ def _qti_cloze_items(ident: str, nq: dict) -> str:
         b_id = blank.get("id", 0)
         answer = _xml_escape(blank.get("answer", ""))
         alts = blank.get("alternatives", [])
+        options = blank.get("options", [])
 
-        response_strs += f"""          <response_str ident="response_{b_id}" rcardinality="Single">
+        if options:
+            # Dropdown: use response_lid with render_choice
+            choice_labels = ""
+            for idx, opt in enumerate(options):
+                opt_escaped = _xml_escape(opt)
+                choice_labels += (
+                    f'              <response_label ident="opt_{b_id}_{idx}">'
+                    f"<material><mattext>{opt_escaped}</mattext></material>"
+                    f"</response_label>\n"
+                )
+            response_strs += (
+                f'          <response_lid ident="response_{b_id}" rcardinality="Single">\n'
+                f"            <render_choice>\n"
+                f"{choice_labels}"
+                f"            </render_choice>\n"
+                f"          </response_lid>\n"
+            )
+            # Condition: match the correct answer option ident
+            for idx, opt in enumerate(options):
+                if _xml_escape(opt) == answer:
+                    conditions += (
+                        f'          <respcondition continue="No">\n'
+                        f'            <conditionvar><varequal respident="response_{b_id}">opt_{b_id}_{idx}</varequal></conditionvar>\n'
+                        f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
+                        f"          </respcondition>\n"
+                    )
+                    break
+        else:
+            # Text input: use response_str with render_fib
+            response_strs += f"""          <response_str ident="response_{b_id}" rcardinality="Single">
             <render_fib><response_label ident="answer_{b_id}"/></render_fib>
           </response_str>
 """
-        # Primary answer condition
-        conditions += (
-            f'          <respcondition continue="No">\n'
-            f'            <conditionvar><varequal respident="response_{b_id}" case="No">{answer}</varequal></conditionvar>\n'
-            f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
-            f"          </respcondition>\n"
-        )
-        # Alternative answer conditions
-        for alt in alts:
-            alt_escaped = _xml_escape(alt)
+            # Primary answer condition
             conditions += (
                 f'          <respcondition continue="No">\n'
-                f'            <conditionvar><varequal respident="response_{b_id}" case="No">{alt_escaped}</varequal></conditionvar>\n'
+                f'            <conditionvar><varequal respident="response_{b_id}" case="No">{answer}</varequal></conditionvar>\n'
                 f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
                 f"          </respcondition>\n"
             )
+            # Alternative answer conditions
+            for alt in alts:
+                alt_escaped = _xml_escape(alt)
+                conditions += (
+                    f'          <respcondition continue="No">\n'
+                    f'            <conditionvar><varequal respident="response_{b_id}" case="No">{alt_escaped}</varequal></conditionvar>\n'
+                    f'            <setvar action="Add" varname="SCORE">{per_blank_points}</setvar>\n'
+                    f"          </respcondition>\n"
+                )
 
     return f"""      <item ident="{ident}" title="Q{nq["number"]}">
         <itemmetadata>
@@ -2043,6 +2073,20 @@ def _qti_cloze_items(ident: str, nq: dict) -> str:
       </item>"""
 
 
+def _qti_audio_html(question_id) -> str:
+    """Return XML-escaped HTML audio tag for a QTI audio reference.
+
+    Canvas expects files referenced via ``%24IMS-CC-FILEBASE%24`` which is
+    the URL-encoded form of ``$IMS-CC-FILEBASE$``.
+    """
+    return (
+        f"&lt;p&gt;&lt;audio controls src=&quot;%24IMS-CC-FILEBASE%24"
+        f"/media/q{question_id}.mp3&quot;&gt;"
+        f"Audio for this question"
+        f"&lt;/audio&gt;&lt;/p&gt;"
+    )
+
+
 def _qti_image_html(image_ref: str) -> str:
     """Return XML-escaped HTML img tag for a QTI image reference.
 
@@ -2057,7 +2101,7 @@ def _qti_image_html(image_ref: str) -> str:
 
 
 def export_qti(
-    quiz, questions, image_dir: Optional[str] = None
+    quiz, questions, image_dir: Optional[str] = None, audio_dir: Optional[str] = None
 ) -> io.BytesIO:
     """Export quiz as a QTI 1.2 ZIP package (Canvas-compatible).
 
@@ -2067,6 +2111,9 @@ def export_qti(
         image_dir: Optional path to the uploaded images directory.
             When provided, questions with ``image_ref`` will have their
             images bundled in the ZIP and referenced in the question HTML.
+        audio_dir: Optional path to the TTS audio directory for this quiz.
+            When provided, questions with existing MP3 files will have
+            audio bundled in the ZIP and ``<audio>`` tags injected.
 
     Returns:
         BytesIO buffer containing the .zip file.
@@ -2078,6 +2125,8 @@ def export_qti(
 
     # Track images to bundle (deduplicated, preserving order)
     image_files: List[str] = []
+    # Track audio files to bundle
+    audio_files: List[str] = []
 
     # Build item XML for each question
     item_parts = []
@@ -2094,6 +2143,16 @@ def export_qti(
                 has_image = True
                 if img_ref not in image_files:
                     image_files.append(img_ref)
+
+        # Check if this question has a bundleable audio file
+        has_audio = False
+        audio_filename = f"q{q.id}.mp3"
+        if audio_dir:
+            audio_path = os.path.join(audio_dir, audio_filename)
+            if os.path.isfile(audio_path):
+                has_audio = True
+                if audio_filename not in audio_files:
+                    audio_files.append(audio_filename)
 
         if nq["type"] == "mc":
             item_xml = _qti_mc_item(ident, nq)
@@ -2126,6 +2185,15 @@ def export_qti(
                 1,
             )
 
+        # Inject audio tag into the first mattext element if audio exists
+        if has_audio:
+            aud_html = _qti_audio_html(q.id)
+            item_xml = item_xml.replace(
+                '<mattext texttype="text/html">',
+                f'<mattext texttype="text/html">{aud_html}',
+                1,
+            )
+
         item_parts.append(item_xml)
 
     # Assemble assessment XML
@@ -2147,15 +2215,28 @@ def export_qti(
             f"</resource>\n"
         )
 
+    # Build webcontent resources for bundled audio
+    audio_resources = ""
+    for aud_name in audio_files:
+        res_id = f"aud_{uuid.uuid4().hex[:8]}"
+        escaped_name = _xml_escape(aud_name)
+        audio_resources += (
+            f'    <resource identifier="{res_id}" type="webcontent" '
+            f'href="media/{escaped_name}">'
+            f'<file href="media/{escaped_name}"/>'
+            f"</resource>\n"
+        )
+
     manifest_xml = _QTI_MANIFEST_START.format(
         manifest_id=manifest_id,
         assessment_id=assessment_id,
         assessment_filename=assessment_filename,
     )
-    if image_resources:
+    extra_resources = image_resources + audio_resources
+    if extra_resources:
         manifest_xml = manifest_xml.replace(
             "  </resources>",
-            image_resources + "  </resources>",
+            extra_resources + "  </resources>",
         )
 
     # Write to ZIP in memory
@@ -2167,6 +2248,10 @@ def export_qti(
         for img_name in image_files:
             img_path = os.path.join(image_dir, img_name)
             zf.write(img_path, f"images/{img_name}")
+        # Bundle audio files into the ZIP under media/
+        for aud_name in audio_files:
+            aud_path = os.path.join(audio_dir, aud_name)
+            zf.write(aud_path, f"media/{aud_name}")
 
     buf.seek(0)
     return buf

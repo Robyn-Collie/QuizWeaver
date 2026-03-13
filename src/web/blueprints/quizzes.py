@@ -314,7 +314,7 @@ def quiz_export(quiz_id, format_name):
             mimetype="application/pdf",
         )
     elif format_name == "qti":
-        buf = export_qti(quiz, questions, image_dir=image_dir)
+        buf = export_qti(quiz, questions, image_dir=image_dir, audio_dir=quiz_audio_dir)
         return send_file(
             buf,
             as_attachment=True,

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Source Documents - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="source-documents">
+    <p><a href="/standards">&larr; Back to Standards</a></p>
+
+    <h1>Source Documents</h1>
+    <p>Official curriculum framework documents used to populate standards data. Upload a PDF to extract and link content to standards.</p>
+
+    {% if documents %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Standard Set</th>
+                <th>Version</th>
+                <th>Pages</th>
+                <th>Download Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in documents %}
+            <tr>
+                <td>{{ doc.title }}</td>
+                <td>{{ doc.standard_set|upper if doc.standard_set else "—" }}</td>
+                <td>{{ doc.version or "—" }}</td>
+                <td>{{ doc.page_count or "—" }}</td>
+                <td>{{ doc.download_date or "—" }}</td>
+                <td>
+                    <a href="{{ url_for('settings.serve_source_document', doc_id=doc.id) }}" target="_blank" class="btn btn-sm btn-secondary">View PDF</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No source documents registered yet. Upload one below.</p>
+    {% endif %}
+
+    <h2>Upload Source Document</h2>
+    <form method="POST" action="{{ url_for('settings.upload_source_document') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <div class="form-group">
+            <label for="file">PDF File</label>
+            <input type="file" id="file" name="file" accept=".pdf" required>
+        </div>
+
+        <div class="form-group">
+            <label for="title">Document Title</label>
+            <input type="text" id="title" name="title" placeholder="e.g., 2024 Virginia SOL Curriculum Framework - Mathematics" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="standard_set">Standard Set</label>
+            <input type="text" id="standard_set" name="standard_set" placeholder="e.g., sol, ccss_ela, ngss" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="version">Version / Year</label>
+            <input type="text" id="version" name="version" placeholder="e.g., 2024" autocomplete="off">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Upload and Extract</button>
+    </form>
+</div>
+{% endblock %}

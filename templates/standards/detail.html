@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}{{ standard.code }} - Standards - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="standard-detail">
+    <p>
+        <a href="/standards">&larr; Back to Standards</a>
+        &nbsp;|&nbsp;
+        <a href="{{ url_for('settings.source_documents') }}">Source Documents</a>
+    </p>
+
+    <h1>{{ standard.code }}</h1>
+    <p class="standard-meta">
+        <span class="badge">{{ standard.subject }}</span>
+        {% if standard.grade_band %}<span class="badge">Grade {{ standard.grade_band }}</span>{% endif %}
+        {% if standard.strand %}<span class="badge">{{ standard.strand }}</span>{% endif %}
+        {% if standard.standard_set %}<span class="badge">{{ standard.standard_set|upper }}</span>{% endif %}
+    </p>
+
+    <h2>Description</h2>
+    <p>{{ standard.description }}</p>
+
+    {% if standard.full_text %}
+    <h2>Full Text</h2>
+    <div class="standard-section" id="section-full-text">
+        <p>{{ standard.full_text }}</p>
+        <button type="button" class="btn btn-secondary btn-sm copy-btn" data-section="section-full-text">Copy</button>
+    </div>
+    {% endif %}
+
+    {% if essential_knowledge %}
+    <h2>Essential Knowledge</h2>
+    <div class="standard-section" id="section-essential-knowledge">
+        <ul>
+            {% for item in essential_knowledge %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% if provenance and provenance.get("essential_knowledge") %}
+        {% set ns = namespace(seen_sources=[]) %}
+        {% for prov in provenance["essential_knowledge"] %}
+        {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
+        {% if src_key not in ns.seen_sources %}
+        {% set ns.seen_sources = ns.seen_sources + [src_key] %}
+        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
+        </p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        <div class="standard-section-actions">
+            <button type="button" class="btn btn-secondary btn-sm copy-btn" data-section="section-essential-knowledge">Copy</button>
+            <button type="button" class="btn btn-primary btn-sm use-in-prompt-btn" data-section="section-essential-knowledge">Use in Quiz Prompt</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if essential_understandings %}
+    <h2>Essential Understandings</h2>
+    <div class="standard-section" id="section-essential-understandings">
+        <ul>
+            {% for item in essential_understandings %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% if provenance and provenance.get("essential_understandings") %}
+        {% set ns = namespace(seen_sources=[]) %}
+        {% for prov in provenance["essential_understandings"] %}
+        {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
+        {% if src_key not in ns.seen_sources %}
+        {% set ns.seen_sources = ns.seen_sources + [src_key] %}
+        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
+        </p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        <div class="standard-section-actions">
+            <button type="button" class="btn btn-secondary btn-sm copy-btn" data-section="section-essential-understandings">Copy</button>
+            <button type="button" class="btn btn-primary btn-sm use-in-prompt-btn" data-section="section-essential-understandings">Use in Quiz Prompt</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if essential_skills %}
+    <h2>Essential Skills</h2>
+    <div class="standard-section" id="section-essential-skills">
+        <ul>
+            {% for item in essential_skills %}
+            <li>{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% if provenance and provenance.get("essential_skills") %}
+        {% set ns = namespace(seen_sources=[]) %}
+        {% for prov in provenance["essential_skills"] %}
+        {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
+        {% if src_key not in ns.seen_sources %}
+        {% set ns.seen_sources = ns.seen_sources + [src_key] %}
+        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
+        </p>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        <div class="standard-section-actions">
+            <button type="button" class="btn btn-secondary btn-sm copy-btn" data-section="section-essential-skills">Copy</button>
+            <button type="button" class="btn btn-primary btn-sm use-in-prompt-btn" data-section="section-essential-skills">Use in Quiz Prompt</button>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if sub_standards %}
+    <h2>Sub-standards</h2>
+    <ul class="sub-standards-list">
+        {% for sub in sub_standards %}
+        <li><a href="/standards/{{ sub.id }}"><strong>{{ sub.code }}</strong></a> &mdash; {{ sub.description }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+<script>
+(function() {
+    // Copy section text to clipboard
+    document.querySelectorAll('.copy-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var sectionId = this.getAttribute('data-section');
+            var section = document.getElementById(sectionId);
+            if (!section) return;
+            // Get just the text content (exclude button text)
+            var items = section.querySelectorAll('li, p');
+            var text = [];
+            items.forEach(function(el) { text.push(el.textContent.trim()); });
+            var content = text.join('\n');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(content).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            }
+        });
+    });
+
+    // Use in quiz prompt — store content in sessionStorage and navigate to generate page
+    document.querySelectorAll('.use-in-prompt-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var sectionId = this.getAttribute('data-section');
+            var section = document.getElementById(sectionId);
+            if (!section) return;
+            var items = section.querySelectorAll('li, p');
+            var text = [];
+            items.forEach(function(el) { text.push(el.textContent.trim()); });
+            var content = '{{ standard.code }}: ' + text.join('\n');
+            sessionStorage.setItem('qw-prompt-content', content);
+            window.location.href = '/generate';
+        });
+    });
+})();
+</script>
+{% endblock %}

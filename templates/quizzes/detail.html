@@ -350,14 +350,22 @@
         {% if q.data and q.data.blanks is defined and q.data.blanks %}
         <div class="cloze-question">
             <p class="cloze-text">
-                {% set cloze_display = q.text|e %}
+                {% set cloze_ns = namespace(display=q.text|e) %}
                 {% for blank in q.data.blanks %}
                 {% set safe_id = blank.id|e %}
                 {% set placeholder = '{{' ~ safe_id ~ '}}' %}
-                {% set underline = '<span class="cloze-blank" data-blank-id="' ~ safe_id ~ '">________<sub>(' ~ safe_id ~ ')</sub></span>' %}
-                {% set cloze_display = cloze_display|replace(placeholder, underline) %}
+                {% if blank.options is defined and blank.options %}
+                {% set opt_ns = namespace(opts='') %}
+                {% for opt in blank.options %}
+                {% set opt_ns.opts = opt_ns.opts ~ '<option value="' ~ opt|e ~ '">' ~ opt|e ~ '</option>' %}
                 {% endfor %}
-                {{ cloze_display|safe }}
+                {% set blank_html = '<select class="cloze-dropdown" data-blank-id="' ~ safe_id ~ '"><option value="">-- select --</option>' ~ opt_ns.opts ~ '</select><sub>(' ~ safe_id ~ ')</sub>' %}
+                {% else %}
+                {% set blank_html = '<span class="cloze-blank" data-blank-id="' ~ safe_id ~ '">________<sub>(' ~ safe_id ~ ')</sub></span>' %}
+                {% endif %}
+                {% set cloze_ns.display = cloze_ns.display|replace(placeholder, blank_html) %}
+                {% endfor %}
+                {{ cloze_ns.display|safe }}
             </p>
             <div class="cloze-answers">
                 <strong>Answers:</strong>

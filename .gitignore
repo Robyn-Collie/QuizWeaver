@@ -32,6 +32,9 @@ trial_run_outputs/
 # --- Uploaded Images ---
 uploads/
 
+# --- Source Documents (user-uploaded PDFs) ---
+data/source_documents/
+
 # --- Logs ---
 api_costs.log
 

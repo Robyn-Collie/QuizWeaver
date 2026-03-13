@@ -1,4 +1,4 @@
-"""Settings, provider wizard, audit log, and standards routes."""
+"""Settings, provider wizard, audit log, standards, and source document routes."""
 
 import logging
 import os
@@ -11,8 +11,10 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_from_directory,
     url_for,
 )
+from werkzeug.utils import secure_filename
 
 logger = logging.getLogger(__name__)
 
@@ -394,6 +396,53 @@ def standards_page():
     )
 
 
+@settings_bp.route("/standards/<int:standard_id>")
+@login_required
+def standard_detail(standard_id):
+    """Show full curriculum framework content for a single standard."""
+    import json as _json
+
+    from src.database import Standard
+
+    session = _get_session()
+    standard = session.get(Standard, standard_id)
+    if not standard:
+        from flask import abort
+
+        abort(404)
+
+    # Parse JSON arrays for template
+    ek = _json.loads(standard.essential_knowledge) if standard.essential_knowledge else []
+    eu = _json.loads(standard.essential_understandings) if standard.essential_understandings else []
+    es = _json.loads(standard.essential_skills) if standard.essential_skills else []
+
+    # Find sub-standards (standards whose code starts with this one + letter)
+    sub_standards = []
+    if standard.code:
+        prefix = standard.code
+        sub_standards = (
+            session.query(Standard)
+            .filter(Standard.code.like(prefix + "%"), Standard.code != prefix)
+            .order_by(Standard.code)
+            .all()
+        )
+
+    # Load provenance data (excerpts grouped by content_type)
+    from src.source_documents import get_excerpts_for_standard
+
+    provenance = get_excerpts_for_standard(session, standard_id)
+
+    return render_template(
+        "standards/detail.html",
+        standard=standard,
+        essential_knowledge=ek,
+        essential_understandings=eu,
+        essential_skills=es,
+        sub_standards=sub_standards,
+        provenance=provenance,
+    )
+
+
 @settings_bp.route("/api/standards/search")
 @login_required
 def api_standards_search():
@@ -444,6 +493,44 @@ def api_standards_search():
     )
 
 
+@settings_bp.route("/api/standards/<int:standard_id>/preview")
+@login_required
+def api_standard_preview(standard_id):
+    """Return full standard content + provenance for inline preview."""
+    import json as _json
+
+    from src.database import Standard
+    from src.source_documents import get_excerpts_for_standard
+
+    session = _get_session()
+    standard = session.get(Standard, standard_id)
+    if not standard:
+        from flask import abort
+
+        abort(404)
+
+    ek = _json.loads(standard.essential_knowledge) if standard.essential_knowledge else []
+    eu = (
+        _json.loads(standard.essential_understandings)
+        if standard.essential_understandings
+        else []
+    )
+    es = _json.loads(standard.essential_skills) if standard.essential_skills else []
+    provenance = get_excerpts_for_standard(session, standard_id)
+
+    return jsonify(
+        {
+            "id": standard.id,
+            "code": standard.code,
+            "description": standard.description,
+            "essential_knowledge": ek,
+            "essential_understandings": eu,
+            "essential_skills": es,
+            "provenance": provenance,
+        }
+    )
+
+
 @settings_bp.route("/settings/standards", methods=["POST"])
 @login_required
 def settings_standards():
@@ -464,3 +551,116 @@ def settings_standards():
         flash(f"Standards set updated to {set_label}.", "success")
 
     return redirect(url_for("settings.settings"))
+
+
+# --- Source Documents ---
+
+
+@settings_bp.route("/standards/source-documents")
+@login_required
+def source_documents():
+    """List all registered source documents."""
+    from src.source_documents import list_source_documents
+
+    session = _get_session()
+    docs = list_source_documents(session)
+    return render_template("standards/source_documents.html", documents=docs)
+
+
+@settings_bp.route("/standards/source-documents/upload", methods=["POST"])
+@login_required
+def upload_source_document():
+    """Upload a PDF source document, register it, and run extraction."""
+    from src.source_documents import (
+        SOURCE_DOCUMENTS_DIR,
+        extract_columns_by_page,
+        import_from_source_document,
+        parse_sol_curriculum_framework,
+        register_source_document,
+    )
+
+    session = _get_session()
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        flash("No file selected.", "error")
+        return redirect(url_for("settings.source_documents"), code=303)
+
+    filename = secure_filename(file.filename)
+
+    # Validate .pdf extension only
+    if not filename.lower().endswith(".pdf"):
+        flash("Only PDF files are allowed.", "error")
+        return redirect(url_for("settings.source_documents"), code=303)
+
+    title = request.form.get("title", "").strip() or filename
+    standard_set = request.form.get("standard_set", "").strip() or None
+    version = request.form.get("version", "").strip() or None
+
+    # Save uploaded file to a temp location first, then register
+    # (register_source_document copies it into data/source_documents/)
+    os.makedirs(SOURCE_DOCUMENTS_DIR, exist_ok=True)
+    temp_path = os.path.join(SOURCE_DOCUMENTS_DIR, filename)
+    file.save(temp_path)
+
+    try:
+        doc = register_source_document(
+            session,
+            filepath=temp_path,
+            title=title,
+            standard_set=standard_set,
+            version=version,
+        )
+
+        # Extract text using column-aware extraction for two-column PDFs
+        pages_text = extract_columns_by_page(temp_path)
+        parsed_data = parse_sol_curriculum_framework(pages_text)
+        updated_count = import_from_source_document(
+            session, doc.id, parsed_data
+        )
+
+        flash(
+            f"Uploaded '{title}' ({doc.page_count or '?'} pages). "
+            f"{updated_count} standard(s) updated with provenance data.",
+            "success",
+        )
+    except Exception:
+        logger.exception("Source document upload failed")
+        flash("Upload failed. Check the file and try again.", "error")
+
+    return redirect(url_for("settings.source_documents"), code=303)
+
+
+@settings_bp.route("/standards/source-document/<int:doc_id>")
+@login_required
+def serve_source_document(doc_id):
+    """Serve a source document PDF file for browser viewing."""
+    from src.source_documents import SOURCE_DOCUMENTS_DIR, get_source_document
+
+    session = _get_session()
+    doc = get_source_document(session, doc_id)
+    if not doc:
+        from flask import abort
+
+        abort(404)
+
+    abs_dir = os.path.abspath(SOURCE_DOCUMENTS_DIR)
+
+    # Support ?page=N by redirecting to the file URL with #page=N fragment
+    page = request.args.get("page", type=int)
+    if page:
+        base_url = url_for("settings.serve_source_document", doc_id=doc_id)
+        return redirect(f"{base_url}#page={page}")
+
+    return send_from_directory(abs_dir, doc.filename, mimetype="application/pdf")
+
+
+@settings_bp.route("/api/standards/<int:standard_id>/provenance")
+@login_required
+def api_standard_provenance(standard_id):
+    """Return provenance excerpts for a standard as JSON."""
+    from src.source_documents import get_excerpts_for_standard
+
+    session = _get_session()
+    grouped = get_excerpts_for_standard(session, standard_id)
+    return jsonify(grouped)
