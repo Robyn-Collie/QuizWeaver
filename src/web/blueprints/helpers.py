@@ -50,6 +50,7 @@ def login_required(f):
             "id": flask_session.get("user_id"),
             "username": flask_session.get("username"),
             "display_name": flask_session.get("display_name"),
+            "role": flask_session.get("role", "teacher"),
         }
         return f(*args, **kwargs)
 

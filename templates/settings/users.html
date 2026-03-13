@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>User Management</h2>
+</div>
+
+<h3>Current Users</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Display Name</th>
+            <th>Role</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.display_name or "" }}</td>
+            <td>{{ user.role or "teacher" }}</td>
+            <td>{{ user.created_at.strftime("%Y-%m-%d") if user.created_at else "" }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Add User</h3>
+<form method="POST" action="/settings/users/add" class="form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label for="display_name">Display Name</label>
+        <input type="text" id="display_name" name="display_name" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="At least 8 characters" required autocomplete="new-password">
+    </div>
+
+    <div class="form-group">
+        <label for="password_confirm">Confirm Password</label>
+        <input type="password" id="password_confirm" name="password_confirm" required autocomplete="new-password">
+    </div>
+
+    <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" name="role">
+            <option value="teacher" selected>Teacher</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Add User</button>
+        <a href="/settings" class="btn btn-secondary">Back to Settings</a>
+    </div>
+</form>
+{% endblock %}

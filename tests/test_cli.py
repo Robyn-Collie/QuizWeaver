@@ -1430,3 +1430,72 @@ class TestMainHelpers:
         assert session is not None
         session.close()
         engine.dispose()
+
+
+# ---------------------------------------------------------------------------
+# User Commands Tests
+# ---------------------------------------------------------------------------
+
+
+class TestAddUser:
+    def test_add_user_success(self, mock_config, temp_db, capsys, monkeypatch):
+        from src.cli.user_commands import handle_add_user
+
+        passwords = iter(["testpass123", "testpass123"])
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": next(passwords))
+
+        args = argparse.Namespace(username="niki", display_name="Niki", role="teacher")
+        handle_add_user(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[OK]" in out
+        assert "niki" in out
+
+    def test_add_user_duplicate(self, mock_config, temp_db, capsys, monkeypatch):
+        from src.cli.user_commands import handle_add_user
+
+        passwords = iter(["testpass123", "testpass123", "testpass123", "testpass123"])
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": next(passwords))
+
+        args = argparse.Namespace(username="dupeuser", display_name=None, role="teacher")
+        handle_add_user(mock_config, args)
+        # Second call — duplicate
+        handle_add_user(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[FAIL]" in out
+        assert "already exists" in out
+
+    def test_add_user_password_mismatch(self, mock_config, temp_db, capsys, monkeypatch):
+        from src.cli.user_commands import handle_add_user
+
+        passwords = iter(["testpass123", "differentpass"])
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": next(passwords))
+
+        args = argparse.Namespace(username="baduser", display_name=None, role="teacher")
+        handle_add_user(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[FAIL]" in out
+        assert "do not match" in out
+
+    def test_add_user_password_too_short(self, mock_config, temp_db, capsys, monkeypatch):
+        from src.cli.user_commands import handle_add_user
+
+        passwords = iter(["short"])
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": next(passwords))
+
+        args = argparse.Namespace(username="shortpw", display_name=None, role="teacher")
+        handle_add_user(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[FAIL]" in out
+        assert "8 characters" in out
+
+    def test_add_user_admin_role(self, mock_config, temp_db, capsys, monkeypatch):
+        from src.cli.user_commands import handle_add_user
+
+        passwords = iter(["adminpass123", "adminpass123"])
+        monkeypatch.setattr("getpass.getpass", lambda prompt="": next(passwords))
+
+        args = argparse.Namespace(username="adminuser", display_name="Admin", role="admin")
+        handle_add_user(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[OK]" in out
+        assert "admin" in out

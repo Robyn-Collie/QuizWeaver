@@ -25,6 +25,7 @@ from src.standards import (
     search_standards,
     standards_count,
 )
+from src.web.auth import create_user
 from src.web.blueprints.helpers import _get_session, login_required
 from src.web.config_utils import save_config
 
@@ -379,3 +380,68 @@ def settings_standards():
         flash(f"Standards set updated to {set_label}.", "success")
 
     return redirect(url_for("settings.settings"))
+
+
+# --- User Management (admin only) ---
+
+
+def _require_admin():
+    """Check if the current user is an admin. Returns None if OK, or a redirect response."""
+    from flask import session as flask_session
+
+    role = flask_session.get("role", "teacher")
+    if role != "admin":
+        flash("Admin access required.", "error")
+        return redirect(url_for("main.dashboard"), code=303)
+    return None
+
+
+@settings_bp.route("/settings/users")
+@login_required
+def users():
+    """List all users (admin only)."""
+    denied = _require_admin()
+    if denied:
+        return denied
+
+    from src.database import User
+
+    session = _get_session()
+    all_users = session.query(User).order_by(User.id).all()
+    return render_template("settings/users.html", users=all_users)
+
+
+@settings_bp.route("/settings/users/add", methods=["POST"])
+@login_required
+def add_user():
+    """Create a new user (admin only)."""
+    denied = _require_admin()
+    if denied:
+        return denied
+
+    session = _get_session()
+    username = request.form.get("username", "").strip()
+    display_name = request.form.get("display_name", "").strip() or None
+    password = request.form.get("password", "")
+    password_confirm = request.form.get("password_confirm", "")
+    role = request.form.get("role", "teacher")
+
+    if not username:
+        flash("Username is required.", "error")
+        return redirect(url_for("settings.users"), code=303)
+    if len(password) < 8:
+        flash("Password must be at least 8 characters.", "error")
+        return redirect(url_for("settings.users"), code=303)
+    if password != password_confirm:
+        flash("Passwords do not match.", "error")
+        return redirect(url_for("settings.users"), code=303)
+    if role not in ("teacher", "admin"):
+        role = "teacher"
+
+    user = create_user(session, username, password, display_name=display_name, role=role)
+    if user:
+        flash(f"User '{user.username}' created.", "success")
+    else:
+        flash(f"Username '{username}' already exists.", "error")
+
+    return redirect(url_for("settings.users"), code=303)

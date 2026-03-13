@@ -598,8 +598,10 @@ def main():
     from src.cli.study_commands import register_study_commands
     from src.cli.template_commands import register_template_commands
     from src.cli.topic_commands import register_topic_commands
+    from src.cli.user_commands import register_user_commands
     from src.cli.variant_commands import register_variant_commands
 
+    register_user_commands(subparsers)
     register_quiz_commands(subparsers)
     register_study_commands(subparsers)
     register_rubric_commands(subparsers)
@@ -725,6 +727,10 @@ def main():
         from src.cli.study_commands import handle_generate_exit_ticket
 
         handle_generate_exit_ticket(config, args)
+    elif args.command == "add-user":
+        from src.cli.user_commands import handle_add_user
+
+        handle_add_user(config, args)
 
 
 if __name__ == "__main__":

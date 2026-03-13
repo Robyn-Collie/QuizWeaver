@@ -433,3 +433,24 @@ class TestRouteAuthentication:
         for route in api_routes:
             resp = client.get(route)
             assert resp.status_code == 303, f"API {route} should redirect, got {resp.status_code}"
+
+    def test_non_admin_cannot_access_user_management(self, secure_app_with_user):
+        """Non-admin users should be redirected from /settings/users."""
+        client = secure_app_with_user.test_client()
+        # Bypass CSRF for this test
+        secure_app_with_user.config["WTF_CSRF_ENABLED"] = False
+        with client.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "testteacher"
+            sess["user_id"] = 1
+            sess["role"] = "teacher"
+
+        resp = client.get("/settings/users", follow_redirects=False)
+        assert resp.status_code == 303
+
+        resp = client.post(
+            "/settings/users/add",
+            data={"username": "hacker", "password": "hackpass1", "password_confirm": "hackpass1", "role": "admin"},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303

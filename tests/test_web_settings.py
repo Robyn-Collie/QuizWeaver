@@ -582,3 +582,146 @@ class TestSaveConfig:
             assert loaded["llm"]["model_name"] == "gpt-4o"
         finally:
             os.unlink(temp_path)
+
+
+# ============================================================
+# User Management Tests
+# ============================================================
+
+
+class TestUserManagement:
+    """Tests for /settings/users admin routes."""
+
+    @pytest.fixture
+    def admin_app(self):
+        """Create a Flask app with an admin user seeded."""
+        db_fd, db_path = tempfile.mkstemp(suffix=".db")
+
+        engine = get_engine(db_path)
+        Base.metadata.create_all(engine)
+        session = get_session(engine)
+
+        from src.web.auth import create_user
+
+        create_user(session, "adminuser", "adminpass123", display_name="Admin", role="admin")
+        create_user(session, "teacheruser", "teacherpass1", display_name="Teacher", role="teacher")
+        session.close()
+        engine.dispose()
+
+        from src.web.app import create_app
+
+        test_config = {
+            "paths": {"database_file": db_path},
+            "llm": {"provider": "mock"},
+            "generation": {"default_grade_level": "8th Grade"},
+        }
+        flask_app = create_app(test_config)
+        flask_app.config["TESTING"] = True
+        flask_app.config["WTF_CSRF_ENABLED"] = False
+
+        yield flask_app
+
+        flask_app.config["DB_ENGINE"].dispose()
+        os.close(db_fd)
+        try:
+            os.unlink(db_path)
+        except PermissionError:
+            pass
+
+    @pytest.fixture
+    def admin_client(self, admin_app):
+        c = admin_app.test_client()
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "adminuser"
+            sess["user_id"] = 1
+            sess["role"] = "admin"
+        return c
+
+    @pytest.fixture
+    def teacher_client(self, admin_app):
+        c = admin_app.test_client()
+        with c.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "teacheruser"
+            sess["user_id"] = 2
+            sess["role"] = "teacher"
+        return c
+
+    def test_admin_can_view_users(self, admin_client):
+        resp = admin_client.get("/settings/users")
+        assert resp.status_code == 200
+        assert b"adminuser" in resp.data
+        assert b"teacheruser" in resp.data
+
+    def test_teacher_cannot_view_users(self, teacher_client):
+        resp = teacher_client.get("/settings/users", follow_redirects=False)
+        assert resp.status_code == 303
+
+    def test_admin_can_add_user(self, admin_client):
+        resp = admin_client.post(
+            "/settings/users/add",
+            data={
+                "username": "newuser",
+                "display_name": "New User",
+                "password": "newpass123",
+                "password_confirm": "newpass123",
+                "role": "teacher",
+            },
+            follow_redirects=True,
+        )
+        assert resp.status_code == 200
+        assert b"newuser" in resp.data
+
+    def test_add_user_duplicate_rejected(self, admin_client):
+        resp = admin_client.post(
+            "/settings/users/add",
+            data={
+                "username": "adminuser",
+                "display_name": "Dupe",
+                "password": "somepass123",
+                "password_confirm": "somepass123",
+                "role": "teacher",
+            },
+            follow_redirects=True,
+        )
+        assert b"already exists" in resp.data
+
+    def test_add_user_password_mismatch(self, admin_client):
+        resp = admin_client.post(
+            "/settings/users/add",
+            data={
+                "username": "mismatch",
+                "password": "password123",
+                "password_confirm": "different1",
+                "role": "teacher",
+            },
+            follow_redirects=True,
+        )
+        assert b"do not match" in resp.data
+
+    def test_add_user_password_too_short(self, admin_client):
+        resp = admin_client.post(
+            "/settings/users/add",
+            data={
+                "username": "shortpw",
+                "password": "short",
+                "password_confirm": "short",
+                "role": "teacher",
+            },
+            follow_redirects=True,
+        )
+        assert b"8 characters" in resp.data
+
+    def test_teacher_cannot_add_user(self, teacher_client):
+        resp = teacher_client.post(
+            "/settings/users/add",
+            data={
+                "username": "sneaky",
+                "password": "sneakypass1",
+                "password_confirm": "sneakypass1",
+                "role": "admin",
+            },
+            follow_redirects=False,
+        )
+        assert resp.status_code == 303

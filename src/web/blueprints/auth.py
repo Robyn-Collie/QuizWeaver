@@ -54,6 +54,7 @@ def login():
                 flask_session["user_id"] = user.id
                 flask_session["username"] = user.username
                 flask_session["display_name"] = user.display_name
+                flask_session["role"] = user.role or "teacher"
                 next_url = request.args.get("next", "")
                 if not _is_safe_url(next_url):
                     next_url = url_for("main.dashboard")
@@ -103,6 +104,7 @@ def setup():
         flask_session["user_id"] = user.id
         flask_session["username"] = user.username
         flask_session["display_name"] = user.display_name
+        flask_session["role"] = user.role or "admin"
         flash("Account created successfully. Welcome to QuizWeaver!", "success")
         return redirect(url_for("main.dashboard"), code=303)
 
