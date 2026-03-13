@@ -24,7 +24,7 @@
 
     {# --- Source Attribution --- #}
     {% if source_meta or related_docs %}
-    <div class="standard-source-info" style="background: var(--card-bg, #f8f9fa); border: 1px solid var(--border-color, #dee2e6); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.9em;">
+    <div class="standard-source-info">
         <strong>Source:</strong>
         {% if source_meta and source_meta.label %}
             {{ source_meta.label }}
@@ -71,7 +71,7 @@
         {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
         {% if src_key not in ns.seen_sources %}
         {% set ns.seen_sources = ns.seen_sources + [src_key] %}
-        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+        <p class="source-ref">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
         </p>
@@ -99,7 +99,7 @@
         {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
         {% if src_key not in ns.seen_sources %}
         {% set ns.seen_sources = ns.seen_sources + [src_key] %}
-        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+        <p class="source-ref">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
         </p>
@@ -127,7 +127,7 @@
         {% set src_key = prov.doc_id|string ~ ':' ~ prov.page|string %}
         {% if src_key not in ns.seen_sources %}
         {% set ns.seen_sources = ns.seen_sources + [src_key] %}
-        <p class="source-ref" style="font-size: 0.85em; color: #666; margin-top: 0.5rem;">
+        <p class="source-ref">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             Source: <a href="{{ url_for('settings.serve_source_document', doc_id=prov.doc_id) }}#page={{ prov.page }}" target="_blank" title="View source PDF">{{ prov.doc_title }}, p. {{ prov.page }}</a>
         </p>

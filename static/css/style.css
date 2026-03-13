@@ -2169,6 +2169,8 @@ input[type="range"] {
     text-transform: uppercase;
     vertical-align: middle;
     letter-spacing: 0.03em;
+    background: var(--accent-light, #fff8e1);
+    color: var(--accent, #b37320);
 }
 
 .badge-available {
@@ -2191,6 +2193,22 @@ input[type="range"] {
     color: var(--success);
     font-size: 0.85em;
     font-weight: 700;
+}
+
+.standard-source-info {
+    background: var(--surface, #f8f9fa);
+    border: 1px solid var(--border, #dee2e6);
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9em;
+    color: var(--text);
+}
+
+.source-ref {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
 }
 
 small.text-muted {
