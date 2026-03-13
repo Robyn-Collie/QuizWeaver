@@ -358,174 +358,6 @@
       "full_text": "The student will solve multistep linear inequalities in one variable with the variable on one or both sides of the inequality."
     },
     {
-      "code": "SOL 3.1E",
-      "description": "Develop an understanding of scientific investigation",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
-    },
-    {
-      "code": "SOL 3.4E",
-      "description": "Investigate and understand simple machines",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Force, Motion, and Energy",
-      "full_text": "The student will investigate and understand that objects can be described by their physical properties. Key concepts include simple machines and their uses."
-    },
-    {
-      "code": "SOL 3.6E",
-      "description": "Investigate and understand the water cycle",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Earth/Space Systems",
-      "full_text": "The student will investigate and understand that ecosystems support a diversity of plants and animals that share limited resources. The water cycle is a key process."
-    },
-    {
-      "code": "SOL 4.1E",
-      "description": "Demonstrate understanding of scientific investigation",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
-    },
-    {
-      "code": "SOL 4.3E",
-      "description": "Investigate and understand electricity",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Force, Motion, and Energy",
-      "full_text": "The student will investigate and understand the characteristics of electricity and its application in circuits."
-    },
-    {
-      "code": "SOL 4.5E",
-      "description": "Investigate and understand the organization of the solar system",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Earth/Space Systems",
-      "full_text": "The student will investigate and understand the organization of the solar system, including the sun, moon, Earth, and other planets."
-    },
-    {
-      "code": "SOL 5.1E",
-      "description": "Plan and conduct investigations",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
-    },
-    {
-      "code": "SOL 5.4E",
-      "description": "Investigate and understand matter and its properties",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Matter",
-      "full_text": "The student will investigate and understand that matter is anything that has mass and takes up space. Key concepts include atoms and elements."
-    },
-    {
-      "code": "SOL 5.7E",
-      "description": "Investigate and understand Earth's surface",
-      "subject": "Science",
-      "grade_band": "3-5",
-      "strand": "Earth/Space Systems",
-      "full_text": "The student will investigate and understand how Earth's surface is constantly changing. Key concepts include weathering, erosion, and deposition."
-    },
-    {
-      "code": "SOL 6.1E",
-      "description": "Demonstrate understanding of scientific reasoning",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations."
-    },
-    {
-      "code": "SOL 6.2E",
-      "description": "Investigate and understand basic sources of energy",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Force, Motion, and Energy",
-      "full_text": "The student will investigate and understand basic sources of energy, their origins, transformations, and uses."
-    },
-    {
-      "code": "SOL 6.5E",
-      "description": "Investigate and understand the unique properties of water",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Matter",
-      "full_text": "The student will investigate and understand the unique properties and characteristics of water and its roles in the natural and human-made environment."
-    },
-    {
-      "code": "SOL 6.7E",
-      "description": "Investigate and understand the natural processes and human interactions that affect watershed systems",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Earth/Space Systems",
-      "full_text": "The student will investigate and understand the natural processes and human interactions that affect watershed systems."
-    },
-    {
-      "code": "SOL 7.1E",
-      "description": "Plan and conduct investigations",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations in which data are collected and recorded."
-    },
-    {
-      "code": "SOL 7.2E",
-      "description": "Investigate and understand cellular organization",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Life Processes",
-      "full_text": "The student will investigate and understand that all living things are composed of cells. Key concepts include cell structure and organelles."
-    },
-    {
-      "code": "SOL 7.3E",
-      "description": "Investigate and understand the relationships among organisms in biological communities",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Living Systems",
-      "full_text": "The student will investigate and understand the relationships among organisms in biological communities. Key concepts include producer, consumer, decomposer, predator, prey."
-    },
-    {
-      "code": "SOL 7.5E",
-      "description": "Investigate and understand the Earth's history and geologic processes",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Earth/Space Systems",
-      "full_text": "The student will investigate and understand that the Earth's crust undergoes change as a result of geologic processes."
-    },
-    {
-      "code": "SOL 8.1E",
-      "description": "Plan and conduct investigations using the scientific method",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Scientific Investigation",
-      "full_text": "The student will demonstrate an understanding of scientific reasoning, logic, and the nature of science by planning and conducting investigations using experimental design."
-    },
-    {
-      "code": "SOL 8.2E",
-      "description": "Investigate and understand force, motion, and energy relationships",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Force, Motion, and Energy",
-      "full_text": "The student will investigate and understand the relationships among force, motion, and energy. Key concepts include speed, velocity, and acceleration."
-    },
-    {
-      "code": "SOL 8.4E",
-      "description": "Investigate and understand atoms and the periodic table",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Matter",
-      "full_text": "The student will investigate and understand the organization of the periodic table. Key concepts include atomic structure, elements, and compounds."
-    },
-    {
-      "code": "SOL 8.5E",
-      "description": "Investigate and understand the law of conservation of matter and energy",
-      "subject": "Science",
-      "grade_band": "6-8",
-      "strand": "Matter",
-      "full_text": "The student will investigate and understand that the law of conservation of matter and energy applies to all transformations of matter and energy."
-    },
-    {
       "code": "SOL 3.5R",
       "description": "Read and demonstrate comprehension of fictional texts",
       "subject": "English",
@@ -1071,12 +903,12 @@
         "predict and provide an explanation to account for the net movement of materials across a selectively-permeable membrane during osmosis and diffusion (LS.2 e)."
       ],
       "essential_understandings": [
-        "The nature of science refers to the foundational concepts that govern the way scientists formulate explanations about the natural world. The nature of science continually tests and refines our understanding of the natural world. The nature of science includes the concept that the natural world is understandable; science is based on evidence — both observational and experimental; science is a blend of logic and innovation; scientific ideas are durable yet subject to change as new data are collected; science is a complex social endeavor; scientists try to remain objective and engage in peer review to help avoid bias.",
+        "The nature of science refers to the foundational concepts that govern the way scientists formulate explanations about the natural world. The nature of science continually tests and refines our understanding of the natural world. The nature of science includes the concept that the natural world is understandable; science is based on evidence â€” both observational and experimental; science is a blend of logic and innovation; scientific ideas are durable yet subject to change as new data are collected; science is a complex social endeavor; scientists try to remain objective and engage in peer review to help avoid bias.",
         "Theories and laws are two different types of knowledge used by scientists to describe natural phenomena. They are equal in terms of scientific validity. Theories are generally used to explain complex natural processes not easily quantifiable (e.g., cells, evolution). Laws often use mathematical formulas to show relationships and make predictions about the natural world (e.g., heredity).",
         "The cell theory is a shared understanding that encapsulates our current understanding of the cell. The development of this theory illustrates the nature of science (LS.2 a). Students are not responsible for identifying the contributions of specific scientists.",
         "Scientists and engineers use two-dimensional (2-D), three-dimensional (3-D), mathematical, and virtual models to represent, predict, and elaborate upon objects and systems and their interactions. Scientists use models when the object of investigation is too large, too small, or too complex to be studied directly.",
         "Science and technology are tightly linked. Science seeks to understand the natural world through observation and experimentation. Technologies are developed to aid in gathering data. New data bring fresh insights, raise new questions, and prompt further investigation. In this way, scientific knowledge evolves slowly over time (LS.2 a).",
-        "A good example of the link between science and technology is how advances in microscopes have helped us investigate cells — the smallest part of living things — and how they work to sustain life processes (LS.2 a).",
+        "A good example of the link between science and technology is how advances in microscopes have helped us investigate cells â€” the smallest part of living things â€” and how they work to sustain life processes (LS.2 a).",
         "Sustaining life requires substantial energy and matter inputs. The complex structural organization of organisms accommodates the capture, transformation, and elimination of the matter and energy needed to sustain them.",
         "Living cells are full of highly organized organelles that function as a system to carry out life processes within the cell. Life processes include growth and repair, reproduction, gas exchange, metabolism, and response (LS.2 b).",
         "Metabolism refers to all interactions among molecules within the well-ordered environment of the cell. Photosynthesis and cellular respiration are two important metabolic activities within living cells (LS.2 b). Students are not responsible for explaining specific endothermic and exothermic metabolic pathways.",
@@ -1085,7 +917,7 @@
         "Similarities and differences between plants and animals are evident at the cellular level (LS.2 c).",
         "Plant cells differ from animal cells in that plant cells contain cell walls, chloroplasts, and large, central vacuoles to aid in photosynthesis that help them convert matter and energy to usable forms (LS.2 c).",
         "Reproduction is a life process (system) by which living things transfer genetic information to their offspring.",
-        "All living things grow and reproduce. As an organism grows and repairs itself, the number of its cells increase. For this to happen, existing cells divide through the process of mitosis so that new cells can be made. The cells which divide go through the cell cycle. The cell cycle has two main components — interphase and mitosis (LS.2 d).",
+        "All living things grow and reproduce. As an organism grows and repairs itself, the number of its cells increase. For this to happen, existing cells divide through the process of mitosis so that new cells can be made. The cells which divide go through the cell cycle. The cell cycle has two main components â€” interphase and mitosis (LS.2 d).",
         "During mitosis, a body cell first duplicates its chromosomes and then divides into two identical daughter cells, each one with a complete set of chromosomes identical to the original parent cell (LS.2 d).",
         "The purpose of mitosis is to produce new cells for growth and repair that are identical to the parent cell. The purpose of meiosis is to produce reproductive (sex) cells that carry half the genetic material of the parent (LS.2 d).",
         "Living things must move materials into, out of, and within the cell.",
@@ -1153,7 +985,7 @@
         "Photosynthesizing organisms, including green plants, algae, and phytoplankton, produce their own food (sugar), and are called producers (LS.4 a).",
         "No process is more important for life on Earth than photosynthesis. Producers are the foundation of virtually all food webs (LS.4 a).",
         "Sustaining life processes requires substantial energy and matter inputs. The complex structural organization of organisms accommodates the capture, transformation, and elimination of the matter and energy needed to sustain them.",
-        "Two organelles — chloroplasts and mitochondria — act as change agents within the cells of living things to make energy available for life processes (LS.4 b).",
+        "Two organelles â€” chloroplasts and mitochondria â€” act as change agents within the cells of living things to make energy available for life processes (LS.4 b).",
         "The organelles, cells, tissues, organs, and organ systems of plants work as a system to obtain the raw materials (sunlight, water, and carbon dioxide) and produce the products (sugars and oxygen) in photosynthesis (LS.4 b).",
         "Chloroplasts, organelles found in some plant cells, convert radiant energy from sunlight into chemical energy. Chloroplasts do this with the help of the pigment chlorophyll. Chlorophyll aids in the energy transformation of sunlight (radiant energy) to chemical energy in sugar (LS.4 b).",
         "The sugar molecules produced from photosynthesis can be used immediately by plants and animals for energy, stored for later use, or rearranged into other compounds to carry out life processes (LS.4 b). Students are not responsible for identifying the details of the complex chemical reactions for photosynthesis.",

@@ -381,8 +381,10 @@ def standards_page():
 
     loaded_sets = get_standard_sets_in_db(session)
 
-    # Build set of verified standard IDs (those with source document excerpts)
-    from src.database import StandardExcerpt
+    # Build set of verified standard IDs:
+    # 1. Standards with source document excerpts (uploaded PDFs)
+    # 2. Standards with curriculum framework content (enrichment data)
+    from src.database import Standard, StandardExcerpt
 
     verified_rows = (
         session.query(StandardExcerpt.standard_id)
@@ -390,6 +392,17 @@ def standards_page():
         .all()
     )
     verified_ids = {row[0] for row in verified_rows}
+
+    # Also mark standards with enrichment data as verified
+    enriched_rows = (
+        session.query(Standard.id)
+        .filter(
+            (Standard.essential_knowledge.isnot(None) & (Standard.essential_knowledge != '[]') & (Standard.essential_knowledge != '')) |
+            (Standard.essential_understandings.isnot(None) & (Standard.essential_understandings != '[]') & (Standard.essential_understandings != ''))
+        )
+        .all()
+    )
+    verified_ids.update(row[0] for row in enriched_rows)
 
     return render_template(
         "standards.html",
@@ -445,9 +458,10 @@ def standard_detail(standard_id):
 
     provenance = get_excerpts_for_standard(session, standard_id)
 
-    # Verification: does this standard have any source document excerpts?
+    # Verification: source document excerpts OR enrichment data
     excerpt_count = session.query(StandardExcerpt).filter_by(standard_id=standard_id).count()
-    is_verified = excerpt_count > 0
+    has_enrichment = bool(ek or eu)
+    is_verified = excerpt_count > 0 or has_enrichment
 
     # Load source metadata (official URL, related uploaded documents)
     from src.standards import STANDARD_SET_METADATA, STANDARD_SETS
