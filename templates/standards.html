@@ -89,7 +89,7 @@
             <td>
                 <a href="/standards/{{ std.id }}"><strong>{{ std.code }}</strong></a>
                 {% if std.id in verified_ids %}
-                <span title="Verified against source document" style="color: #28a745; font-size: 0.8em;">&#10003;</span>
+                <span class="verified-check" title="Verified against source document">&#10003;</span>
                 {% endif %}
             </td>
             <td title="{{ std.full_text or '' }}">{{ std.description }}</td>

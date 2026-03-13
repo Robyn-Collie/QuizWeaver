@@ -2181,6 +2181,18 @@ input[type="range"] {
     color: #b37320;
 }
 
+.badge-set {
+    background: var(--primary-light, #fff0eb);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.verified-check {
+    color: var(--success);
+    font-size: 0.85em;
+    font-weight: 700;
+}
+
 small.text-muted {
     display: block;
     color: var(--text-muted);
@@ -3310,6 +3322,14 @@ small.text-muted {
 
 :root[data-theme="dark"] .cognitive-badge-4 {
     color: #1a1e24;
+}
+
+:root[data-theme="dark"] .info-box {
+    color: var(--secondary);
+}
+
+:root[data-theme="dark"] .badge-unavailable {
+    color: var(--warning);
 }
 
 :root[data-theme="dark"] .help-tip::after {
