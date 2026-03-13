@@ -76,9 +76,9 @@ body {
     display: inline-block;
     width: 28px;
     height: 28px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 8px;
+    background: url('/static/img/robin.png') center/contain no-repeat;
     flex-shrink: 0;
+    image-rendering: pixelated;
 }
 
 .nav-links {
@@ -2241,8 +2241,8 @@ small.text-muted {
 .login-card .login-logo {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 14px;
+    background: url('/static/img/robin.png') center/contain no-repeat;
+    image-rendering: pixelated;
     margin: 0 auto 1rem;
 }
 

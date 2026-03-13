@@ -53,6 +53,7 @@ test_uat_setup.sh
 
 # --- Screenshots (dev/debug artifacts) ---
 *.png
+!static/img/*.png
 
 # --- Test Coverage ---
 htmlcov/
