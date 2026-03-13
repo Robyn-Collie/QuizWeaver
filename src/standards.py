@@ -462,8 +462,26 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
     """
     imported = 0
     for item in standards_data:
+        # Serialize curriculum framework lists to JSON strings
+        ek = json.dumps(item["essential_knowledge"]) if item.get("essential_knowledge") else None
+        eu = json.dumps(item["essential_understandings"]) if item.get("essential_understandings") else None
+        es = json.dumps(item["essential_skills"]) if item.get("essential_skills") else None
+
         existing = session.query(Standard).filter_by(code=item["code"]).first()
         if existing:
+            # Update curriculum content fields if newly provided
+            updated = False
+            if ek and not existing.essential_knowledge:
+                existing.essential_knowledge = ek
+                updated = True
+            if eu and not existing.essential_understandings:
+                existing.essential_understandings = eu
+                updated = True
+            if es and not existing.essential_skills:
+                existing.essential_skills = es
+                updated = True
+            if updated:
+                imported += 1
             continue
         standard = Standard(
             code=item["code"],
@@ -477,6 +495,9 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
             source=item.get("source", "Virginia SOL"),
             version=item.get("version"),
             standard_set=item.get("standard_set", "sol"),
+            essential_knowledge=ek,
+            essential_understandings=eu,
+            essential_skills=es,
         )
         session.add(standard)
         imported += 1

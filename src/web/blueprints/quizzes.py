@@ -314,7 +314,7 @@ def quiz_export(quiz_id, format_name):
             mimetype="application/pdf",
         )
     elif format_name == "qti":
-        buf = export_qti(quiz, questions, image_dir=image_dir)
+        buf = export_qti(quiz, questions, image_dir=image_dir, audio_dir=quiz_audio_dir)
         return send_file(
             buf,
             as_attachment=True,
@@ -839,7 +839,12 @@ def api_image_search():
     api_key = os.getenv("PIXABAY_API_KEY", "").strip()
     if not api_key:
         return jsonify(
-            {"ok": False, "error": "Image search not configured. Add PIXABAY_API_KEY to your .env file."}
+            {
+                "ok": False,
+                "configured": False,
+                "error": "Pixabay image search is not configured.",
+                "setup_url": url_for("settings.pixabay_wizard"),
+            }
         )
 
     query = (request.args.get("q") or "").strip()
@@ -883,7 +888,7 @@ def api_image_search():
         for h in data.get("hits", [])
     ]
 
-    return jsonify({"ok": True, "hits": hits})
+    return jsonify({"ok": True, "configured": True, "hits": hits})
 
 
 @quizzes_bp.route("/api/questions/<int:question_id>/image-from-url", methods=["POST"])

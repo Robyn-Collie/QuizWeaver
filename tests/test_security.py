@@ -83,6 +83,21 @@ class TestCSRFProtection:
         assert b"csrf_token" in resp.data
 
 
+class TestPixabayCSRF:
+    """CSRF protection on Pixabay settings POST route."""
+
+    def test_pixabay_post_without_csrf_rejected(self, secure_app_with_user):
+        """POST /settings/pixabay without CSRF token should fail."""
+        client = secure_app_with_user.test_client()
+        with client.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "testteacher"
+            sess["user_id"] = 1
+
+        resp = client.post("/settings/pixabay", data={"pixabay_api_key": "test"})
+        assert resp.status_code == 400  # CSRF validation failure
+
+
 class TestOpenRedirect:
     """SEC-002: Open redirect via login next parameter."""
 
@@ -454,3 +469,22 @@ class TestRouteAuthentication:
             follow_redirects=False,
         )
         assert resp.status_code == 303
+
+
+class TestSourceDocumentUploadCSRF:
+    """CSRF protection on source document upload POST route."""
+
+    def test_source_document_upload_without_csrf_rejected(self, secure_app_with_user):
+        """POST /standards/source-documents/upload without CSRF token should fail."""
+        client = secure_app_with_user.test_client()
+        with client.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["username"] = "testteacher"
+            sess["user_id"] = 1
+
+        resp = client.post(
+            "/standards/source-documents/upload",
+            data={"title": "Test Document"},
+        )
+        # Should be 400 (CSRF rejection) or 404 (route not yet implemented)
+        assert resp.status_code in (400, 404)

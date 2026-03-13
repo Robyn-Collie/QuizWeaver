@@ -169,6 +169,9 @@ function initStandardsPicker(opts) {
         input.value = '';
         closeDropdown();
         input.focus();
+        if (opts.onSelect && item.id) {
+            opts.onSelect(item);
+        }
     }
 
     function addChip(code) {
@@ -192,6 +195,9 @@ function initStandardsPicker(opts) {
         syncHiddenInput();
         var chip = chipsContainer.querySelector('[data-code="' + CSS.escape(code) + '"]');
         if (chip) chip.remove();
+        if (opts.onRemove) {
+            opts.onRemove(code);
+        }
     }
 
     function syncHiddenInput() {

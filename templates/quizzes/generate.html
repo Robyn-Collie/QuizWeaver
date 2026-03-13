@@ -40,6 +40,7 @@ Example: Students should understand that cell membranes are selectively permeabl
                 <div class="picker-hint">Search the standards database or type a custom code and press Enter.</div>
             </div>
             <div class="standards-chips" id="sol_standards_chips"></div>
+            <div class="standards-previews" id="standards_previews"></div>
         </div>
     </fieldset>
 
@@ -384,12 +385,135 @@ Example: Students should understand that cell membranes are selectively permeabl
 <link rel="stylesheet" href="{{ url_for('static', filename='css/standards_picker.css') }}">
 <script src="{{ url_for('static', filename='js/standards_picker.js') }}"></script>
 <script>
+var previewsContainer = document.getElementById('standards_previews');
+var contentTextarea = document.getElementById('content_text');
+
+function escHtml(s) {
+    var d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+function renderPreviewPanel(data) {
+    var panel = document.createElement('div');
+    panel.className = 'standard-preview-panel';
+    panel.setAttribute('data-code', data.code);
+
+    var hasEK = data.essential_knowledge && data.essential_knowledge.length > 0;
+    var hasEU = data.essential_understandings && data.essential_understandings.length > 0;
+    var hasContent = hasEK || hasEU;
+
+    var html = '<div class="standard-preview-header">' +
+        '<span class="preview-code">' + escHtml(data.code) + '</span>' +
+        '<span class="preview-desc">' + escHtml(data.description) + '</span>' +
+        '</div>';
+
+    if (hasEK) {
+        html += '<details open><summary>Essential Knowledge (' + data.essential_knowledge.length + ')</summary><ul>';
+        data.essential_knowledge.forEach(function(item) {
+            html += '<li>' + escHtml(item) + '</li>';
+        });
+        html += '</ul>';
+        html += buildSourceRefs(data.provenance, 'essential_knowledge');
+        html += '</details>';
+    }
+
+    if (hasEU) {
+        html += '<details><summary>Essential Understandings (' + data.essential_understandings.length + ')</summary><ul>';
+        data.essential_understandings.forEach(function(item) {
+            html += '<li>' + escHtml(item) + '</li>';
+        });
+        html += '</ul>';
+        html += buildSourceRefs(data.provenance, 'essential_understandings');
+        html += '</details>';
+    }
+
+    if (!hasContent) {
+        html += '<div class="standard-preview-empty">No curriculum framework content available for this standard. ' +
+            '<a href="/standards/source-documents">Upload a source document</a> to add it.</div>';
+    }
+
+    html += '<div class="standard-preview-actions">';
+    if (hasContent) {
+        html += '<button type="button" class="btn-insert" data-code="' + escHtml(data.code) + '">Insert into prompt</button>';
+    }
+    html += '<a href="/standards/' + data.id + '" target="_blank" class="preview-detail-link">View full details</a>';
+    html += '</div>';
+
+    panel.innerHTML = html;
+
+    // Wire up the insert button
+    var insertBtn = panel.querySelector('.btn-insert');
+    if (insertBtn) {
+        insertBtn.addEventListener('click', function() {
+            var lines = [data.code + ':'];
+            if (hasEK) {
+                lines.push('Essential Knowledge:');
+                data.essential_knowledge.forEach(function(item) { lines.push('- ' + item); });
+            }
+            if (hasEU) {
+                lines.push('Essential Understandings:');
+                data.essential_understandings.forEach(function(item) { lines.push('- ' + item); });
+            }
+            var text = lines.join('\n');
+            if (contentTextarea.value.trim()) {
+                contentTextarea.value += '\n\n' + text;
+            } else {
+                contentTextarea.value = text;
+            }
+            insertBtn.textContent = 'Inserted';
+            insertBtn.disabled = true;
+        });
+    }
+
+    previewsContainer.appendChild(panel);
+}
+
+function buildSourceRefs(provenance, key) {
+    if (!provenance || !provenance[key] || provenance[key].length === 0) return '';
+    var seen = {};
+    var refs = [];
+    provenance[key].forEach(function(p) {
+        var k = p.doc_id + ':' + p.page;
+        if (!seen[k]) {
+            seen[k] = true;
+            refs.push('<span class="standard-preview-source">' +
+                '<a href="/standards/source-document/' + p.doc_id + '#page=' + p.page + '" target="_blank">' +
+                escHtml(p.doc_title) + ', p. ' + p.page + '</a></span>');
+        }
+    });
+    return refs.join(' ');
+}
+
 initStandardsPicker({
     inputId: 'sol_standards_search',
     hiddenInputId: 'sol_standards_val',
     chipsContainerId: 'sol_standards_chips',
     apiUrl: '/api/standards/search',
-    initialValues: {{ (class_obj.standards|ensure_list if class_obj.standards else [])|tojson }}
+    initialValues: {{ (class_obj.standards|ensure_list if class_obj.standards else [])|tojson }},
+    onSelect: function(item) {
+        fetch('/api/standards/' + item.id + '/preview')
+            .then(function(res) { return res.json(); })
+            .then(function(data) { renderPreviewPanel(data); })
+            .catch(function() { /* silently skip preview on error */ });
+    },
+    onRemove: function(code) {
+        var panel = previewsContainer.querySelector('[data-code="' + CSS.escape(code) + '"]');
+        if (panel) panel.remove();
+    }
 });
+</script>
+<script>
+// Pre-fill content_text from standards detail page ("Use in quiz prompt")
+(function() {
+    var stored = sessionStorage.getItem('qw-prompt-content');
+    if (stored) {
+        var textarea = document.getElementById('content_text');
+        if (textarea) {
+            textarea.value = stored;
+        }
+        sessionStorage.removeItem('qw-prompt-content');
+    }
+})();
 </script>
 {% endblock %}

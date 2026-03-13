@@ -188,7 +188,7 @@ class TestImageSearchAPI:
             resp = client.get("/api/image-search?q=chloroplast")
             data = resp.get_json()
             assert data["ok"] is False
-            assert "PIXABAY_API_KEY" in data["error"]
+            assert "not configured" in data["error"]
 
     def test_empty_query_returns_error(self, client):
         with patch.dict(os.environ, {"PIXABAY_API_KEY": "test-key-123"}):
@@ -340,3 +340,63 @@ class TestImageFromURL:
             assert resp.status_code == 400
             data = resp.get_json()
             assert data["ok"] is False
+
+
+# ---------------------------------------------------------------------------
+# PART 4: Google Image Search link
+# ---------------------------------------------------------------------------
+
+
+class TestGoogleSearchLink:
+    """Verify that Google Image Search link appears in quiz detail."""
+
+    def test_google_link_appears(self, client):
+        """Google link should appear alongside Pixabay and Wikimedia."""
+        ids = client._app.config["_test_ids"]
+        resp = client.get(f"/quizzes/{ids['quiz_id']}?skip_onboarding=1")
+        html = resp.data.decode()
+        assert resp.status_code == 200
+        assert "Google" in html
+        assert 'data-provider="google"' in html
+
+    def test_google_url_builder_in_js(self, client):
+        """JS should contain the google.com/search URL builder."""
+        ids = client._app.config["_test_ids"]
+        resp = client.get(f"/quizzes/{ids['quiz_id']}?skip_onboarding=1")
+        html = resp.data.decode()
+        assert "google.com/search?tbm=isch" in html
+
+
+# ---------------------------------------------------------------------------
+# PART 5: Graceful degradation when Pixabay is not configured
+# ---------------------------------------------------------------------------
+
+
+class TestImageSearchGracefulDegradation:
+    """Verify configured flag and setup_url in /api/image-search responses."""
+
+    def test_no_key_returns_configured_false(self, client):
+        """When PIXABAY_API_KEY is not set, response includes configured=false and setup_url."""
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("PIXABAY_API_KEY", None)
+            resp = client.get("/api/image-search?q=test")
+            data = resp.get_json()
+            assert data["ok"] is False
+            assert data["configured"] is False
+            assert "setup_url" in data
+            assert "pixabay-wizard" in data["setup_url"]
+
+    def test_with_key_returns_configured_true(self, client):
+        """When PIXABAY_API_KEY is set and search succeeds, configured=true."""
+        fake_response = {"totalHits": 0, "hits": []}
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = fake_response
+        mock_resp.raise_for_status = MagicMock()
+
+        with patch.dict(os.environ, {"PIXABAY_API_KEY": "test-key-123"}):
+            with patch("requests.get", return_value=mock_resp):
+                resp = client.get("/api/image-search?q=test")
+                data = resp.get_json()
+                assert data["ok"] is True
+                assert data["configured"] is True

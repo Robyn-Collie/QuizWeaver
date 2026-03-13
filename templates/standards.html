@@ -85,8 +85,8 @@
     </thead>
     <tbody>
         {% for std in standards %}
-        <tr>
-            <td><strong>{{ std.code }}</strong></td>
+        <tr style="cursor:pointer" onclick="window.location='/standards/{{ std.id }}'">
+            <td><a href="/standards/{{ std.id }}"><strong>{{ std.code }}</strong></a></td>
             <td title="{{ std.full_text or '' }}">{{ std.description }}</td>
             <td>{{ std.subject }}</td>
             <td>{{ std.grade_band or '-' }}</td>

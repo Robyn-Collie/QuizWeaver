@@ -697,6 +697,94 @@
       "grade_band": "9-12",
       "strand": "Writing",
       "full_text": "The student will write, revise, and edit personal, professional, and informational compositions, synthesizing information from multiple sources."
+    },
+    {
+      "code": "SOL LS.1",
+      "description": "Investigate and understand scientific reasoning and logic",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will demonstrate an understanding of scientific and engineering practices by planning and conducting investigations in which observations are made and are repeated to ensure accuracy; predictions and hypotheses are formulated based on cause-and-effect relationships; data are collected, recorded, analyzed, and reported using metric measurements and tools; models and simulations are designed and used to illustrate and explain phenomena; and current applications are used to reinforce life science concepts."
+    },
+    {
+      "code": "SOL LS.2",
+      "description": "Investigate and understand that all living things are composed of cells",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that all living things are composed of one or more cells that support life processes, as described by the cell theory."
+    },
+    {
+      "code": "SOL LS.3",
+      "description": "Investigate and understand that living things show patterns of cellular organization",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that living things show patterns of cellular organization. Key ideas include cells, tissues, organs, and systems; life functions are carried out within the cell and result from the complementary activity of organelles."
+    },
+    {
+      "code": "SOL LS.4",
+      "description": "Investigate and understand that the basic needs of organisms must be met",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that the basic needs of organisms must be met through interactions with the environment. Key ideas include energy is transferred through food webs; matter is recycled; and living systems are interdependent."
+    },
+    {
+      "code": "SOL LS.5",
+      "description": "Investigate and understand the interrelationships among populations in a community",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that biotic and abiotic factors affect an ecosystem. Key ideas include interactions among populations including competition, predation, parasitism, mutualism, and commensalism; the role of niche; and the effects of change on ecosystems."
+    },
+    {
+      "code": "SOL LS.6",
+      "description": "Investigate and understand that organisms within an ecosystem are dependent on one another and on nonliving components",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that organisms within an ecosystem are dependent on one another and on nonliving components of the environment. Key ideas include the carbon, water, and nitrogen cycles; ecosystems, communities, populations, and organisms; and habitat and niche."
+    },
+    {
+      "code": "SOL LS.7",
+      "description": "Investigate and understand that organisms can be classified",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that organisms can be classified based on shared characteristics. Key ideas include the distinguishing characteristics of kingdoms; the major animal and plant phyla; and the use of classification systems."
+    },
+    {
+      "code": "SOL LS.8",
+      "description": "Investigate and understand that ecosystems, communities, populations, and organisms are dynamic",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that ecosystems, communities, populations, and organisms are dynamic and change over time. Key ideas include how organisms respond to daily, seasonal, and long-term changes; and how populations change through time."
+    },
+    {
+      "code": "SOL LS.9",
+      "description": "Investigate and understand that cells reproduce",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that the basic unit of life is the cell and that cells reproduce. Key ideas include cell division (mitosis) produces two identical daughter cells; the cell cycle; and cell division is important for growth, repair, and reproduction."
+    },
+    {
+      "code": "SOL LS.10",
+      "description": "Investigate and understand that organisms reproduce and transmit genetic information",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that organisms reproduce and transmit genetic information to new generations. Key ideas include DNA and genes; the role of meiosis; Mendelian genetics; and the impact of mutations."
+    },
+    {
+      "code": "SOL LS.11",
+      "description": "Investigate and understand that organisms change over time",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Life Science",
+      "full_text": "The student will investigate and understand that organisms change over time. Key ideas include evidence of evolution including the fossil record, comparative anatomy, and DNA analysis; how natural selection leads to adaptation; and Charles Darwin's role in developing the theory of evolution."
     }
   ]
 }

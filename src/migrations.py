@@ -139,6 +139,14 @@ def check_if_migration_needed(db_path):
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='pacing_guides'")
         pacing_guides_exists = cursor.fetchone() is not None
 
+        # Check if source_documents table exists (migration 013)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='source_documents'")
+        source_documents_exists = cursor.fetchone() is not None
+
+        # Check if standard_excerpts table exists (migration 013)
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='standard_excerpts'")
+        standard_excerpts_exists = cursor.fetchone() is not None
+
         conn.close()
 
         return (
@@ -150,6 +158,8 @@ def check_if_migration_needed(db_path):
             or not standards_exists
             or not standards_set_exists
             or not pacing_guides_exists
+            or not source_documents_exists
+            or not standard_excerpts_exists
         )
     except Exception as e:
         print(f"Error checking migration status: {e}")

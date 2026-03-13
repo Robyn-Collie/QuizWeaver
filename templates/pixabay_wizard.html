@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block title %}Pixabay Setup - QuizWeaver{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <div class="wizard-header">
+        <h1>Set Up Pixabay Image Search</h1>
+        <p class="text-muted">Follow these steps to enable in-app image search for quiz questions. Pixabay provides free images with no attribution required.</p>
+    </div>
+
+    <div class="wizard-progress">
+        <div class="wizard-step-indicator active" data-step="1">
+            <span class="wizard-step-number">1</span>
+            <span class="wizard-step-label">Get API Key</span>
+        </div>
+        <div class="wizard-step-connector"></div>
+        <div class="wizard-step-indicator" data-step="2">
+            <span class="wizard-step-number">2</span>
+            <span class="wizard-step-label">Enter &amp; Test</span>
+        </div>
+        <div class="wizard-step-connector"></div>
+        <div class="wizard-step-indicator" data-step="3">
+            <span class="wizard-step-number">3</span>
+            <span class="wizard-step-label">Done</span>
+        </div>
+    </div>
+
+    <!-- Step 1: Get API Key -->
+    <div class="wizard-panel" id="wizard-step-1">
+        <h2>Get a Free Pixabay API Key</h2>
+        <ol class="help-steps">
+            <li>Go to <a href="https://pixabay.com/api/docs/" target="_blank" rel="noopener">pixabay.com/api/docs</a> and create a free account (or sign in).</li>
+            <li>After signing in, your API key will be displayed on that page.</li>
+            <li>Copy the key and come back here to paste it in the next step.</li>
+        </ol>
+        <div class="info-box" style="margin-top: 1rem;">
+            <strong>Free and no credit card required.</strong> The Pixabay API is free for all use cases. There is a rate limit of 100 requests per minute, which is more than enough for classroom use.
+        </div>
+
+        <div class="wizard-nav">
+            <a href="/settings" class="btn btn-secondary">Cancel</a>
+            <button class="btn btn-primary" onclick="wizardNext(2)">I have my key</button>
+        </div>
+    </div>
+
+    <!-- Step 2: Enter & Test -->
+    <div class="wizard-panel" id="wizard-step-2" style="display:none">
+        <h2>Enter and Test Your API Key</h2>
+        <p>Paste your Pixabay API key below and test the connection.</p>
+
+        <div class="form">
+            <div class="form-group">
+                <label for="pixabay_api_key">Pixabay API Key</label>
+                <input type="text" id="pixabay_api_key" placeholder="Paste your Pixabay API key here"
+                       autocomplete="off" data-lpignore="true" data-1p-ignore="true"
+                       style="-webkit-text-security: disc;">
+            </div>
+        </div>
+
+        <div class="test-connection-section">
+            <button type="button" class="btn btn-primary" id="pixabay-test-btn" onclick="pixabayTest()">Test Connection</button>
+            <span id="pixabay-test-result" class="test-result" aria-live="polite"></span>
+        </div>
+
+        <div class="info-box" style="margin-top: 1rem;">
+            <strong>What happens during the test?</strong> QuizWeaver sends a small test query to Pixabay to verify your key works. No lesson data is sent.
+        </div>
+
+        <div class="wizard-nav">
+            <button class="btn btn-secondary" onclick="wizardNext(1)">Back</button>
+            <button class="btn btn-primary" id="pixabay-save-btn" onclick="pixabaySave()" disabled>Save &amp; Finish</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Success -->
+    <div class="wizard-panel" id="wizard-step-3" style="display:none">
+        <div style="text-align: center; padding: 2rem 0;">
+            <div style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h2>Pixabay Connected</h2>
+            <p>You can now search for images directly from quiz question cards. Click the "Search" button on any question to find and attach images.</p>
+            <div class="wizard-nav" style="justify-content: center; margin-top: 1.5rem;">
+                <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+                <a href="/settings" class="btn btn-secondary">View Settings</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+
+    window.wizardNext = function(step) {
+        document.querySelectorAll('.wizard-panel').forEach(function(p) {
+            p.style.display = 'none';
+        });
+        document.getElementById('wizard-step-' + step).style.display = 'block';
+
+        document.querySelectorAll('.wizard-step-indicator').forEach(function(ind) {
+            var s = parseInt(ind.getAttribute('data-step'));
+            ind.classList.remove('active', 'completed');
+            if (s < step) ind.classList.add('completed');
+            else if (s === step) ind.classList.add('active');
+        });
+    };
+
+    window.pixabayTest = function() {
+        var btn = document.getElementById('pixabay-test-btn');
+        var result = document.getElementById('pixabay-test-result');
+        var saveBtn = document.getElementById('pixabay-save-btn');
+        var apiKey = document.getElementById('pixabay_api_key').value.trim();
+
+        if (!apiKey) {
+            result.textContent = 'Please enter an API key.';
+            result.className = 'test-result test-failure';
+            return;
+        }
+
+        result.textContent = '';
+        result.className = 'test-result';
+        btn.disabled = true;
+        btn.textContent = 'Testing...';
+
+        fetch('/api/settings/test-pixabay', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify({api_key: apiKey})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                result.textContent = '[OK] ' + data.message;
+                result.className = 'test-result test-success';
+                saveBtn.disabled = false;
+            } else {
+                result.textContent = '[FAIL] ' + data.message;
+                result.className = 'test-result test-failure';
+                saveBtn.disabled = true;
+            }
+        })
+        .catch(function(err) {
+            result.textContent = '[FAIL] ' + err.message;
+            result.className = 'test-result test-failure';
+            saveBtn.disabled = true;
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = 'Test Connection';
+        });
+    };
+
+    window.pixabaySave = function() {
+        var saveBtn = document.getElementById('pixabay-save-btn');
+        var result = document.getElementById('pixabay-test-result');
+        var apiKey = document.getElementById('pixabay_api_key').value.trim();
+
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        fetch('/api/settings/save-pixabay', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify({api_key: apiKey})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                wizardNext(3);
+            } else {
+                result.textContent = '[FAIL] ' + data.message;
+                result.className = 'test-result test-failure';
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save & Finish';
+            }
+        })
+        .catch(function(err) {
+            result.textContent = '[FAIL] Could not save: ' + err.message;
+            result.className = 'test-result test-failure';
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save & Finish';
+        });
+    };
+})();
+</script>
+{% endblock %}
