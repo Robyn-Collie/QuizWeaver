@@ -929,6 +929,21 @@ def _find_standard(session, sol_code: str) -> Optional[Standard]:
         if std:
             return std
 
+    # Fallback for grade 3-8 science code format mismatch.
+    # Curriculum framework PDFs extract codes like "SOL 6.1" but the DB may
+    # store them as "SOL 6.1E" (old format) or "SOL 6.1S" (science suffix).
+    # Try appending E and S suffixes for numeric-prefix codes (e.g., 6.1, 7.2).
+    import re
+    normalized = sol_code if sol_code.startswith("SOL ") else f"SOL {sol_code}"
+    bare = normalized[4:].strip()
+    if re.match(r"^\d+\.\d+$", bare):
+        for suffix in ("S", "E"):
+            std = session.query(Standard).filter_by(
+                code=f"SOL {bare}{suffix}"
+            ).first()
+            if std:
+                return std
+
     return None
 
 

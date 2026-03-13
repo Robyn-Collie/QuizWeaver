@@ -448,6 +448,8 @@ These rules are MANDATORY for all code changes. Violations caught in the Session
 - **Co-authoring**: Add `Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>`
 - **Commit frequency**: After each section or major feature
 - **Push regularly**: Share progress with team/workshop
+- **Remote**: Public repo on GitHub (Robyn-Collie/QuizWeaver). Standard push/pull workflow.
+- **Multi-machine**: Can be worked on from bartimaeus or yogurt — no special sync needed.
 
 ## Documentation
 

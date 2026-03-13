@@ -785,6 +785,318 @@
       "grade_band": "6-8",
       "strand": "Life Science",
       "full_text": "The student will investigate and understand that organisms change over time. Key ideas include evidence of evolution including the fossil record, comparative anatomy, and DNA analysis; how natural selection leads to adaptation; and Charles Darwin's role in developing the theory of evolution."
+    },
+    {
+      "code": "SOL PS.1",
+      "description": "Demonstrate understanding of scientific and engineering practices",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will demonstrate an understanding of scientific and engineering practices by planning and carrying out investigations, interpreting and analyzing data, constructing and critiquing conclusions, developing and using models, and obtaining, evaluating, and communicating information."
+    },
+    {
+      "code": "SOL PS.2",
+      "description": "Investigate and understand that matter is composed of atoms",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand that matter is composed of atoms. Key ideas include the understanding of atoms has developed over time; the periodic table can be used to predict the chemical and physical properties of matter; and the kinetic molecular theory describes the states of matter."
+    },
+    {
+      "code": "SOL PS.3",
+      "description": "Investigate and understand that matter has properties and is conserved",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand that matter has properties and is conserved in chemical and physical processes. Key ideas include pure substances can be identified by their physical and chemical properties; physical changes and chemical changes occur in matter; ionic and covalent bonding can be used to explain the properties of a compound; and balanced equations model the conservation of matter in chemical reactions."
+    },
+    {
+      "code": "SOL PS.4",
+      "description": "Investigate and understand the periodic table as a model for organizing elements",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand that the periodic table is a model used to organize elements based on their atomic structure. Key ideas include symbols, atomic numbers, atomic mass, groups or families, and periods are identified on the periodic table; and elements are classified as metals, metalloids, and nonmetals."
+    },
+    {
+      "code": "SOL PS.5",
+      "description": "Investigate and understand that energy is conserved",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand that energy is conserved. Key ideas include energy can be stored in different ways; energy is transferred and transformed; and energy can be transformed to meet the needs of society."
+    },
+    {
+      "code": "SOL PS.6",
+      "description": "Investigate and understand that waves are important in the movement of energy",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand that waves are important in the movement of energy. Key ideas include longitudinal and transverse waves have different characteristics; mechanical waves need a medium to transfer energy; waves can interact; and energy associated with waves has many practical applications."
+    },
+    {
+      "code": "SOL PS.7",
+      "description": "Investigate and understand the characteristics of electromagnetic radiation",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand the characteristics of transverse waves. Key ideas include the characteristics of electromagnetic radiation, including visible light; and the regions of the electromagnetic spectrum."
+    },
+    {
+      "code": "SOL PS.8",
+      "description": "Investigate and understand work, force, and motion",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand the scientific principles of work, force, and motion. Key ideas include motion can be described using position and time; and Newton's laws of motion explain the interaction between force, mass, and motion."
+    },
+    {
+      "code": "SOL PS.9",
+      "description": "Investigate and understand electricity and magnetism",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Physical Science",
+      "full_text": "The student will investigate and understand the basic principles of electricity and magnetism. Key ideas include an imbalance of charge generates static electricity; materials have different conductive properties; electric circuits transfer energy; magnetic fields are related to the motion of electric charges; and technologies have been developed based on the principles of electricity and magnetism."
+    },
+    {
+      "code": "SOL ES.1",
+      "description": "Demonstrate understanding of scientific and engineering practices",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will demonstrate an understanding of scientific and engineering practices by planning and carrying out investigations, interpreting and analyzing data, constructing and critiquing conclusions, developing and using models, and obtaining, evaluating, and communicating information."
+    },
+    {
+      "code": "SOL ES.2",
+      "description": "Investigate and understand the origin and evolution of the universe",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that scientific concepts related to the origin and evolution of the universe are based on physical evidence. Key ideas include the Big Bang theory proposes the formation of the universe; stars and galaxies form and change over time; the sun, planets, moons, asteroids, and comets have characteristics and properties; and space exploration continues to provide evidence about the universe."
+    },
+    {
+      "code": "SOL ES.3",
+      "description": "Investigate and understand that Earth is unique in its ability to support life",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that Earth is unique in our solar system in its ability to support life. Key ideas include Earth's proximity to the sun and its relationship to the water cycle support life; and the sun-Earth-moon system causes seasons, tides, and eclipses."
+    },
+    {
+      "code": "SOL ES.4",
+      "description": "Investigate and understand rock-forming and ore minerals",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that major rock-forming and ore minerals have specific physical and chemical properties that make them useful. Key ideas include physical and chemical properties are used to identify and classify minerals; mineral characteristics determine how they are used; and rock-forming minerals are formed in specific ways."
+    },
+    {
+      "code": "SOL ES.5",
+      "description": "Investigate and understand rock transformation and the rock cycle",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that igneous, metamorphic, and sedimentary rocks can transform from one to another. Key ideas include Earth's materials are finite and can be transformed into different forms; the rock cycle models the transformation of rocks; rock layers have specific properties; and plate tectonic and surface processes transform Earth materials."
+    },
+    {
+      "code": "SOL ES.6",
+      "description": "Investigate and understand that resource use is complex",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that resource use is complex. Key ideas include global resource use has environmental liabilities and benefits; availability, renewal rates, and economic impact are considerations when using resources; use of Virginia resources has an impact on the environment and the economy; and the selection of various energy sources has environmental and economic impacts."
+    },
+    {
+      "code": "SOL ES.7",
+      "description": "Investigate and understand plate tectonic theory",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that plate tectonic theory explains Earth's internal and external geologic processes. Key ideas include convection currents in Earth's interior lead to the movement of plates, creation of the magnetic field, and the distribution of materials in Earth's layers; features and processes occur within plates and at plate boundaries; interaction between tectonic plates causes the development of mountain ranges and ocean basins; and evidence of geologic processes is found in Virginia's geologic landscape."
+    },
+    {
+      "code": "SOL ES.8",
+      "description": "Investigate and understand freshwater resources",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that freshwater resources influence and are influenced by geologic processes and activities of humans. Key ideas include water impacts geologic processes including soil development and karst topography; the nature of materials in the subsurface affect the water table and future availability of fresh water; weather and human usage impact freshwater resources; and stream processes and dynamics impact the major watershed systems in Virginia, including the Chesapeake Bay and its tributaries."
+    },
+    {
+      "code": "SOL ES.9",
+      "description": "Investigate and understand the history and evolution of Earth through rocks and fossils",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that many aspects of the history and evolution of Earth and life can be inferred by studying rocks and fossils. Key ideas include traces and remains of ancient life are preserved in sedimentary rocks; superposition, cross-cutting relationships, index fossils, and radioactive decay are methods of dating rocks; absolute and relative dating have different applications but can be used together; and rocks and fossils from many different geologic periods and epochs are found in Virginia."
+    },
+    {
+      "code": "SOL ES.10",
+      "description": "Investigate and understand that oceans are complex, dynamic systems",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that oceans are complex, dynamic systems and are subject to long- and short-term variations. Key ideas include chemical, biological, and physical changes impact the oceans; environmental and geologic occurrences affect ocean dynamics; unevenly distributed heat in the oceans drives much of Earth's weather; features of the sea floor reflect tectonic and other geological processes; and human actions impact oceans and the coastal zone including the Chesapeake Bay."
+    },
+    {
+      "code": "SOL ES.11",
+      "description": "Investigate and understand that the atmosphere is a complex, dynamic system",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that the atmosphere is a complex, dynamic system and is subject to long- and short-term variations. Key ideas include the composition of the atmosphere is critical to most forms of life; biologic and geologic interactions over long and short time spans change atmospheric composition; natural events and human actions may stress atmospheric regulation mechanisms; and human actions, including economic and policy decisions, impact the atmosphere."
+    },
+    {
+      "code": "SOL ES.12",
+      "description": "Investigate and understand weather and climate",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Earth Science",
+      "full_text": "The student will investigate and understand that Earth's weather and climate are the result of the interaction of the sun's energy with the atmosphere, oceans, and the land. Key ideas include weather involves the reflection, absorption, storage, and redistribution of energy; weather patterns can be predicted based on changes in current conditions; extreme imbalances in energy distribution may lead to severe weather conditions; models based on current conditions are used to predict weather phenomena; and changes in the atmosphere and the oceans due to human activity affect global climate."
+    },
+    {
+      "code": "SOL CH.1",
+      "description": "Demonstrate understanding of scientific and engineering practices",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will demonstrate an understanding of scientific and engineering practices by planning and carrying out investigations, interpreting and analyzing data, constructing and critiquing conclusions, developing and using models, and obtaining, evaluating, and communicating information."
+    },
+    {
+      "code": "SOL CH.2",
+      "description": "Investigate and understand atomic structure and the periodic table",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that elements have properties based on their atomic structure. The periodic table is an organizational tool for elements based on these properties. Key information includes average atomic mass, isotopes, mass number, and atomic number; nuclear decay; trends within groups and periods; electron configurations, valence electrons, excited electrons, and ions; and historical and quantum models."
+    },
+    {
+      "code": "SOL CH.3",
+      "description": "Investigate and understand chemical reactions and bonding",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that atoms are conserved in chemical reactions. Key ideas include chemical formulas are models used to represent the number of each type of atom in a substance; substances are named based on the number of atoms and the type of interactions between atoms; balanced chemical equations model rearrangement of atoms; atoms bond based on electron interactions; molecular geometry is predictive of physical and chemical properties; and reaction types can be predicted and classified."
+    },
+    {
+      "code": "SOL CH.4",
+      "description": "Investigate and understand molar relationships",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that molar relationships compare and predict chemical quantities. Key ideas include Avogadro's principle is the basis for molar relationships; and stoichiometry mathematically describes quantities in chemical composition and in chemical reactions."
+    },
+    {
+      "code": "SOL CH.5",
+      "description": "Investigate and understand that solutions behave in predictable ways",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that solutions behave in predictable and quantifiable ways. Key ideas include molar relationships determine solution concentration; changes in temperature can affect solubility; extent of dissociation defines types of electrolytes; pH and pOH quantify acid and base dissociation; and colligative properties depend on the extent of dissociation."
+    },
+    {
+      "code": "SOL CH.6",
+      "description": "Investigate and understand phases of matter and kinetic molecular theory",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that the phases of matter are explained by the kinetic molecular theory. Key ideas include pressure and temperature define the phase of a substance; properties of ideal gases are described by gas laws; and intermolecular forces affect physical properties."
+    },
+    {
+      "code": "SOL CH.7",
+      "description": "Investigate and understand thermodynamics",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Chemistry",
+      "full_text": "The student will investigate and understand that thermodynamics explains the relationship between matter and energy. Key ideas include heat energy affects matter and interactions of matter; heating curves provide information about a substance; reactions are endothermic or exothermic; energy changes in reactions occur as bonds are broken and formed; collision theory predicts the rate of reactions; rates of reactions depend on catalysts and activation energy; and enthalpy and entropy determine the extent of a reaction."
+    },
+    {
+      "code": "SOL BIO.4",
+      "description": "Investigate and understand that bacteria and viruses affect living systems",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Cellular Level",
+      "full_text": "The student will investigate and understand that bacteria and viruses have an effect on living systems. Key ideas include viruses depend on a host organism; modes of reproduction and replication are compared; structures and functions are compared; the role of bacteria and viruses in the environment is assessed; and germ theory is supported by scientific evidence."
+    },
+    {
+      "code": "SOL BIO.6",
+      "description": "Investigate and understand modern classification systems",
+      "subject": "Science",
+      "grade_band": "9-12",
+      "strand": "Life at the Molecular Level",
+      "full_text": "The student will investigate and understand that modern classification systems can be used as organizational tools. Key ideas include structural and biochemical similarities and differences are used to classify organisms; the fossil record provides evidence of relationships; developmental stages reveal similarities; Archaea, Bacteria, and Eukarya are the three domains of life; and the functions and processes of protists, fungi, plants, and animals are compared."
+    },
+    {
+      "code": "SOL 6.1S",
+      "description": "Demonstrate understanding of scientific and engineering practices",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will demonstrate an understanding of scientific and engineering practices by asking questions and defining problems, planning and carrying out investigations, interpreting and analyzing data, constructing and critiquing conclusions, developing and using models, and obtaining, evaluating, and communicating information."
+    },
+    {
+      "code": "SOL 6.2S",
+      "description": "Investigate and understand the organization of the solar system",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that the solar system is organized and the various bodies in the solar system interact. Key ideas include matter is distributed throughout the solar system; planets have different sizes and orbit at different distances from the sun; gravity keeps the planets in orbit around the sun; and the solar system formed from a cloud of gas and dust."
+    },
+    {
+      "code": "SOL 6.3S",
+      "description": "Investigate and understand the sun-Earth-moon system",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that the sun-Earth-moon system has predictable characteristics and patterns. Key ideas include the Earth rotates on its axis and revolves around the sun; there is a relationship among Earth, the moon, and the sun that causes phases of the moon; and there is a relationship that results in seasons, eclipses, and tides."
+    },
+    {
+      "code": "SOL 6.4S",
+      "description": "Investigate and understand energy sources and transformations",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that energy is essential for all life and drives important processes on Earth. Key ideas include the sun is important in driving energy-transforming processes on the surface of Earth and in the atmosphere; energy from the sun is important in atmospheric and environmental conditions; and living systems on Earth depend on energy from the sun."
+    },
+    {
+      "code": "SOL 6.5S",
+      "description": "Investigate and understand that all matter is composed of atoms",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that all matter is composed of atoms. Key ideas include atoms have a basic structure; elements can be represented by chemical symbols; and two or more atoms interact to form new substances, which are held together by electrical forces."
+    },
+    {
+      "code": "SOL 6.6S",
+      "description": "Investigate and understand the unique properties of water",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that water has unique properties and plays a vital role in the natural and human-made environment. Key ideas include water is essential for living organisms; water has properties that are important for sustaining life; and water has an important role in weathering."
+    },
+    {
+      "code": "SOL 6.7S",
+      "description": "Investigate and understand air properties and atmosphere structure",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that air has properties and that Earth's atmosphere has structure and is dynamic. Key ideas include air is a mixture of gaseous elements and compounds; the atmosphere has layers with distinct properties and functions; and changes in the atmosphere affect weather conditions."
+    },
+    {
+      "code": "SOL 6.8S",
+      "description": "Investigate and understand watershed systems",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that land and water interact. Key ideas include Virginia's watershed systems are part of larger systems; the health of the Chesapeake Bay is affected by many factors; and natural events and human activities influence the function of watershed systems."
+    },
+    {
+      "code": "SOL 6.9S",
+      "description": "Investigate and understand human impact on the environment and public policy",
+      "subject": "Science",
+      "grade_band": "6-8",
+      "strand": "Grade 6 Science",
+      "full_text": "The student will investigate and understand that humans impact the environment and individuals can influence public policy decisions relating to energy and the environment. Key ideas include management of renewable and nonrenewable resources; mitigation of land-use and environmental hazards through prevention, planning, and technology; and cost/benefit tradeoffs in conservation policies."
     }
   ]
 }
