@@ -200,13 +200,16 @@ class TestStandardDetailRoute:
         assert "Use in Quiz Prompt" in html
 
     def test_detail_without_curriculum_content(self, client):
-        """Standard without essential_knowledge etc. still renders fine."""
+        """Standard without essential_knowledge etc. shows info box instead."""
         ids = client._app.config["_test_ids"]
         resp = client.get(f"/standards/{ids['s2_id']}")
         html = resp.data.decode()
         assert resp.status_code == 200
         assert "SOL 3.1" in html
-        assert "Essential Knowledge" not in html
+        # No EK section rendered
+        assert 'id="section-essential-knowledge"' not in html
+        # Info box about missing content is shown
+        assert "not yet loaded" in html
 
     def test_detail_shows_sub_standards(self, client):
         """Parent standard shows sub-standards."""

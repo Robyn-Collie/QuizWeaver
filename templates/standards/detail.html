@@ -15,7 +15,36 @@
         {% if standard.grade_band %}<span class="badge">Grade {{ standard.grade_band }}</span>{% endif %}
         {% if standard.strand %}<span class="badge">{{ standard.strand }}</span>{% endif %}
         {% if standard.standard_set %}<span class="badge">{{ standard.standard_set|upper }}</span>{% endif %}
+        {% if is_verified %}
+        <span class="badge" style="background: #28a745; color: white;" title="Verified against uploaded source document">Verified</span>
+        {% else %}
+        <span class="badge" style="background: #dc3545; color: white;" title="Not yet verified against a source document -- content may be from training data">Unverified</span>
+        {% endif %}
     </p>
+
+    {# --- Source Attribution --- #}
+    {% if source_meta or related_docs %}
+    <div class="standard-source-info" style="background: var(--card-bg, #f8f9fa); border: 1px solid var(--border-color, #dee2e6); border-radius: 6px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.9em;">
+        <strong>Source:</strong>
+        {% if source_meta and source_meta.label %}
+            {{ source_meta.label }}
+            {% if source_meta.adopted_year %} ({{ source_meta.adopted_year }}){% endif %}
+            {% if source_meta.url %}
+                &mdash; <a href="{{ source_meta.url }}" target="_blank" rel="noopener">Official standards page
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -1px;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+            {% endif %}
+        {% endif %}
+        {% if related_docs %}
+        <br>
+        <strong style="margin-top: 0.25rem; display: inline-block;">Curriculum frameworks:</strong>
+        {% for doc in related_docs %}
+            <a href="{{ url_for('settings.serve_source_document', doc_id=doc.id) }}" target="_blank" title="View {{ doc.title }}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -1px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                {{ doc.title }}{% if doc.page_count %} ({{ doc.page_count }}p){% endif %}</a>{% if not loop.last %}, {% endif %}
+        {% endfor %}
+        {% endif %}
+    </div>
+    {% endif %}
 
     <h2>Description</h2>
     <p>{{ standard.description }}</p>
@@ -109,6 +138,19 @@
             <button type="button" class="btn btn-secondary btn-sm copy-btn" data-section="section-essential-skills">Copy</button>
             <button type="button" class="btn btn-primary btn-sm use-in-prompt-btn" data-section="section-essential-skills">Use in Quiz Prompt</button>
         </div>
+    </div>
+    {% endif %}
+
+    {% if not essential_knowledge and not essential_understandings and not essential_skills %}
+    <div style="background: var(--card-bg, #fff8e1); border: 1px solid var(--border-color, #ffe082); border-radius: 6px; padding: 1rem; margin-top: 1rem;">
+        <strong>Curriculum framework content not yet loaded.</strong>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9em; color: var(--text-secondary, #666);">
+            Essential Knowledge, Understandings, and Skills can be populated by enriching the standards JSON data file
+            and running <code>python main.py reload-standards --set {{ standard.standard_set or 'sol' }} --force</code>.
+            {% if related_docs %}
+            The curriculum framework PDFs below may contain this content.
+            {% endif %}
+        </p>
     </div>
     {% endif %}
 

@@ -711,6 +711,10 @@ def main():
         from src.cli.standards_commands import handle_browse_standards
 
         handle_browse_standards(config, args)
+    elif args.command == "reload-standards":
+        from src.cli.standards_commands import handle_reload_standards
+
+        handle_reload_standards(config, args)
     elif args.command == "provider-info":
         from src.cli.provider_commands import handle_provider_info
 

@@ -86,7 +86,12 @@
     <tbody>
         {% for std in standards %}
         <tr style="cursor:pointer" onclick="window.location='/standards/{{ std.id }}'">
-            <td><a href="/standards/{{ std.id }}"><strong>{{ std.code }}</strong></a></td>
+            <td>
+                <a href="/standards/{{ std.id }}"><strong>{{ std.code }}</strong></a>
+                {% if std.id in verified_ids %}
+                <span title="Verified against source document" style="color: #28a745; font-size: 0.8em;">&#10003;</span>
+                {% endif %}
+            </td>
             <td title="{{ std.full_text or '' }}">{{ std.description }}</td>
             <td>{{ std.subject }}</td>
             <td>{{ std.grade_band or '-' }}</td>

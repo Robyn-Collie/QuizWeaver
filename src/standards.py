@@ -240,15 +240,16 @@ def get_data_dir() -> str:
     )
 
 
-def load_standard_set(session: Session, standard_set: str = "sol") -> int:
+def load_standard_set(session: Session, standard_set: str = "sol", force_update: bool = False) -> int:
     """Load a specific standard set into the database from its JSON file.
 
     Args:
         session: SQLAlchemy session
         standard_set: Key from STANDARD_SETS (e.g., 'sol', 'ccss_ela')
+        force_update: If True, overwrite existing curriculum content fields
 
     Returns:
-        Number of standards imported
+        Number of standards imported or updated
 
     Raises:
         ValueError: If standard_set is not recognized
@@ -263,7 +264,7 @@ def load_standard_set(session: Session, standard_set: str = "sol") -> int:
     if not os.path.exists(json_path):
         raise FileNotFoundError(f"Standards data file not found: {json_path}")
 
-    return load_standards_from_json(session, json_path)
+    return load_standards_from_json(session, json_path, force_update=force_update)
 
 
 def ensure_standard_set_loaded(session: Session, standard_set: str) -> int:
@@ -448,7 +449,7 @@ def delete_standard(session: Session, standard_id: int) -> bool:
     return True
 
 
-def bulk_import_standards(session: Session, standards_data: list) -> int:
+def bulk_import_standards(session: Session, standards_data: list, force_update: bool = False) -> int:
     """
     Import multiple standards from a list of dicts.
     Skips standards whose code already exists in the database.
@@ -456,9 +457,12 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
     Args:
         session: SQLAlchemy session
         standards_data: List of dicts with standard fields
+        force_update: If True, overwrite existing curriculum content fields
+            (essential_knowledge, essential_understandings, essential_skills)
+            even if already set. Default False only fills empty fields.
 
     Returns:
-        Number of standards imported (excluding duplicates)
+        Number of standards imported or updated
     """
     imported = 0
     for item in standards_data:
@@ -471,13 +475,13 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
         if existing:
             # Update curriculum content fields if newly provided
             updated = False
-            if ek and not existing.essential_knowledge:
+            if ek and (force_update or not existing.essential_knowledge):
                 existing.essential_knowledge = ek
                 updated = True
-            if eu and not existing.essential_understandings:
+            if eu and (force_update or not existing.essential_understandings):
                 existing.essential_understandings = eu
                 updated = True
-            if es and not existing.essential_skills:
+            if es and (force_update or not existing.essential_skills):
                 existing.essential_skills = es
                 updated = True
             if updated:
@@ -506,7 +510,7 @@ def bulk_import_standards(session: Session, standards_data: list) -> int:
     return imported
 
 
-def load_standards_from_json(session: Session, json_path: str) -> int:
+def load_standards_from_json(session: Session, json_path: str, force_update: bool = False) -> int:
     """
     Load standards from a JSON file.
     The JSON should have a "standards" key containing a list of standard dicts.
@@ -514,9 +518,10 @@ def load_standards_from_json(session: Session, json_path: str) -> int:
     Args:
         session: SQLAlchemy session
         json_path: Path to the JSON file
+        force_update: If True, overwrite existing curriculum content fields
 
     Returns:
-        Number of standards imported
+        Number of standards imported or updated
 
     Raises:
         FileNotFoundError: If the JSON file does not exist
@@ -548,7 +553,7 @@ def load_standards_from_json(session: Session, json_path: str) -> int:
             if not item.get("standard_set"):
                 item["standard_set"] = file_standard_set
 
-    return bulk_import_standards(session, standards_list)
+    return bulk_import_standards(session, standards_list, force_update=force_update)
 
 
 def import_custom_standards(

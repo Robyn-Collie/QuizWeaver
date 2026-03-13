@@ -381,6 +381,16 @@ def standards_page():
 
     loaded_sets = get_standard_sets_in_db(session)
 
+    # Build set of verified standard IDs (those with source document excerpts)
+    from src.database import StandardExcerpt
+
+    verified_rows = (
+        session.query(StandardExcerpt.standard_id)
+        .distinct()
+        .all()
+    )
+    verified_ids = {row[0] for row in verified_rows}
+
     return render_template(
         "standards.html",
         standards=results,
@@ -394,6 +404,7 @@ def standards_page():
         grade_band=grade_band,
         standard_set=standard_set,
         standard_set_label=standard_set_label,
+        verified_ids=verified_ids,
     )
 
 
@@ -429,9 +440,30 @@ def standard_detail(standard_id):
         )
 
     # Load provenance data (excerpts grouped by content_type)
-    from src.source_documents import get_excerpts_for_standard
+    from src.database import StandardExcerpt
+    from src.source_documents import get_excerpts_for_standard, list_source_documents
 
     provenance = get_excerpts_for_standard(session, standard_id)
+
+    # Verification: does this standard have any source document excerpts?
+    excerpt_count = session.query(StandardExcerpt).filter_by(standard_id=standard_id).count()
+    is_verified = excerpt_count > 0
+
+    # Load source metadata (official URL, related uploaded documents)
+    from src.standards import STANDARD_SET_METADATA, STANDARD_SETS
+
+    set_key = standard.standard_set or "sol"
+    set_meta = STANDARD_SET_METADATA.get(set_key, {})
+    set_info = STANDARD_SETS.get(set_key, {})
+    source_meta = {
+        "label": set_info.get("label", standard.source or ""),
+        "url": set_meta.get("url", ""),
+        "state": set_meta.get("state", ""),
+        "adopted_year": set_meta.get("adopted_year"),
+    }
+
+    # Find uploaded source documents for this standard set
+    related_docs = list_source_documents(session, standard_set=set_key)
 
     return render_template(
         "standards/detail.html",
@@ -441,6 +473,9 @@ def standard_detail(standard_id):
         essential_skills=es,
         sub_standards=sub_standards,
         provenance=provenance,
+        source_meta=source_meta,
+        related_docs=related_docs,
+        is_verified=is_verified,
     )
 
 

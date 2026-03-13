@@ -1499,3 +1499,83 @@ class TestAddUser:
         out = capsys.readouterr().out
         assert "[OK]" in out
         assert "admin" in out
+
+
+# ---------------------------------------------------------------------------
+# Reload Standards Command Tests
+# ---------------------------------------------------------------------------
+
+
+class TestReloadStandards:
+    def test_reload_specific_set(self, mock_config, temp_db, capsys):
+        from src.cli.standards_commands import handle_reload_standards
+
+        args = argparse.Namespace(standard_set="sol", force=False)
+        handle_reload_standards(mock_config, args)
+        out = capsys.readouterr().out
+        assert "Virginia SOL" in out
+        assert "[OK]" in out
+
+    def test_reload_all_sets(self, mock_config, temp_db, capsys):
+        from src.cli.standards_commands import handle_reload_standards
+
+        args = argparse.Namespace(standard_set=None, force=False)
+        handle_reload_standards(mock_config, args)
+        out = capsys.readouterr().out
+        assert "[OK]" in out
+
+    def test_reload_idempotent(self, mock_config, temp_db, capsys):
+        """Running reload twice without --force should show 'up to date' on second run."""
+        from src.cli.standards_commands import handle_reload_standards
+
+        args = argparse.Namespace(standard_set="sol", force=False)
+        # First load
+        handle_reload_standards(mock_config, args)
+        capsys.readouterr()  # clear
+
+        # Second load — standards already exist, no new curriculum content
+        handle_reload_standards(mock_config, args)
+        out = capsys.readouterr().out
+        assert "already up to date" in out
+
+    def test_reload_force_overwrites(self, temp_db, capsys):
+        """With --force, curriculum content should be overwritten."""
+        from src.database import Standard
+        from src.standards import bulk_import_standards
+
+        _, session, _ = temp_db
+
+        # Insert a standard with EK already set
+        data = [
+            {
+                "code": "TEST.1",
+                "description": "Test standard",
+                "subject": "Science",
+                "standard_set": "sol",
+                "essential_knowledge": ["original EK"],
+            }
+        ]
+        bulk_import_standards(session, data)
+        std = session.query(Standard).filter_by(code="TEST.1").first()
+        assert json.loads(std.essential_knowledge) == ["original EK"]
+
+        # Try to update without force — should NOT overwrite
+        new_data = [
+            {
+                "code": "TEST.1",
+                "description": "Test standard",
+                "subject": "Science",
+                "standard_set": "sol",
+                "essential_knowledge": ["updated EK"],
+            }
+        ]
+        count = bulk_import_standards(session, new_data, force_update=False)
+        assert count == 0  # no change — EK already set
+        session.refresh(std)
+        assert json.loads(std.essential_knowledge) == ["original EK"]
+
+        # Update WITH force — should overwrite
+        count = bulk_import_standards(session, new_data, force_update=True)
+        assert count == 1
+        session.refresh(std)
+        assert json.loads(std.essential_knowledge) == ["updated EK"]
