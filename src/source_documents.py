@@ -270,9 +270,9 @@ def register_source_document(
 # ---------------------------------------------------------------------------
 
 # Regex for SOL codes: optional "SOL " prefix, then subject.number pattern
-# Examples: SOL LS.1, BIO.1, ES.2, LS.14a, GOVT.1, USI.1
+# Examples: SOL LS.1, BIO.1, ES.2, LS.14a, GOVT.1, USI.1, 6.1, 6.2
 _SOL_CODE_RE = re.compile(
-    r"(?:SOL\s+)?([A-Z]{2,5}\.\d+[a-z]?)\b"
+    r"(?:SOL\s+)?([A-Z]{2,5}\.\d+[a-z]?|\d+\.\d+[a-z]?)\b"
 )
 
 # Section header patterns (case-insensitive)
@@ -408,7 +408,7 @@ def _parse_with_columns(pages_text: List[Dict]) -> List[Dict]:
 
     # Standard declaration regex
     _std_decl_re = re.compile(
-        r"(?:SOL\s+)?([A-Z]{2,5}\.\d+)\s+The\s+student\s+will"
+        r"(?:SOL\s+)?([A-Z]{2,5}\.\d+|\d+\.\d+)\s+The\s+student\s+will"
     )
 
     for page_info in pages_text:
