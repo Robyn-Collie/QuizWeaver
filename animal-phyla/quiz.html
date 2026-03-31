@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Phyla Quiz | Grade 7 Life Science</title>
+<meta name="csrf-token" content="">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --accent: #4f8ef7;
+  --green: #4ade80;
+  --yellow: #facc15;
+  --red: #f87171;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --border: #2d3348;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+html {
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* === STICKY HEADER === */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #1e3a5f, #0f1117);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+header .header-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+header .header-left { flex: 1; min-width: 0; }
+
+header h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+header .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.125rem;
+}
+
+header .back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+header .back-link:hover { background: rgba(79,142,247,0.12); }
+
+.progress-bar-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 0;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* === QUESTION CARD === */
+.question-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-top: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.q-type-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  margin-bottom: 0.75rem;
+}
+
+.badge-slider { background: rgba(79,142,247,0.18); color: var(--accent); }
+.badge-ordering { background: rgba(250,204,21,0.15); color: var(--yellow); }
+.badge-matching { background: rgba(74,222,128,0.15); color: var(--green); }
+.badge-scenario { background: rgba(248,113,113,0.15); color: var(--red); }
+.badge-truefalse { background: rgba(168,130,255,0.15); color: #a882ff; }
+
+.q-prompt {
+  font-size: 1rem;
+  line-height: 1.55;
+  margin-bottom: 1rem;
+}
+
+.quiz-img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+  display: block;
+}
+
+/* === SLIDER === */
+.slider-wrap { margin: 1rem 0; }
+
+.slider-value {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  min-height: 2.25rem;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 6px rgba(79,142,247,0.5);
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 6px rgba(79,142,247,0.5);
+  cursor: pointer;
+}
+
+/* === ORDERING === */
+.ordering-pool { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.order-item:hover { border-color: var(--accent); }
+
+.order-item.selected {
+  border-color: var(--accent);
+  background: rgba(79,142,247,0.08);
+}
+
+.order-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--border);
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.order-item.selected .order-num {
+  background: var(--accent);
+  color: #fff;
+}
+
+.order-item.correct { border-color: var(--green); background: rgba(74,222,128,0.08); }
+.order-item.correct .order-num { background: var(--green); color: #0f1117; }
+.order-item.incorrect { border-color: var(--red); background: rgba(248,113,113,0.08); }
+.order-item.incorrect .order-num { background: var(--red); color: #fff; }
+
+.order-item .order-text { font-size: 0.9rem; line-height: 1.4; }
+
+.order-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.order-reset-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+/* === MATCHING === */
+.matching-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.match-col-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+  text-align: center;
+}
+
+.match-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.55rem 0.5rem;
+  cursor: pointer;
+  min-height: 44px;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.match-item:hover { border-color: var(--accent); }
+.match-item.active { border-color: var(--accent); background: rgba(79,142,247,0.1); }
+.match-item.matched { border-color: var(--green); background: rgba(74,222,128,0.08); color: var(--green); pointer-events: none; opacity: 0.7; }
+.match-item.wrong { border-color: var(--red); background: rgba(248,113,113,0.08); }
+
+/* === MULTIPLE CHOICE / TRUE-FALSE === */
+.mc-options { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.mc-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mc-option:hover { border-color: var(--accent); }
+.mc-option.selected { border-color: var(--accent); background: rgba(79,142,247,0.08); }
+
+.mc-option .mc-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: var(--border);
+  color: var(--text-dim);
+  transition: all 0.15s;
+}
+
+.mc-option.selected .mc-letter { background: var(--accent); color: #fff; }
+
+.mc-option.correct { border-color: var(--green); background: rgba(74,222,128,0.08); }
+.mc-option.correct .mc-letter { background: var(--green); color: #0f1117; }
+.mc-option.wrong-selected { border-color: var(--red); background: rgba(248,113,113,0.08); }
+.mc-option.wrong-selected .mc-letter { background: var(--red); color: #fff; }
+
+.mc-option .mc-text { font-size: 0.9rem; line-height: 1.4; }
+
+/* === FEEDBACK === */
+.feedback-box {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  animation: fadeIn 0.25s ease;
+}
+
+.feedback-box.correct-fb {
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.25);
+  color: var(--green);
+}
+
+.feedback-box.incorrect-fb {
+  background: rgba(248,113,113,0.1);
+  border: 1px solid rgba(248,113,113,0.25);
+  color: var(--red);
+}
+
+.feedback-box.partial-fb {
+  background: rgba(250,204,21,0.1);
+  border: 1px solid rgba(250,204,21,0.25);
+  color: var(--yellow);
+}
+
+.feedback-box.info-fb {
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.25);
+  color: var(--accent);
+}
+
+/* === BUTTONS === */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #3d7de6; }
+.btn-primary:disabled { background: #334155; color: var(--text-dim); cursor: not-allowed; transform: none; }
+
+.btn-secondary { background: var(--border); color: var(--text); }
+.btn-secondary:hover { background: #3a4060; }
+
+.btn-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-row .btn { flex: 1; min-width: 120px; }
+
+/* === RESULTS SCREEN === */
+.results-screen { margin-top: 1rem; animation: fadeIn 0.4s ease; }
+
+.score-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.score-ring {
+  width: 160px;
+  height: 160px;
+  position: relative;
+}
+
+.score-ring svg { transform: rotate(-90deg); }
+
+.score-ring circle {
+  fill: none;
+  stroke-width: 10;
+}
+
+.score-ring .track { stroke: var(--border); }
+
+.score-ring .fill-ring {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.2s ease;
+}
+
+.score-ring .score-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.score-ring .score-pct {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-ring .score-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.2rem;
+}
+
+.type-breakdown {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.type-breakdown h3 {
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+}
+
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.type-row:last-child { margin-bottom: 0; }
+
+.type-name {
+  font-size: 0.8rem;
+  width: 110px;
+  flex-shrink: 0;
+  color: var(--text-dim);
+}
+
+.type-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+
+.type-score {
+  font-size: 0.8rem;
+  font-weight: 600;
+  width: 42px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* === START SCREEN === */
+.start-screen {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.start-screen h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.start-screen p {
+  color: var(--text-dim);
+  margin-bottom: 0.35rem;
+  line-height: 1.5;
+}
+
+.start-screen .start-info {
+  margin: 1.25rem 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  text-align: left;
+}
+
+.start-screen .start-info li {
+  list-style: none;
+  padding: 0.3rem 0;
+  font-size: 0.875rem;
+  color: var(--text-dim);
+}
+
+.start-screen .start-info li::before {
+  content: "\25B8 ";
+  color: var(--accent);
+}
+
+/* === REVIEW === */
+.review-list { margin-top: 1rem; }
+
+.review-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.review-item .review-q {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.45;
+}
+
+.review-item .review-answer {
+  font-size: 0.825rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  line-height: 1.4;
+}
+
+.review-correct {
+  background: rgba(74,222,128,0.1);
+  border-left: 3px solid var(--green);
+  color: var(--green);
+}
+
+.review-wrong {
+  background: rgba(248,113,113,0.1);
+  border-left: 3px solid var(--red);
+  color: var(--red);
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>Animal Phyla Quiz</h1>
+      <div class="subtitle">Grade 7 Life Science | Virginia SOL LS.7</div>
+    </div>
+    <a href="index.html" class="back-link" aria-label="Back to module">&larr; Back</a>
+  </div>
+  <div class="progress-bar-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressText">Question 1 of 40</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="main">
+  <!-- Content injected by JS -->
+</main>
+
+<script>
+(function() {
+"use strict";
+
+/* ============================================================
+   QUESTION DATA
+   ============================================================ */
+const QUESTIONS = [
+
+  // ==================== TYPE 1: ESTIMATION SLIDER ====================
+  {
+    id: 1, type: "slider",
+    prompt: "How many described species are in phylum Arthropoda?",
+    answer: 1100000, min: 0, max: 2000000, step: 10000,
+    unit: "", formatFn: "commas",
+    explanation: "Phylum Arthropoda includes about 1.1 million described species -- more than any other phylum. This includes insects, spiders, crabs, and more."
+  },
+  {
+    id: 2, type: "slider",
+    prompt: "What percentage of all animals are invertebrates?",
+    answer: 95, min: 0, max: 100, step: 1,
+    unit: "%", formatFn: "plain",
+    explanation: "About 95% of all animal species are invertebrates (animals without backbones). Vertebrates are actually a small minority of the animal kingdom."
+  },
+  {
+    id: 3, type: "slider",
+    prompt: "Approximately how many total animal phyla exist?",
+    answer: 35, min: 1, max: 80, step: 1,
+    unit: "", formatFn: "plain",
+    explanation: "Scientists recognize roughly 35 animal phyla. Most people only learn about 8-10 of the most common ones."
+  },
+  {
+    id: 4, type: "slider",
+    prompt: "How many species of sponges (Porifera) are known?",
+    answer: 7500, min: 0, max: 25000, step: 100,
+    unit: "", formatFn: "commas",
+    explanation: "Between 5,000 and 10,000 species of sponges have been described. Most live in the ocean, but a few are found in freshwater."
+  },
+  {
+    id: 5, type: "slider",
+    prompt: "About how many species are in phylum Mollusca?",
+    answer: 85000, min: 0, max: 200000, step: 1000,
+    unit: "", formatFn: "commas",
+    explanation: "Phylum Mollusca has about 85,000 described species, making it the second-largest animal phylum after Arthropoda. It includes snails, clams, octopuses, and squid."
+  },
+  {
+    id: 6, type: "slider",
+    prompt: "How many million years ago was the Cambrian Explosion?",
+    answer: 540, min: 100, max: 1000, step: 5,
+    unit: " million years", formatFn: "plain",
+    explanation: "The Cambrian Explosion occurred about 540 million years ago. During this time, most major animal phyla appeared in the fossil record within a relatively short period."
+  },
+  {
+    id: 7, type: "slider",
+    prompt: "How many major classes of vertebrates are there?",
+    answer: 5, min: 1, max: 15, step: 1,
+    unit: "", formatFn: "plain",
+    explanation: "There are 5 major classes of vertebrates: fish, amphibians, reptiles, birds, and mammals."
+  },
+  {
+    id: 8, type: "slider",
+    prompt: "What percentage of marine species depend on coral reefs?",
+    answer: 25, min: 0, max: 100, step: 1,
+    unit: "%", formatFn: "plain",
+    explanation: "About 25% of all marine species depend on coral reefs for food and shelter, even though reefs cover less than 1% of the ocean floor."
+  },
+
+  // ==================== TYPE 2: PROCESS ORDERING ====================
+  {
+    id: 9, type: "ordering",
+    prompt: "Order the levels of classification from broadest to most specific:",
+    steps: ["Domain", "Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species"],
+    explanation: "The classification hierarchy goes from broadest (Domain) to most specific (Species). A helpful mnemonic: Dear King Philip Came Over For Good Spaghetti."
+  },
+  {
+    id: 10, type: "ordering",
+    prompt: "Order the stages of complete metamorphosis:",
+    steps: ["Egg", "Larva", "Pupa", "Adult"],
+    explanation: "Complete metamorphosis has four stages. The larva (like a caterpillar) looks completely different from the adult (like a butterfly). The pupa stage is where the transformation happens."
+  },
+  {
+    id: 11, type: "ordering",
+    prompt: "Order the arthropod molting process:",
+    steps: ["New soft exoskeleton forms underneath", "Old exoskeleton splits open", "Animal crawls out", "New exoskeleton hardens"],
+    explanation: "Arthropods must molt (shed their exoskeleton) to grow. This is a vulnerable time because the new exoskeleton is soft at first."
+  },
+  {
+    id: 12, type: "ordering",
+    prompt: "Order the sponge feeding process:",
+    steps: ["Water enters pores", "Collar cells trap food", "Nutrients absorbed", "Filtered water exits through osculum"],
+    explanation: "Sponges are filter feeders. They pull water through tiny pores, where collar cells (choanocytes) trap food particles. Clean water exits through the large opening called the osculum."
+  },
+  {
+    id: 13, type: "ordering",
+    prompt: "Order the jellyfish life cycle:",
+    steps: ["Adult medusa releases gametes", "Fertilized egg", "Planula larva", "Polyp stage", "Budding", "New medusa"],
+    explanation: "Jellyfish have an alternation of generations -- they live as both a polyp (attached to surfaces) and a medusa (free-swimming). This is one of the most complex life cycles in the animal kingdom."
+  },
+  {
+    id: 14, type: "ordering",
+    prompt: "Order sea star tube feet operation:",
+    steps: ["Water enters sieve plate", "Flows through ring canal", "Fills radial canals", "Tube feet extend", "Grip surface"],
+    explanation: "Sea stars use a water vascular system for movement. Water pressure pushes out the tube feet, which grip surfaces using suction. This system is unique to echinoderms."
+  },
+  {
+    id: 15, type: "ordering",
+    prompt: "Order earthworm digestion:",
+    steps: ["Food enters mouth", "Stored in crop", "Ground in gizzard", "Nutrients absorbed in intestine", "Waste exits anus"],
+    explanation: "Earthworms have a complete digestive system with a one-way tube from mouth to anus. The gizzard uses sand grains to grind food, similar to how birds digest food."
+  },
+  {
+    id: 16, type: "ordering",
+    prompt: "Order these phyla from simplest to most complex body plan:",
+    steps: ["Porifera", "Cnidaria", "Platyhelminthes", "Nematoda", "Annelida", "Chordata"],
+    explanation: "Porifera (sponges) are the simplest with no true tissues. Cnidaria have two tissue layers. Flatworms have three layers but no body cavity. Nematodes have a partial cavity. Annelids and chordates have a true body cavity (coelom)."
+  },
+
+  // ==================== TYPE 3: TERM MATCHING ====================
+  {
+    id: 17, type: "matching",
+    prompt: "Match each phylum to an example organism:",
+    left: ["Porifera", "Cnidaria", "Arthropoda", "Mollusca", "Echinodermata"],
+    right: ["Sponge", "Jellyfish", "Beetle", "Snail", "Sea star"],
+    pairs: [[0,0],[1,1],[2,2],[3,3],[4,4]],
+    explanation: "Each phylum contains thousands of species. Knowing one example from each phylum helps you remember the key features of that group."
+  },
+  {
+    id: 18, type: "matching",
+    prompt: "Match each phylum name to its meaning:",
+    left: ["Porifera", "Cnidaria", "Arthropoda", "Echinodermata", "Chordata"],
+    right: ["\"Pore bearer\"", "\"Stinging nettle\"", "\"Jointed foot\"", "\"Spiny skin\"", "\"Cord\""],
+    pairs: [[0,0],[1,1],[2,2],[3,3],[4,4]],
+    explanation: "Phylum names come from Latin or Greek and describe a key feature of the group. For example, Arthropoda means 'jointed foot' because all arthropods have jointed appendages."
+  },
+  {
+    id: 19, type: "matching",
+    prompt: "Match each body feature to its phylum:",
+    left: ["Cnidocytes (stinging cells)", "Exoskeleton", "Notochord", "Tube feet", "Mantle"],
+    right: ["Cnidaria", "Arthropoda", "Chordata", "Echinodermata", "Mollusca"],
+    pairs: [[0,0],[1,1],[2,2],[3,3],[4,4]],
+    explanation: "Each phylum has unique features that help scientists classify animals. These key features are what distinguish one phylum from another."
+  },
+  {
+    id: 20, type: "matching",
+    prompt: "Match each body plan term to its definition:",
+    left: ["No symmetry", "Arranged around center", "Left/right mirror image", "No body cavity", "Partial body cavity"],
+    right: ["Asymmetry", "Radial symmetry", "Bilateral symmetry", "Acoelomate", "Pseudocoelomate"],
+    pairs: [[0,0],[1,1],[2,2],[3,3],[4,4]],
+    explanation: "Body plan features like symmetry and body cavities are important tools scientists use to classify animals into phyla."
+  },
+
+  // ==================== TYPE 4: SCENARIO REASONING ====================
+  {
+    id: 21, type: "scenario",
+    prompt: "You find an organism in the ocean with no backbone, stinging tentacles, and radial symmetry. Which phylum does it belong to?",
+    image: "images/cnidaria-jellyfish-1.jpg",
+    imageAlt: "A jellyfish floating in the ocean",
+    options: ["Porifera", "Cnidaria", "Arthropoda", "Echinodermata"],
+    answer: 1,
+    explanation: "Stinging tentacles and radial symmetry are hallmarks of phylum Cnidaria. This phylum includes jellyfish, corals, and sea anemones. Their stinging cells (cnidocytes) are used for catching prey and defense."
+  },
+  {
+    id: 22, type: "scenario",
+    prompt: "A farmer finds a worm with a segmented body in the soil. Which phylum does it belong to?",
+    image: "images/annelida-earthworm-segmented-1.jpg",
+    imageAlt: "A segmented earthworm in soil",
+    options: ["Nematoda", "Platyhelminthes", "Annelida", "Arthropoda"],
+    answer: 2,
+    explanation: "Segmented worms belong to phylum Annelida. 'Annelid' means 'little rings,' describing their visible body segments. Earthworms improve soil health by aerating it and mixing nutrients."
+  },
+  {
+    id: 23, type: "scenario",
+    prompt: "An organism has an exoskeleton, jointed legs, and compound eyes. Which phylum does it belong to?",
+    image: "images/arthropoda-insect-beetle-1.jpg",
+    imageAlt: "A beetle showing its exoskeleton and jointed legs",
+    options: ["Mollusca", "Arthropoda", "Chordata", "Annelida"],
+    answer: 1,
+    explanation: "Exoskeletons, jointed legs, and compound eyes are key features of phylum Arthropoda. This is the most species-rich phylum, including insects, spiders, crustaceans, and centipedes."
+  },
+  {
+    id: 24, type: "scenario",
+    prompt: "Why are arthropods the most species-rich phylum?",
+    options: [
+      "They are the oldest animal group",
+      "Exoskeletons + jointed limbs allow them to thrive in diverse habitats",
+      "They are all very small",
+      "They reproduce the fastest of any phylum"
+    ],
+    answer: 1,
+    explanation: "Arthropods' exoskeletons protect them from drying out, allowing them to live on land and in water. Their jointed limbs can be adapted for walking, swimming, flying, and grasping. This adaptability lets them succeed in almost every environment on Earth."
+  },
+  {
+    id: 25, type: "scenario",
+    prompt: "A scientist discovers a new ocean animal with five-fold symmetry and a water vascular system. Which phylum does it belong to?",
+    image: "images/echinodermata-sea-star-starfish-1.jpg",
+    imageAlt: "A sea star showing five-fold radial symmetry",
+    options: ["Cnidaria", "Mollusca", "Echinodermata", "Chordata"],
+    answer: 2,
+    explanation: "Five-fold (pentaradial) symmetry and a water vascular system are unique to phylum Echinodermata. This includes sea stars, sea urchins, and sea cucumbers. The water vascular system powers their tube feet for movement."
+  },
+  {
+    id: 26, type: "scenario",
+    prompt: "Which feature would you NOT use to classify an animal into a phylum?",
+    options: [
+      "Body symmetry",
+      "Favorite food",
+      "Type of body cavity",
+      "Tissue layers"
+    ],
+    answer: 1,
+    explanation: "'Favorite food' is not a feature used in classification. Scientists classify animals into phyla based on structural features like body symmetry, tissue layers, type of body cavity, and developmental patterns."
+  },
+  {
+    id: 27, type: "scenario",
+    prompt: "An animal has a soft body, a muscular foot, and a hard shell. Which phylum does it belong to?",
+    image: "images/mollusca-snail-shell-1.jpg",
+    imageAlt: "A snail with a visible shell and muscular foot",
+    options: ["Echinodermata", "Arthropoda", "Mollusca", "Annelida"],
+    answer: 2,
+    explanation: "A soft body, muscular foot, and mantle (which often produces a shell) are defining features of phylum Mollusca. This phylum includes snails, clams, octopuses, and squid. Not all mollusks have shells -- octopuses and slugs do not."
+  },
+  {
+    id: 28, type: "scenario",
+    prompt: "Why can't arthropods grow very large?",
+    options: [
+      "They need too much food",
+      "Their exoskeletons would be too heavy to support their bodies",
+      "They only live in water",
+      "They can't breathe"
+    ],
+    answer: 1,
+    explanation: "An exoskeleton gets proportionally heavier as an animal grows larger. At very large sizes, the exoskeleton would be too heavy for the animal to move. This is why the largest arthropods are marine (water helps support the weight)."
+  },
+
+  // ==================== TYPE 5: TRUE/FALSE WITH TWIST ====================
+  {
+    id: 29, type: "truefalse",
+    prompt: "\"Insects are not animals.\"",
+    answer: false,
+    explanation: "FALSE -- Insects ARE animals! They belong to phylum Arthropoda within kingdom Animalia. This is a common misconception. Many people think 'animal' only means mammals, but insects, spiders, worms, and jellyfish are all animals too."
+  },
+  {
+    id: 30, type: "truefalse",
+    prompt: "\"Sponges are plants because they don't move.\"",
+    answer: false,
+    explanation: "FALSE -- Sponges are animals, not plants. They are multicellular heterotrophs (they eat food rather than make it) and have no cell walls. Being sessile (staying in one place) doesn't make something a plant. Sponges filter food from the water."
+  },
+  {
+    id: 31, type: "truefalse",
+    prompt: "\"All animals with shells are mollusks.\"",
+    answer: false,
+    explanation: "FALSE -- Not all shelled animals are mollusks. Crabs and lobsters (arthropods) have hard shells, and turtles (chordates) have shells too. You need to look at more features than just the shell to classify an animal."
+  },
+  {
+    id: 32, type: "truefalse",
+    prompt: "\"A sea star can regrow a lost arm.\"",
+    answer: true,
+    explanation: "TRUE -- Echinoderms like sea stars can regenerate lost limbs. Some species can even regrow an entire body from a single arm, as long as part of the central disc is attached. This ability is called regeneration."
+  },
+  {
+    id: 33, type: "truefalse",
+    prompt: "\"Earthworms are helpful to farmers.\"",
+    answer: true,
+    explanation: "TRUE -- Earthworms are extremely helpful to farmers. They aerate the soil by burrowing through it, mix nutrients from the surface deeper into the ground, and their castings (waste) are rich in nutrients that help plants grow."
+  },
+  {
+    id: 34, type: "truefalse",
+    prompt: "\"Vertebrates make up the majority of animal species.\"",
+    answer: false,
+    explanation: "FALSE -- Vertebrates make up only about 5% of all animal species. The vast majority (95%) are invertebrates. Arthropods alone outnumber all vertebrate species combined many times over."
+  },
+  {
+    id: 35, type: "truefalse",
+    prompt: "\"Jellyfish have brains.\"",
+    answer: false,
+    explanation: "FALSE -- Jellyfish (phylum Cnidaria) do NOT have brains. Instead, they have a nerve net -- a loose network of nerve cells spread throughout their body. They can sense light and gravity, but they don't think or process information the way animals with brains do."
+  },
+  {
+    id: 36, type: "truefalse",
+    prompt: "\"Humans and sea stars are more closely related than humans and insects.\"",
+    answer: true,
+    explanation: "TRUE -- This surprises most people! Both humans (chordates) and sea stars (echinoderms) are deuterostomes, meaning they share a pattern of embryonic development. Insects are protostomes, a separate branch. So on the tree of life, echinoderms are closer relatives to us than insects are."
+  },
+
+  // Pad to 40: 4 extra true/false to bring total from 36 to 40
+  {
+    id: 37, type: "truefalse",
+    prompt: "\"Corals are rocks, not living organisms.\"",
+    answer: false,
+    explanation: "FALSE -- Corals are living animals in phylum Cnidaria. They are tiny polyps that build hard calcium carbonate skeletons around themselves. Over time, thousands of these skeletons build up to form coral reefs."
+  },
+  {
+    id: 38, type: "truefalse",
+    prompt: "\"Octopuses are some of the most intelligent invertebrates.\"",
+    answer: true,
+    explanation: "TRUE -- Octopuses (phylum Mollusca) show remarkable intelligence. They can solve puzzles, open jars, use tools, and even recognize individual human faces. They have the largest brains of any invertebrate."
+  },
+  {
+    id: 39, type: "truefalse",
+    prompt: "\"Spiders are insects.\"",
+    answer: false,
+    explanation: "FALSE -- Spiders are arachnids, not insects. Both are arthropods, but spiders have 8 legs and 2 body segments, while insects have 6 legs and 3 body segments. They belong to different classes within phylum Arthropoda."
+  },
+  {
+    id: 40, type: "truefalse",
+    prompt: "\"All chordates have a backbone.\"",
+    answer: false,
+    explanation: "FALSE -- While all vertebrates have backbones, not all chordates do. Phylum Chordata also includes tunicates (sea squirts) and lancelets, which have a notochord but never develop a true backbone. Vertebrates are a subphylum within Chordata."
+  }
+];
+
+const TOTAL = QUESTIONS.length; // 40
+
+const TYPE_LABELS = {
+  slider: "Estimation",
+  ordering: "Ordering",
+  matching: "Matching",
+  scenario: "Scenario",
+  truefalse: "True / False"
+};
+
+const TYPE_BADGE_CLASS = {
+  slider: "badge-slider",
+  ordering: "badge-ordering",
+  matching: "badge-matching",
+  scenario: "badge-scenario",
+  truefalse: "badge-truefalse"
+};
+
+const TYPE_COLORS = {
+  slider: "var(--accent)",
+  ordering: "var(--yellow)",
+  matching: "var(--green)",
+  scenario: "var(--red)",
+  truefalse: "#a882ff"
+};
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const LS_KEY = "learn_animal-phyla_quiz";
+
+let currentQ = 0;
+let answers = [];    // { qId, correct:bool, userAnswer:any }
+let quizStarted = false;
+let quizFinished = false;
+
+function saveState() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      currentQ, answers, quizStarted, quizFinished,
+      ts: Date.now()
+    }));
+  } catch(e) { /* quota exceeded, ignore */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    if (s && typeof s.currentQ === "number") {
+      currentQ = s.currentQ;
+      answers = s.answers || [];
+      quizStarted = !!s.quizStarted;
+      quizFinished = !!s.quizFinished;
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function resetState() {
+  currentQ = 0;
+  answers = [];
+  quizStarted = false;
+  quizFinished = false;
+  localStorage.removeItem(LS_KEY);
+}
+
+/* ============================================================
+   UTILITY HELPERS
+   ============================================================ */
+const $ = (sel, ctx) => (ctx || document).querySelector(sel);
+const $$ = (sel, ctx) => Array.from((ctx || document).querySelectorAll(sel));
+const main = () => document.getElementById("main");
+
+function formatNum(n, fn) {
+  if (fn === "commas") return n.toLocaleString();
+  return String(n);
+}
+
+function shuffleArray(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateProgress() {
+  const wrap = document.getElementById("progressWrap");
+  if (quizFinished || !quizStarted) {
+    wrap.classList.add("hidden");
+    return;
+  }
+  wrap.classList.remove("hidden");
+  const n = currentQ + 1;
+  document.getElementById("progressText").textContent = "Question " + n + " of " + TOTAL;
+  const pct = Math.round((currentQ / TOTAL) * 100);
+  document.getElementById("progressPct").textContent = pct + "%";
+  document.getElementById("progressFill").style.width = pct + "%";
+}
+
+/* ============================================================
+   RENDER: START SCREEN
+   ============================================================ */
+function showStart() {
+  updateProgress();
+  main().innerHTML = `
+    <div class="start-screen">
+      <h2>Animal Phyla Quiz</h2>
+      <p>Virginia SOL LS.7 &mdash; Grade 7 Life Science</p>
+      <div class="start-info">
+        <ul>
+          <li>40 questions across 5 interactive types</li>
+          <li>Estimation sliders, process ordering, term matching</li>
+          <li>Scenario reasoning and true/false with explanations</li>
+          <li>Your progress is saved automatically</li>
+        </ul>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="startBtn">Start Quiz</button>
+      </div>
+    </div>`;
+  document.getElementById("startBtn").addEventListener("click", function() {
+    quizStarted = true;
+    currentQ = 0;
+    answers = [];
+    saveState();
+    renderQuestion();
+  });
+}
+
+/* ============================================================
+   RENDER: QUESTION DISPATCHER
+   ============================================================ */
+function renderQuestion() {
+  if (currentQ >= TOTAL) {
+    quizFinished = true;
+    saveState();
+    showResults();
+    return;
+  }
+  updateProgress();
+  const q = QUESTIONS[currentQ];
+  switch (q.type) {
+    case "slider": renderSlider(q); break;
+    case "ordering": renderOrdering(q); break;
+    case "matching": renderMatching(q); break;
+    case "scenario": renderScenario(q); break;
+    case "truefalse": renderTrueFalse(q); break;
+  }
+}
+
+/* ============================================================
+   TYPE 1: ESTIMATION SLIDER
+   ============================================================ */
+function renderSlider(q) {
+  const mid = Math.round((q.min + q.max) / 2);
+  let html = `<div class="question-card">
+    <span class="q-type-badge badge-slider">Estimation</span>
+    <div class="q-prompt">${q.prompt}</div>
+    <div class="slider-wrap">
+      <div class="slider-value" id="sliderVal">${formatNum(mid, q.formatFn)}${q.unit}</div>
+      <input type="range" id="slider" min="${q.min}" max="${q.max}" step="${q.step}" value="${mid}">
+      <div class="slider-labels">
+        <span>${formatNum(q.min, q.formatFn)}</span>
+        <span>${formatNum(q.max, q.formatFn)}</span>
+      </div>
+    </div>
+    <div id="feedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn">Submit</button>
+      <button class="btn btn-secondary hidden" id="nextBtn">Next</button>
+    </div>
+  </div>`;
+  main().innerHTML = html;
+
+  const slider = document.getElementById("slider");
+  const valEl = document.getElementById("sliderVal");
+  slider.addEventListener("input", function() {
+    valEl.textContent = formatNum(Number(this.value), q.formatFn) + q.unit;
+  });
+
+  document.getElementById("submitBtn").addEventListener("click", function() {
+    this.classList.add("hidden");
+    slider.disabled = true;
+    const guess = Number(slider.value);
+    const diff = Math.abs(guess - q.answer) / q.answer;
+    let color, label;
+    if (diff <= 0.10) { color = "correct-fb"; label = "Close!"; }
+    else if (diff <= 0.25) { color = "partial-fb"; label = "Not bad!"; }
+    else { color = "incorrect-fb"; label = "Way off!"; }
+
+    const isCorrect = diff <= 0.10;
+    answers.push({ qId: q.id, correct: isCorrect, userAnswer: guess });
+    saveState();
+
+    document.getElementById("feedback").innerHTML = `<div class="feedback-box ${color}">
+      <strong>${label}</strong> The answer is <strong>${formatNum(q.answer, q.formatFn)}${q.unit}</strong>.
+      Your guess: ${formatNum(guess, q.formatFn)}${q.unit} (${Math.round(diff*100)}% off).<br>${q.explanation}
+    </div>`;
+    document.getElementById("nextBtn").classList.remove("hidden");
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", function() {
+    currentQ++;
+    saveState();
+    renderQuestion();
+  });
+}
+
+/* ============================================================
+   TYPE 2: PROCESS ORDERING
+   ============================================================ */
+function renderOrdering(q) {
+  const correctOrder = q.steps.slice();
+  const shuffled = shuffleArray(q.steps.map((s, i) => ({ text: s, correctIdx: i })));
+  let selectedOrder = [];
+
+  function render() {
+    let itemsHtml = shuffled.map((item, i) => {
+      const orderPos = selectedOrder.indexOf(i);
+      const isSelected = orderPos >= 0;
+      return `<div class="order-item${isSelected ? ' selected' : ''}" data-idx="${i}">
+        <span class="order-num">${isSelected ? (orderPos + 1) : ''}</span>
+        <span class="order-text">${item.text}</span>
+      </div>`;
+    }).join('');
+
+    let html = `<div class="question-card">
+      <span class="q-type-badge badge-ordering">Ordering</span>
+      <div class="q-prompt">${q.prompt}</div>
+      <div class="ordering-pool" id="orderPool">${itemsHtml}</div>
+      <button class="order-reset-btn" id="orderReset">Reset order</button>
+      <div id="feedback"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="submitBtn" ${selectedOrder.length < shuffled.length ? 'disabled' : ''}>Submit</button>
+        <button class="btn btn-secondary hidden" id="nextBtn">Next</button>
+      </div>
+    </div>`;
+    main().innerHTML = html;
+
+    $$('.order-item', main()).forEach(el => {
+      el.addEventListener('click', function() {
+        const idx = Number(this.dataset.idx);
+        const pos = selectedOrder.indexOf(idx);
+        if (pos >= 0) {
+          selectedOrder.splice(pos, 1);
+        } else {
+          selectedOrder.push(idx);
+        }
+        render();
+      });
+    });
+
+    document.getElementById("orderReset").addEventListener("click", function() {
+      selectedOrder = [];
+      render();
+    });
+
+    const submitBtn = document.getElementById("submitBtn");
+    submitBtn.addEventListener("click", function() {
+      submitOrdering();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", function() {
+      currentQ++;
+      saveState();
+      renderQuestion();
+    });
+  }
+
+  function submitOrdering() {
+    const userOrder = selectedOrder.map(i => shuffled[i]);
+    let correctCount = 0;
+    userOrder.forEach((item, pos) => {
+      if (item.correctIdx === pos) correctCount++;
+    });
+    const allCorrect = correctCount === correctOrder.length;
+
+    answers.push({ qId: q.id, correct: allCorrect, userAnswer: selectedOrder.slice() });
+    saveState();
+
+    // Show results on each item
+    const items = $$('.order-item', main());
+    selectedOrder.forEach((shuffIdx, pos) => {
+      const item = shuffled[shuffIdx];
+      const el = items.find(e => Number(e.dataset.idx) === shuffIdx);
+      if (el) {
+        if (item.correctIdx === pos) {
+          el.classList.add('correct');
+        } else {
+          el.classList.add('incorrect');
+        }
+      }
+    });
+
+    // Disable interactions
+    $$('.order-item', main()).forEach(el => { el.style.pointerEvents = 'none'; });
+    document.getElementById("orderReset").style.display = 'none';
+    document.getElementById("submitBtn").classList.add("hidden");
+
+    const fbClass = allCorrect ? "correct-fb" : (correctCount > 0 ? "partial-fb" : "incorrect-fb");
+    const fbLabel = allCorrect ? "Perfect!" : `${correctCount} of ${correctOrder.length} correct.`;
+    document.getElementById("feedback").innerHTML = `<div class="feedback-box ${fbClass}">
+      <strong>${fbLabel}</strong> Correct order: ${correctOrder.join(' &rarr; ')}<br>${q.explanation}
+    </div>`;
+    document.getElementById("nextBtn").classList.remove("hidden");
+  }
+
+  render();
+}
+
+/* ============================================================
+   TYPE 3: TERM MATCHING
+   ============================================================ */
+function renderMatching(q) {
+  const leftItems = q.left.slice();
+  const rightShuffled = shuffleArray(q.right.map((text, i) => ({ text, origIdx: i })));
+
+  let activeSide = null; // 'left' or 'right'
+  let activeIdx = null;
+  let matched = []; // [{leftIdx, rightIdx}]
+  let locked = false;
+
+  function render() {
+    const leftHtml = leftItems.map((text, i) => {
+      const isMatched = matched.some(m => m.leftIdx === i);
+      const isActive = activeSide === 'left' && activeIdx === i;
+      return `<div class="match-item${isMatched ? ' matched' : ''}${isActive ? ' active' : ''}" data-side="left" data-idx="${i}">${text}</div>`;
+    }).join('');
+
+    const rightHtml = rightShuffled.map((item, i) => {
+      const isMatched = matched.some(m => m.rightShufIdx === i);
+      const isActive = activeSide === 'right' && activeIdx === i;
+      return `<div class="match-item${isMatched ? ' matched' : ''}${isActive ? ' active' : ''}" data-side="right" data-idx="${i}">${item.text}</div>`;
+    }).join('');
+
+    let html = `<div class="question-card">
+      <span class="q-type-badge badge-matching">Matching</span>
+      <div class="q-prompt">${q.prompt}</div>
+      <div class="matching-columns">
+        <div>
+          <div class="match-col-label">Terms</div>
+          ${leftHtml}
+        </div>
+        <div>
+          <div class="match-col-label">Matches</div>
+          ${rightHtml}
+        </div>
+      </div>
+      <div id="feedback"></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="matchReset">Reset</button>
+        <button class="btn btn-secondary hidden" id="nextBtn">Next</button>
+      </div>
+    </div>`;
+    main().innerHTML = html;
+
+    if (!locked) {
+      $$('.match-item', main()).forEach(el => {
+        el.addEventListener('click', function() {
+          if (this.classList.contains('matched')) return;
+          const side = this.dataset.side;
+          const idx = Number(this.dataset.idx);
+          handleMatchClick(side, idx);
+        });
+      });
+    }
+
+    document.getElementById("matchReset").addEventListener("click", function() {
+      matched = [];
+      activeSide = null;
+      activeIdx = null;
+      locked = false;
+      render();
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", function() {
+      currentQ++;
+      saveState();
+      renderQuestion();
+    });
+  }
+
+  function handleMatchClick(side, idx) {
+    if (activeSide === null) {
+      activeSide = side;
+      activeIdx = idx;
+      render();
+      return;
+    }
+
+    if (activeSide === side) {
+      if (activeIdx === idx) {
+        activeSide = null;
+        activeIdx = null;
+      } else {
+        activeIdx = idx;
+      }
+      render();
+      return;
+    }
+
+    // Different side clicked -- attempt match
+    let leftIdx, rightShufIdx;
+    if (activeSide === 'left') {
+      leftIdx = activeIdx;
+      rightShufIdx = idx;
+    } else {
+      leftIdx = idx;
+      rightShufIdx = activeIdx;
+    }
+
+    const rightOrigIdx = rightShuffled[rightShufIdx].origIdx;
+    const isCorrectPair = q.pairs.some(p => p[0] === leftIdx && p[1] === rightOrigIdx);
+
+    if (isCorrectPair) {
+      matched.push({ leftIdx, rightShufIdx });
+      activeSide = null;
+      activeIdx = null;
+
+      if (matched.length === q.left.length) {
+        // All matched
+        locked = true;
+        answers.push({ qId: q.id, correct: true, userAnswer: "all matched" });
+        saveState();
+        render();
+        document.getElementById("feedback").innerHTML = `<div class="feedback-box correct-fb">
+          <strong>All matched correctly!</strong><br>${q.explanation}
+        </div>`;
+        document.getElementById("matchReset").classList.add("hidden");
+        document.getElementById("nextBtn").classList.remove("hidden");
+        return;
+      }
+      render();
+    } else {
+      // Flash wrong
+      activeSide = null;
+      activeIdx = null;
+      render();
+      const leftEl = $(`.match-item[data-side="left"][data-idx="${leftIdx}"]`, main());
+      const rightEl = $(`.match-item[data-side="right"][data-idx="${rightShufIdx}"]`, main());
+      if (leftEl) leftEl.classList.add('wrong');
+      if (rightEl) rightEl.classList.add('wrong');
+      setTimeout(() => {
+        if (leftEl) leftEl.classList.remove('wrong');
+        if (rightEl) rightEl.classList.remove('wrong');
+      }, 600);
+    }
+  }
+
+  // Auto-submit if user can't figure it all out — add a give-up after 5 wrong attempts
+  // For simplicity, matching auto-completes or user can reset. If they navigate away unfinished we mark incomplete.
+  // Actually, let's add a "Give Up" that shows after user has been at it:
+  // Keep it simple -- just let them match. If they reset and re-try, that's fine.
+
+  render();
+}
+
+/* ============================================================
+   TYPE 4: SCENARIO REASONING (multiple choice)
+   ============================================================ */
+function renderScenario(q) {
+  const letters = ['A', 'B', 'C', 'D'];
+  let selected = null;
+
+  let imgHtml = '';
+  if (q.image) {
+    imgHtml = `<img src="${q.image}" alt="${q.imageAlt || ''}" loading="lazy" class="quiz-img">`;
+  }
+
+  let html = `<div class="question-card">
+    <span class="q-type-badge badge-scenario">Scenario</span>
+    <div class="q-prompt">${q.prompt}</div>
+    ${imgHtml}
+    <div class="mc-options" id="mcOptions">
+      ${q.options.map((opt, i) => `
+        <div class="mc-option" data-idx="${i}">
+          <span class="mc-letter">${letters[i]}</span>
+          <span class="mc-text">${opt}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div id="feedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn" disabled>Submit</button>
+      <button class="btn btn-secondary hidden" id="nextBtn">Next</button>
+    </div>
+  </div>`;
+  main().innerHTML = html;
+
+  $$('.mc-option', main()).forEach(el => {
+    el.addEventListener('click', function() {
+      if (document.getElementById("submitBtn").classList.contains("hidden")) return;
+      $$('.mc-option', main()).forEach(e => e.classList.remove('selected'));
+      this.classList.add('selected');
+      selected = Number(this.dataset.idx);
+      document.getElementById("submitBtn").disabled = false;
+    });
+  });
+
+  document.getElementById("submitBtn").addEventListener("click", function() {
+    if (selected === null) return;
+    this.classList.add("hidden");
+    const isCorrect = selected === q.answer;
+    answers.push({ qId: q.id, correct: isCorrect, userAnswer: selected });
+    saveState();
+
+    $$('.mc-option', main()).forEach(el => {
+      el.style.pointerEvents = 'none';
+      const idx = Number(el.dataset.idx);
+      if (idx === q.answer) el.classList.add('correct');
+      if (idx === selected && !isCorrect) el.classList.add('wrong-selected');
+    });
+
+    const fbClass = isCorrect ? "correct-fb" : "incorrect-fb";
+    const fbLabel = isCorrect ? "Correct!" : "Not quite.";
+    document.getElementById("feedback").innerHTML = `<div class="feedback-box ${fbClass}">
+      <strong>${fbLabel}</strong> ${q.explanation}
+    </div>`;
+    document.getElementById("nextBtn").classList.remove("hidden");
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", function() {
+    currentQ++;
+    saveState();
+    renderQuestion();
+  });
+}
+
+/* ============================================================
+   TYPE 5: TRUE/FALSE WITH TWIST
+   ============================================================ */
+function renderTrueFalse(q) {
+  let selected = null;
+
+  let html = `<div class="question-card">
+    <span class="q-type-badge badge-truefalse">True / False</span>
+    <div class="q-prompt">${q.prompt}</div>
+    <div class="mc-options" id="tfOptions">
+      <div class="mc-option" data-val="true">
+        <span class="mc-letter">T</span>
+        <span class="mc-text">True</span>
+      </div>
+      <div class="mc-option" data-val="false">
+        <span class="mc-letter">F</span>
+        <span class="mc-text">False</span>
+      </div>
+    </div>
+    <div id="feedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="submitBtn" disabled>Submit</button>
+      <button class="btn btn-secondary hidden" id="nextBtn">Next</button>
+    </div>
+  </div>`;
+  main().innerHTML = html;
+
+  $$('.mc-option', main()).forEach(el => {
+    el.addEventListener('click', function() {
+      if (document.getElementById("submitBtn").classList.contains("hidden")) return;
+      $$('.mc-option', main()).forEach(e => e.classList.remove('selected'));
+      this.classList.add('selected');
+      selected = this.dataset.val === 'true';
+      document.getElementById("submitBtn").disabled = false;
+    });
+  });
+
+  document.getElementById("submitBtn").addEventListener("click", function() {
+    if (selected === null) return;
+    this.classList.add("hidden");
+    const isCorrect = selected === q.answer;
+    answers.push({ qId: q.id, correct: isCorrect, userAnswer: selected });
+    saveState();
+
+    $$('.mc-option', main()).forEach(el => {
+      el.style.pointerEvents = 'none';
+      const val = el.dataset.val === 'true';
+      if (val === q.answer) el.classList.add('correct');
+      if (val === selected && !isCorrect) el.classList.add('wrong-selected');
+    });
+
+    const fbClass = isCorrect ? "correct-fb" : "incorrect-fb";
+    const fbLabel = isCorrect ? "Correct!" : "Not quite.";
+    document.getElementById("feedback").innerHTML = `<div class="feedback-box ${fbClass}">
+      <strong>${fbLabel}</strong> ${q.explanation}
+    </div>`;
+    document.getElementById("nextBtn").classList.remove("hidden");
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", function() {
+    currentQ++;
+    saveState();
+    renderQuestion();
+  });
+}
+
+/* ============================================================
+   RESULTS SCREEN
+   ============================================================ */
+function showResults() {
+  updateProgress();
+  const correct = answers.filter(a => a.correct).length;
+  const pct = Math.round((correct / TOTAL) * 100);
+
+  // Breakdown by type
+  const types = ["slider", "ordering", "matching", "scenario", "truefalse"];
+  const breakdown = {};
+  types.forEach(t => { breakdown[t] = { total: 0, correct: 0 }; });
+  answers.forEach(a => {
+    const q = QUESTIONS.find(qq => qq.id === a.qId);
+    if (q) {
+      breakdown[q.type].total++;
+      if (a.correct) breakdown[q.type].correct++;
+    }
+  });
+
+  // SVG ring
+  const radius = 70;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (pct / 100) * circ;
+
+  let scoreColor = pct >= 80 ? "var(--green)" : pct >= 50 ? "var(--yellow)" : "var(--red)";
+
+  let breakdownHtml = types.map(t => {
+    const b = breakdown[t];
+    const typePct = b.total > 0 ? Math.round((b.correct / b.total) * 100) : 0;
+    return `<div class="type-row">
+      <span class="type-name">${TYPE_LABELS[t]}</span>
+      <div class="type-bar-track">
+        <div class="type-bar-fill" style="width:${typePct}%;background:${TYPE_COLORS[t]}"></div>
+      </div>
+      <span class="type-score">${b.correct}/${b.total}</span>
+    </div>`;
+  }).join('');
+
+  let html = `<div class="results-screen">
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg width="160" height="160" viewBox="0 0 160 160">
+          <circle class="track" cx="80" cy="80" r="${radius}"/>
+          <circle class="fill-ring" cx="80" cy="80" r="${radius}"
+            stroke-dasharray="${circ}"
+            stroke-dashoffset="${circ}"
+            style="stroke:${scoreColor}"
+            id="scoreRing"/>
+        </svg>
+        <div class="score-text">
+          <div class="score-pct" style="color:${scoreColor}">${pct}%</div>
+          <div class="score-label">${correct} of ${TOTAL}</div>
+        </div>
+      </div>
+    </div>
+    <div class="type-breakdown">
+      <h3>Score by Question Type</h3>
+      ${breakdownHtml}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="reviewBtn">Review Mistakes</button>
+      <button class="btn btn-primary" id="retakeBtn">Retake Quiz</button>
+    </div>
+    <div id="reviewArea"></div>
+  </div>`;
+  main().innerHTML = html;
+
+  // Animate ring
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById("scoreRing").style.strokeDashoffset = offset;
+    });
+  });
+
+  document.getElementById("reviewBtn").addEventListener("click", function() {
+    showReview();
+  });
+
+  document.getElementById("retakeBtn").addEventListener("click", function() {
+    resetState();
+    showStart();
+  });
+}
+
+function showReview() {
+  const wrong = answers.filter(a => !a.correct);
+  if (wrong.length === 0) {
+    document.getElementById("reviewArea").innerHTML = `<div class="feedback-box correct-fb" style="margin-top:1rem;">
+      <strong>No mistakes!</strong> You got every question right. Amazing work!
+    </div>`;
+    return;
+  }
+
+  let items = wrong.map(a => {
+    const q = QUESTIONS.find(qq => qq.id === a.qId);
+    if (!q) return '';
+    let yourAnswer = '';
+    if (q.type === "slider") {
+      yourAnswer = `Your estimate: ${formatNum(a.userAnswer, q.formatFn)}${q.unit || ''}. Correct: ${formatNum(q.answer, q.formatFn)}${q.unit || ''}`;
+    } else if (q.type === "truefalse") {
+      yourAnswer = `You said: ${a.userAnswer ? 'True' : 'False'}. Correct: ${q.answer ? 'True' : 'False'}`;
+    } else if (q.type === "scenario") {
+      yourAnswer = `You chose: ${q.options[a.userAnswer]}. Correct: ${q.options[q.answer]}`;
+    } else if (q.type === "ordering") {
+      yourAnswer = `Correct order: ${q.steps.join(' -> ')}`;
+    } else if (q.type === "matching") {
+      yourAnswer = `Some matches were incorrect.`;
+    }
+    return `<div class="review-item">
+      <div class="review-q"><strong>Q${q.id}:</strong> ${q.prompt}</div>
+      <div class="review-answer review-wrong">${yourAnswer}</div>
+      <div class="feedback-box info-fb" style="margin-top:0.5rem;">${q.explanation}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById("reviewArea").innerHTML = `<div class="review-list">
+    <h3 style="margin-bottom:0.75rem;font-size:1rem;">Questions to Review (${wrong.length})</h3>
+    ${items}
+  </div>`;
+
+  // Scroll to review
+  document.getElementById("reviewArea").scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  const hasState = loadState();
+  if (hasState && quizFinished) {
+    showResults();
+  } else if (hasState && quizStarted && currentQ < TOTAL) {
+    renderQuestion();
+  } else {
+    resetState();
+    showStart();
+  }
+}
+
+// Handle matching questions that may not have been submitted
+// If someone leaves a matching question and comes back, it won't have an answer recorded.
+// On reload, if the currentQ points to a matching question with no answer, just re-render it.
+
+init();
+
+})();
+</script>
+</body>
+</html>

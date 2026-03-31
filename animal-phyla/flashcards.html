@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Animal Phyla Flashcards | QuizWeaver</title>
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --accent: #4f8ef7;
+  --green: #4ade80;
+  --yellow: #facc15;
+  --red: #f87171;
+  --purple: #c084fc;
+  --pink: #f472b6;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --radius: 12px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* === HEADER === */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, #1e3a5f, #0f1117);
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(79, 142, 247, 0.2);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.header-back {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.header-back:hover {
+  background: rgba(79, 142, 247, 0.1);
+}
+
+.header-back svg {
+  width: 18px;
+  height: 18px;
+}
+
+.header-title {
+  text-align: center;
+  flex: 1;
+}
+
+.header-title h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.header-title p {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.125rem;
+}
+
+.header-reset {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header-reset:hover {
+  background: rgba(248, 113, 113, 0.1);
+  color: var(--red);
+}
+
+.header-reset svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* === CATEGORY NAV PILLS === */
+.nav-pills-wrapper {
+  max-width: 640px;
+  margin: 0.75rem auto 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.nav-pills-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-pills {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 0.25rem 0.5rem;
+  min-width: max-content;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-dim);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pill.active {
+  border-color: var(--pill-color, var(--accent));
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--pill-color, var(--accent));
+}
+
+.pill .badge {
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  min-width: 1.25rem;
+  text-align: center;
+}
+
+.pill.active .badge {
+  background: var(--pill-color, var(--accent));
+  color: #0f1117;
+}
+
+/* === MAIN CONTAINER === */
+.container {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* === PROGRESS BAR === */
+.progress-section {
+  margin-bottom: 1rem;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  margin-bottom: 0.375rem;
+}
+
+.progress-stats .streak {
+  color: var(--yellow);
+  font-weight: 600;
+}
+
+.progress-bar-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--green));
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* === FLASHCARD === */
+.card-area {
+  perspective: 1200px;
+  margin-bottom: 1.25rem;
+  min-height: 300px;
+}
+
+.card-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 300px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card-wrapper.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 300px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.card-front {
+  background: var(--surface);
+}
+
+.card-back {
+  background: var(--surface);
+  transform: rotateY(180deg);
+  justify-content: flex-start;
+  padding-top: 1.25rem;
+}
+
+.card-category-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-bottom: 0.75rem;
+}
+
+.card-category-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.card-front-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #fff;
+  max-width: 90%;
+}
+
+.card-hint {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: auto;
+  padding-top: 1rem;
+}
+
+.card-back-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  align-self: flex-start;
+}
+
+.card-back-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  text-align: left;
+  width: 100%;
+}
+
+.card-back-text img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.5rem 0;
+}
+
+.card-counter {
+  font-size: 0.6875rem;
+  color: var(--text-dim);
+  margin-top: 0.75rem;
+  align-self: flex-end;
+}
+
+/* === RATING BUTTONS === */
+.rating-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.rating-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-height: 56px;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.rating-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rating-btn:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.rating-btn .label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.rating-btn .interval {
+  font-size: 0.6875rem;
+  opacity: 0.7;
+}
+
+.rating-btn.again { border-color: rgba(248, 113, 113, 0.3); }
+.rating-btn.again:not(:disabled):hover { background: rgba(248, 113, 113, 0.1); }
+.rating-btn.again .label { color: var(--red); }
+
+.rating-btn.hard { border-color: rgba(250, 204, 21, 0.3); }
+.rating-btn.hard:not(:disabled):hover { background: rgba(250, 204, 21, 0.1); }
+.rating-btn.hard .label { color: var(--yellow); }
+
+.rating-btn.good { border-color: rgba(74, 222, 128, 0.3); }
+.rating-btn.good:not(:disabled):hover { background: rgba(74, 222, 128, 0.1); }
+.rating-btn.good .label { color: var(--green); }
+
+.rating-btn.easy { border-color: rgba(79, 142, 247, 0.3); }
+.rating-btn.easy:not(:disabled):hover { background: rgba(79, 142, 247, 0.1); }
+.rating-btn.easy .label { color: var(--accent); }
+
+/* === SESSION SUMMARY === */
+.summary-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.summary-overlay.visible {
+  display: flex;
+}
+
+.summary-card {
+  background: var(--surface);
+  border: 1.5px solid rgba(79, 142, 247, 0.2);
+  border-radius: var(--radius);
+  padding: 2rem 1.5rem;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+.summary-card h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 1.25rem;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.summary-stat .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.summary-stat .label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+}
+
+.summary-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary-btn {
+  min-height: 44px;
+  border-radius: var(--radius);
+  border: 1.5px solid rgba(79, 142, 247, 0.3);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.summary-btn.primary {
+  background: var(--accent);
+  color: #0f1117;
+  border-color: var(--accent);
+}
+
+.summary-btn:hover {
+  opacity: 0.85;
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.empty-state h2 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.empty-state .next-review {
+  font-size: 0.8125rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* === UTILITY === */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+@media (max-width: 400px) {
+  .card-front-text {
+    font-size: 1.1rem;
+  }
+  .rating-btn .label {
+    font-size: 0.75rem;
+  }
+  .rating-btn .interval {
+    font-size: 0.625rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-top">
+    <a href="index.html" class="header-back" aria-label="Back to module index">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </a>
+    <div class="header-title">
+      <h1>Animal Phyla Flashcards</h1>
+      <p>Grade 7 Life Science | Virginia SOL LS.7</p>
+    </div>
+    <button class="header-reset" id="resetBtn" aria-label="Reset progress" title="Reset all progress">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    </button>
+  </div>
+
+  <nav class="nav-pills-wrapper" aria-label="Category filter">
+    <div class="nav-pills" id="pillContainer">
+      <!-- Pills injected by JS -->
+    </div>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main class="container" id="mainArea">
+  <!-- Progress -->
+  <div class="progress-section">
+    <div class="progress-stats">
+      <span id="progressText">0 / 0 due</span>
+      <span class="streak" id="streakText"></span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Card Area -->
+  <div class="card-area" id="cardArea">
+    <div class="card-wrapper" id="cardWrapper">
+      <div class="card-face card-front" id="cardFront"></div>
+      <div class="card-face card-back" id="cardBack"></div>
+    </div>
+  </div>
+
+  <!-- Rating Buttons -->
+  <div class="rating-buttons" id="ratingButtons">
+    <button class="rating-btn again" data-rating="0" disabled>
+      <span class="label">Again</span>
+      <span class="interval" id="intervalAgain"></span>
+    </button>
+    <button class="rating-btn hard" data-rating="1" disabled>
+      <span class="label">Hard</span>
+      <span class="interval" id="intervalHard"></span>
+    </button>
+    <button class="rating-btn good" data-rating="2" disabled>
+      <span class="label">Good</span>
+      <span class="interval" id="intervalGood"></span>
+    </button>
+    <button class="rating-btn easy" data-rating="3" disabled>
+      <span class="label">Easy</span>
+      <span class="interval" id="intervalEasy"></span>
+    </button>
+  </div>
+</main>
+
+<!-- Session Summary Overlay -->
+<div class="summary-overlay" id="summaryOverlay">
+  <div class="summary-card">
+    <h2>Session Complete!</h2>
+    <div class="summary-stats">
+      <div class="summary-stat">
+        <span class="value" id="sumReviewed">0</span>
+        <span class="label">Reviewed</span>
+      </div>
+      <div class="summary-stat">
+        <span class="value" id="sumAccuracy">0%</span>
+        <span class="label">Accuracy</span>
+      </div>
+      <div class="summary-stat">
+        <span class="value" id="sumStreak">0</span>
+        <span class="label">Best Streak</span>
+      </div>
+    </div>
+    <div class="summary-buttons">
+      <button class="summary-btn primary" id="sumContinue">Study Again</button>
+      <button class="summary-btn" id="sumBack" onclick="location.href='index.html'">Back to Module</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CARD DATA — 90 flashcards across 5 categories
+   ================================================================ */
+const CATEGORIES = [
+  { id: "vocabulary", name: "Vocabulary", color: "#4f8ef7" },
+  { id: "key-facts",  name: "Key Facts",  color: "#4ade80" },
+  { id: "processes",  name: "Processes",   color: "#facc15" },
+  { id: "concepts",   name: "Concepts",    color: "#c084fc" },
+  { id: "connections", name: "Connections", color: "#f472b6" }
+];
+
+const ALL_CARDS = [
+  // ── VOCABULARY (20 cards) ─────────────────────────────────────
+  { id: "v01", cat: "vocabulary", front: "Phylum", back: "A major group used to classify organisms in the animal kingdom." },
+  { id: "v02", cat: "vocabulary", front: "Taxonomy", back: "The science of naming and classifying organisms into groups." },
+  { id: "v03", cat: "vocabulary", front: "Vertebrate", back: "An animal with a backbone (spinal column)." },
+  { id: "v04", cat: "vocabulary", front: "Invertebrate", back: "An animal without a backbone; about 95% of all animals." },
+  { id: "v05", cat: "vocabulary", front: "Bilateral Symmetry", back: "Body plan where left and right sides are mirror images." },
+  { id: "v06", cat: "vocabulary", front: "Radial Symmetry", back: "Body plan arranged around a central point, like a wheel." },
+  { id: "v07", cat: "vocabulary", front: "Asymmetry", back: "Having no definite body shape or symmetry pattern.", img: "images/porifera-sponge-marine-1.svg", imgAlt: "Sponge diversity diagram showing asymmetrical body plans" },
+  { id: "v08", cat: "vocabulary", front: "Cnidocyte", back: "A stinging cell found in jellyfish and corals (phylum Cnidaria).", img: "images/cnidaria-jellyfish-1.jpg", imgAlt: "Moon jellyfish with visible tentacles" },
+  { id: "v09", cat: "vocabulary", front: "Exoskeleton", back: "A hard outer covering that protects arthropods' bodies.", img: "images/arthropoda-insect-beetle-1.jpg", imgAlt: "Rose chafer beetle showing its exoskeleton" },
+  { id: "v10", cat: "vocabulary", front: "Endoskeleton", back: "An internal skeleton, found in echinoderms and chordates." },
+  { id: "v11", cat: "vocabulary", front: "Notochord", back: "A flexible rod that supports the body; key feature of chordates.", img: "images/chordata-vertebrate-frog-1.jpg", imgAlt: "Vertebrate montage showing chordate diversity" },
+  { id: "v12", cat: "vocabulary", front: "Mantle", back: "A tissue layer in mollusks that often produces a shell.", img: "images/mollusca-snail-shell-1.jpg", imgAlt: "Snail showing its shell produced by the mantle" },
+  { id: "v13", cat: "vocabulary", front: "Segmentation", back: "Body plan divided into repeating sections (as in earthworms).", img: "images/annelida-earthworm-segmented-1.jpg", imgAlt: "Close-up of earthworm segments" },
+  { id: "v14", cat: "vocabulary", front: "Cephalization", back: "Concentration of sense organs and nerves at the head end." },
+  { id: "v15", cat: "vocabulary", front: "Larva", back: "An immature form of an animal that looks different from the adult." },
+  { id: "v16", cat: "vocabulary", front: "Metamorphosis", back: "A major change in body form during an animal's development." },
+  { id: "v17", cat: "vocabulary", front: "Coelom", back: "A fluid-filled body cavity between the gut and outer body wall." },
+  { id: "v18", cat: "vocabulary", front: "Acoelomate", back: "An animal with no body cavity (like flatworms).", img: "images/platyhelminthes-flatworm-planarian-1.jpg", imgAlt: "Planarian flatworm" },
+  { id: "v19", cat: "vocabulary", front: "Pseudocoelomate", back: "An animal with a partial body cavity (like roundworms).", img: "images/nematoda-roundworm-1.svg", imgAlt: "C. elegans nematode anatomy" },
+  { id: "v20", cat: "vocabulary", front: "Filter Feeder", back: "An animal that strains food particles from water (like sponges)." },
+  { id: "v21", cat: "vocabulary", front: "Osculum", back: "The large opening at the top of a sponge where filtered water exits." },
+
+  // ── KEY FACTS (16 cards) ──────────────────────────────────────
+  { id: "f01", cat: "key-facts", front: "How many major animal phyla are there?", back: "<strong>9 major phyla:</strong> Porifera, Cnidaria, Platyhelminthes, Nematoda, Annelida, Arthropoda, Mollusca, Echinodermata, and Chordata." },
+  { id: "f02", cat: "key-facts", front: "Which phylum is the LARGEST?", back: "<strong>Arthropoda</strong> is the largest phylum, with over 1 million described species (insects, spiders, crustaceans).", img: "images/arthropoda-insect-beetle-1.jpg", imgAlt: "Rose chafer beetle representing Arthropoda" },
+  { id: "f03", cat: "key-facts", front: "What percentage of animals are invertebrates?", back: "About <strong>95% of all animals are invertebrates</strong>. Only about 5% have backbones." },
+  { id: "f04", cat: "key-facts", front: "What does \"Porifera\" mean?", back: "<strong>\"Pore bearer\"</strong> &mdash; Sponges have tiny holes (pores) for filtering water.", img: "images/porifera-sponge-marine-1.svg", imgAlt: "Sponge diversity diagram" },
+  { id: "f05", cat: "key-facts", front: "What does \"Cnidaria\" mean?", back: "<strong>\"Stinging nettle\"</strong> &mdash; These animals have stinging cells called cnidocytes.", img: "images/cnidaria-jellyfish-1.jpg", imgAlt: "Moon jellyfish" },
+  { id: "f06", cat: "key-facts", front: "What does \"Platyhelminthes\" mean?", back: "<strong>\"Flat worms\"</strong> &mdash; These are the simplest animals with bilateral symmetry.", img: "images/platyhelminthes-flatworm-planarian-1.jpg", imgAlt: "Planarian flatworm" },
+  { id: "f07", cat: "key-facts", front: "What does \"Nematoda\" mean?", back: "<strong>\"Thread-like\"</strong> &mdash; Roundworms are found in almost every habitat on Earth.", img: "images/nematoda-roundworm-1.svg", imgAlt: "C. elegans nematode anatomy" },
+  { id: "f08", cat: "key-facts", front: "What does \"Annelida\" mean?", back: "<strong>\"Little ring\"</strong> &mdash; Refers to their body segments that look like rings.", img: "images/annelida-earthworm-segmented-1.jpg", imgAlt: "Earthworm segments close-up" },
+  { id: "f09", cat: "key-facts", front: "What does \"Arthropoda\" mean?", back: "<strong>\"Jointed foot\"</strong> &mdash; These animals have jointed legs and an exoskeleton.", img: "images/arthropoda-insect-beetle-1.jpg", imgAlt: "Rose chafer beetle" },
+  { id: "f10", cat: "key-facts", front: "What does \"Mollusca\" mean?", back: "<strong>\"Soft\"</strong> &mdash; Most have a muscular foot, a mantle, and many have a shell.", img: "images/mollusca-snail-shell-1.jpg", imgAlt: "Snail shell" },
+  { id: "f11", cat: "key-facts", front: "What does \"Echinodermata\" mean?", back: "<strong>\"Spiny skin\"</strong> &mdash; Sea stars, sea urchins have calcium-based spines.", img: "images/echinodermata-sea-star-starfish-1.jpg", imgAlt: "Crown of thorns starfish" },
+  { id: "f12", cat: "key-facts", front: "What does \"Chordata\" mean?", back: "<strong>\"Cord\"</strong> &mdash; All chordates have a notochord at some point in their life.", img: "images/chordata-vertebrate-frog-1.jpg", imgAlt: "Vertebrate montage" },
+  { id: "f13", cat: "key-facts", front: "Why are sponges the simplest animals?", back: "Sponges have <strong>no true tissues, organs, or nervous system</strong>. They are the most basic multicellular animals." },
+  { id: "f14", cat: "key-facts", front: "What kind of symmetry do adult echinoderms have?", back: "Echinoderms have <strong>5-fold (pentaradial) symmetry</strong>. Adult sea stars show this pattern clearly.", img: "images/echinodermata-sea-star-starfish-1.jpg", imgAlt: "Crown of thorns starfish showing radial symmetry" },
+  { id: "f15", cat: "key-facts", front: "How many total animal phyla are known?", back: "There are about <strong>35 known phyla total</strong>, but the 9 major ones contain most known species." },
+  { id: "f16", cat: "key-facts", front: "Which phylum are corals, jellyfish, and sea anemones in?", back: "<strong>Cnidaria</strong> &mdash; all have radial symmetry, tentacles, and stinging cells (cnidocytes)." },
+
+  // ── PROCESSES (16 cards) ──────────────────────────────────────
+  { id: "p01", cat: "processes", front: "How do sponges feed?", back: "Water flows in through <strong>pores</strong> &rarr; special cells called choanocytes trap food particles &rarr; filtered water flows out through the <strong>osculum</strong> (large opening at the top).", img: "images/porifera-sponge-marine-1.svg", imgAlt: "Sponge diagram showing water flow" },
+  { id: "p02", cat: "processes", front: "How do cnidarians capture prey?", back: "Tentacles wave in water &rarr; <strong>cnidocytes fire</strong> when touched &rarr; barbed thread injects venom &rarr; prey is paralyzed &rarr; tentacles bring food to mouth.", img: "images/cnidaria-jellyfish-1.jpg", imgAlt: "Moon jellyfish with tentacles" },
+  { id: "p03", cat: "processes", front: "How does arthropod molting work?", back: "Exoskeleton <strong>cannot grow</strong> &rarr; animal secretes new soft exoskeleton underneath &rarr; old exoskeleton splits and is shed &rarr; new exoskeleton <strong>hardens</strong> &rarr; animal can grow." },
+  { id: "p04", cat: "processes", front: "What are the 4 stages of complete metamorphosis?", back: "<strong>Egg &rarr; Larva</strong> (caterpillar) <strong>&rarr; Pupa</strong> (chrysalis) <strong>&rarr; Adult</strong> (butterfly). The body completely reorganizes inside the pupa." },
+  { id: "p05", cat: "processes", front: "How does a sea star's water vascular system work?", back: "Water enters through <strong>sieve plate</strong> &rarr; flows through ring canal &rarr; goes to radial canals in each arm &rarr; fills <strong>tube feet</strong> &rarr; tube feet extend and grip surfaces.", img: "images/echinodermata-sea-star-starfish-1.jpg", imgAlt: "Crown of thorns starfish" },
+  { id: "p06", cat: "processes", front: "How do flatworms regenerate?", back: "Flatworm is <strong>cut in half</strong> &rarr; each piece regrows the missing parts &rarr; <strong>two complete worms</strong> form from one original worm.", img: "images/platyhelminthes-flatworm-planarian-1.jpg", imgAlt: "Planarian flatworm" },
+  { id: "p07", cat: "processes", front: "How do scientists classify organisms?", back: "Observe <strong>physical characteristics</strong> &rarr; Compare body plans &rarr; Study <strong>DNA</strong> &rarr; Group by shared traits &rarr; Place in taxonomic hierarchy (Kingdom, Phylum, Class, Order, Family, Genus, Species)." },
+  { id: "p08", cat: "processes", front: "How do echinoderms regenerate?", back: "Sea star <strong>loses an arm</strong> &rarr; new arm slowly grows back &rarr; some species can regrow an <strong>entire body from one arm</strong>." },
+  { id: "p09", cat: "processes", front: "How does earthworm digestion work?", back: "Food enters <strong>mouth</strong> &rarr; passes through pharynx &rarr; <strong>crop</strong> stores food &rarr; <strong>gizzard</strong> grinds food &rarr; nutrients absorbed in intestine &rarr; waste exits at anus.", img: "images/annelida-earthworm-segmented-1.jpg", imgAlt: "Earthworm close-up" },
+  { id: "p10", cat: "processes", front: "What is the jellyfish life cycle?", back: "Adult <strong>medusa</strong> releases eggs/sperm &rarr; fertilized egg &rarr; <strong>planula larva</strong> &rarr; settles on surface &rarr; grows into <strong>polyp</strong> &rarr; polyp buds off &rarr; new medusa." },
+  { id: "p11", cat: "processes", front: "How do roundworms move?", back: "<strong>Longitudinal muscles</strong> contract &rarr; body bends in S-shape &rarr; pushes against surrounding soil or fluid &rarr; moves forward in a thrashing motion." },
+  { id: "p12", cat: "processes", front: "How does crab respiration work?", back: "Water enters <strong>gill chamber</strong> &rarr; passes over gills &rarr; <strong>oxygen transfers</strong> to blood &rarr; carbon dioxide exits &rarr; oxygenated blood circulates through the body." },
+  { id: "p13", cat: "processes", front: "How do mollusks form their shells?", back: "<strong>Mantle</strong> secretes calcium carbonate &rarr; mineral layers build up &rarr; shell grows in spiral or fan shape &rarr; protects the <strong>soft body</strong> inside.", img: "images/mollusca-snail-shell-1.jpg", imgAlt: "Snail shell" },
+  { id: "p14", cat: "processes", front: "How does a vertebrate embryo develop?", back: "<strong>Notochord</strong> forms first &rarr; nervous system develops above it &rarr; <strong>backbone</strong> develops around notochord &rarr; organs form from three tissue layers." },
+  { id: "p15", cat: "processes", front: "How does echinoderm symmetry change during development?", back: "Larva has <strong>bilateral symmetry</strong> &rarr; undergoes metamorphosis &rarr; adult develops <strong>pentaradial (5-fold) symmetry</strong>." },
+  { id: "p16", cat: "processes", front: "How does incomplete metamorphosis work?", back: "<strong>Egg &rarr; Nymph &rarr; Adult</strong>. The nymph looks like a small adult and gradually grows larger through molts (no pupa stage). Grasshoppers and dragonflies develop this way." },
+
+  // ── CONCEPTS (21 cards) ───────────────────────────────────────
+  { id: "c01", cat: "concepts", front: "Why does classification matter?", back: "It helps scientists <strong>communicate</strong>, predict traits, and understand how organisms are <strong>related</strong> through evolution." },
+  { id: "c02", cat: "concepts", front: "How does body symmetry relate to an animal's lifestyle?", back: "<strong>Radial symmetry</strong> suits stationary or slow-moving animals (like jellyfish). <strong>Bilateral symmetry</strong> helps animals that move in one direction detect what's ahead." },
+  { id: "c03", cat: "concepts", front: "Why are most animals invertebrates?", back: "Invertebrate body plans <strong>evolved first</strong> and diversified into many forms over hundreds of millions of years. Vertebrates are just <strong>one branch</strong> of one phylum." },
+  { id: "c04", cat: "concepts", front: "Why are arthropods the most successful phylum?", back: "<strong>Exoskeletons</strong> protect them, <strong>jointed limbs</strong> allow versatile movement, and their <strong>small size</strong> enables them to fill diverse habitats &mdash; that's why they're the largest phylum." },
+  { id: "c05", cat: "concepts", front: "What are the advantages of body segmentation?", back: "Segments can <strong>specialize</strong> for different functions (breathing, moving, digesting). Damage to one segment <strong>doesn't destroy</strong> the whole animal." },
+  { id: "c06", cat: "concepts", front: "What do body cavities do for animals?", back: "Fluid-filled spaces <strong>cushion organs</strong>, allow organs to grow independently, and help with <strong>movement</strong> by acting as a hydrostatic skeleton." },
+  { id: "c07", cat: "concepts", front: "Why do exoskeletons limit an animal's size?", back: "Exoskeletons <strong>don't grow</strong> with the animal. Larger exoskeletons would be <strong>too heavy</strong> to support. That's why most arthropods are small." },
+  { id: "c08", cat: "concepts", front: "What is convergent evolution in animals?", back: "Unrelated phyla develop <strong>similar features</strong> independently. For example, <strong>eyes evolved independently over 40 times</strong> in different groups." },
+  { id: "c09", cat: "concepts", front: "Why are sponges classified as animals?", back: "They are <strong>multicellular</strong>, heterotrophs (eat other organisms), lack <strong>cell walls</strong>, and have specialized cells &mdash; all animal characteristics." },
+  { id: "c10", cat: "concepts", front: "How do different phyla fill different ecological roles?", back: "Sponges <strong>filter water</strong>, earthworms <strong>aerate soil</strong>, arthropods <strong>pollinate plants</strong>, and chordates are often <strong>top predators</strong>." },
+  { id: "c11", cat: "concepts", front: "Which phyla include parasitic species?", back: "<strong>Flatworms</strong> (tapeworms), <strong>roundworms</strong> (hookworms), and <strong>arthropods</strong> (ticks) all include parasitic species that live on or inside other organisms." },
+  { id: "c12", cat: "concepts", front: "What are the key characteristics of Kingdom Animalia?", back: "<strong>Multicellular</strong>, heterotrophic (can't make own food), <strong>no cell walls</strong>, most can move, and have specialized cells for different jobs." },
+  { id: "c13", cat: "concepts", front: "How do scientists determine evolutionary relationships between phyla?", back: "Phyla that share <strong>more features</strong> are more closely related. <strong>DNA evidence</strong> confirms groupings that were originally based on physical traits." },
+  { id: "c14", cat: "concepts", front: "What is the difference between protostomes and deuterostomes?", back: "Two developmental paths: <strong>protostomes</strong> (mouth-first) include arthropods, mollusks, and worms. <strong>Deuterostomes</strong> (anus-first) include echinoderms and chordates." },
+  { id: "c15", cat: "concepts", front: "What are homologous structures?", back: "Similar body parts inherited from a <strong>common ancestor</strong>. For example, your arm bones match a whale's flipper bones and a bat's wing bones." },
+  { id: "c16", cat: "concepts", front: "Why are cnidarians ecologically important?", back: "<strong>Coral reefs</strong> built by cnidarians support <strong>25% of all marine species</strong>, making them one of the most biodiverse ecosystems on Earth." },
+  { id: "c17", cat: "concepts", front: "How abundant are nematodes?", back: "Some scientists estimate that <strong>4 out of every 5 animals on Earth</strong> are nematodes. They are found in nearly every habitat." },
+  { id: "c18", cat: "concepts", front: "Why is cephalization advantageous?", back: "Having sense organs <strong>concentrated at the head</strong> means the brain gets information <strong>faster</strong> when the animal moves forward into new environments." },
+  { id: "c19", cat: "concepts", front: "Why are echinoderms special among invertebrates?", back: "They're the <strong>closest invertebrate relatives to chordates</strong> (our phylum!). Both are deuterostomes, sharing a more recent common ancestor." },
+  { id: "c20", cat: "concepts", front: "Why doesn't having wings make bats and butterflies closely related?", back: "Classification is based on <strong>overall body plan</strong>, not single features. Bats (chordates) and butterflies (arthropods) evolved wings independently &mdash; this is <strong>convergent evolution</strong>, not close relationship." },
+  { id: "c21", cat: "concepts", front: "Why is diversity within a phylum important?", back: "Diversity within a phylum means many species fill <strong>different niches</strong>. Arthropods alone include pollinators, decomposers, predators, and parasites &mdash; each essential to their ecosystem." },
+
+  // ── CONNECTIONS (16 cards) ────────────────────────────────────
+  { id: "n01", cat: "connections", front: "How are animal phyla connected to medicine?", back: "<strong>Horseshoe crab blood</strong> (Arthropoda) is used to test for bacterial contamination in vaccines and medical equipment. It saved countless lives." },
+  { id: "n02", cat: "connections", front: "How do earthworms help agriculture?", back: "Annelids <strong>tunnel through soil</strong>, mixing nutrients, improving drainage, and creating air pockets that help <strong>plant roots</strong> grow.", img: "images/annelida-earthworm-segmented-1.jpg", imgAlt: "Earthworm segments" },
+  { id: "n03", cat: "connections", front: "Why are coral reefs economically important?", back: "Coral reef ecosystems (built by <strong>cnidarians</strong>) support fishing, tourism, and coastal protection worth <strong>billions of dollars</strong> annually." },
+  { id: "n04", cat: "connections", front: "What role do roundworms play in your garden?", back: "Nematodes in soil help <strong>decompose dead matter</strong> and control insect populations, keeping the garden ecosystem healthy." },
+  { id: "n05", cat: "connections", front: "How were mollusk shells used in human history?", back: "<strong>Cowrie shells</strong> (mollusks) were used as currency across Africa and Asia for <strong>thousands of years</strong>." },
+  { id: "n06", cat: "connections", front: "How do engineers learn from arthropods?", back: "Engineers study <strong>spider silk</strong> (stronger than steel by weight) and <strong>beetle shells</strong> for designing new lightweight, strong materials (biomimicry)." },
+  { id: "n07", cat: "connections", front: "How do sponges inspire technology?", back: "Scientists study how sponges <strong>filter water</strong> so efficiently to design better <strong>water purification systems</strong>." },
+  { id: "n08", cat: "connections", front: "How are sea stars connected to climate change?", back: "Warming oceans cause <strong>sea star wasting disease</strong>. Monitoring echinoderms helps scientists track <strong>ocean health</strong> and climate impact.", img: "images/echinodermata-sea-star-starfish-1.jpg", imgAlt: "Crown of thorns starfish" },
+  { id: "n09", cat: "connections", front: "How does classification help doctors?", back: "Knowing which <strong>phylum a parasite belongs to</strong> helps doctors choose the right treatment. A flatworm parasite needs different medicine than a roundworm." },
+  { id: "n10", cat: "connections", front: "How can invasive species cause damage?", back: "<strong>Zebra mussels</strong> (Mollusca) clog water pipes and <strong>Asian carp</strong> (Chordata) outcompete native fish when introduced to new areas." },
+  { id: "n11", cat: "connections", front: "Which phylum do humans belong to?", back: "Humans belong to phylum <strong>Chordata</strong>, class Mammalia. We share this phylum with fish, frogs, and birds &mdash; all have a notochord." },
+  { id: "n12", cat: "connections", front: "Why do food webs need all phyla?", back: "Remove arthropods and <strong>birds starve</strong>. Remove annelids and <strong>soil dies</strong>. Every phylum plays a critical role in maintaining ecosystems." },
+  { id: "n13", cat: "connections", front: "What do fossils tell us about phyla origins?", back: "The <strong>Cambrian Explosion</strong> (~540 million years ago) produced most modern phyla in a geologically short time. Fossils from this era show sudden diversity." },
+  { id: "n14", cat: "connections", front: "Which phyla include bioluminescent animals?", back: "Jellyfish (<strong>Cnidaria</strong>), fireflies (<strong>Arthropoda</strong>), and some worms (<strong>Annelida</strong>) all produce their own light through chemical reactions." },
+  { id: "n15", cat: "connections", front: "How can students help with animal classification?", back: "Programs like <strong>iNaturalist</strong> let students photograph and classify animals, contributing to <strong>real scientific data</strong> (citizen science)." },
+  { id: "n16", cat: "connections", front: "How are mollusks connected to ocean chemistry?", back: "Mollusks like oysters and mussels <strong>filter huge volumes of water</strong>, removing algae and particles. A single oyster can filter <strong>50 gallons per day</strong>, improving water clarity and quality." }
+];
+
+/* ================================================================
+   SM-2 SPACED REPETITION ENGINE
+   ================================================================ */
+const STORAGE_KEY = "learn_animal-phyla_flashcards";
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return {};
+}
+
+function saveProgress(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function getCardState(progress, cardId) {
+  if (progress[cardId]) return progress[cardId];
+  return {
+    easeFactor: 2.5,
+    interval: 0,
+    repetitions: 0,
+    nextReview: new Date().toISOString()
+  };
+}
+
+function isDue(state) {
+  return new Date(state.nextReview) <= new Date();
+}
+
+function formatInterval(days) {
+  if (days < 1) return "<1d";
+  if (days < 30) return Math.round(days) + "d";
+  if (days < 365) return Math.round(days / 30) + "mo";
+  return (days / 365).toFixed(1) + "y";
+}
+
+/**
+ * SM-2 algorithm: compute next state given a rating (0-3).
+ *  0 = Again, 1 = Hard, 2 = Good, 3 = Easy
+ */
+function sm2(state, rating) {
+  let { easeFactor, interval, repetitions } = state;
+
+  if (rating === 0) {
+    // Again — reset
+    interval = 1;
+    repetitions = 0;
+  } else if (rating === 1) {
+    // Hard
+    interval = Math.max(1, interval * 1.2);
+    easeFactor = Math.max(1.3, easeFactor - 0.15);
+  } else if (rating === 2) {
+    // Good
+    if (repetitions === 0) {
+      interval = 1;
+    } else if (repetitions === 1) {
+      interval = 6;
+    } else {
+      interval = interval * easeFactor;
+    }
+    repetitions += 1;
+  } else if (rating === 3) {
+    // Easy
+    if (repetitions === 0) interval = 1;
+    else if (repetitions === 1) interval = 6;
+    else interval = interval * easeFactor;
+    interval *= 1.3;
+    easeFactor += 0.15;
+    repetitions += 1;
+  }
+
+  const next = new Date();
+  next.setDate(next.getDate() + Math.max(1, Math.round(interval)));
+
+  return {
+    easeFactor: Math.round(easeFactor * 100) / 100,
+    interval: Math.round(interval * 100) / 100,
+    repetitions,
+    nextReview: next.toISOString()
+  };
+}
+
+/** Preview what the interval would be after a given rating (for button labels). */
+function previewInterval(state, rating) {
+  const next = sm2(state, rating);
+  return formatInterval(next.interval);
+}
+
+/* ================================================================
+   APPLICATION STATE
+   ================================================================ */
+let progress = loadProgress();
+let activeCategory = null;      // null = all
+let dueQueue = [];
+let queueIndex = 0;
+let isFlipped = false;
+let sessionReviewed = 0;
+let sessionCorrect = 0;         // rating >= 2
+let streak = 0;
+let bestStreak = 0;
+
+/* ================================================================
+   DOM REFERENCES
+   ================================================================ */
+const pillContainer  = document.getElementById("pillContainer");
+const cardWrapper    = document.getElementById("cardWrapper");
+const cardFront      = document.getElementById("cardFront");
+const cardBack       = document.getElementById("cardBack");
+const cardArea       = document.getElementById("cardArea");
+const ratingBtns     = document.querySelectorAll(".rating-btn");
+const progressText   = document.getElementById("progressText");
+const streakText     = document.getElementById("streakText");
+const progressFill   = document.getElementById("progressFill");
+const mainArea       = document.getElementById("mainArea");
+const summaryOverlay = document.getElementById("summaryOverlay");
+const resetBtn       = document.getElementById("resetBtn");
+
+/* ================================================================
+   BUILD THE QUEUE OF DUE CARDS
+   ================================================================ */
+function buildQueue() {
+  const now = new Date();
+  let pool = ALL_CARDS;
+  if (activeCategory) {
+    pool = pool.filter(c => c.cat === activeCategory);
+  }
+  dueQueue = pool.filter(card => {
+    const state = getCardState(progress, card.id);
+    return isDue(state);
+  });
+  // Shuffle so repeated sessions aren't always the same order
+  for (let i = dueQueue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [dueQueue[i], dueQueue[j]] = [dueQueue[j], dueQueue[i]];
+  }
+  queueIndex = 0;
+}
+
+/* ================================================================
+   RENDER PILLS
+   ================================================================ */
+function renderPills() {
+  pillContainer.innerHTML = "";
+
+  // "All" pill
+  const allDue = ALL_CARDS.filter(c => isDue(getCardState(progress, c.id))).length;
+  const allPill = document.createElement("button");
+  allPill.className = "pill" + (activeCategory === null ? " active" : "");
+  allPill.style.setProperty("--pill-color", "#4f8ef7");
+  allPill.innerHTML = `All <span class="badge">${allDue}</span>`;
+  allPill.addEventListener("click", () => { activeCategory = null; refresh(); });
+  pillContainer.appendChild(allPill);
+
+  CATEGORIES.forEach(cat => {
+    const catCards = ALL_CARDS.filter(c => c.cat === cat.id);
+    const due = catCards.filter(c => isDue(getCardState(progress, c.id))).length;
+    const pill = document.createElement("button");
+    pill.className = "pill" + (activeCategory === cat.id ? " active" : "");
+    pill.style.setProperty("--pill-color", cat.color);
+    pill.innerHTML = `${cat.name} <span class="badge">${due}</span>`;
+    pill.addEventListener("click", () => { activeCategory = cat.id; refresh(); });
+    pillContainer.appendChild(pill);
+  });
+}
+
+/* ================================================================
+   RENDER CURRENT CARD
+   ================================================================ */
+function renderCard() {
+  if (queueIndex >= dueQueue.length) {
+    showEmptyOrSummary();
+    return;
+  }
+
+  const card = dueQueue[queueIndex];
+  const cat = CATEGORIES.find(c => c.id === card.cat);
+  const state = getCardState(progress, card.id);
+
+  // Un-flip
+  isFlipped = false;
+  cardWrapper.classList.remove("flipped");
+
+  // Front
+  cardFront.innerHTML = `
+    <div class="card-category-dot" style="background:${cat.color}"></div>
+    <div class="card-category-label" style="color:${cat.color}">${cat.name}</div>
+    <div class="card-front-text">${card.front}</div>
+    <div class="card-hint">Tap to reveal answer</div>
+  `;
+
+  // Back
+  let backHTML = `
+    <div class="card-back-label" style="color:${cat.color}">Answer</div>
+    <div class="card-back-text">${card.back}`;
+  if (card.img) {
+    backHTML += `<img src="${card.img}" alt="${card.imgAlt || ''}" loading="lazy" style="max-width:100%;border-radius:8px;margin:0.5rem 0;">`;
+  }
+  backHTML += `</div>
+    <div class="card-counter">${queueIndex + 1} / ${dueQueue.length}</div>`;
+  cardBack.innerHTML = backHTML;
+
+  // Disable rating buttons until flipped
+  ratingBtns.forEach(btn => btn.disabled = true);
+
+  // Update interval previews
+  document.getElementById("intervalAgain").textContent = previewInterval(state, 0);
+  document.getElementById("intervalHard").textContent  = previewInterval(state, 1);
+  document.getElementById("intervalGood").textContent  = previewInterval(state, 2);
+  document.getElementById("intervalEasy").textContent  = previewInterval(state, 3);
+
+  updateProgress();
+
+  // Show card area
+  cardArea.style.display = "";
+  document.getElementById("ratingButtons").style.display = "";
+}
+
+function showEmptyOrSummary() {
+  // If we reviewed something this session, show summary
+  if (sessionReviewed > 0) {
+    showSummary();
+    return;
+  }
+
+  // Otherwise show empty state
+  cardArea.style.display = "none";
+  document.getElementById("ratingButtons").style.display = "none";
+
+  // Find next review time
+  let pool = ALL_CARDS;
+  if (activeCategory) pool = pool.filter(c => c.cat === activeCategory);
+
+  let earliest = null;
+  pool.forEach(card => {
+    const state = getCardState(progress, card.id);
+    const d = new Date(state.nextReview);
+    if (!earliest || d < earliest) earliest = d;
+  });
+
+  let nextText = "";
+  if (earliest) {
+    const diff = earliest - new Date();
+    if (diff <= 0) {
+      nextText = "Cards are ready now! Refresh the page.";
+    } else {
+      const hours = Math.ceil(diff / (1000 * 60 * 60));
+      if (hours < 24) {
+        nextText = `Next review in about ${hours} hour${hours !== 1 ? 's' : ''}.`;
+      } else {
+        const days = Math.ceil(hours / 24);
+        nextText = `Next review in about ${days} day${days !== 1 ? 's' : ''}.`;
+      }
+    }
+  }
+
+  // Insert empty state before rating buttons
+  let emptyDiv = document.getElementById("emptyState");
+  if (!emptyDiv) {
+    emptyDiv = document.createElement("div");
+    emptyDiv.id = "emptyState";
+    emptyDiv.className = "empty-state";
+    mainArea.insertBefore(emptyDiv, document.getElementById("ratingButtons"));
+  }
+  emptyDiv.innerHTML = `
+    <h2>All caught up!</h2>
+    <p>No cards are due for review right now. Great work staying on top of your studying.</p>
+    ${nextText ? `<div class="next-review">${nextText}</div>` : ""}
+  `;
+  emptyDiv.style.display = "";
+}
+
+function hideEmpty() {
+  const el = document.getElementById("emptyState");
+  if (el) el.style.display = "none";
+}
+
+/* ================================================================
+   PROGRESS BAR
+   ================================================================ */
+function updateProgress() {
+  const total = dueQueue.length;
+  const done = queueIndex;
+  progressText.textContent = `${done} / ${total} due`;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  progressFill.style.width = pct + "%";
+  streakText.textContent = streak > 1 ? ("Streak: " + streak) : "";
+}
+
+/* ================================================================
+   SESSION SUMMARY
+   ================================================================ */
+function showSummary() {
+  const acc = sessionReviewed > 0 ? Math.round((sessionCorrect / sessionReviewed) * 100) : 0;
+  document.getElementById("sumReviewed").textContent = sessionReviewed;
+  document.getElementById("sumAccuracy").textContent = acc + "%";
+  document.getElementById("sumStreak").textContent = bestStreak;
+  summaryOverlay.classList.add("visible");
+}
+
+document.getElementById("sumContinue").addEventListener("click", () => {
+  summaryOverlay.classList.remove("visible");
+  sessionReviewed = 0;
+  sessionCorrect = 0;
+  streak = 0;
+  bestStreak = 0;
+  refresh();
+});
+
+/* ================================================================
+   EVENT HANDLERS
+   ================================================================ */
+
+// Flip card
+cardWrapper.addEventListener("click", () => {
+  if (queueIndex >= dueQueue.length) return;
+  isFlipped = !isFlipped;
+  cardWrapper.classList.toggle("flipped", isFlipped);
+  if (isFlipped) {
+    ratingBtns.forEach(btn => btn.disabled = false);
+  }
+});
+
+// Rating buttons
+ratingBtns.forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (queueIndex >= dueQueue.length) return;
+
+    const rating = parseInt(btn.dataset.rating);
+    const card = dueQueue[queueIndex];
+    const state = getCardState(progress, card.id);
+    const newState = sm2(state, rating);
+    progress[card.id] = newState;
+    saveProgress(progress);
+
+    // Session tracking
+    sessionReviewed++;
+    if (rating >= 2) {
+      sessionCorrect++;
+      streak++;
+      if (streak > bestStreak) bestStreak = streak;
+    } else {
+      streak = 0;
+    }
+
+    // If Again, put card back at end of queue (so user sees it again this session)
+    if (rating === 0) {
+      dueQueue.push(card);
+    }
+
+    queueIndex++;
+    renderPills();
+    renderCard();
+  });
+});
+
+// Keyboard shortcuts
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+
+  if (e.key === " " || e.key === "Enter") {
+    e.preventDefault();
+    if (!isFlipped) {
+      isFlipped = true;
+      cardWrapper.classList.add("flipped");
+      ratingBtns.forEach(btn => btn.disabled = false);
+    }
+  }
+  if (isFlipped) {
+    if (e.key === "1") ratingBtns[0].click();
+    if (e.key === "2") ratingBtns[1].click();
+    if (e.key === "3") ratingBtns[2].click();
+    if (e.key === "4") ratingBtns[3].click();
+  }
+});
+
+// Reset
+resetBtn.addEventListener("click", () => {
+  if (confirm("Reset all flashcard progress? This cannot be undone.")) {
+    localStorage.removeItem(STORAGE_KEY);
+    progress = {};
+    sessionReviewed = 0;
+    sessionCorrect = 0;
+    streak = 0;
+    bestStreak = 0;
+    summaryOverlay.classList.remove("visible");
+    refresh();
+  }
+});
+
+/* ================================================================
+   REFRESH — rebuild queue and re-render everything
+   ================================================================ */
+function refresh() {
+  hideEmpty();
+  buildQueue();
+  renderPills();
+  renderCard();
+}
+
+// Initial render
+refresh();
+</script>
+</body>
+</html>

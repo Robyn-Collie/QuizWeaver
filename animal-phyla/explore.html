@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore Animal Phyla | Grade 7 Life Science</title>
+<meta name="csrf-token" content="">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --accent: #4f8ef7;
+  --green: #4ade80;
+  --yellow: #facc15;
+  --red: #f87171;
+  --text: #e2e8f0;
+  --text-dim: #94a3b8;
+  --border: #2d3348;
+  --radius: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+html {
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* === STICKY HEADER === */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: linear-gradient(135deg, #1e3a5f, #0f1117);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+header .header-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+header .header-left { flex: 1; min-width: 0; }
+
+header h1 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+header .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.125rem;
+}
+
+header .back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.875rem;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+header .back-link:hover { background: rgba(79,142,247,0.12); }
+
+/* === SCROLLYTELLING LAYOUT === */
+.scroll-container {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* Sticky visualization area — top 40vh */
+.viz-sticky {
+  position: sticky;
+  top: 60px; /* below header */
+  z-index: 50;
+  height: 40vh;
+  min-height: 260px;
+  max-height: 400px;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.viz-sticky .chart-wrap {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+  padding-top: 1.5rem;
+}
+
+/* Let Chart.js handle canvas sizing via its responsive option */
+
+.viz-title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Narrative scroll sections */
+.narrative {
+  position: relative;
+  padding: 0 1rem;
+}
+
+.scroll-section {
+  min-height: 80vh;
+  padding: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0.25;
+  transition: opacity 0.5s ease;
+}
+
+.scroll-section.is-active {
+  opacity: 1;
+}
+
+.scroll-section:last-child {
+  min-height: 60vh;
+  padding-bottom: 6rem;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.section-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+  color: #fff;
+}
+
+.section-body {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+.section-body strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.section-body em {
+  color: var(--yellow);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.section-images {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.module-img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+  display: block;
+}
+
+.img-caption {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Triple image row for worm section */
+.img-trio {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.img-trio img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.img-trio .img-caption {
+  font-size: 0.65rem;
+  margin-top: 0.25rem;
+}
+
+.img-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.img-pair img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* === SECTION INDICATOR DOTS === */
+.section-dots {
+  position: fixed;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.section-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid var(--border);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The actual dot is drawn with a pseudo-element for tap target */
+  position: relative;
+}
+
+.section-dot::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+  position: absolute;
+}
+
+.section-dot.viewed::after {
+  background: var(--accent);
+  opacity: 0.4;
+}
+
+.section-dot.active::after {
+  background: var(--accent);
+  opacity: 1;
+  transform: scale(1.3);
+  box-shadow: 0 0 8px rgba(79,142,247,0.5);
+}
+
+/* Tooltip on hover */
+.section-dot .dot-label {
+  position: absolute;
+  right: 44px;
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: var(--text);
+  background: var(--surface);
+  padding: 4px 8px;
+  border-radius: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  border: 1px solid var(--border);
+}
+
+.section-dot:hover .dot-label {
+  opacity: 1;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 480px) {
+  .viz-sticky {
+    height: 35vh;
+    min-height: 220px;
+    padding: 0.75rem;
+  }
+
+  .scroll-section {
+    min-height: 70vh;
+    padding: 1.5rem 0;
+  }
+
+  .section-heading {
+    font-size: 1.2rem;
+  }
+
+  .section-body {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .img-trio {
+    grid-template-columns: 1fr;
+  }
+
+  .section-dots {
+    right: 4px;
+  }
+
+  .section-dot {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* Fade-in animation for chart */
+@keyframes fadeInChart {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.chart-entering {
+  animation: fadeInChart 0.4s ease forwards;
+}
+
+/* Footer */
+.explore-footer {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.explore-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.explore-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Completion banner */
+.completion-banner {
+  max-width: 640px;
+  margin: 1rem auto;
+  padding: 1rem 1.25rem;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid var(--green);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--green);
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: none;
+}
+
+.completion-banner.show {
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<!-- === HEADER === -->
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <h1>Explore Animal Phyla</h1>
+      <div class="subtitle">A Visual Journey | Grade 7 Life Science | SOL LS.7</div>
+    </div>
+    <a href="index.html" class="back-link" aria-label="Back to module home">&#8592; Back</a>
+  </div>
+</header>
+
+<!-- === SECTION INDICATOR DOTS === -->
+<nav class="section-dots" aria-label="Section navigation">
+  <div class="section-dot" data-index="0"><span class="dot-label">Animal Kingdom</span></div>
+  <div class="section-dot" data-index="1"><span class="dot-label">Body Symmetry</span></div>
+  <div class="section-dot" data-index="2"><span class="dot-label">Sponges</span></div>
+  <div class="section-dot" data-index="3"><span class="dot-label">Cnidaria</span></div>
+  <div class="section-dot" data-index="4"><span class="dot-label">Worm Phyla</span></div>
+  <div class="section-dot" data-index="5"><span class="dot-label">Arthropoda</span></div>
+  <div class="section-dot" data-index="6"><span class="dot-label">Mollusca & Echinodermata</span></div>
+  <div class="section-dot" data-index="7"><span class="dot-label">Chordata</span></div>
+</nav>
+
+<!-- === MAIN SCROLLYTELLING LAYOUT === -->
+<div class="scroll-container">
+
+  <!-- Sticky Visualization Area -->
+  <div class="viz-sticky">
+    <div class="chart-wrap">
+      <div class="viz-title" id="vizTitle">Species Across the 9 Major Animal Phyla</div>
+      <canvas id="mainChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Scrolling Narrative Sections -->
+  <div class="narrative" id="narrative">
+
+    <!-- SECTION 1: Welcome to the Animal Kingdom -->
+    <section class="scroll-section" data-step="0">
+      <div class="section-label">Section 1 of 8</div>
+      <h2 class="section-heading">Welcome to the Animal Kingdom</h2>
+      <div class="section-body">
+        <p>Animals are everywhere — in the ocean, in the soil, in the air, and even inside your body. Scientists have identified about <strong>1.5 million animal species</strong>, but there might be millions more we haven't discovered yet.</p>
+        <br>
+        <p>To make sense of all this diversity, scientists sort animals into groups called <strong>phyla</strong> (singular: phylum). A phylum is one of the biggest groups in the animal kingdom. Think of it like organizing a giant library — each phylum is a different section of the library, grouping animals by their basic body plan.</p>
+        <br>
+        <p>There are about 35 animal phyla, but <strong>9 of them</strong> contain the vast majority of known species.</p>
+      </div>
+    </section>
+
+    <!-- SECTION 2: Body Symmetry -->
+    <section class="scroll-section" data-step="1">
+      <div class="section-label">Section 2 of 8</div>
+      <h2 class="section-heading">Building Blocks: Body Symmetry</h2>
+      <div class="section-body">
+        <p>One of the first things scientists look at when classifying an animal is its <strong>body symmetry</strong> — how its body parts are arranged. There are three main types:</p>
+        <br>
+        <p><strong>Asymmetry</strong> means no definite shape pattern at all. Sponges (phylum Porifera) are asymmetrical — they grow in all sorts of random shapes.</p>
+        <br>
+        <p><strong>Radial symmetry</strong> means the body is arranged around a central point, like a wheel or a pie. Jellyfish and sea stars have radial symmetry — you can slice them in many directions and get matching halves.</p>
+        <br>
+        <p><strong>Bilateral symmetry</strong> means the body has a left side and right side that are mirror images, like you! Most animals — from worms to whales — are bilaterally symmetrical. This body plan is great for animals that move in one direction, because sense organs can be concentrated at the front (that's called <strong>cephalization</strong>).</p>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Porifera -->
+    <section class="scroll-section" data-step="2">
+      <div class="section-label">Section 3 of 8</div>
+      <h2 class="section-heading">Phylum Porifera — The Sponges</h2>
+      <div class="section-body">
+        <p>Sponges are the simplest animals on Earth. They have no brain, no heart, no muscles, and no true tissues or organs. So how are they animals at all? Because they're multicellular, they eat other organisms (heterotrophs), and they have no cell walls.</p>
+        <br>
+        <p>Sponges are <strong>filter feeders</strong> — they pump water through their bodies, trapping tiny food particles in special cells. A single sponge can filter thousands of liters of water per day!</p>
+        <br>
+        <p>The name "Porifera" means <strong>"pore bearer,"</strong> referring to the tiny holes covering their bodies. There are over 5,000 known species of sponges, and they're all aquatic — mostly marine.</p>
+      </div>
+      <div class="section-images">
+        <img src="images/porifera-sponge-1.jpg" alt="Barrel sponge on a coral reef showing the porous body structure" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0.75rem 0;">
+        <div class="img-caption">Barrel sponge on a coral reef</div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: Cnidaria -->
+    <section class="scroll-section" data-step="3">
+      <div class="section-label">Section 4 of 8</div>
+      <h2 class="section-heading">Phylum Cnidaria — The Stingers</h2>
+      <div class="section-body">
+        <p>Jellyfish, corals, and sea anemones all belong to phylum Cnidaria (pronounced "nye-DARE-ee-uh"). The name means <strong>"stinging nettle"</strong> because these animals have special stinging cells called <strong>cnidocytes</strong>.</p>
+        <br>
+        <p>When something touches a cnidocyte, it fires a tiny barbed thread — like a microscopic harpoon — that injects venom into prey or predators.</p>
+        <br>
+        <p>Cnidarians have radial symmetry and come in two body forms: the <strong>medusa</strong> (free-swimming, like a jellyfish) and the <strong>polyp</strong> (attached to a surface, like a coral or anemone). Most cnidarians live in the ocean.</p>
+        <br>
+        <p>Fun fact: coral reefs, built by tiny coral polyps, support about <strong>25% of all marine species</strong>!</p>
+      </div>
+      <div class="section-images">
+        <img src="images/cnidaria-jellyfish-1.jpg" alt="Moon jellyfish showing radial symmetry with translucent bell" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0.75rem 0;">
+        <div class="img-caption">Moon jellyfish showing radial symmetry</div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Worm Phyla -->
+    <section class="scroll-section" data-step="4">
+      <div class="section-label">Section 5 of 8</div>
+      <h2 class="section-heading">The Worm Phyla</h2>
+      <div class="section-body">
+        <p>Three of the nine major phyla are often called "worm phyla," but they're actually very different from each other!</p>
+        <br>
+        <p><strong>Platyhelminthes</strong> (flat worms, ~25,000 species) have flat, ribbon-like bodies with no body cavity. They include planarians (which can regenerate if cut in half!), tapeworms, and flukes.</p>
+        <br>
+        <p><strong>Nematoda</strong> (roundworms, ~25,000 described but possibly 1 million+) have round, thread-like bodies with a partial body cavity. They're everywhere — some scientists estimate <em>4 out of every 5 animals on Earth are nematodes</em>!</p>
+        <br>
+        <p><strong>Annelida</strong> (segmented worms, ~22,000 species) have bodies divided into ring-like segments. Earthworms, leeches, and marine polychaete worms are annelids. Their segmentation lets different parts of the body specialize for different jobs.</p>
+      </div>
+      <div class="img-trio">
+        <div>
+          <img src="images/platyhelminthes-flatworm-1.jpg" alt="Flatworm showing flat ribbon-like body" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0;">
+          <div class="img-caption">Flatworm</div>
+        </div>
+        <div>
+          <img src="images/nematoda-roundworm-1.jpg" alt="Roundworm showing thread-like body" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0;">
+          <div class="img-caption">Roundworm</div>
+        </div>
+        <div>
+          <img src="images/annelida-earthworm-1.jpg" alt="Earthworm showing segmented body" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0;">
+          <div class="img-caption">Earthworm</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 6: Arthropoda -->
+    <section class="scroll-section" data-step="5">
+      <div class="section-label">Section 6 of 8</div>
+      <h2 class="section-heading">Phylum Arthropoda — The Champions</h2>
+      <div class="section-body">
+        <p>If there were a competition for "most successful animal group," arthropods would win by a landslide. With over <strong>1.1 million described species</strong>, phylum Arthropoda contains more species than all other animal phyla combined!</p>
+        <br>
+        <p>The name means <strong>"jointed foot,"</strong> and their key feature is an <strong>exoskeleton</strong> — a hard outer shell made of chitin that protects their bodies. Because exoskeletons can't grow, arthropods must <strong>molt</strong> (shed their old exoskeleton) to get bigger.</p>
+        <br>
+        <p>Arthropods include insects (~1 million species), arachnids (spiders, scorpions, ticks), crustaceans (crabs, lobsters, shrimp), and myriapods (centipedes, millipedes). Their jointed legs and exoskeletons allow incredible diversity — they've colonized every habitat on Earth, from deep oceans to high mountains to the insides of other animals.</p>
+      </div>
+      <div class="section-images">
+        <img src="images/arthropoda-insect-beetle-1.jpg" alt="Rose chafer beetle showing hard exoskeleton and jointed legs" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0.75rem 0;">
+        <div class="img-caption">Rose chafer beetle showing exoskeleton</div>
+      </div>
+    </section>
+
+    <!-- SECTION 7: Mollusca & Echinodermata -->
+    <section class="scroll-section" data-step="6">
+      <div class="section-label">Section 7 of 8</div>
+      <h2 class="section-heading">Phylum Mollusca & Phylum Echinodermata</h2>
+      <div class="section-body">
+        <p><strong>Mollusca</strong> (~85,000 species) are soft-bodied animals that often have a hard shell. The name means <strong>"soft."</strong> They have a muscular <strong>foot</strong> for movement and a <strong>mantle</strong> — a tissue layer that produces the shell. Mollusks include snails, clams, oysters, octopuses, and squids. Octopuses and squids are the brainiest invertebrates!</p>
+        <br>
+        <p><strong>Echinodermata</strong> (~7,000 species) means <strong>"spiny skin."</strong> Sea stars, sea urchins, sand dollars, and sea cucumbers are all echinoderms. They have a unique <strong>water vascular system</strong> — a network of water-filled tubes that powers their tube feet for movement.</p>
+        <br>
+        <p>Here's something surprising: echinoderms start life with bilateral symmetry as larvae, but adult echinoderms develop <strong>pentaradial (5-fold) symmetry</strong>. And even more surprising — echinoderms are our closest invertebrate relatives! Both echinoderms and chordates are <strong>deuterostomes</strong> (animals whose anus forms first during development).</p>
+      </div>
+      <div class="img-pair">
+        <div>
+          <img src="images/mollusca-snail-shell-1.jpg" alt="Snail showing hard shell produced by mantle tissue" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0;">
+          <div class="img-caption">Snail (Mollusca)</div>
+        </div>
+        <div>
+          <img src="images/echinodermata-sea-star-1.jpg" alt="Sea star showing pentaradial five-fold symmetry" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0;">
+          <div class="img-caption">Sea star (Echinodermata)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 8: Chordata -->
+    <section class="scroll-section" data-step="7">
+      <div class="section-label">Section 8 of 8</div>
+      <h2 class="section-heading">Phylum Chordata — That's Us!</h2>
+      <div class="section-body">
+        <p>Phylum Chordata includes all <strong>vertebrates</strong> — animals with a backbone — plus a few invertebrates like tunicates and lancelets. The defining feature is a <strong>notochord</strong>, a flexible rod that supports the body. In vertebrates, the notochord is replaced by a bony or cartilaginous spine during development.</p>
+        <br>
+        <p>With about 100,000+ species, Chordata includes five classes of vertebrates: <strong>fish</strong> (the most diverse, ~35,000 species), <strong>amphibians</strong> (~7,000), <strong>reptiles</strong> (~15,000), <strong>birds</strong> (~11,000), and <strong>mammals</strong> (~6,000).</p>
+        <br>
+        <p>Even though chordates include some of the largest and most familiar animals (whales, elephants, eagles, humans), vertebrates make up only about <strong>5% of all animal species</strong>. The other 95% are invertebrates!</p>
+        <br>
+        <p>Classification isn't about what's "better" — it's about understanding how organisms are related and how their body plans solve the challenges of survival.</p>
+      </div>
+      <div class="section-images">
+        <img src="images/chordata-vertebrate-frog-1.jpg" alt="Frog representing the diversity of vertebrate chordates" loading="lazy" class="module-img" style="max-width:100%;border-radius:8px;margin:0.75rem 0;">
+        <div class="img-caption">Frog — one of the five vertebrate classes</div>
+      </div>
+    </section>
+
+  </div><!-- /.narrative -->
+</div><!-- /.scroll-container -->
+
+<!-- Completion banner -->
+<div class="completion-banner" id="completionBanner">
+  [OK] You've explored all 8 sections! Nice work.
+</div>
+
+<footer class="explore-footer">
+  <p>Animal Phyla — Grade 7 Life Science (Virginia SOL LS.7)</p>
+  <p style="margin-top:0.5rem;"><a href="index.html">&larr; Back to Module Home</a></p>
+</footer>
+
+<!-- === CDN SCRIPTS === -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/scrollama@3.2.0/build/scrollama.min.js"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── localStorage key ──
+  var STORAGE_KEY = 'learn_animal-phyla_explore';
+
+  // ── State ──
+  var viewedSections = loadState();
+  var currentStep = -1;
+  var mainChart = null;
+  var ctx = document.getElementById('mainChart').getContext('2d');
+  var vizTitle = document.getElementById('vizTitle');
+
+  // ── Color palette ──
+  var COLORS = {
+    accent: '#4f8ef7',
+    green: '#4ade80',
+    yellow: '#facc15',
+    red: '#f87171',
+    purple: '#a78bfa',
+    orange: '#fb923c',
+    pink: '#f472b6',
+    cyan: '#22d3ee',
+    lime: '#a3e635',
+    slate: '#64748b'
+  };
+
+  var PHYLA_COLORS = [
+    '#f87171', // Arthropoda - red
+    '#4f8ef7', // Chordata - accent blue
+    '#fb923c', // Mollusca - orange
+    '#a78bfa', // Nematoda - purple
+    '#facc15', // Platyhelminthes - yellow
+    '#4ade80', // Annelida - green
+    '#22d3ee', // Cnidaria - cyan
+    '#f472b6', // Echinodermata - pink
+    '#a3e635'  // Porifera - lime
+  ];
+
+  // ── Persistence ──
+  function loadState() {
+    try {
+      var stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        var parsed = JSON.parse(stored);
+        return parsed.viewedSections || [];
+      }
+    } catch(e) {}
+    return [];
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        viewedSections: viewedSections,
+        lastVisit: new Date().toISOString()
+      }));
+    } catch(e) {}
+  }
+
+  function markViewed(step) {
+    if (viewedSections.indexOf(step) === -1) {
+      viewedSections.push(step);
+      saveState();
+    }
+    updateDots();
+    checkCompletion();
+  }
+
+  function checkCompletion() {
+    if (viewedSections.length >= 8) {
+      document.getElementById('completionBanner').classList.add('show');
+    }
+  }
+
+  // ── Section Dots ──
+  var dots = document.querySelectorAll('.section-dot');
+
+  function updateDots() {
+    dots.forEach(function(dot) {
+      var idx = parseInt(dot.getAttribute('data-index'), 10);
+      dot.classList.remove('active', 'viewed');
+      if (idx === currentStep) {
+        dot.classList.add('active');
+      } else if (viewedSections.indexOf(idx) !== -1) {
+        dot.classList.add('viewed');
+      }
+    });
+  }
+
+  // Click dots to scroll
+  dots.forEach(function(dot) {
+    dot.addEventListener('click', function() {
+      var idx = parseInt(dot.getAttribute('data-index'), 10);
+      var section = document.querySelector('.scroll-section[data-step="' + idx + '"]');
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  });
+
+  // Initialize dots from saved state
+  updateDots();
+  checkCompletion();
+
+  // ── Chart Definitions ──
+  // Each function returns a Chart.js config object
+
+  function chartSection0() {
+    // Pie chart: species in 9 major phyla
+    return {
+      type: 'pie',
+      data: {
+        labels: [
+          'Arthropoda (1.1M)',
+          'Chordata (100K)',
+          'Mollusca (85K)',
+          'Nematoda (25K)',
+          'Platyhelminthes (25K)',
+          'Annelida (22K)',
+          'Cnidaria (11K)',
+          'Echinodermata (7K)',
+          'Porifera (5K)'
+        ],
+        datasets: [{
+          data: [1100000, 100000, 85000, 25000, 25000, 22000, 11000, 7000, 5000],
+          backgroundColor: PHYLA_COLORS,
+          borderColor: '#0f1117',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#e2e8f0',
+              font: { size: 10 },
+              padding: 6,
+              boxWidth: 12
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var total = ctx.dataset.data.reduce(function(a,b){return a+b;}, 0);
+                var pct = ((ctx.parsed / total) * 100).toFixed(1);
+                return ctx.label + ': ' + pct + '%';
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection1() {
+    // Horizontal bar: symmetry types by phylum
+    var phyla = ['Porifera', 'Cnidaria', 'Echinodermata', 'Platyhelminthes', 'Nematoda', 'Annelida', 'Arthropoda', 'Mollusca', 'Chordata'];
+    // 0 = asymmetry, 1 = radial, 2 = bilateral
+    var symmetryType = [0, 1, 1, 2, 2, 2, 2, 2, 2];
+    var colorMap = ['#64748b', '#facc15', '#4f8ef7'];
+    var bgColors = symmetryType.map(function(s) { return colorMap[s]; });
+
+    return {
+      type: 'bar',
+      data: {
+        labels: phyla,
+        datasets: [{
+          label: 'Symmetry Type',
+          data: symmetryType.map(function(s) { return s + 1; }), // 1,2,3 for display height
+          backgroundColor: bgColors,
+          borderRadius: 4,
+          barThickness: 20
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: true,
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) {
+                if (v === 1) return 'Asymmetry';
+                if (v === 2) return 'Radial';
+                if (v === 3) return 'Bilateral';
+                return '';
+              },
+              stepSize: 1
+            },
+            min: 0,
+            max: 3.5,
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          y: {
+            ticks: { color: '#e2e8f0', font: { size: 11 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var types = ['Asymmetry', 'Radial', 'Bilateral'];
+                return types[ctx.raw - 1];
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection2() {
+    // Sponge water flow: annotated bar showing volume processed
+    return {
+      type: 'bar',
+      data: {
+        labels: ['Water In\n(through pores)', 'Food Trapped\n(collar cells)', 'Water Out\n(osculum)'],
+        datasets: [{
+          label: 'Liters per day',
+          data: [10000, 50, 10000],
+          backgroundColor: ['#22d3ee', '#4ade80', '#4f8ef7'],
+          borderRadius: 6,
+          barThickness: 50
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            type: 'logarithmic',
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) {
+                if (v === 10 || v === 50 || v === 100 || v === 1000 || v === 10000) return v.toLocaleString() + 'L';
+                return '';
+              }
+            },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          x: {
+            ticks: { color: '#e2e8f0', font: { size: 11 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                if (ctx.dataIndex === 1) return 'Food particles trapped: ~50g/day';
+                return ctx.parsed.y.toLocaleString() + ' liters pumped per day';
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'How a Sponge Feeds: Water Flow',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection3() {
+    // Cnidaria subgroups bar chart
+    return {
+      type: 'bar',
+      data: {
+        labels: ['Anthozoa\n(corals, anemones)', 'Hydrozoa', 'Scyphozoa\n(true jellyfish)', 'Cubozoa\n(box jellies)'],
+        datasets: [{
+          label: 'Estimated Species',
+          data: [6500, 3500, 200, 50],
+          backgroundColor: ['#22d3ee', '#4f8ef7', '#a78bfa', '#f472b6'],
+          borderRadius: 6,
+          barThickness: 40
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) { return v.toLocaleString(); }
+            },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          x: {
+            ticks: { color: '#e2e8f0', font: { size: 10 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ctx.parsed.y.toLocaleString() + ' species';
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Cnidaria Subgroups by Species Count',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection4() {
+    // Grouped bar: comparing 3 worm phyla
+    return {
+      type: 'bar',
+      data: {
+        labels: ['Body Shape', 'Body Cavity', 'Segments?', 'Species (~K)'],
+        datasets: [
+          {
+            label: 'Platyhelminthes (Flatworms)',
+            data: [1, 0, 0, 25],
+            backgroundColor: '#facc15'
+          },
+          {
+            label: 'Nematoda (Roundworms)',
+            data: [2, 1, 0, 25],
+            backgroundColor: '#a78bfa'
+          },
+          {
+            label: 'Annelida (Segmented)',
+            data: [3, 2, 2, 22],
+            backgroundColor: '#4ade80'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) {
+                // We use abstract values for shape/cavity/segments
+                return v;
+              }
+            },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          x: {
+            ticks: { color: '#e2e8f0', font: { size: 10 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#e2e8f0', font: { size: 10 }, boxWidth: 12 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var ds = ctx.dataset.label;
+                var cat = ctx.label;
+                if (cat === 'Body Shape') {
+                  var shapes = {1: 'Flat', 2: 'Round', 3: 'Segmented'};
+                  return ds + ': ' + shapes[ctx.parsed.y];
+                }
+                if (cat === 'Body Cavity') {
+                  var cavities = {0: 'None', 1: 'Partial (pseudocoelom)', 2: 'Full (coelom)'};
+                  return ds + ': ' + cavities[ctx.parsed.y];
+                }
+                if (cat === 'Segments?') {
+                  return ds + ': ' + (ctx.parsed.y > 0 ? 'Yes' : 'No');
+                }
+                if (cat === 'Species (~K)') {
+                  return ds + ': ~' + ctx.parsed.y + ',000 species';
+                }
+                return ds + ': ' + ctx.parsed.y;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Comparing the Three Worm Phyla',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection5() {
+    // Stacked bar: arthropod subgroups (treemap-like with stacked bars)
+    return {
+      type: 'bar',
+      data: {
+        labels: ['Arthropoda Subgroups'],
+        datasets: [
+          {
+            label: 'Insects (~1,000,000)',
+            data: [1000000],
+            backgroundColor: '#f87171',
+            barThickness: 60
+          },
+          {
+            label: 'Arachnids (~100,000)',
+            data: [100000],
+            backgroundColor: '#facc15',
+            barThickness: 60
+          },
+          {
+            label: 'Crustaceans (~70,000)',
+            data: [70000],
+            backgroundColor: '#22d3ee',
+            barThickness: 60
+          },
+          {
+            label: 'Myriapods (~13,000)',
+            data: [13000],
+            backgroundColor: '#4ade80',
+            barThickness: 60
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        scales: {
+          x: {
+            stacked: true,
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) {
+                if (v >= 1000000) return (v/1000000) + 'M';
+                if (v >= 1000) return (v/1000) + 'K';
+                return v;
+              }
+            },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          y: {
+            stacked: true,
+            ticks: { color: '#e2e8f0', font: { size: 12 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#e2e8f0', font: { size: 10 }, boxWidth: 12, padding: 8 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return ctx.dataset.label + ' — ' + ctx.parsed.x.toLocaleString() + ' species';
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Arthropoda: Species by Subgroup',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection6() {
+    // Side-by-side comparison: Mollusca vs Echinodermata
+    var features = ['Species Count (K)', 'Symmetry', 'Skeleton', 'Body Cavity', 'Habitat'];
+    // Encoded for chart display
+    // Mollusca: 85K species, bilateral, internal/shell, coelom, marine+land
+    // Echinodermata: 7K species, pentaradial, endoskeleton, coelom, marine only
+    return {
+      type: 'bar',
+      data: {
+        labels: features,
+        datasets: [
+          {
+            label: 'Mollusca',
+            data: [85, 2, 2, 2, 3],
+            backgroundColor: '#fb923c'
+          },
+          {
+            label: 'Echinodermata',
+            data: [7, 3, 3, 2, 1],
+            backgroundColor: '#f472b6'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            ticks: { color: '#94a3b8' },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          x: {
+            ticks: { color: '#e2e8f0', font: { size: 10 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: { color: '#e2e8f0', font: { size: 11 }, boxWidth: 12 }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                var ds = ctx.dataset.label;
+                var cat = ctx.label;
+                if (cat === 'Species Count (K)') return ds + ': ~' + ctx.parsed.y + ',000';
+                if (cat === 'Symmetry') {
+                  var symm = {2: 'Bilateral', 3: 'Pentaradial (5-fold)'};
+                  return ds + ': ' + (symm[ctx.parsed.y] || ctx.parsed.y);
+                }
+                if (cat === 'Skeleton') {
+                  var skel = {2: 'Shell / internal', 3: 'Calcium endoskeleton'};
+                  return ds + ': ' + (skel[ctx.parsed.y] || ctx.parsed.y);
+                }
+                if (cat === 'Body Cavity') return ds + ': Full coelom';
+                if (cat === 'Habitat') {
+                  var hab = {1: 'Marine only', 3: 'Marine + freshwater + land'};
+                  return ds + ': ' + (hab[ctx.parsed.y] || ctx.parsed.y);
+                }
+                return ds + ': ' + ctx.parsed.y;
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Mollusca vs Echinodermata',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      }
+    };
+  }
+
+  function chartSection7() {
+    // Two charts in one: bar of vertebrate classes + donut of invertebrate vs vertebrate
+    // We'll use a combined approach: bar chart for vertebrate classes
+    // with a custom plugin to draw the donut annotation
+    return {
+      type: 'bar',
+      data: {
+        labels: ['Fish', 'Reptiles', 'Birds', 'Amphibians', 'Mammals'],
+        datasets: [{
+          label: 'Species Count',
+          data: [35000, 15000, 11000, 7000, 6000],
+          backgroundColor: ['#22d3ee', '#4ade80', '#facc15', '#fb923c', '#f472b6'],
+          borderRadius: 6,
+          barThickness: 36
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: { right: 100 }
+        },
+        scales: {
+          y: {
+            ticks: {
+              color: '#94a3b8',
+              callback: function(v) {
+                return (v / 1000) + 'K';
+              }
+            },
+            grid: { color: 'rgba(45,51,72,0.5)' }
+          },
+          x: {
+            ticks: { color: '#e2e8f0', font: { size: 11 } },
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(ctx) {
+                return '~' + ctx.parsed.y.toLocaleString() + ' species';
+              }
+            }
+          },
+          title: {
+            display: true,
+            text: 'Vertebrate Classes by Species Count',
+            color: '#e2e8f0',
+            font: { size: 13, weight: 'bold' }
+          }
+        }
+      },
+      plugins: [{
+        id: 'miniDonut',
+        afterDraw: function(chart) {
+          var ctx = chart.ctx;
+          var area = chart.chartArea;
+          // Draw mini donut in the right padding area
+          var cx = area.right + 50;
+          var cy = area.top + (area.bottom - area.top) / 2;
+          var r = 35;
+          var invertPct = 0.95;
+          var vertPct = 0.05;
+
+          // Invertebrate arc (95%)
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, -Math.PI/2, -Math.PI/2 + (2 * Math.PI * invertPct));
+          ctx.arc(cx, cy, r * 0.55, -Math.PI/2 + (2 * Math.PI * invertPct), -Math.PI/2, true);
+          ctx.closePath();
+          ctx.fillStyle = '#64748b';
+          ctx.fill();
+
+          // Vertebrate arc (5%)
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, -Math.PI/2 + (2 * Math.PI * invertPct), -Math.PI/2 + 2 * Math.PI);
+          ctx.arc(cx, cy, r * 0.55, -Math.PI/2 + 2 * Math.PI, -Math.PI/2 + (2 * Math.PI * invertPct), true);
+          ctx.closePath();
+          ctx.fillStyle = '#4f8ef7';
+          ctx.fill();
+
+          // Center text
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = 'bold 11px -apple-system, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('5%', cx, cy - 3);
+          ctx.font = '8px -apple-system, sans-serif';
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillText('vertebrates', cx, cy + 9);
+
+          // Label below
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '9px -apple-system, sans-serif';
+          ctx.fillText('of all animals', cx, cy + r + 14);
+        }
+      }]
+    };
+  }
+
+  // ── Chart builders array ──
+  var chartBuilders = [
+    chartSection0,
+    chartSection1,
+    chartSection2,
+    chartSection3,
+    chartSection4,
+    chartSection5,
+    chartSection6,
+    chartSection7
+  ];
+
+  var chartTitles = [
+    'Species Across the 9 Major Animal Phyla',
+    'Body Symmetry by Phylum',
+    'Sponge Filter Feeding: Daily Water Flow',
+    'Cnidaria Subgroups',
+    'Comparing the Three Worm Phyla',
+    'Arthropoda: The Dominant Phylum',
+    'Mollusca vs Echinodermata',
+    'Phylum Chordata: Vertebrate Classes'
+  ];
+
+  // ── Render chart for step ──
+  function renderChart(step) {
+    if (step < 0 || step >= chartBuilders.length) return;
+    if (step === currentStep) return;
+
+    currentStep = step;
+
+    // Update title
+    vizTitle.textContent = chartTitles[step];
+
+    // Destroy old chart
+    if (mainChart) {
+      mainChart.destroy();
+      mainChart = null;
+    }
+
+    // Create new chart
+    var config = chartBuilders[step]();
+    mainChart = new Chart(ctx, config);
+
+    // Add entering animation class
+    var canvas = document.getElementById('mainChart');
+    canvas.classList.remove('chart-entering');
+    // Trigger reflow
+    void canvas.offsetWidth;
+    canvas.classList.add('chart-entering');
+  }
+
+  // ── Scrollama Setup ──
+  var scroller = scrollama();
+
+  scroller
+    .setup({
+      step: '.scroll-section',
+      offset: 0.5,
+      debug: false
+    })
+    .onStepEnter(function(response) {
+      var step = parseInt(response.element.getAttribute('data-step'), 10);
+
+      // Activate section visually
+      document.querySelectorAll('.scroll-section').forEach(function(s) {
+        s.classList.remove('is-active');
+      });
+      response.element.classList.add('is-active');
+
+      // Render the chart
+      renderChart(step);
+
+      // Mark as viewed
+      markViewed(step);
+    })
+    .onStepExit(function(response) {
+      // Keep the section slightly dimmed when scrolling away
+    });
+
+  // Handle resize
+  window.addEventListener('resize', function() {
+    scroller.resize();
+  });
+
+  // ── Initialize first chart ──
+  // Small delay to ensure layout is ready
+  setTimeout(function() {
+    renderChart(0);
+    document.querySelector('.scroll-section[data-step="0"]').classList.add('is-active');
+    markViewed(0);
+  }, 300);
+
+})();
+</script>
+
+</body>
+</html>

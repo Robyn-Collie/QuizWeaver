@@ -1,0 +1,119 @@
+{
+  "topic": "Animal Phyla",
+  "grade": "Grade 7",
+  "subject": "Life Science",
+  "standards": "Virginia SOL LS.7",
+  "generated_at": "2026-03-31T18:36:00Z",
+  "editorial_review_at": "2026-03-31T18:44:00Z",
+  "pipeline": {
+    "research_method": "WebSearch + WebFetch on authoritative educational sources",
+    "image_method": "Wikimedia Commons API (deterministic search + editorial visual review)",
+    "images_reviewed": 21,
+    "images_approved": 9,
+    "images_rejected": 12,
+    "rejection_reasons": [
+      "Data chart instead of photo (1)",
+      "Blurry/low-quality (1)",
+      "SVG rendering issues (1)",
+      "SEM microscope too technical for Grade 7 (1)",
+      "Atypical species (1)",
+      "Book cover scans (5)",
+      "Historical text pages (2)"
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://bio.libretexts.org/Bookshelves/Introductory_and_General_Biology/Introductory_Biology_(CK-12)/10:_Animals/10.02:_Animal_Classification",
+      "title": "Animal Classification - Biology LibreTexts (CK-12)",
+      "accessed_at": "2026-03-31T18:30:00Z",
+      "facts_used": [
+        "9 major phyla each contain at least 10,000 species",
+        "Invertebrates comprise at least 95% of all animal species",
+        "Phylum Chordata includes both vertebrate and invertebrate members (tunicates, lancelets)",
+        "The first 8 phyla contain only invertebrates"
+      ]
+    },
+    {
+      "url": "https://courses.lumenlearning.com/suny-biology2xmaster/chapter/features-used-to-classify-animals/",
+      "title": "Features Used to Classify Animals - Lumen Learning (SUNY Biology)",
+      "accessed_at": "2026-03-31T18:31:00Z",
+      "facts_used": [
+        "Three body symmetry types: asymmetry (Porifera), radial (Cnidaria), bilateral (most phyla)",
+        "Body cavity types: acoelomate (flatworms), pseudocoelomate (roundworms), coelomate (annelids, arthropods, etc.)",
+        "Diploblasts have 2 tissue layers (endoderm, ectoderm); triploblasts have 3 (add mesoderm)",
+        "Protostomes: arthropods, mollusks, annelids; Deuterostomes: chordates, echinoderms",
+        "Cephalization: concentration of nervous system at anterior end, enabled by bilateral symmetry",
+        "Radial symmetry suits stationary/slow organisms; bilateral suits active movers"
+      ]
+    },
+    {
+      "url": "https://en.wikiversity.org/wiki/Animal_Phyla",
+      "title": "Animal Phyla - Wikiversity",
+      "accessed_at": "2026-03-31T18:32:00Z",
+      "facts_used": [
+        "Porifera means 'pore bearer', ~5,000+ species",
+        "Cnidaria means 'stinging nettle', ~11,000 species, cnidocytes",
+        "Platyhelminthes means 'flat worms', ~25,000 species",
+        "Nematoda means 'thread like', 80,000-1,000,000 species",
+        "Annelida means 'little ring', ~22,000 species",
+        "Arthropoda means 'jointed foot', 1,134,000+ species, chitin exoskeleton",
+        "Mollusca means 'thin shell', ~85,000 species, muscular foot and mantle",
+        "Echinodermata means 'spiny skin', ~7,000 living species, five-fold radial symmetry",
+        "Chordata means 'cord', ~100,000+ species, hollow dorsal nervous chord",
+        "Total approximately 34 animal phyla representing ~1.9 million described species"
+      ]
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Phylum",
+      "title": "Phylum - Wikipedia",
+      "accessed_at": "2026-03-31T18:29:00Z",
+      "facts_used": [
+        "Arthropoda estimated 3.7 million species (most sources cite >1 million described)",
+        "Mollusca ~118,061 species",
+        "Chordata/Craniata ~85,432 vertebrate species",
+        "About 35 known animal phyla total"
+      ]
+    },
+    {
+      "url": "https://study.com/learn/lesson/animal-phlya-types-characteristics.html",
+      "title": "Animal Phyla | Chart, Types & Characteristics - Study.com",
+      "accessed_at": "2026-03-31T18:29:00Z",
+      "facts_used": [
+        "Within the animal kingdom there are 35 total phyla, 9 are the most well known",
+        "Vertebrates divided into 5 groups: Mammals, Birds, Reptiles, Fish, and Amphibians"
+      ]
+    },
+    {
+      "url": "https://conceptualacademy.com/sites/default/files/2023-07/CABMisconceptions.pdf",
+      "title": "Common Student Misconceptions - Conceptual Academy",
+      "accessed_at": "2026-03-31T18:30:00Z",
+      "facts_used": [
+        "Common misconception: only vertebrates are animals",
+        "Students often don't consider sponges, jellyfish, worms, insects as animals",
+        "Common misconception: bugs/insects are not animals"
+      ]
+    }
+  ],
+  "standards_data": {
+    "code": "SOL LS.7",
+    "full_text": "The student will investigate and understand that organisms can be classified based on shared characteristics. Key ideas include the distinguishing characteristics of kingdoms; the major animal and plant phyla; and the use of classification systems.",
+    "grade_band": "6-8",
+    "strand": "Life Science",
+    "essential_knowledge_addressed": [
+      "Distinguishing characteristics of the 9 major animal phyla",
+      "The major animal phyla and their representative organisms",
+      "The use of classification systems (taxonomy, body plan features)",
+      "How physical characteristics enable organisms to survive (structural adaptations by phylum)"
+    ]
+  },
+  "image_manifest": "images/manifest.json",
+  "content_statistics": {
+    "flashcard_count": 90,
+    "flashcard_categories": 5,
+    "explore_sections": 8,
+    "quiz_questions": 40,
+    "quiz_question_types": 5,
+    "images_used": 9,
+    "phyla_covered": 9
+  }
+}

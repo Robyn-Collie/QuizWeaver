@@ -1,0 +1,114 @@
+{
+  "generated_at": "2026-03-31T18:36:28Z",
+  "editorial_review": "2026-03-31T18:43:00Z",
+  "editorial_note": "All images visually reviewed by Claude for clarity, relevance, and grade-appropriateness. 5 of 9 original deterministic results were rejected and replaced via targeted editorial search.",
+  "min_confidence": 0.35,
+  "images": [
+    {
+      "filename": "porifera-sponge-1.jpg",
+      "query": "sponge porifera underwater photo",
+      "source_title": "File:Coral reef at palmyra.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Coral_reef_at_palmyra.jpg",
+      "license": "CC BY 2.0",
+      "author": "Wikimedia Commons contributor",
+      "description": "Barrel sponge on a coral reef — shows pores and natural underwater habitat",
+      "editorial_verdict": "APPROVED — clear, colorful photo of sponge in habitat; pores visible",
+      "selection": "editorial_retry"
+    },
+    {
+      "filename": "cnidaria-jellyfish-1.jpg",
+      "query": "cnidaria jellyfish",
+      "source_title": "File:Aurelia aurita (Cnidaria) Luc Viatour.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Aurelia_aurita_(Cnidaria)_Luc_Viatour.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Luc Viatour",
+      "description": "Moon jellyfish (Aurelia aurita) showing radial symmetry, bell shape, and trailing tentacles",
+      "editorial_verdict": "APPROVED — stunning photo, radial symmetry clearly visible",
+      "selection": "deterministic_pass"
+    },
+    {
+      "filename": "platyhelminthes-flatworm-1.jpg",
+      "query": "planarian flatworm",
+      "source_title": "File:Planaria Geoplanidae, 3 cm (02).JPG",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Planaria_Geoplanidae,_3_cm_(02).JPG",
+      "license": "CC BY-SA 3.0",
+      "author": "Xavier japiot",
+      "description": "Land planarian (Obama nungara) on moss — flat body shape clearly visible, bilateral symmetry evident",
+      "editorial_verdict": "APPROVED — clear photo showing characteristic flat body shape",
+      "selection": "editorial_targeted"
+    },
+    {
+      "filename": "nematoda-roundworm-1.jpg",
+      "query": "Caenorhabditis elegans roundworm",
+      "source_title": "File:Adult Caenorhabditis elegans.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Adult_Caenorhabditis_elegans.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Wikimedia Commons contributor",
+      "description": "Adult C. elegans nematode under microscope — translucent, thread-like shape, internal structures visible",
+      "editorial_verdict": "APPROVED — textbook-quality microscope image of model nematode",
+      "selection": "editorial_targeted"
+    },
+    {
+      "filename": "annelida-earthworm-1.jpg",
+      "query": "earthworm annelid soil",
+      "source_title": "File:Earthworm on soil surface.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Earthworm_on_soil_surface.jpg",
+      "license": "CC BY 4.0",
+      "author": "Wikimedia Commons contributor",
+      "description": "Earthworm on soil — segments clearly visible to the naked eye, recognizable by Grade 7 students",
+      "editorial_verdict": "APPROVED — realistic, recognizable earthworm photo",
+      "selection": "editorial_retry"
+    },
+    {
+      "filename": "arthropoda-insect-beetle-1.jpg",
+      "query": "arthropoda insect beetle",
+      "source_title": "File:Cetonia-aurata.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Cetonia-aurata.jpg",
+      "license": "CC BY-SA 3.0",
+      "author": "Chrumps",
+      "description": "Rose chafer beetle (Cetonia aurata) — exoskeleton gleaming, jointed legs visible, on flowers",
+      "editorial_verdict": "APPROVED — beautiful, clear beetle photo showing key arthropod features",
+      "selection": "deterministic_pass"
+    },
+    {
+      "filename": "mollusca-snail-shell-1.jpg",
+      "query": "mollusca snail shell",
+      "source_title": "File:Shell of a snail 10-24-2022.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Shell_of_a_snail_10-24-2022.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "Chris Prince Udochukwu Njoku",
+      "description": "Snail shell showing spiral structure — demonstrates shell production by the mantle",
+      "editorial_verdict": "APPROVED — clear shell spiral, good teaching aid for mollusk features",
+      "selection": "deterministic_pass"
+    },
+    {
+      "filename": "echinodermata-sea-star-1.jpg",
+      "query": "sea star starfish five arms",
+      "source_title": "File:Blue Linckia Starfish.JPG",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Blue_Linckia_Starfish.JPG",
+      "license": "CC BY-SA 3.0",
+      "author": "Richard Ling",
+      "description": "Blue Linckia sea star (Linckia laevigata) on coral at the Great Barrier Reef — classic 5-armed pentaradial symmetry",
+      "editorial_verdict": "APPROVED — stunning blue sea star, pentaradial symmetry unmistakable",
+      "selection": "editorial_targeted"
+    },
+    {
+      "filename": "chordata-vertebrate-frog-1.jpg",
+      "query": "chordata vertebrate frog",
+      "source_title": "File:Vertebrate montage.jpg",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Vertebrate_montage.jpg",
+      "license": "CC BY-SA 4.0",
+      "author": "DrChrissy",
+      "description": "Montage of vertebrate classes: lamprey, shark, trout, bird, rat, crocodile, and red-eyed tree frog",
+      "editorial_verdict": "APPROVED — excellent educational montage showing all 5 vertebrate classes",
+      "selection": "deterministic_pass"
+    }
+  ],
+  "rejected_originals": [
+    {"filename": "porifera-sponge-marine-1.svg", "reason": "Data chart diagram, not a photo of an actual sponge — not useful for visual learning"},
+    {"filename": "platyhelminthes-flatworm-planarian-1.jpg", "reason": "Blurry microscope photo, organism barely visible"},
+    {"filename": "nematoda-roundworm-1.svg", "reason": "Complex SVG anatomy diagram, may not render in browsers, too technical for Grade 7"},
+    {"filename": "annelida-earthworm-segmented-1.jpg", "reason": "SEM image at 94x magnification — unrecognizable as earthworm to Grade 7 students"},
+    {"filename": "echinodermata-sea-star-starfish-1.jpg", "reason": "Crown of Thorns starfish — atypical species, small image, doesn't clearly show 5-fold symmetry"}
+  ]
+}

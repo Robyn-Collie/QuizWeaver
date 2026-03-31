@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animal Phyla | QuizWeaver Learning Module</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --accent: #4f8ef7;
+    --green: #4ade80;
+    --yellow: #facc15;
+    --red: #f87171;
+    --text: #e4e4e7;
+    --text-muted: #9ca3af;
+    --border: #2a2d3a;
+    --radius: 12px;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #1e3a5f, #0f1117);
+    padding: 24px 16px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+
+  .header .subtitle {
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .header .description {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── Quick Stats ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── Section Headings ── */
+  .section-heading {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 32px 0 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Tool Cards ── */
+  .tool-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tool-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .tool-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .tool-icon--flashcards {
+    background: linear-gradient(135deg, #6366f1, #4f8ef7);
+  }
+
+  .tool-icon--explore {
+    background: linear-gradient(135deg, #10b981, #4ade80);
+  }
+
+  .tool-icon--quiz {
+    background: linear-gradient(135deg, #f59e0b, #facc15);
+  }
+
+  .tool-icon-inner {
+    display: block;
+    line-height: 1;
+  }
+
+  .tool-card-body h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .tool-card-body p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .tool-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .progress-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  .progress-bar-fill--green { background: var(--green); }
+  .progress-bar-fill--yellow { background: var(--yellow); }
+
+  .tool-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 20px;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+  }
+
+  .tool-link:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .tool-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+  }
+
+  .tool-tag--due {
+    background: rgba(250, 204, 21, 0.15);
+    color: var(--yellow);
+  }
+
+  .tool-tag--score {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--green);
+  }
+
+  /* ── Radar Chart ── */
+  .chart-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .chart-wrapper canvas {
+    max-height: 300px;
+    margin: 0 auto;
+  }
+
+  .chart-empty-msg {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+  }
+
+  /* ── CTA Button ── */
+  .cta-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    margin-top: 28px;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1.05rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .cta-button:hover {
+    opacity: 0.9;
+  }
+
+  /* ── Collapsible Details ── */
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 14px;
+    overflow: hidden;
+  }
+
+  details summary {
+    padding: 16px 20px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    user-select: none;
+  }
+
+  details summary::-webkit-details-marker { display: none; }
+
+  details summary::after {
+    content: "+";
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+
+  details[open] summary::after {
+    content: "-";
+  }
+
+  details .details-body {
+    padding: 0 20px 20px;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+  }
+
+  /* ── Reference Table ── */
+  .ref-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top: 8px;
+  }
+
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    min-width: 560px;
+  }
+
+  .ref-table th {
+    text-align: left;
+    padding: 10px 8px;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .ref-table td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .ref-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .ref-table .phylum-name {
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .ref-table .species-count {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* ── Sources ── */
+  .details-body ul {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0;
+  }
+
+  .details-body ul li {
+    padding: 4px 0;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .details-body ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .details-body a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .details-body a:hover {
+    text-decoration: underline;
+  }
+
+  .details-body h4 {
+    font-size: 0.9rem;
+    color: var(--text);
+    margin: 16px 0 6px;
+  }
+
+  .details-body h4:first-child {
+    margin-top: 0;
+  }
+
+  .details-body .note {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(79, 142, 247, 0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Standards ── */
+  .sol-code {
+    display: inline-block;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 40px;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 400px) {
+    .header h1 { font-size: 1.4rem; }
+    .stat-card .stat-value { font-size: 1.25rem; }
+    .ref-table { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════ HEADER ════════════════════════ -->
+<div class="header">
+  <h1>Animal Phyla</h1>
+  <div class="subtitle">Grade 7 Life Science | Virginia SOL LS.7</div>
+  <p class="description">Explore the 9 major animal phyla through flashcards, visual storytelling, and interactive quizzes.</p>
+</div>
+
+<div class="container">
+
+  <!-- ════════════════════════ QUICK STATS ════════════════════════ -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value">9</div>
+      <div class="stat-label">Phyla Covered</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">90</div>
+      <div class="stat-label">Flashcards</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">40</div>
+      <div class="stat-label">Quiz Questions</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">8</div>
+      <div class="stat-label">Explore Sections</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════ TOOL CARDS ════════════════════════ -->
+  <h2 class="section-heading">Learning Tools</h2>
+
+  <!-- Flashcards -->
+  <div class="tool-card" id="card-flashcards">
+    <div class="tool-card-header">
+      <div class="tool-icon tool-icon--flashcards">
+        <span class="tool-icon-inner">Fc</span>
+      </div>
+      <div class="tool-card-body">
+        <h3>Flashcards</h3>
+        <p>Master key terms and concepts with spaced repetition</p>
+      </div>
+    </div>
+    <div class="tool-progress" id="flashcards-progress">
+      <span id="flashcards-count">0 / 90 studied</span>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="flashcards-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <a href="flashcards.html" class="tool-link">Open Flashcards</a>
+  </div>
+
+  <!-- Explore -->
+  <div class="tool-card" id="card-explore">
+    <div class="tool-card-header">
+      <div class="tool-icon tool-icon--explore">
+        <span class="tool-icon-inner">Ex</span>
+      </div>
+      <div class="tool-card-body">
+        <h3>Explore</h3>
+        <p>A visual journey through all 9 phyla with charts and images</p>
+      </div>
+    </div>
+    <div class="tool-progress" id="explore-progress">
+      <span id="explore-count">0 / 8 sections</span>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill progress-bar-fill--green" id="explore-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <a href="explore.html" class="tool-link">Open Explore</a>
+  </div>
+
+  <!-- Quiz -->
+  <div class="tool-card" id="card-quiz">
+    <div class="tool-card-header">
+      <div class="tool-icon tool-icon--quiz">
+        <span class="tool-icon-inner">Qz</span>
+      </div>
+      <div class="tool-card-body">
+        <h3>Quiz</h3>
+        <p>Test your knowledge with 40 questions across 5 formats</p>
+      </div>
+    </div>
+    <div class="tool-progress" id="quiz-progress">
+      <span id="quiz-count">Not attempted yet</span>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill progress-bar-fill--yellow" id="quiz-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <a href="quiz.html" class="tool-link">Open Quiz</a>
+  </div>
+
+  <!-- ════════════════════════ MASTERY RADAR ════════════════════════ -->
+  <h2 class="section-heading">Mastery Overview</h2>
+  <div class="chart-wrapper">
+    <canvas id="masteryRadar"></canvas>
+    <p class="chart-empty-msg" id="chartMsg" style="display:none;">Start studying to see your progress!</p>
+  </div>
+
+  <!-- ════════════════════════ CTA ════════════════════════ -->
+  <a href="flashcards.html" class="cta-button">Start Daily Review</a>
+
+  <!-- ════════════════════════ QUICK REFERENCE ════════════════════════ -->
+  <h2 class="section-heading">Reference</h2>
+
+  <details>
+    <summary>The 9 Major Animal Phyla</summary>
+    <div class="details-body">
+      <div class="ref-table-wrap">
+        <table class="ref-table">
+          <thead>
+            <tr>
+              <th>Phylum</th>
+              <th>Meaning</th>
+              <th>Key Feature</th>
+              <th>Example</th>
+              <th class="species-count">~Species</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="phylum-name">Porifera</td>
+              <td>"Pore bearer"</td>
+              <td>Filter feeding, no true tissues</td>
+              <td>Sponge</td>
+              <td class="species-count">~5,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Cnidaria</td>
+              <td>"Stinging nettle"</td>
+              <td>Cnidocytes (stinging cells)</td>
+              <td>Jellyfish</td>
+              <td class="species-count">~11,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Platyhelminthes</td>
+              <td>"Flat worms"</td>
+              <td>Flat body, no body cavity</td>
+              <td>Planarian</td>
+              <td class="species-count">~25,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Nematoda</td>
+              <td>"Thread-like"</td>
+              <td>Round body, pseudocoelom</td>
+              <td>Roundworm</td>
+              <td class="species-count">~25,000+</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Annelida</td>
+              <td>"Little ring"</td>
+              <td>Segmented body</td>
+              <td>Earthworm</td>
+              <td class="species-count">~22,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Arthropoda</td>
+              <td>"Jointed foot"</td>
+              <td>Exoskeleton, jointed legs</td>
+              <td>Beetle</td>
+              <td class="species-count">~1,100,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Mollusca</td>
+              <td>"Soft"</td>
+              <td>Mantle, muscular foot</td>
+              <td>Snail</td>
+              <td class="species-count">~85,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Echinodermata</td>
+              <td>"Spiny skin"</td>
+              <td>5-fold symmetry, water vascular</td>
+              <td>Sea star</td>
+              <td class="species-count">~7,000</td>
+            </tr>
+            <tr>
+              <td class="phylum-name">Chordata</td>
+              <td>"Cord"</td>
+              <td>Notochord/backbone</td>
+              <td>Frog</td>
+              <td class="species-count">~100,000</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <!-- ════════════════════════ STANDARDS ════════════════════════ -->
+  <details>
+    <summary>Standards Covered</summary>
+    <div class="details-body">
+      <span class="sol-code">SOL LS.7</span>
+      <p>The student will investigate and understand that organisms can be classified based on shared characteristics. Key ideas include the distinguishing characteristics of kingdoms; the major animal and plant phyla; and the use of classification systems.</p>
+    </div>
+  </details>
+
+  <!-- ════════════════════════ SOURCES & CREDITS ════════════════════════ -->
+  <details>
+    <summary>Sources &amp; Image Credits</summary>
+    <div class="details-body">
+      <h4>Research Sources</h4>
+      <ul>
+        <li><a href="https://bio.libretexts.org/Bookshelves/Introductory_and_General_Biology/Introductory_Biology_(CK-12)/10:_Animals/10.02:_Animal_Classification" target="_blank" rel="noopener">Animal Classification &mdash; Biology LibreTexts</a></li>
+        <li><a href="https://courses.lumenlearning.com/suny-biology2xmaster/chapter/features-used-to-classify-animals/" target="_blank" rel="noopener">Features Used to Classify Animals &mdash; Lumen Learning</a></li>
+        <li><a href="https://en.wikiversity.org/wiki/Animal_Phyla" target="_blank" rel="noopener">Animal Phyla &mdash; Wikiversity</a></li>
+        <li><a href="https://en.wikipedia.org/wiki/Phylum" target="_blank" rel="noopener">Phylum &mdash; Wikipedia</a></li>
+        <li><a href="https://study.com/learn/lesson/animal-phlya-types-characteristics.html" target="_blank" rel="noopener">Animal Phyla Types &amp; Characteristics &mdash; Study.com</a></li>
+      </ul>
+
+      <h4>Image Credits</h4>
+      <ul>
+        <li>Barrel sponge reef photo &mdash; CC BY 2.0 &mdash; <a href="https://commons.wikimedia.org/wiki/File:Coral_reef_at_palmyra.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Moon jellyfish &mdash; CC BY-SA 3.0, Luc Viatour &mdash; <a href="https://commons.wikimedia.org/wiki/File:Aurelia_aurita_(Cnidaria)_Luc_Viatour.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Land planarian &mdash; CC BY-SA 3.0, Xavier japiot &mdash; <a href="https://commons.wikimedia.org/wiki/File:Planaria_Geoplanidae,_3_cm_(02).JPG" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>C. elegans roundworm &mdash; CC BY-SA 3.0 &mdash; <a href="https://commons.wikimedia.org/wiki/File:Adult_Caenorhabditis_elegans.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Earthworm &mdash; CC BY 4.0 &mdash; <a href="https://commons.wikimedia.org/wiki/File:Earthworm_on_soil_surface.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Rose chafer beetle &mdash; CC BY-SA 3.0, Chrumps &mdash; <a href="https://commons.wikimedia.org/wiki/File:Cetonia-aurata.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Snail shell &mdash; CC BY-SA 4.0, Chris Prince Udochukwu Njoku &mdash; <a href="https://commons.wikimedia.org/wiki/File:Shell_of_a_snail_10-24-2022.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Blue Linckia sea star &mdash; CC BY-SA 3.0, Richard Ling &mdash; <a href="https://commons.wikimedia.org/wiki/File:Blue_Linckia_Starfish.JPG" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+        <li>Vertebrate montage &mdash; CC BY-SA 4.0, DrChrissy &mdash; <a href="https://commons.wikimedia.org/wiki/File:Vertebrate_montage.jpg" target="_blank" rel="noopener">Wikimedia Commons</a></li>
+      </ul>
+
+      <div class="note">Content verified against authoritative sources on March 31, 2026. All images are freely licensed for educational use.</div>
+    </div>
+  </details>
+
+  <!-- ════════════════════════ FOOTER ════════════════════════ -->
+  <div class="footer">
+    Animal Phyla Learning Module | QuizWeaver<br>
+    Content verified against authoritative sources &mdash; see Sources &amp; Image Credits above
+  </div>
+
+</div><!-- /.container -->
+
+<script>
+(function() {
+  "use strict";
+
+  // ── Safe localStorage reader ──
+  function readStore(key) {
+    try {
+      var raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // ── Flashcards Progress ──
+  var fcData = readStore("learn_animal-phyla_flashcards");
+  var fcStudied = 0;
+  var fcTotal = 90;
+  var fcDue = 0;
+  var categoryMastery = { Vocabulary: 0, "Key Facts": 0, Processes: 0, Concepts: 0, Connections: 0 };
+  var hasFlashcardData = false;
+
+  if (fcData) {
+    // Support both flat and nested data shapes
+    if (typeof fcData.studied === "number") {
+      fcStudied = fcData.studied;
+    } else if (fcData.cards && typeof fcData.cards === "object") {
+      // Count studied cards from a cards object/array
+      var cards = Array.isArray(fcData.cards) ? fcData.cards : Object.values(fcData.cards);
+      fcStudied = cards.filter(function(c) { return c && c.seen; }).length;
+    }
+
+    if (typeof fcData.due === "number") {
+      fcDue = fcData.due;
+    }
+
+    // Read category mastery (0-100 per category)
+    if (fcData.mastery && typeof fcData.mastery === "object") {
+      var cats = ["Vocabulary", "Key Facts", "Processes", "Concepts", "Connections"];
+      for (var i = 0; i < cats.length; i++) {
+        var val = fcData.mastery[cats[i]];
+        if (typeof val === "number") {
+          categoryMastery[cats[i]] = Math.min(100, Math.max(0, val));
+          hasFlashcardData = true;
+        }
+      }
+    }
+
+    // If we have any studied cards, consider data present
+    if (fcStudied > 0) hasFlashcardData = true;
+  }
+
+  var fcPct = Math.round((fcStudied / fcTotal) * 100);
+  document.getElementById("flashcards-count").textContent = fcStudied + " / " + fcTotal + " studied";
+  document.getElementById("flashcards-bar").style.width = fcPct + "%";
+
+  if (fcDue > 0) {
+    var tag = document.createElement("span");
+    tag.className = "tool-tag tool-tag--due";
+    tag.textContent = fcDue + " due";
+    document.getElementById("flashcards-count").appendChild(tag);
+  }
+
+  // ── Explore Progress ──
+  var exData = readStore("learn_animal-phyla_explore");
+  var exViewed = 0;
+  var exTotal = 8;
+
+  if (exData) {
+    if (typeof exData.viewed === "number") {
+      exViewed = exData.viewed;
+    } else if (Array.isArray(exData.viewed)) {
+      exViewed = exData.viewed.length;
+    } else if (exData.sections && typeof exData.sections === "object") {
+      var secs = Array.isArray(exData.sections) ? exData.sections : Object.values(exData.sections);
+      exViewed = secs.filter(function(s) { return s && s.viewed; }).length;
+    }
+  }
+
+  var exPct = Math.round((exViewed / exTotal) * 100);
+  document.getElementById("explore-count").textContent = exViewed + " / " + exTotal + " sections";
+  document.getElementById("explore-bar").style.width = exPct + "%";
+
+  // ── Quiz Progress ──
+  var qzData = readStore("learn_animal-phyla_quiz");
+  var qzBest = null;
+
+  if (qzData) {
+    if (typeof qzData.bestScore === "number") {
+      qzBest = qzData.bestScore;
+    } else if (typeof qzData.best === "number") {
+      qzBest = qzData.best;
+    } else if (typeof qzData.score === "number") {
+      qzBest = qzData.score;
+    }
+  }
+
+  if (qzBest !== null) {
+    var qzPct = Math.round(qzBest);
+    document.getElementById("quiz-count").innerHTML = "Best: " + qzPct + "%";
+    var scoreTag = document.createElement("span");
+    scoreTag.className = "tool-tag tool-tag--score";
+    scoreTag.textContent = qzPct + "%";
+    document.getElementById("quiz-count").appendChild(scoreTag);
+    document.getElementById("quiz-bar").style.width = qzPct + "%";
+  } else {
+    document.getElementById("quiz-count").textContent = "Not attempted yet";
+  }
+
+  // ── Mastery Radar Chart ──
+  var ctx = document.getElementById("masteryRadar").getContext("2d");
+  var labels = ["Vocabulary", "Key Facts", "Processes", "Concepts", "Connections"];
+  var values = labels.map(function(l) { return categoryMastery[l]; });
+
+  if (!hasFlashcardData) {
+    document.getElementById("chartMsg").style.display = "block";
+  }
+
+  new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Mastery",
+        data: values,
+        backgroundColor: "rgba(79, 142, 247, 0.15)",
+        borderColor: "rgba(79, 142, 247, 0.8)",
+        borderWidth: 2,
+        pointBackgroundColor: "#4f8ef7",
+        pointBorderColor: "#4f8ef7",
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        r: {
+          beginAtZero: true,
+          min: 0,
+          max: 100,
+          ticks: {
+            stepSize: 20,
+            color: "#6b7280",
+            backdropColor: "transparent",
+            font: { size: 11 }
+          },
+          grid: {
+            color: "rgba(255,255,255,0.08)"
+          },
+          angleLines: {
+            color: "rgba(255,255,255,0.08)"
+          },
+          pointLabels: {
+            color: "#9ca3af",
+            font: { size: 12, weight: "600" }
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.parsed.r + "%";
+            }
+          }
+        }
+      }
+    }
+  });
+
+})();
+</script>
+
+</body>
+</html>
