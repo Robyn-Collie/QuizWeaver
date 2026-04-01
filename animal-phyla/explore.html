@@ -1328,64 +1328,85 @@ header .back-link:hover { background: rgba(79,142,247,0.12); }
     canvas.classList.add('chart-entering');
   }
 
-  // ── Scrollama Setup ──
-  var scroller = scrollama();
+  // ── Detect iframe context ──
+  var inIframe = window !== window.parent;
 
-  scroller
-    .setup({
-      step: '.scroll-section',
-      offset: 0.5,
-      debug: false
-    })
-    .onStepEnter(function(response) {
-      var step = parseInt(response.element.getAttribute('data-step'), 10);
+  if (inIframe) {
+    // === STATIC MODE (bundle/iframe) ===
+    // Scrollama can't work because the user scrolls the outer page, not
+    // the iframe. Instead: hide the sticky chart, create inline canvases
+    // per section, render all charts immediately.
 
-      // Activate section visually
-      document.querySelectorAll('.scroll-section').forEach(function(s) {
-        s.classList.remove('is-active');
-      });
-      response.element.classList.add('is-active');
+    document.querySelector('.viz-sticky').style.display = 'none';
+    document.querySelector('.section-dots').style.display = 'none';
 
-      // Render the chart
-      renderChart(step);
+    // Make all sections fully visible
+    document.querySelectorAll('.scroll-section').forEach(function(s, i) {
+      s.classList.add('is-active');
+      s.style.opacity = '1';
+      s.style.minHeight = 'auto';
 
-      // Mark as viewed
-      markViewed(step);
-    })
-    .onStepExit(function(response) {
-      // Keep the section slightly dimmed when scrolling away
+      // Create an inline chart canvas for this section
+      var chartDiv = document.createElement('div');
+      chartDiv.style.cssText = 'width:100%;max-width:600px;margin:1rem auto;height:280px;position:relative;';
+      var title = document.createElement('div');
+      title.textContent = chartTitles[i];
+      title.style.cssText = 'text-align:center;font-size:0.75rem;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;';
+      var inlineCanvas = document.createElement('canvas');
+      inlineCanvas.id = 'inlineChart' + i;
+      chartDiv.appendChild(title);
+      chartDiv.appendChild(inlineCanvas);
+
+      // Insert chart before the section body
+      var body = s.querySelector('.section-body');
+      if (body) {
+        s.insertBefore(chartDiv, body);
+      } else {
+        s.appendChild(chartDiv);
+      }
+
+      // Render chart
+      var config = chartBuilders[i]();
+      new Chart(inlineCanvas.getContext('2d'), config);
+      markViewed(i);
     });
 
-  // Handle resize
-  window.addEventListener('resize', function() {
-    scroller.resize();
-  });
+  } else {
+    // === SCROLLYTELLING MODE (standalone) ===
+    var scroller = scrollama();
 
-  // Handle being shown after hidden (e.g., in a bundled tabbed iframe)
-  // When this page starts display:none, Scrollama can't measure positions.
-  // Re-initialize when we become visible.
-  if (typeof IntersectionObserver !== 'undefined') {
-    var visObserver = new IntersectionObserver(function(entries) {
-      if (entries[0].isIntersecting) {
-        scroller.resize();
-      }
-    }, {threshold: 0.01});
-    visObserver.observe(document.documentElement);
+    scroller
+      .setup({
+        step: '.scroll-section',
+        offset: 0.5,
+        debug: false
+      })
+      .onStepEnter(function(response) {
+        var step = parseInt(response.element.getAttribute('data-step'), 10);
+
+        document.querySelectorAll('.scroll-section').forEach(function(s) {
+          s.classList.remove('is-active');
+        });
+        response.element.classList.add('is-active');
+
+        renderChart(step);
+        markViewed(step);
+      })
+      .onStepExit(function(response) {
+        // Keep the section slightly dimmed when scrolling away
+      });
+
+    window.addEventListener('resize', function() {
+      scroller.resize();
+    });
+
+    // Initialize first chart
+    setTimeout(function() {
+      renderChart(0);
+      document.querySelector('.scroll-section[data-step="0"]').classList.add('is-active');
+      markViewed(0);
+    }, 300);
   }
-  // Also listen for explicit resize message from parent (bundle tab switch)
-  window.addEventListener('message', function(e) {
-    if (e.data === 'tab-activated') {
-      setTimeout(function() { scroller.resize(); }, 100);
-    }
-  });
-
-  // ── Initialize first chart ──
-  // Small delay to ensure layout is ready
-  setTimeout(function() {
-    renderChart(0);
-    document.querySelector('.scroll-section[data-step="0"]').classList.add('is-active');
-    markViewed(0);
-  }, 300);
 
 })();
 </script>
