@@ -1361,6 +1361,24 @@ header .back-link:hover { background: rgba(79,142,247,0.12); }
     scroller.resize();
   });
 
+  // Handle being shown after hidden (e.g., in a bundled tabbed iframe)
+  // When this page starts display:none, Scrollama can't measure positions.
+  // Re-initialize when we become visible.
+  if (typeof IntersectionObserver !== 'undefined') {
+    var visObserver = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting) {
+        scroller.resize();
+      }
+    }, {threshold: 0.01});
+    visObserver.observe(document.documentElement);
+  }
+  // Also listen for explicit resize message from parent (bundle tab switch)
+  window.addEventListener('message', function(e) {
+    if (e.data === 'tab-activated') {
+      setTimeout(function() { scroller.resize(); }, 100);
+    }
+  });
+
   // ── Initialize first chart ──
   // Small delay to ensure layout is ready
   setTimeout(function() {
